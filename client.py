@@ -53,7 +53,9 @@ class MMZXClient(BizHawkClient):
         if code != ROM_GAME_CODE:
             return False
         ctx.game = self.game
-        ctx.items_handling = 0b001  # el cliente aplica los items recibidos
+        # El parche NO pre-coloca items en la ROM: el cliente concede TODO
+        # por RAM, incluidos los items locales y el start inventory.
+        ctx.items_handling = 0b111
         ctx.want_slot_data = True
         ctx.watcher_timeout = 0.125
         self.local_checked = set()

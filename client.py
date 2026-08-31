@@ -43,7 +43,7 @@ class MMZXClient(BizHawkClient):
     def __init__(self) -> None:
         super().__init__()
         self.local_checked: set[int] = set()
-        self.granted_count = 0
+        self.applied_consumables = 0  # high-water de items consumibles aplicados
 
     async def validate_rom(self, ctx: "BizHawkClientContext") -> bool:
         try:
@@ -59,7 +59,7 @@ class MMZXClient(BizHawkClient):
         ctx.want_slot_data = True
         ctx.watcher_timeout = 0.125
         self.local_checked = set()
-        self.granted_count = 0
+        self.applied_consumables = 0
         return True
 
     async def set_auth(self, ctx: "BizHawkClientContext") -> None:
@@ -128,20 +128,73 @@ class MMZXClient(BizHawkClient):
         # (Serpent: pendiente de anclar el flag; se rellenará en Fase 3.)
 
     async def _grant_items(self, ctx) -> None:
-        id_to_grant = {v["id"]: v["grant"] for v in ITEMS.values()}
-        writes: list[tuple[int, bytes, str]] = []
-        for net_item in ctx.items_received:
-            grant = id_to_grant.get(net_item.item)
-            if not grant:
+        """Aplica los items recibidos.
+
+        Dos familias:
+          - IDEMPOTENTES (bits que persisten o se reconstruyen): se
+            recalcula el estado deseado desde el conteo total y se
+            escribe (OR / set de máximo). Barato y seguro re-aplicar.
+          - CONSUMIBLES (E-Crystals, 1-Up): se aplican UNA vez por item
+            nuevo (high-water `applied_consumables`), nunca re-sumar.
+        """
+        id_to_item = {v["id"]: (name, v["grant"]) for name, v in ITEMS.items()}
+
+        # contar recibidos por tipo de concesión
+        n_lifeup = n_subtank = 0
+        canon_bits: set[tuple[int, int]] = set()   # (canon_byte, bit) idempotentes
+        new_consumables: list[str] = []
+        for i, net in enumerate(ctx.items_received):
+            entry = id_to_item.get(net.item)
+            if not entry:
                 continue
+            name, grant = entry
             kind = grant[0]
             if kind == "lifeup":
-                # OR de un bit libre en 0x0214FC77 lo hace el juego al
-                # recoger; para conceder remoto: set bit 0 como mínimo
-                # (refinamiento por-conteo en Fase 3).
-                pass
-            # disks/misiones/keys/biometales: set bit en canónica.
-            # (Recetas concretas por tipo → Fase 3 con validación.)
+                n_lifeup += 1
+            elif kind == "subtank":
+                n_subtank += 1
+            elif kind in ("ecrystals", "oneup"):
+                if i >= self.applied_consumables:
+                    new_consumables.append(kind)
+            # model / cardkey / transerver: TODO recetas exactas (bit de
+            # posesión pendiente de RE — no se conceden aún para no
+            # corromper flags). Ver docs/functions.md (biometales).
+
+        writes: list[tuple[int, bytes, str]] = []
+
+        # Life Ups (idempotente): bits 0..n-1 + HP máx
+        if n_lifeup:
+            n = min(4, n_lifeup)
+            mask = (1 << n) - 1
+            cur = (await bizhawk.read(ctx.bizhawk_ctx, [(LIFEUP_BYTE, 1, DOM)]))[0][0]
+            if cur & mask != mask:
+                writes.append((LIFEUP_BYTE, bytes([cur | mask]), DOM))
+            # HP máx = 0x10 + 4*n (tope 0x20)
+            hpmax = min(0x20, 0x10 + 4 * n)
+            writes.append((0x0214FC76, bytes([hpmax]), DOM))
+
+        # Sub Tanks (idempotente): bits 0..n-1
+        if n_subtank:
+            n = min(4, n_subtank)
+            mask = (1 << n) - 1
+            cur = (await bizhawk.read(ctx.bizhawk_ctx, [(SUBTANK_BYTE, 1, DOM)]))[0][0]
+            if cur & mask != mask:
+                writes.append((SUBTANK_BYTE, bytes([cur | mask]), DOM))
+
+        # Consumibles (una vez)
+        if new_consumables:
+            raw = int.from_bytes((await bizhawk.read(ctx.bizhawk_ctx, [(ECRYSTALS, 4, DOM)]))[0], "little")
+            ec = raw & 0xFFFFFF
+            add = sum(50 for k in new_consumables if k == "ecrystals")
+            ec = min(99999, ec + add)
+            writes.append((ECRYSTALS, ((raw & 0xFF000000) | ec).to_bytes(4, "little"), DOM))
+            # 1-Up: sumar vidas (0x0214FC6C), tope 99
+            n1 = sum(1 for k in new_consumables if k == "oneup")
+            if n1:
+                lives = (await bizhawk.read(ctx.bizhawk_ctx, [(0x0214FC6C, 1, DOM)]))[0][0]
+                writes.append((0x0214FC6C, bytes([min(99, lives + n1)]), DOM))
+            self.applied_consumables = len(ctx.items_received)
+
         if writes:
             await bizhawk.write(ctx.bizhawk_ctx, writes)
 

@@ -15,6 +15,7 @@ from .data import (LOCATIONS, ITEMS, GOAL_BITS, MISSION_ACCEPT,
                    MISSION_STATE_ADDR, MISSION_ACTIVE_FLAG,
                    STARTING_MODELS, STARTING_MODEL_ITEM, STARTING_TRANSERVERS,
                    MODEL_X_POSSESSION, ACTIVE_MODEL_ADDR)
+from .golden import GOLDEN_IMAGE, GOLDEN_IMAGE_ADDR
 
 if TYPE_CHECKING:
     from worlds._bizhawk.context import BizHawkClientContext
@@ -179,6 +180,18 @@ class MMZXClient(BizHawkClient):
             ctx.command_processor.commands["mmzx_flags"] = _cmd_flags
             ctx.command_processor.commands["mmzx_dump"] = _cmd_dump
             ctx.command_processor.commands["mmzx_start"] = _cmd_start
+
+        # ---- tutorial-skip: estado one-shot (datastore) + imagen dorada ----
+        # Resolver PRONTO (también en menús) si el skip ya se aplicó en una
+        # sesión previa de la seed, para NO sembrar la imagen dorada (y no
+        # pisar un "Continue" real). Solo la fase de APLICAR requiere gameplay.
+        await self._start_state_resolve(ctx)
+        # Sembrar la imagen dorada en 0x021602A8 fuera de gameplay mientras el
+        # skip esté pendiente: cuando el jugador pulse "New Game" (redirigido
+        # por el parche al handler de LOAD) el juego entra a la escena con este
+        # bloque -> hub post-tutorial. En la 1ª sesión NO hay save, así que
+        # "Continue" no se ofrece y no hay riesgo de pisar una partida real.
+        await self._seed_golden_image(ctx)
 
         in_game, state_bytes = await self._in_game(ctx)
         if not in_game:
@@ -362,38 +375,53 @@ class MMZXClient(BizHawkClient):
             from CommonClient import logger
             logger.info("[mmzx] open-world: misión auto-aceptada → %s" % rec["name"])
 
-    async def _start_state_tick(self, ctx, guard) -> None:
-        """Tutorial-skip (v0.2): aplica UNA VEZ el estado inicial del YAML
-        (starting_model + starting_transerver) sobre el estado dorado
-        post-tutorial. One-shot persistente vía datastore del servidor
-        (clave mmzx_start_applied_<team>_<slot>); /mmzx_start fuerza una
-        re-aplicación manual (p.ej. si reinicias la partida del cartucho).
-
-        Elegibilidad: en juego, en el hub (subárea 70) y con acceso al
-        Transerver (0x02104627 bit4) — la firma del estado post-tutorial.
-        Así nunca se dispara en medio de la intro vanilla."""
-        if self.start_state >= 3:
+    async def _start_state_resolve(self, ctx) -> None:
+        """Avanza la máquina one-shot del skip usando el datastore del
+        servidor (clave `mmzx_start_applied_<team>_<slot>`), corra o no el
+        juego. 0=pedir, 1=esperando Get, 2=aplicar (requiere gameplay+hub),
+        3=hecho. /mmzx_start salta directo a 2."""
+        if self.start_state >= 2:
             return
         self.start_key = "mmzx_start_applied_%s_%s" % (ctx.team, ctx.slot)
-
         if self.start_state == 0:
-            # pedir el estado persistente al servidor
             await ctx.send_msgs([
                 {"cmd": "SetNotify", "keys": [self.start_key]},
                 {"cmd": "Get", "keys": [self.start_key]},
             ])
             self.start_state = 1
             return
-
         if self.start_state == 1:
             if self.start_key not in ctx.stored_data:
-                return   # aún sin respuesta del Get
-            if ctx.stored_data[self.start_key]:
-                self.start_state = 3   # ya aplicado en una sesión anterior
                 return
-            self.start_state = 2
+            self.start_state = 3 if ctx.stored_data[self.start_key] else 2
 
-        # start_state == 2: aplicar cuando el juego esté en el estado elegible
+    async def _seed_golden_image(self, ctx) -> None:
+        """Escribe la imagen dorada en 0x021602A8 SOLO fuera de gameplay y
+        SOLO mientras el skip no se ha aplicado (start_state<3). Durante
+        gameplay 0x021602A8 es el buffer de escena vivo -> NUNCA escribir ahí
+        en juego."""
+        if self.start_state >= 3:
+            return
+        try:
+            gs = int.from_bytes((await bizhawk.read(
+                ctx.bizhawk_ctx, [(GAME_STATE, 4, DOM)]))[0], "little")
+        except bizhawk.RequestFailedError:
+            return
+        if gs == STATE_INGAME:      # en juego: no tocar el buffer de escena
+            return
+        await bizhawk.write(ctx.bizhawk_ctx,
+                            [(GOLDEN_IMAGE_ADDR, GOLDEN_IMAGE, DOM)])
+
+    async def _start_state_tick(self, ctx, guard) -> None:
+        """Tutorial-skip (v0.2): fase de APLICAR (start_state==2). Aplica UNA
+        VEZ el estado inicial del YAML (starting_model + starting_transerver)
+        sobre el estado dorado post-tutorial, cuando el juego esté EN JUEGO,
+        en el hub (subárea 70) y con acceso al Transerver (0x02104627 bit4) —
+        la firma del estado post-tutorial. Marca el datastore al terminar.
+        (Los estados 0/1/3 los gestiona _start_state_resolve.)"""
+        if self.start_state != 2:
+            return
+        # aplicar cuando el juego esté en el estado elegible
         try:
             r = await bizhawk.read(ctx.bizhawk_ctx, [
                 (SUBAREA_STABLE, 1, DOM), (0x02104627, 1, DOM)])

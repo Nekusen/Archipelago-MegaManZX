@@ -14,12 +14,67 @@ Layout en 0x1000:
 """
 
 from settings import get_settings
-from worlds.Files import APProcedurePatch, APTokenMixin, APTokenTypes
+from worlds.Files import (APProcedurePatch, APTokenMixin, APTokenTypes,
+                          APPatchExtension)
 
 MMZX_US_MD5 = "88b684b1b3eea885a07625da89f1e5b3"
 AP_MAGIC_OFFSET = 0x1000
 AP_MAGIC = b"MZXAP\x00"
 WORLD_VERSION_INT = 1  # v0.1
+
+# --- Parche de tutorial-skip (v0.2; RE en docs/v02_notes.md §2c/§2e) ---
+# El handler del modo "New Game" (FUN_02022544, entry Thumb en 0x02022544)
+# empieza con `push {r4,lr}` = 10 B5. Lo sustituimos por un branch Thumb a
+# FUN_0202252c (el handler de LOAD: solo setup gráfico + pedir el modo 0x200):
+#   B 0x0202252C desde 0x02022544 = 0xE7F2. Así "New Game" entra a la escena
+#   por la ruta de LOAD (limpia, sin armar el script de intro), usando el
+#   bloque canónico + descriptor que el cliente deja en 0x021602A8 (imagen
+#   dorada). "Continue" (Load real) es un caller DISTINTO del mismo handler y
+#   queda INTACTO. Validado E2E en la ROM parcheada (exp192-196).
+NEWGAME_HANDLER_RAM = 0x02022544
+NEWGAME_REDIRECT_THUMB = b"\xF2\xE7"     # B 0x0202252C
+NEWGAME_HANDLER_ORIG = b"\x10\xB5"       # push {r4,lr}
+
+
+class MMZXPatchExtension(APPatchExtension):
+    game = "Mega Man ZX"
+
+    @staticmethod
+    def patch_arm9_skip(caller: APProcedurePatch, rom: bytes) -> bytes:
+        """Descomprime el ARM9 (BLZ), aplica el redirect del tutorial-skip en
+        FUN_02022544, recomprime y devuelve la ROM. ndspy va vendorizado en
+        worlds/mmzx/ndspy/ (MIT)."""
+        from . import ndspy  # noqa: F401  (paquete vendorizado)
+        from .ndspy import rom as ndsrom
+
+        nds = ndsrom.NintendoDSRom(bytes(rom))
+        arm9 = nds.loadArm9()
+        patched = False
+        for sec in arm9.sections:
+            start = sec.ramAddress
+            end = start + len(sec.data)
+            if start <= NEWGAME_HANDLER_RAM < end:
+                off = NEWGAME_HANDLER_RAM - start
+                cur = bytes(sec.data[off:off + 2])
+                if cur == NEWGAME_REDIRECT_THUMB:
+                    patched = True
+                    break
+                if cur != NEWGAME_HANDLER_ORIG:
+                    raise ValueError(
+                        "MMZX: bytes inesperados en el handler de New Game "
+                        "(0x%08X = %s, esperado %s). ¿ROM incorrecta?"
+                        % (NEWGAME_HANDLER_RAM, cur.hex(),
+                           NEWGAME_HANDLER_ORIG.hex()))
+                buf = bytearray(sec.data)
+                buf[off:off + 2] = NEWGAME_REDIRECT_THUMB
+                sec.data = bytes(buf)
+                patched = True
+                break
+        if not patched:
+            raise ValueError("MMZX: no se localizó la sección del handler de "
+                             "New Game (0x%08X)" % NEWGAME_HANDLER_RAM)
+        nds.arm9 = arm9.save(compress=True)
+        return nds.save()
 
 
 class MMZXPatch(APProcedurePatch, APTokenMixin):
@@ -28,7 +83,11 @@ class MMZXPatch(APProcedurePatch, APTokenMixin):
     patch_file_ending = ".apmmzx"
     result_file_ending = ".nds"
 
-    procedure = [("apply_tokens", ["token_data.bin"])]
+    # 1) redirect del tutorial-skip en el ARM9 (BLZ); 2) marca AP + slot name.
+    procedure = [
+        ("patch_arm9_skip", []),
+        ("apply_tokens", ["token_data.bin"]),
+    ]
 
     @classmethod
     def get_source_data(cls) -> bytes:

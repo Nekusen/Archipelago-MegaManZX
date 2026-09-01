@@ -68,6 +68,7 @@ class MMZXClient(BizHawkClient):
         # diagnóstico de flags (para mapear "misión completada" en vivo)
         self.flag_watch = False
         self.flag_snap: bytes | None = None
+        self.pending_dump = False   # /mmzx_dump: volcar estado del Transerver
 
     async def validate_rom(self, ctx: "BizHawkClientContext") -> bool:
         from CommonClient import logger
@@ -160,6 +161,7 @@ class MMZXClient(BizHawkClient):
             self.added_commands = True
             ctx.command_processor.commands["mmzx_teleport"] = _cmd_teleport
             ctx.command_processor.commands["mmzx_flags"] = _cmd_flags
+            ctx.command_processor.commands["mmzx_dump"] = _cmd_dump
 
         in_game, state_bytes = await self._in_game(ctx)
         if not in_game:
@@ -207,6 +209,11 @@ class MMZXClient(BizHawkClient):
         # ---- diagnóstico: trazar bits que cambian (mapear misión completada) ----
         if self.flag_watch:
             await self._flag_watch_tick(ctx)
+
+        # ---- diagnóstico: volcar estado del Transerver (a petición) ----
+        if self.pending_dump:
+            self.pending_dump = False
+            await self._dump_transerver(ctx)
 
         # ---- conceder items recibidos (idempotente, re-aplicar todo) ----
         await self._grant_items(ctx, guard)
@@ -256,6 +263,42 @@ class MMZXClient(BizHawkClient):
         if changes:
             logger.info("[mmzx_flags] cambios: " + ", ".join(changes))
             self.flag_snap = cur
+
+    async def _dump_transerver(self, ctx) -> None:
+        """Vuelca el estado relevante para el gating del listado de misiones
+        del Transerver: región de flags de misión (0x021045DE..), región del
+        Transerver (0x02104620.., incluye el índice 0x02104630) y decodifica
+        qué misiones tienen su flag de INICIO puesto. Para correlacionar con
+        lo que aparece ofertado en el menú (RE de disponibilidad, v0.2)."""
+        from CommonClient import logger
+        MISSIONS = [  # id -> (byte, bit, nombre) — flag de inicio (mission_table)
+            (0x021045DE, 2, "Catch The Maverick"), (0x021045DE, 5, "Locate Giro"),
+            (0x021045DF, 1, "Pass The Test"), (0x021045E0, 2, "Troop Reinforcement"),
+            (0x021045E1, 3, "Search The Plant"), (0x021045E1, 6, "Find The Survivors"),
+            (0x021045E2, 1, "Fight The Mavericks"), (0x021045E4, 1, "Secure The Biometal"),
+            (0x021045E4, 5, "Save The People"), (0x021045E5, 1, "Recover The Disk"),
+            (0x021045E5, 4, "Attack The Excavators"), (0x021045E6, 0, "Protect The Lab"),
+            (0x021045E6, 3, "Protect HQ"), (0x021045E7, 2, "Stop The Dig"),
+            (0x021045E7, 5, "Repel The Army"), (0x021045E8, 1, "Destroy Model W"),
+        ]
+        try:
+            r = await bizhawk.read(ctx.bizhawk_ctx, [
+                (0x021045DE, 0x0C, DOM), (0x02104620, 0x14, DOM)])
+        except bizhawk.RequestFailedError:
+            return
+        mis_region, ts_region = r[0], r[1]
+
+        def bit_of(addr, bit):
+            base = 0x021045DE
+            return bool(mis_region[addr - base] & (1 << bit)) if 0 <= addr - base < len(mis_region) else False
+
+        started = [name for (a, b, name) in MISSIONS if bit_of(a, b)]
+        logger.info("[mmzx_dump] mision(0x021045DE): " + mis_region.hex(" "))
+        logger.info("[mmzx_dump] transerver(0x02104620): " + ts_region.hex(" "))
+        logger.info("[mmzx_dump] idx 0x02104630 = 0x%02X | acceso 0x02104627/28 = %02X %02X" % (
+            ts_region[0x10], ts_region[0x07], ts_region[0x08]))
+        logger.info("[mmzx_dump] misiones con FLAG de inicio puesto: "
+                    + (", ".join(started) if started else "ninguna"))
 
     async def _teleport(self, ctx, sub, x, y, guard) -> None:
         """Teleport limpio (7 escrituras; docs/client_integration.md §6).
@@ -431,3 +474,16 @@ def _cmd_flags(self, *args) -> None:
         handler.flag_snap = None   # se re-toma en el próximo tick
         logger.info("mmzx_flags: ON (snapshot en el próximo frame de juego; "
                     "ahora entrega la misión y observa los bits 'ON')")
+
+
+def _cmd_dump(self, *args) -> None:
+    """Diagnóstico: vuelca el estado del Transerver (flags de misión +
+    índice de disponibilidad 0x02104630). Úsalo EN el menú del Transerver,
+    con la lista de misiones a la vista, y dime qué misiones salen ofertadas
+    para correlacionar el gating del listado."""
+    from CommonClient import logger
+    handler = self.ctx.client_handler
+    if not isinstance(handler, MMZXClient):
+        return
+    handler.pending_dump = True
+    logger.info("mmzx_dump: encolado (se vuelca en el próximo frame de juego).")

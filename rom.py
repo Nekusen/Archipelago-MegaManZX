@@ -22,18 +22,27 @@ AP_MAGIC_OFFSET = 0x1000
 AP_MAGIC = b"MZXAP\x00"
 WORLD_VERSION_INT = 1  # v0.1
 
-# --- Parche de tutorial-skip (v0.2; RE en docs/v02_notes.md §2c/§2e) ---
-# El handler del modo "New Game" (FUN_02022544, entry Thumb en 0x02022544)
-# empieza con `push {r4,lr}` = 10 B5. Lo sustituimos por un branch Thumb a
-# FUN_0202252c (el handler de LOAD: solo setup gráfico + pedir el modo 0x200):
-#   B 0x0202252C desde 0x02022544 = 0xE7F2. Así "New Game" entra a la escena
-#   por la ruta de LOAD (limpia, sin armar el script de intro), usando el
-#   bloque canónico + descriptor que el cliente deja en 0x021602A8 (imagen
-#   dorada). "Continue" (Load real) es un caller DISTINTO del mismo handler y
-#   queda INTACTO. Validado E2E en la ROM parcheada (exp192-196).
-NEWGAME_HANDLER_RAM = 0x02022544
-NEWGAME_REDIRECT_THUMB = b"\xF2\xE7"     # B 0x0202252C
-NEWGAME_HANDLER_ORIG = b"\x10\xB5"       # push {r4,lr}
+# --- Parche de tutorial-skip (v0.2; RE en docs/v02_notes.md §2c/§2e/§2h) ---
+# El handler de estado FUN_02022544 (entry Thumb 0x02022544) es la ranura 0
+# de la tabla de handlers 0x020D8E28 y lo COMPARTEN "New Game" (game_state
+# 0x10000) y la demo de attract/intro (game_state 0xB00). Por eso un redirect
+# incondicional pisaba también la cinemática de arranque (playtest del
+# usuario). Solución: un CODE-CAVE (Thumb) que solo redirige cuando
+# game_state (0x0215E6D8) == 0x10000 (New Game real): en ese caso salta al
+# handler de LOAD FUN_0202252c (entra a la escena por la ruta de LOAD, limpia,
+# usando el bloque de 0x021602A8 que siembra el cliente); en cualquier otro
+# caso (attract 0xB00, etc.) replica el prologue original (push{r4,lr};
+# mov r4,r0; bl FUN_0202298c) y continúa en 0x0202254C -> intro/attract
+# INTACTA. "Continue" (Load real) usa otra ranura y no se toca.
+# Entry (8 B) @0x02022544: LDR R3,[PC,#0]; BX R3; .word CAVE|1.
+# Bytes ensamblados con keystone (exp206), validados E2E (exp207).
+SKIP_ENTRY_RAM = 0x02022544
+SKIP_ENTRY = bytes.fromhex("004b184761b40c02")        # -> BX 0x020CB460
+SKIP_ENTRY_ORIG = bytes.fromhex("10b5041c00f020fa")   # push;mov r4,r0;bl
+SKIP_CAVE_RAM = 0x020CB460                            # hueco de ceros arm9
+SKIP_CAVE = bytes.fromhex(
+    "06490968064a914205d010b5044657f78dfa044b1847044b1847"
+    "00bfd8e61502000001004d2502022d250202")
 
 # --- Hu-gate (v0.2 EXPERIMENTAL; RE en docs/v02_notes.md §2f) ---
 # Hu está hardcoded: la categoría 0 del chequeo de posesión FUN_0203e414
@@ -90,8 +99,10 @@ class MMZXPatchExtension(APPatchExtension):
                     return
             raise ValueError("MMZX: 0x%08X fuera de las secciones ARM9" % ram)
 
-        # 1) tutorial-skip (siempre)
-        poke(NEWGAME_HANDLER_RAM, NEWGAME_REDIRECT_THUMB, NEWGAME_HANDLER_ORIG)
+        # 1) tutorial-skip (siempre): entry (con guarda de bytes originales)
+        #    + code-cave condicional por game_state
+        poke(SKIP_ENTRY_RAM, SKIP_ENTRY, SKIP_ENTRY_ORIG)
+        poke(SKIP_CAVE_RAM, SKIP_CAVE)
         # 2) Hu-gate (opcional)
         if hu_in_pool:
             poke(HUGATE_ARRAY_RAM, HUGATE_FLAG_INDEX.to_bytes(4, "little"))

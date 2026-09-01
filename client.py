@@ -87,6 +87,11 @@ class MMZXClient(BizHawkClient):
         # cuando sea elegible, 3=hecho. /mmzx_start fuerza el estado 2.
         self.start_state = 0
         self.start_key: str | None = None
+        # el LOAD fuerza el modelo activo a X (0x0214FC74=1) durante la
+        # entrada a la escena, PISANDO el que fija el cliente si llega antes.
+        # Se re-aserta hasta que el valor deseado se mantenga N ticks.
+        self.start_confirm = 0
+        self.start_retries = 0
         # #5 Troop sin ZX: último modelo activo "legítimo" (≠ZX) visto, para
         # revertir si Troop fuerza ZX y el jugador no ha recibido Model ZX.
         self.pre_zx_model = 1
@@ -442,8 +447,20 @@ class MMZXClient(BizHawkClient):
         sub, ts_access = r[0][0], r[1][0]
         if sub != HUB_SUBAREA or not (ts_access & 0x10):
             return
-        ok = await self._apply_start_state(ctx, guard)
-        if ok:
+        desired_active = await self._apply_start_state(ctx, guard)
+        if desired_active is None:
+            return   # escritura no entró (guarda) — reintentar próximo tick
+        if desired_active == -1:      # modelo desconocido: nada que confirmar
+            self.start_confirm = 4
+        # confirmar que el modelo activo se MANTIENE (el load lo pisa con X
+        # una vez durante la entrada; re-asertamos hasta que aguante).
+        try:
+            active_now = (await bizhawk.read(ctx.bizhawk_ctx, [(MODEL, 1, DOM)]))[0][0]
+        except bizhawk.RequestFailedError:
+            return
+        self.start_retries += 1
+        self.start_confirm = self.start_confirm + 1 if active_now == desired_active else 0
+        if self.start_confirm >= 4 or self.start_retries > 600:
             self.start_state = 3
             await ctx.send_msgs([{
                 "cmd": "Set", "key": self.start_key, "default": False,
@@ -451,16 +468,17 @@ class MMZXClient(BizHawkClient):
                 "operations": [{"operation": "replace", "value": True}],
             }])
 
-    async def _apply_start_state(self, ctx, guard) -> bool:
+    async def _apply_start_state(self, ctx, guard):
         """Escribe el modelo inicial (posesión vivo+canónica + modelo activo)
-        y, si el Transerver inicial no es el hub, teleporta. Devuelve True si
-        las escrituras entraron (guarda de gameplay)."""
+        y, si el Transerver inicial no es el hub, teleporta. Devuelve el valor
+        del modelo activo DESEADO (int) si las escrituras entraron, o None si
+        la guarda de gameplay las rechazó (para reintentar)."""
         from CommonClient import logger
         key = str(ctx.slot_data.get("starting_model", "model_x"))
         rec = STARTING_MODELS.get(key)
         if rec is None:
             logger.info("[mmzx] starting_model desconocido: %r (ignorado)" % key)
-            return True
+            return -1   # nada que confirmar; se dará por hecho
 
         # posesiones: revocar X si toca + conceder las del modelo elegido
         bit_ops: list[tuple[int, int, bool]] = []   # (addr, bit, on)
@@ -490,7 +508,7 @@ class MMZXClient(BizHawkClient):
 
         ok = await bizhawk.guarded_write(ctx.bizhawk_ctx, writes, [guard])
         if not ok:
-            return False
+            return None
 
         # Transerver inicial distinto del hub -> teleport (v0.2: solo hub)
         ts_key = str(ctx.slot_data.get("starting_transerver", "guardian_hub"))
@@ -498,9 +516,10 @@ class MMZXClient(BizHawkClient):
         if dest and dest[0] != HUB_SUBAREA:
             await self._teleport(ctx, dest[0], dest[1], dest[2], guard)
 
-        logger.info("[mmzx] estado inicial aplicado: modelo=%s, transerver=%s"
-                    % (key, ts_key))
-        return True
+        if self.start_confirm == 0 and self.start_retries == 0:
+            logger.info("[mmzx] estado inicial aplicado: modelo=%s, transerver=%s"
+                        % (key, ts_key))
+        return rec["active"]
 
     async def _teleport(self, ctx, sub, x, y, guard) -> None:
         """Teleport limpio (7 escrituras; docs/client_integration.md §6).
@@ -706,6 +725,8 @@ def _cmd_start(self, *args) -> None:
     if not isinstance(handler, MMZXClient):
         return
     handler.start_state = 2   # aplicar en el próximo tick elegible
+    handler.start_confirm = 0
+    handler.start_retries = 0
     logger.info("mmzx_start: encolado (se aplica al estar en el hub, en juego).")
 
 

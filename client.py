@@ -41,6 +41,12 @@ HPMAX = 0x0214FC76
 
 CANON_OFF = CANON_BLOCK - LIVE_BLOCK  # 0x21602B4 - 0x21045CC
 
+# #5 Troop sin ZX (exp197-199): posesión de Model ZX = 0x021045D0 bit0;
+# modelo activo ZX = 2.
+ZX_POSSESSION_BYTE = 0x021045D0
+ZX_POSSESSION_BIT = 0
+ZX_ACTIVE = 2
+
 ROM_GAME_CODE = b"ARZE"       # MMZX USA
 
 # Hub por defecto del anti-softlock (z01 = subárea 70)
@@ -81,6 +87,9 @@ class MMZXClient(BizHawkClient):
         # cuando sea elegible, 3=hecho. /mmzx_start fuerza el estado 2.
         self.start_state = 0
         self.start_key: str | None = None
+        # #5 Troop sin ZX: último modelo activo "legítimo" (≠ZX) visto, para
+        # revertir si Troop fuerza ZX y el jugador no ha recibido Model ZX.
+        self.pre_zx_model = 1
 
     async def validate_rom(self, ctx: "BizHawkClientContext") -> bool:
         from CommonClient import logger
@@ -250,6 +259,9 @@ class MMZXClient(BizHawkClient):
 
         # ---- conceder items recibidos (idempotente, re-aplicar todo) ----
         await self._grant_items(ctx, guard)
+
+        # ---- #5: Troop no concede ZX (si no es item AP recibido) ----
+        await self._troop_no_zx(ctx, guard)
 
         # ---- open-world: auto-aceptar la misión de la zona actual ----
         if self.mission_auto_accept:
@@ -595,6 +607,46 @@ class MMZXClient(BizHawkClient):
             # los consumibles solo se marcan como aplicados si la escritura entró
             if ok and new_consumables:
                 self.applied_consumables = len(ctx.items_received)
+
+    async def _troop_no_zx(self, ctx, guard) -> None:
+        """#5: la misión Troop (Model ZX) sigue jugable, pero al completarla NO
+        cambia el modelo a ZX ni lo desbloquea, salvo que Model ZX sea un item
+        AP recibido. Vanilla concede la posesión de ZX (0x021045D0.0) y hace el
+        megamerge; aquí, si Model ZX NO se ha recibido por AP, se limpia esa
+        posesión (vivo+canónica) y, si el modelo activo quedó en ZX, se
+        restaura el último modelo legítimo del jugador. Idempotente y validado
+        (exp198/199). Model ZX como item AP se concede por el mismo bit
+        (_grant_items) → entonces está en 'recibidos' y NO se revierte."""
+        received_zx = any(
+            ITEMS.get("Model ZX", {}).get("id") == net.item
+            for net in ctx.items_received)
+        if received_zx:
+            return
+        try:
+            r = await bizhawk.read(ctx.bizhawk_ctx, [
+                (ZX_POSSESSION_BYTE, 1, DOM), (MODEL, 1, DOM)])
+        except bizhawk.RequestFailedError:
+            return
+        d0, active = r[0][0], r[1][0]
+        if active != ZX_ACTIVE:
+            self.pre_zx_model = active     # trackear modelo legítimo
+        if not (d0 & (1 << ZX_POSSESSION_BIT)):
+            return                          # ZX no concedido: nada que hacer
+        # revertir el grant de Troop
+        canon = ZX_POSSESSION_BYTE + CANON_OFF
+        cur = await bizhawk.read(ctx.bizhawk_ctx, [(canon, 1, DOM)])
+        mask = ~(1 << ZX_POSSESSION_BIT) & 0xFF
+        writes = [
+            (ZX_POSSESSION_BYTE, bytes([d0 & mask]), DOM),
+            (canon, bytes([cur[0][0] & mask]), DOM),
+        ]
+        if active == ZX_ACTIVE:
+            writes.append((MODEL, bytes([self.pre_zx_model]), DOM))
+        ok = await bizhawk.guarded_write(ctx.bizhawk_ctx, writes, [guard])
+        if ok and active == ZX_ACTIVE:
+            from CommonClient import logger
+            logger.info("[mmzx] Troop completada: ZX no concedido (mantengo "
+                        "el modelo %d)." % self.pre_zx_model)
 
     async def _handle_death_link(self, ctx, guard) -> None:
         """SEND: observa la muerte del juego (HP >0 → 0) y la envía.

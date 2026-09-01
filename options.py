@@ -55,6 +55,18 @@ class StartingModel(Choice):
     option_model_lx = 5
     option_model_px = 6
     option_model_ox = 7
+    option_model_hu = 8   # solo con hu_in_pool ON (si no, = none)
+    default = 0
+
+
+class HuInPool(Toggle):
+    """(v0.2 EXPERIMENTAL) Convierte la forma humana (Hu) en un item de la
+    pool en vez de estar siempre disponible. Aplica un parche de ROM que
+    'gatea' Hu tras un flag (como los biometales). ⚠️ RIESGO DE SOFTLOCK:
+    algunas misiones EXIGEN forma humana (p.ej. Pass The Test) — sin la
+    lógica de regiones cableada, puedes quedar atascado si te toca ese
+    contenido antes de recibir Model Hu. Úsalo solo para pruebas."""
+    display_name = "Human Form (Hu) In Pool"
     default = 0
 
 
@@ -84,6 +96,7 @@ class MMZXOptions(PerGameCommonOptions):
     goal: Goal
     starting_model: StartingModel
     starting_transerver: StartingTranserver
+    hu_in_pool: HuInPool
     level4_victories: Level4Victories
     submission_checks: SubmissionChecks
     mission_auto_accept: MissionAutoAccept

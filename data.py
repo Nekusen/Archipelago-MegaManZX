@@ -162,6 +162,7 @@ ITEMS = {
     'Biometal P': {'id': 13664260, 'classification': 'progression', 'grant': ['live_bit', 34620881, 7], 'pooled': True},
     'Biometal O': {'id': 13664261, 'classification': 'progression', 'grant': ['live_bit', 34620882, 1], 'pooled': True},
     'Model X': {'id': 13664262, 'classification': 'progression', 'grant': ['live_bit', 34620879, 7], 'pooled': True},
+    'Model Hu': {'id': 13664263, 'classification': 'progression', 'grant': ['live_bit', 34620893, 0], 'pooled': False},
     'Yellow Card Key': {'id': 13664512, 'classification': 'progression', 'grant': ['live_bit', 34620925, 1], 'pooled': True},
     'Green Card Key': {'id': 13664513, 'classification': 'progression', 'grant': ['live_bit', 34620925, 0], 'pooled': True},
     'Red Card Key': {'id': 13664514, 'classification': 'progression', 'grant': ['live_bit', 34620924, 5], 'pooled': True},
@@ -239,13 +240,14 @@ STARTING_MODELS = {
     'model_lx': {'grant': [[0x021045D1, 3]], 'revoke_x': True, 'active': 5},
     'model_px': {'grant': [[0x021045D1, 7]], 'revoke_x': True, 'active': 6},
     'model_ox': {'grant': [[0x021045D2, 1]], 'revoke_x': True, 'active': 7},
+    'model_hu': {'grant': [[0x021045DD, 0]], 'revoke_x': True, 'active': 0},
 }
 # starting_model key -> item AP equivalente (para precollect)
 STARTING_MODEL_ITEM = {
     'model_x': 'Model X', 'model_zx': 'Model ZX',
     'model_hx': 'Biometal H', 'model_fx': 'Biometal F',
     'model_lx': 'Biometal L', 'model_px': 'Biometal P',
-    'model_ox': 'Biometal O',
+    'model_ox': 'Biometal O', 'model_hu': 'Model Hu',
 }
 # Transervers de arranque: key -> (subárea, x_px, y_px). v0.2:
 # solo el hub (el save dorado ya deja ahí; sin teleport). Crecerá

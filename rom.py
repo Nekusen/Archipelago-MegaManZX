@@ -35,44 +35,64 @@ NEWGAME_HANDLER_RAM = 0x02022544
 NEWGAME_REDIRECT_THUMB = b"\xF2\xE7"     # B 0x0202252C
 NEWGAME_HANDLER_ORIG = b"\x10\xB5"       # push {r4,lr}
 
+# --- Hu-gate (v0.2 EXPERIMENTAL; RE en docs/v02_notes.md §2f) ---
+# Hu está hardcoded: la categoría 0 del chequeo de posesión FUN_0203e414
+# tiene lista NULL en 0x020DEB78 → devuelve el count (1) → siempre poseída.
+# Para hacerla item: apuntar lists[0] a un array de 1 flag [136] (=bit
+# 0x021045DD.0, libre) → Hu exige ese flag. counts[0] ya es 1.
+HUGATE_LISTS0_RAM = 0x020DEB78            # lists[0] (u32, hoy 0)
+HUGATE_ARRAY_RAM = 0x020CB434             # hueco de ceros en arm9 (0x5A0 B)
+HUGATE_FLAG_INDEX = 136                   # 0x021045DD bit0 (VERIFICADO libre)
+HUGATE_LISTS0_ORIG = b"\x00\x00\x00\x00"
+
+CFG_HU_IN_POOL = 0x01                     # byte 0 del config: bit0 = hu_in_pool
+
 
 class MMZXPatchExtension(APPatchExtension):
     game = "Mega Man ZX"
 
     @staticmethod
-    def patch_arm9_skip(caller: APProcedurePatch, rom: bytes) -> bytes:
-        """Descomprime el ARM9 (BLZ), aplica el redirect del tutorial-skip en
-        FUN_02022544, recomprime y devuelve la ROM. ndspy va vendorizado en
-        worlds/mmzx/ndspy/ (MIT)."""
+    def patch_arm9(caller: APProcedurePatch, rom: bytes, cfg_file: str) -> bytes:
+        """Descomprime el ARM9 (BLZ), aplica el redirect del tutorial-skip
+        (siempre) y el Hu-gate (si hu_in_pool), recomprime y devuelve la ROM.
+        ndspy va vendorizado en worlds/mmzx/ndspy/ (MIT)."""
         from . import ndspy  # noqa: F401  (paquete vendorizado)
         from .ndspy import rom as ndsrom
 
+        cfg = caller.get_file(cfg_file)
+        hu_in_pool = bool(cfg[0] & CFG_HU_IN_POOL) if cfg else False
+
         nds = ndsrom.NintendoDSRom(bytes(rom))
         arm9 = nds.loadArm9()
-        patched = False
-        for sec in arm9.sections:
-            start = sec.ramAddress
-            end = start + len(sec.data)
-            if start <= NEWGAME_HANDLER_RAM < end:
-                off = NEWGAME_HANDLER_RAM - start
-                cur = bytes(sec.data[off:off + 2])
-                if cur == NEWGAME_REDIRECT_THUMB:
-                    patched = True
-                    break
-                if cur != NEWGAME_HANDLER_ORIG:
-                    raise ValueError(
-                        "MMZX: bytes inesperados en el handler de New Game "
-                        "(0x%08X = %s, esperado %s). ¿ROM incorrecta?"
-                        % (NEWGAME_HANDLER_RAM, cur.hex(),
-                           NEWGAME_HANDLER_ORIG.hex()))
-                buf = bytearray(sec.data)
-                buf[off:off + 2] = NEWGAME_REDIRECT_THUMB
-                sec.data = bytes(buf)
-                patched = True
-                break
-        if not patched:
-            raise ValueError("MMZX: no se localizó la sección del handler de "
-                             "New Game (0x%08X)" % NEWGAME_HANDLER_RAM)
+
+        def find_sec(ram):
+            for sec in arm9.sections:
+                if sec.ramAddress <= ram < sec.ramAddress + len(sec.data):
+                    return sec
+            raise ValueError("MMZX: 0x%08X fuera de las secciones ARM9" % ram)
+
+        def poke(ram, data, orig=None):
+            sec = find_sec(ram)
+            off = ram - sec.ramAddress
+            cur = bytes(sec.data[off:off + len(data)])
+            if cur == data:
+                return  # idempotente
+            if orig is not None and cur != orig:
+                raise ValueError(
+                    "MMZX: bytes inesperados en 0x%08X (%s, esperado %s). "
+                    "¿ROM incorrecta?" % (ram, cur.hex(), orig.hex()))
+            buf = bytearray(sec.data)
+            buf[off:off + len(data)] = data
+            sec.data = bytes(buf)
+
+        # 1) tutorial-skip (siempre)
+        poke(NEWGAME_HANDLER_RAM, NEWGAME_REDIRECT_THUMB, NEWGAME_HANDLER_ORIG)
+        # 2) Hu-gate (opcional)
+        if hu_in_pool:
+            poke(HUGATE_ARRAY_RAM, HUGATE_FLAG_INDEX.to_bytes(4, "little"))
+            poke(HUGATE_LISTS0_RAM, HUGATE_ARRAY_RAM.to_bytes(4, "little"),
+                 HUGATE_LISTS0_ORIG)
+
         nds.arm9 = arm9.save(compress=True)
         return nds.save()
 
@@ -83,9 +103,9 @@ class MMZXPatch(APProcedurePatch, APTokenMixin):
     patch_file_ending = ".apmmzx"
     result_file_ending = ".nds"
 
-    # 1) redirect del tutorial-skip en el ARM9 (BLZ); 2) marca AP + slot name.
+    # 1) parche del ARM9 (BLZ): skip + Hu-gate opcional; 2) marca AP + slot.
     procedure = [
-        ("patch_arm9_skip", []),
+        ("patch_arm9", ["mmzx_cfg.bin"]),
         ("apply_tokens", ["token_data.bin"]),
     ]
 
@@ -95,7 +115,8 @@ class MMZXPatch(APProcedurePatch, APTokenMixin):
             return f.read()
 
 
-def write_patch_tokens(patch: MMZXPatch, slot_name: str, seed_name: str) -> None:
+def write_patch_tokens(patch: MMZXPatch, slot_name: str, seed_name: str,
+                       hu_in_pool: bool = False) -> None:
     blob = bytearray(0x80)
     blob[0:len(AP_MAGIC)] = AP_MAGIC
     blob[0x08:0x0C] = WORLD_VERSION_INT.to_bytes(4, "little")
@@ -105,3 +126,7 @@ def write_patch_tokens(patch: MMZXPatch, slot_name: str, seed_name: str) -> None
     blob[0x50:0x50 + len(seed)] = seed
     patch.write_token(APTokenTypes.WRITE, AP_MAGIC_OFFSET, bytes(blob))
     patch.write_file("token_data.bin", patch.get_token_binary())
+    # config leído por patch_arm9 (antes de apply_tokens): flags de opciones.
+    cfg = bytearray(4)
+    cfg[0] = CFG_HU_IN_POOL if hu_in_pool else 0
+    patch.write_file("mmzx_cfg.bin", bytes(cfg))

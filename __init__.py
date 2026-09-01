@@ -82,10 +82,18 @@ class MMZXWorld(World):
         fixed = [n for n, v in ITEMS.items()
                  if v["classification"] != "filler" and v.get("pooled", True)]
 
+        # Model Hu: solo entra al pool si hu_in_pool (el parche Hu-gate lo
+        # convierte en item). Sin la opción, Hu es hardcoded (no es item).
+        if self.options.hu_in_pool.value:
+            fixed.append("Model Hu")
+
         # Modelo inicial (tutorial-skip): el item equivalente se pre-concede
         # (start inventory) y sale del pool. Con 'none' no se pre-concede
         # nada y Model X queda en el pool como item encontrable.
-        start_item = STARTING_MODEL_ITEM.get(self.options.starting_model.current_key)
+        start_key = self.options.starting_model.current_key
+        if start_key == "model_hu" and not self.options.hu_in_pool.value:
+            start_key = "none"   # Hu no gateada: 'model_hu' == 'none'
+        start_item = STARTING_MODEL_ITEM.get(start_key)
         if start_item and start_item in fixed:
             fixed.remove(start_item)
             self.multiworld.push_precollected(self.create_item(start_item))
@@ -111,7 +119,8 @@ class MMZXWorld(World):
 
     def generate_output(self, output_directory: str) -> None:
         patch = MMZXPatch(player=self.player, player_name=self.player_name)
-        write_patch_tokens(patch, self.player_name, self.multiworld.seed_name)
+        write_patch_tokens(patch, self.player_name, self.multiworld.seed_name,
+                           hu_in_pool=bool(self.options.hu_in_pool.value))
         out_name = self.multiworld.get_out_file_name_base(self.player)
         patch.write(os.path.join(output_directory, out_name + patch.patch_file_ending))
 
@@ -125,5 +134,6 @@ class MMZXWorld(World):
             "mission_auto_accept": bool(self.options.mission_auto_accept.value),
             "starting_model": self.options.starting_model.current_key,
             "starting_transerver": self.options.starting_transerver.current_key,
+            "hu_in_pool": bool(self.options.hu_in_pool.value),
             "version": "0.1.0",
         }

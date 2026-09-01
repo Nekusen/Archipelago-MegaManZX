@@ -256,12 +256,15 @@ STARTING_TRANSERVERS = {
     'guardian_hub': (70, 288, 351),
 }
 
-# --- Grafo de salas (lógica v0.2; docs/connectivity.md) ---
+# --- Grafo de salas (lógica v0.2; docs/connectivity.md +
+# mapa de interordi para la red de Transervers) ---
 # Aristas DIRIGIDAS. kind: 'door' = puerta física (candidata a
 # entrance-rando futura; nombre estable ligado a la puerta, no al
 # destino), 'internal' = puerta dentro de la misma sala (con key =
 # gate interno; regla coarse en logic.py), 'warp' = red de
-# Transervers (hoy abierta; futuro: items de acceso por destino).
+# Transervers (hoy abierta; futuro: items de acceso por destino),
+# 'save' = pad save-only (sin teleport; NO crea transición),
+# 'curated' = seam real ausente de la tabla (curado del mapa).
 HUB_ROOM = 'z01'
 ROOM_SUBAREA = {
     'a01': 1,
@@ -332,7 +335,11 @@ ROOM_SUBAREA = {
     'z01': 70,
     'z02': 71,
 }
-TRANSERVER_ROOMS = ['a02', 'b02', 'c01', 'c02', 'c03', 'd01', 'd02', 'd03', 'e07', 'f05', 'g05', 'h04', 'i01', 'i03', 'j01', 'k04', 'l04', 'm03', 'n01', 'o02', 'x01']
+TRANSERVER_ROOMS = ['a02', 'b02', 'c01', 'c02', 'd02', 'd03', 'e07', 'f05', 'g05', 'i01', 'i03', 'k04', 'l04', 'm03', 'n01', 'o02', 'x01']
+# Destinos del menú de warp (badges del mapa; candidatos a item
+# 'Transerver Access - <área>') y pads save-only (salas DATA):
+WARP_DESTINATIONS = ['a02', 'b02', 'c02', 'd02', 'e07', 'f05', 'g05', 'i03', 'k04', 'l04', 'm03', 'o02']
+SAVE_ROOMS = ['c03', 'd01', 'h04', 'j01']
 DOORS = [
     {'name': 'a01 door (864,1120)', 'src': 'a01', 'dst': 'a01', 'kind': 'internal', 'key': None, 'pos': [864, 1120]},
     {'name': 'a01 door (1456,1120)', 'src': 'a01', 'dst': 'a04', 'kind': 'door', 'key': None, 'pos': [1456, 1120]},
@@ -380,9 +387,9 @@ DOORS = [
     {'name': 'c02 door (5056,1088)', 'src': 'c02', 'dst': 'z01', 'kind': 'warp', 'key': None, 'pos': [5056, 1088]},
     {'name': 'c02 door (6240,480)', 'src': 'c02', 'dst': 'c02', 'kind': 'internal', 'key': None, 'pos': [6240, 480]},
     {'name': 'c02 door (6800,480)', 'src': 'c02', 'dst': 'c02', 'kind': 'internal', 'key': None, 'pos': [6800, 480]},
-    {'name': 'c03 door (1408,736)', 'src': 'c03', 'dst': 'z01', 'kind': 'warp', 'key': None, 'pos': [1408, 736]},
+    {'name': 'c03 door (1408,736)', 'src': 'c03', 'dst': 'z01', 'kind': 'save', 'key': None, 'pos': [1408, 736]},
     {'name': 'c03 door (2224,720)', 'src': 'c03', 'dst': 'k01', 'kind': 'door', 'key': 'Red Card Key', 'pos': [2224, 720]},
-    {'name': 'd01 door (352,592)', 'src': 'd01', 'dst': 'z01', 'kind': 'warp', 'key': None, 'pos': [352, 592]},
+    {'name': 'd01 door (352,592)', 'src': 'd01', 'dst': 'z01', 'kind': 'save', 'key': None, 'pos': [352, 592]},
     {'name': 'd01 door (1840,752)', 'src': 'd01', 'dst': 'b02', 'kind': 'door', 'key': None, 'pos': [1840, 752]},
     {'name': 'd01 door (4320,544)', 'src': 'd01', 'dst': 'd02', 'kind': 'door', 'key': None, 'pos': [4320, 544]},
     {'name': 'd02 door (288,544)', 'src': 'd02', 'dst': 'd01', 'kind': 'door', 'key': None, 'pos': [288, 544]},
@@ -473,7 +480,7 @@ DOORS = [
     {'name': 'h03 door (288,896)', 'src': 'h03', 'dst': 'h02', 'kind': 'door', 'key': None, 'pos': [288, 896]},
     {'name': 'h03 door (3808,368)', 'src': 'h03', 'dst': 'h04', 'kind': 'door', 'key': None, 'pos': [3808, 368]},
     {'name': 'h04 door (288,944)', 'src': 'h04', 'dst': 'h03', 'kind': 'door', 'key': None, 'pos': [288, 944]},
-    {'name': 'h04 door (1104,944)', 'src': 'h04', 'dst': 'z01', 'kind': 'warp', 'key': None, 'pos': [1104, 944]},
+    {'name': 'h04 door (1104,944)', 'src': 'h04', 'dst': 'z01', 'kind': 'save', 'key': None, 'pos': [1104, 944]},
     {'name': 'i01 door (288,912)', 'src': 'i01', 'dst': 'z01', 'kind': 'warp', 'key': None, 'pos': [288, 912]},
     {'name': 'i01 door (1920,544)', 'src': 'i01', 'dst': 'i02', 'kind': 'door', 'key': None, 'pos': [1920, 544]},
     {'name': 'i01 door (1920,928)', 'src': 'i01', 'dst': 'i01', 'kind': 'internal', 'key': None, 'pos': [1920, 928]},
@@ -487,7 +494,7 @@ DOORS = [
     {'name': 'i03 door (2176,944)', 'src': 'i03', 'dst': 'z01', 'kind': 'warp', 'key': None, 'pos': [2176, 944]},
     {'name': 'j01 door (448,352)', 'src': 'j01', 'dst': 'a04', 'kind': 'door', 'key': 'Blue Card Key', 'pos': [448, 352]},
     {'name': 'j01 door (880,560)', 'src': 'j01', 'dst': 'j01', 'kind': 'internal', 'key': None, 'pos': [880, 560]},
-    {'name': 'j01 door (1216,256)', 'src': 'j01', 'dst': 'z01', 'kind': 'warp', 'key': None, 'pos': [1216, 256]},
+    {'name': 'j01 door (1216,256)', 'src': 'j01', 'dst': 'z01', 'kind': 'save', 'key': None, 'pos': [1216, 256]},
     {'name': 'j01 door (1248,560)', 'src': 'j01', 'dst': 'j02', 'kind': 'door', 'key': None, 'pos': [1248, 560]},
     {'name': 'j02 door (288,752)', 'src': 'j02', 'dst': 'j01', 'kind': 'door', 'key': None, 'pos': [288, 752]},
     {'name': 'j02 door (3008,1056)', 'src': 'j02', 'dst': 'j04', 'kind': 'door', 'key': None, 'pos': [3008, 1056]},
@@ -576,16 +583,15 @@ DOORS = [
     {'name': 'z01 transerver to b02', 'src': 'z01', 'dst': 'b02', 'kind': 'warp', 'key': None, 'pos': None},
     {'name': 'z01 transerver to c01', 'src': 'z01', 'dst': 'c01', 'kind': 'warp', 'key': None, 'pos': None},
     {'name': 'z01 transerver to c02', 'src': 'z01', 'dst': 'c02', 'kind': 'warp', 'key': None, 'pos': None},
-    {'name': 'z01 transerver to c03', 'src': 'z01', 'dst': 'c03', 'kind': 'warp', 'key': None, 'pos': None},
-    {'name': 'z01 transerver to d01', 'src': 'z01', 'dst': 'd01', 'kind': 'warp', 'key': None, 'pos': None},
     {'name': 'z01 transerver to d02', 'src': 'z01', 'dst': 'd02', 'kind': 'warp', 'key': None, 'pos': None},
     {'name': 'z01 transerver to e07', 'src': 'z01', 'dst': 'e07', 'kind': 'warp', 'key': None, 'pos': None},
     {'name': 'z01 transerver to f05', 'src': 'z01', 'dst': 'f05', 'kind': 'warp', 'key': None, 'pos': None},
-    {'name': 'z01 transerver to h04', 'src': 'z01', 'dst': 'h04', 'kind': 'warp', 'key': None, 'pos': None},
     {'name': 'z01 transerver to i03', 'src': 'z01', 'dst': 'i03', 'kind': 'warp', 'key': None, 'pos': None},
-    {'name': 'z01 transerver to j01', 'src': 'z01', 'dst': 'j01', 'kind': 'warp', 'key': None, 'pos': None},
     {'name': 'z01 transerver to m03', 'src': 'z01', 'dst': 'm03', 'kind': 'warp', 'key': None, 'pos': None},
     {'name': 'z01 transerver to n01', 'src': 'z01', 'dst': 'n01', 'kind': 'warp', 'key': None, 'pos': None},
     {'name': 'z01 transerver to o02', 'src': 'z01', 'dst': 'o02', 'kind': 'warp', 'key': None, 'pos': None},
     {'name': 'z01 transerver to x01', 'src': 'z01', 'dst': 'x01', 'kind': 'warp', 'key': None, 'pos': None},
+    {'name': 'a04 curated to j01', 'src': 'a04', 'dst': 'j01', 'kind': 'curated', 'key': 'Blue Card Key', 'pos': None},
+    {'name': 'b02 curated to d01', 'src': 'b02', 'dst': 'd01', 'kind': 'curated', 'key': None, 'pos': None},
+    {'name': 'e07 curated to e08', 'src': 'e07', 'dst': 'e08', 'kind': 'curated', 'key': None, 'pos': None},
 ]

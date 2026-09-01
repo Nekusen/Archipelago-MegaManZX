@@ -15,7 +15,8 @@ Alcance de esta pasada (decisión del usuario, 2026-09-01):
     la PUERTA (sala + posición), nunca el destino.
 
 Capas de este módulo:
-  EXTRA_EDGES        aristas curadas que faltan en la tabla de puertas.
+  (las aristas curadas que faltan en la tabla viven en data.DOORS con
+   kind='curated' — las emite gen_ap_data.py, única fuente de verdad)
   internal_gate_rule regla coarse por sala: si una sala tiene puertas
                      INTERNAS con llave (c01/c02/g02/k04/m01/n01), TODA
                      location de esa sala exige esas llaves. Sobre-
@@ -32,15 +33,12 @@ import re
 
 from .data import DOORS, HUB_ROOM, ROOM_SUBAREA, STARTING_TRANSERVERS
 
-# Transiciones reales sin registro en la tabla de puertas (curadas a mano).
-# kind 'fall' = caída unidireccional. status HIPÓTESIS hasta verificarla
-# con el harness (teleport + drop); ver docs/v02_notes.md.
-EXTRA_EDGES = [
-    {"name": "e07 fall to e08", "src": "e07", "dst": "e08",
-     "kind": "fall", "key": None, "pos": None},
-]
+ALL_EDGES = DOORS
 
-ALL_EDGES = DOORS + EXTRA_EDGES
+# kinds que NO crean transición en el grafo de regiones:
+#   internal = puerta dentro de la misma sala (con llave = gate interno)
+#   save     = pad save-only (sala DATA: guardar/misiones, sin teleport)
+NON_TRANSITION_KINDS = ("internal", "save")
 
 ROOM_NAMES = sorted({d["src"] for d in ALL_EDGES} | {d["dst"] for d in ALL_EDGES})
 

@@ -22,8 +22,8 @@ from BaseClasses import Region
 
 from .data import LOCATIONS
 from .locations import MMZXLocation, locations_for_options
-from .logic import (ALL_EDGES, ROOM_NAMES, door_rule, internal_gate_rule,
-                    label_rule, starting_room)
+from .logic import (ALL_EDGES, NON_TRANSITION_KINDS, ROOM_NAMES, door_rule,
+                    internal_gate_rule, label_rule, starting_room)
 
 
 def create_regions(world) -> None:
@@ -37,9 +37,10 @@ def create_regions(world) -> None:
     menu.connect(rooms[starting_room(world)], "Start")
     menu.connect(field, "Field access")
 
-    # transiciones: una entrance por arista dirigida no-interna
+    # transiciones: una entrance por arista dirigida (salvo internas y
+    # pads save-only, que no llevan a ninguna parte)
     for d in ALL_EDGES:
-        if d["kind"] == "internal":
+        if d["kind"] in NON_TRANSITION_KINDS:
             continue
         rooms[d["src"]].connect(rooms[d["dst"]], d["name"], door_rule(d, player))
 

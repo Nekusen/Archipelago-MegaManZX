@@ -2,7 +2,8 @@
 
 from dataclasses import dataclass
 
-from Options import Choice, Toggle, DeathLink, PerGameCommonOptions, StartInventoryPool
+from Options import (Choice, DeathLink, DefaultOnToggle, PerGameCommonOptions,
+                     StartInventoryPool, Toggle)
 
 
 class Character(Choice):
@@ -79,15 +80,16 @@ class StartingTranserver(Choice):
     default = 0
 
 
-class MissionAutoAccept(Toggle):
-    """Modo 'open world' de misiones (v0.2, EXPERIMENTAL). Con ON, el cliente
-    ACEPTA automáticamente la misión de la zona en la que entras (sin pasar
-    por el Transerver), para poder hacerlas en cualquier orden. Las misiones
-    que el juego lanza solas por historia (Model ZX en la base Guardian, y
-    Protect HQ) se disparan igual, no se auto-aceptan. Con OFF, aceptación
-    manual en el Transerver (vanilla)."""
+class MissionAutoAccept(DefaultOnToggle):
+    """Modo 'open world' de misiones (v0.2). Con ON, el cliente ACEPTA
+    automáticamente la misión de la zona en la que entras (sin pasar por el
+    Transerver), para poder hacerlas en cualquier orden. Las misiones que el
+    juego lanza solas por historia (Model ZX en la base Guardian, y Protect
+    HQ) se disparan igual, no se auto-aceptan. Con OFF, aceptación manual en
+    el Transerver (vanilla) — ⚠️ la lógica de regiones ASUME auto-accept: en
+    manual, la disponibilidad de misiones sigue la secuencia de historia del
+    juego (N→N+4), que la lógica no modela."""
     display_name = "Mission Auto-Accept (Open World)"
-    default = 0
 
 
 @dataclass

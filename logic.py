@@ -51,11 +51,17 @@ _INTERNAL_GATES: dict[str, tuple[str, ...]] = {r: tuple(ks) for r, ks in _tmp.it
 del _tmp
 
 
-def internal_gate_rule(room: str, player: int):
-    """Regla para locations FÍSICAS de una sala con gate interno (o None)."""
+def internal_gate_rule(room: str, player: int, location: str = None):
+    """Regla coarse para locations FÍSICAS de una sala con gate interno (o
+    None). Las locations listadas en logic_rules.INTERNAL_GATE_EXEMPT quedan
+    fuera (ya analizadas: la llave interna no las afecta)."""
     keys = _INTERNAL_GATES.get(room)
     if not keys:
         return None
+    if location is not None:
+        from .logic_rules import INTERNAL_GATE_EXEMPT
+        if location in INTERNAL_GATE_EXEMPT:
+            return None
     return lambda state: state.has_all(keys, player)
 
 
@@ -173,6 +179,8 @@ def _parse_atom(tokens, i):
         return _parse(_tokens(MACROS[up]))[0], i + 1
     if up == "TRUE":
         return ("true",), i + 1
+    if up in ("FALSE", "NEVER"):
+        return ("false",), i + 1
     if up in ABILITY_ITEM:
         return ("item", ABILITY_ITEM[up]), i + 1
     raise ValueError("átomo desconocido %r (HU/X/ZX/HX/FX/LX/PX/OX, llaves, MODEL, ALL6, ANY)" % t)
@@ -191,6 +199,8 @@ def compile_rule(expr, player: int, hu_in_pool: bool):
         k = node[0]
         if k == "true":
             return None
+        if k == "false":
+            return lambda state: False
         if k == "item":
             name = node[1]
             if name == "Model Hu" and not hu_in_pool:

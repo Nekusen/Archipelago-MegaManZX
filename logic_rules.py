@@ -48,8 +48,52 @@ ROOM_RULES = {
 # Requisito extra de una transicion concreta. Clave "src->dst" (todas las
 # aristas entre esas salas) o el nombre exacto de la arista en data.DOORS.
 DOOR_RULES = {
+    # --- Area A ---
+    "a01->a03": "MODEL",   # ? puerta Amarilla en lo alto del muro derecho
+                           # (tile y=47 vs suelo 69): hay que escalar
+    "a03->h04": "FX",      # ? Fire thorns (118,55) en el pasillo a la
+                           # puerta Purpura (131,55): quemarlas
+    "a04->m01": "MODEL&RED",   # ? puerta en la estructura alta (54,20): se
+                               # sube por escalera y columna; y nada mas
+                               # entrar en M-1 esta la puerta Roja interna
+                               # (56,46) + el Orehawk (miniboss)
+    # --- Area B ---
+    "b03->f01": "MODEL",   # ? caverna ascendente con pinchos hasta F-1
+    "b02->d01": "MODEL",   # ? el Rayfly (miniboss) esta en el tramo
+                           # derecho de B-2, antes del corredor a D-1
+    # --- Area H ---
+    "h02->h03": "MODEL",   # ? Powmettaur (miniboss) en el foso central
+    "h02->l01": "MODEL",   # ? de H-2; ambas salidas quedan detras
+    # --- Area I ---
+    "i02->i04": "MODEL",   # ? Diadrake (miniboss) nada mas entrar en I-4
+    "i02->i05": "MODEL",   # ? Steephinx (miniboss) nada mas entrar en I-5
+    # --- Area J (fondo del lago: todo bajo el agua) ---
+    "j01->a04": "MODEL",   # ? subir 13 tiles bajo el agua hasta la puerta
+                           # Azul (28,22): escalar paredes
+    "j02->j03": "MODEL",   # ? Tentalamia (miniboss) nada mas entrar en J-3
+    # --- Area K (volcan) ---
+    "k02->k03": "MODEL",   # Lava Demon (miniboss) en K-2: hay que matarlo
+                           # para caer al subterraneo
+    "k03->k05": "MODEL",   # ? subir por el pozo de K-3 hasta la salida alta
+    # --- Area D ---
+    "d01->d02": "MODEL",   # ? el puente de la autopista se baja con un
+                           # switch (Bridge switch (141,34)): hay que golpear
+    # --- Area E ---
+    "e02->e04": "MODEL",   # ? pozo de E-2: barras electricas giratorias y
+    "e02->e01": "MODEL",   # ? sus botones (Electric Rod button): golpear
+    "e05->e07": "MODEL",   # ? plataformas electrificadas (Electric
+                           # Platform x10) antes de la salida a E-7
+    # --- Area F (lago helado): Ice Cube / Box se rompen atacando ---
+    # NOTA: en vanilla F se puede hacer ANTES de tener FX (misiones 5-12 a
+    # eleccion), asi que el hielo de la ruta principal NO exige FX.
+    "f01->f02": "MODEL",   # ? cubos/cajas de hielo tapando la puerta
+    "f02->f03": "MODEL",   # ? cubos en el pasillo superior (109-111,32)
+    "f03->f04": "MODEL",   # ? cubos junto a la puerta Azul (27-29,98-100)
+    "f04->f05": "MODEL",   # ? filas de cubos/cajas a lo largo de F-4
+    # --- Area C ---
     "c01->c02": "HU|HX",   # bloque derecho de C-1: hueco de 1 tile (Hu) o
                            # saltarlo por encima + gap grande (Hx) [usuario]
+    # --- Area D ---
     "d02->d04": "ALL6",    # ? puerta de Slither Inc. HQ (passwords / 6
                            # biometales en vanilla; RE pendiente del check)
 }
@@ -58,17 +102,182 @@ DOOR_RULES = {
 # entrar desde la sala, "back": requisito para volver (default ANY),
 # "locations": [locations fisicas que se mueven a la sub-region]}.
 SUBREGIONS = {
-    # A-1: las cuevas de arriba a la derecha se entran por las puertas
-    # internas (864,1120)->(6688,352) y (2160,896)->(7200,352); la segunda
-    # alberga Disk E-1 + refills. Requisito de acceso A CONFIRMAR.
-    "a01/cuevas": {"parent": "a01", "req": "MODEL",   # ? (llega Hu?)
-                   "locations": ["Disk E-1"]},
+    # A-1: dos cuevas (sub-salas) por puertas internas: (54,70)->(418,22) y
+    # (135,56)->(450,22). Disk E-1 (477,21) esta en la segunda, cuya puerta
+    # tiene "Fire thorns" (135,55) delante -> quemarlas con FX.
+    "a01/cueva-e1": {"parent": "a01", "req": "FX",   # ?
+                     "locations": ["Disk E-1"]},
+    # A-2: el tramo inferior (llegada desde A-1) queda separado del resto
+    # por el miniboss Giga Aspis: hay que matarlo para pasar (Hu no ataca).
+    "a02/sur": {"parent": "a02", "req": "MODEL", "back": "MODEL",   # ?
+                "doors_in": ["a01->a02"], "doors_out": ["a02->a01"]},
+    # E-7: sala del jefe Hivolt. Desde E-5 se llega al lado oeste; el pad
+    # de Transerver y la salida a E-8/I-1 estan al otro lado del jefe.
+    "e07/oeste": {"parent": "e07", "req": "MODEL", "back": "MODEL",
+                  "doors_in": ["e05->e07"], "doors_out": ["e07->e05"]},
+    # F-5: sala del jefe Lurerre; el pad de Transerver esta al otro lado.
+    "f05/oeste": {"parent": "f05", "req": "MODEL", "back": "MODEL",
+                  "doors_in": ["f04->f05"], "doors_out": ["f05->f04"]},
+    # G-5: Fistleo al fondo; el pad de Transerver queda detras del jefe
+    # (la parte principal, con E-32 y la sub-sala de B-11, es la entrada).
+    "g05/pad": {"parent": "g05", "req": "MODEL", "back": "MODEL",
+                "doors_in": ["z01->g05"], "doors_out": ["g05->z01"]},
+    # H-4: Purprill en el pasillo de entrada desde H-3; la torre (B-7, sala
+    # DATA, llegada desde A-3 por la puerta Purpura) queda al otro lado.
+    "h04/oeste": {"parent": "h04", "req": "MODEL", "back": "MODEL",
+                  "doors_in": ["h03->h04"], "doors_out": ["h04->h03"]},
+    # I-3: Hurricaune en el pasillo inferior; el pad esta al fondo derecho.
+    "i03/pad": {"parent": "i03", "req": "MODEL", "back": "MODEL",
+                "doors_in": ["z01->i03"], "doors_out": ["i03->z01"]},
+    # J-5: Leganchor nada mas entrar desde J-3; B-16 y la salida a J-4
+    # quedan detras del jefe.
+    "j05/entrada": {"parent": "j05", "req": "MODEL", "back": "MODEL",
+                    "doors_in": ["j03->j05"], "doors_out": ["j05->j03"]},
+    # K-1: el SUBTERRANEO (Sub Tank, control de lava, puerta a K-5) solo se
+    # alcanza cayendo a K-2 -> K-3 -> subiendo K-5; desde la superficie no
+    # hay paso directo (FALSE). De vuelta a la superficie hay un ascensor.
+    "k01/subterraneo": {"parent": "k01", "req": "FALSE", "back": "ANY",
+                        "doors_in": ["k05->k01"], "doors_out": ["k01->k05"],
+                        "locations": ["Sub Tank - Area K01"]},
+    # K-3: se llega ARRIBA (caida desde K-2; salida a K-5 por el pasillo
+    # superior); el fondo (M-9, E-43, llegada desde K-4) se alcanza cayendo
+    # por el pozo y se vuelve a subir escalando.
+    "k03/fondo": {"parent": "k03", "req": "ANY", "back": "MODEL",   # ?
+                  "doors_in": ["k04->k03"],
+                  "locations": ["Disk M-9", "Disk E-43"]},
+    # K-4: Flammole al fondo derecho; el pad de Transerver queda detras.
+    "k04/pad": {"parent": "k04", "req": "MODEL", "back": "MODEL",
+                "doors_in": ["z01->k04"], "doors_out": ["k04->z01"]},
+    # L-4: Protectos al fondo; el pad queda detras del jefe.
+    "l04/pad": {"parent": "l04", "req": "MODEL", "back": "MODEL",
+                "doors_in": ["z01->l04"], "doors_out": ["l04->z01"]},
+    # M-3: Pandora en el pasillo inferior; el pad (y el corredor a N-1)
+    # quedan detras.
+    "m03/pad": {"parent": "m03", "req": "MODEL", "back": "MODEL",
+                "doors_in": ["z01->m03"], "doors_out": ["m03->z01"]},
+    # O-2: el pad esta a mitad de sala; Tentalamia (miniboss) y luego
+    # Pandora & Prometheus bloquean el tramo este con B-14.
+    "o02/este": {"parent": "o02", "req": "MODEL", "back": "MODEL",
+                 "locations": ["Disk B-14"]},
+}
+
+# Locations FISICAS de salas con puerta interna con llave a las que esa
+# llave NO afecta (analizadas): quedan fuera de la regla coarse.
+INTERNAL_GATE_EXEMPT = {
+    "Disk E-26",   # K-4: extremo oeste del pasillo central, sin puerta Blanca
 }
 
 # Requisito adicional por location (AND con el de su sala/sub-region).
 LOCATION_RULES = {
     # --- A-1 [usuario]: O-9 esta en el camino central de 1 tile ---
     "Disk O-9": "HU",
+    # --- Area A (interordi) ---
+    "Disk E-20": "MODEL",     # ? A-4: arriba a la derecha de la estructura
+                              # alta (escalera + columna vertical)
+    # --- Area B (interordi) ---
+    "Disk E-24": "MODEL",     # ? B-1: repisa elevada al fondo derecho
+    "Disk E-17": "MODEL",     # ? B-2: en lo alto de un pilar (tile y=29)
+    "Disk B-1": "MODEL",      # ? B-2: cima de la estructura derecha (y=28)
+    "Disk E-11": "MODEL",     # ? B-4: estructura alta arriba a la derecha
+    "Quest - Purify The Lakes": "LX&MODEL",  # ? B-4: 5 Pure Water Tanks en
+                                             # el lago (bajo el agua; romperlos)
+    # --- Area C (interordi) ---
+    "Disk E-49": "MODEL",     # ? C-3: repisa alta a la izquierda (y=34)
+    # --- Area E (interordi) ---
+    "Disk E-8": "MODEL",      # ? E-4: arriba a la derecha, por la ruta de
+                              # los engranajes hacia E-3 (nota interordi)
+    "Disk E-37": "MODEL",     # ? E-5: pasadas las plataformas electricas
+    # E-4 (Sub Tank) ya cubierto por Steam; E-21 abajo por escalera; M-5
+    # arriba de la escalera larga de E-5; B-8 en el suelo de E-8.
+    # --- Area F (interordi + catalogo) ---
+    "Disk E-39": "MODEL",     # ? F-1: repisa en la cueva izquierda (y=34)
+    "Disk E-15": "MODEL",     # ? F-2: laberinto inferior (cubos (75,54-62))
+    "Disk E-44": "LX",        # ? F-2: zona baja entre filas de pinchos
+                              # bajo el agua (Steam: pinchos "barely
+                              # underwater" en F-2)
+    "Disk E-48": "MODEL",     # ? F-3: arriba del todo tras una fila de
+                              # cubos (37-45,30) y cajas (46-48,33-35)
+    "Disk E-2": "MODEL",      # ? F-3: el disco esta ENTRE cubos (122-124,39)
+    "Disk B-15": "LX",        # F-4: "Use Model Lx's charged attack to make
+                              # a platform and get this disk" (interordi)
+    "Disk E-45": "MODEL",     # ? F-4: cubos pegados (92-94,32)
+    # --- Area G (interordi): los fuegos se pueden atravesar (G puede ser
+    #     la primera mision vanilla); Hx los apaga (nota interordi) ---
+    "Disk B-11": "HX",        # ? G-5: sub-sala (puerta (112,43)) tapada
+                              # por fuego; interordi apunta con flecha
+    "Quest - Find The Boy": "HU",   # escondite con los ninos (hablar)
+    # E-38 en la calle de G-1; E-16 arriba del edificio (rampas); E-9 en
+    # G-3; E-32 al pie de la cuesta de G-5 -> sin requisito.
+    # --- Area H (interordi): E-10/M-8 en H-3 y B-7 en la torre de H-4
+    #     se alcanzan por escaleras -> sin requisito propio ---
+    # --- Area I (interordi) ---
+    "Disk E-33": "HX",        # I-2: "Use Model Hx hover ability to get
+                              # across the spikes and get the disk"
+    "Disk M-1": "HX",         # I-4: "Use Model Hx's electric spark to
+    "Disk E-14": "HX",        # I-4:  power the platforms and get the disks"
+    "Disk M-6": "MODEL",      # ? I-5: en lo alto del tronco de un arbol
+    "Disk E-13": "MODEL",     # ? I-5: estructura derecha (y=32), escalera
+    # E-3 (I-1) en sub-sala por puerta del pasillo inferior; E-34 (I-2),
+    # B-9 (I-3), E-23 (I-5) a pie de suelo -> sin requisito.
+    # --- Area J (interordi): fondo del lago ---
+    "Disk E-7": "LX",         # ? J-2: hueco alto con fila de pinchos bajo
+                              # el agua (1360-1450,85)
+    "Disk E-36": "MODEL",     # ? J-3: en lo alto de la estructura derecha
+    # Life Up J-1 (Steam, LX) ya cubierto; M-7 (J-3) en un hueco al que se
+    # cae; B-16 (J-5) tras Leganchor por escalera -> sin requisito propio.
+    # --- Area K (interordi + Steam) ---
+    "Disk E-22": "MODEL",     # ? K-1: estructura alta a la derecha (y=38)
+    "Disk E-35": "MODEL",     # ? K-3: repisa a media altura del pozo
+    "Disk B-12": "WHITE",     # K-4: tras la puerta interna Blanca (169,71)
+                              # -> aterriza en (78,117), junto a B-12
+    # E-26 (K-4, pasillo central) y E-25 (K-5, escalera) sin requisito.
+    # --- Area L (interordi): almacenes con contenedores (Rayfly) ---
+    "Disk E-18": "HX",        # ? L-1: plataforma flotante muy alta (y=33
+                              # con suelo en 47); nada que escalar
+    "Disk E-41": "HX",        # ? L-2: idem (y=29)
+    # E-5 (L-3) y B-13 (L-4) a pie de suelo -> sin requisito propio.
+    "Quest - Deliver The Aid Kit": "MODEL",   # destruir contenedores en L
+    # --- Area M (interordi) ---
+    "Disk M-2": "MODEL",      # ? M-1: sub-sala por la puerta (282,46);
+                              # el disco 5 tiles por encima del aterrizaje
+    "Disk E-50": "FX",        # M-1: "Use Model Fx Buster Edit to hit this
+                              # switch" (sub-sala por la puerta (316,30))
+    # B-10 (M-3) a pie de suelo antes de Pandora -> sin requisito.
+    # --- Area N (interordi) ---
+    "Disk B-2": "MODEL",      # ? N-1: zona superior con plataformas que
+                              # desaparecen y pinchos (gate Blanco coarse
+                              # de la sala tambien aplica: sobre-estricto)
+    # --- Area O (interordi): HX por ROOM_RULES ---
+    # E-42 en la calzada y M-3 debajo (se cae) -> sin requisito propio.
+    # --- Area X (Guardian base): todo conectado por ascensor/puertas;
+    #     los discos O-* de X-1/X-2/X-3 sin requisito ---
+    # --- Quests con objeto en zonas dificiles ---
+    "Quest - Find The Pearl": "LX",       # ? F-2: la Cold Pearl esta bajo
+                                          # el agua del lago
+    # --- Area D (interordi) ---
+    # D-1: E-12 y el Life Up estan bajo la carretera (se cae por los
+    # huecos); E-19/E-40/O-12/B-4 en la calzada; M-4 bajo la autopista de
+    # D-2 (se cae); B-5/B-6 en los pasillos de la torre -> sin requisito.
+    # --- Combate: Hu NO ataca. Jefes, minibosses, botones y switches
+    #     exigen un modelo. Toda mision/biometal implica pelear. ---
+    "Obtain Biometal H": "MODEL",
+    "Obtain Biometal L": "MODEL",
+    "Obtain Biometal F": "MODEL",
+    "Obtain Biometal P": "MODEL",
+    "Mission - Catch The Maverick": "MODEL",
+    "Mission - Locate Giro": "MODEL",
+    "Mission - Troop Reinforcement": "MODEL",
+    "Mission - Search The Plant": "MODEL",
+    "Mission - Find The Survivors": "MODEL",
+    "Mission - Secure The Biometal": "MODEL",
+    "Mission - Save The People": "MODEL",
+    "Mission - Recover The Disk": "MODEL",
+    "Mission - Attack The Excavators": "MODEL",
+    "Mission - Protect The Lab": "MODEL",
+    "Mission - Stop The Dig": "MODEL",
+    "Mission - Repel The Army": "MODEL",
+    "Mission - Protect Hq": "MODEL",
+    "Mission - Destroy Model W": "MODEL",
     # --- Guia Steam (Life Ups / Sub Tanks) ---
     "Life Up - Area D01": "MODEL",          # "any transformation"
     "Life Up - Area F02": "HX&FX",          # bloques de hielo + salto alto
@@ -79,6 +288,6 @@ LOCATION_RULES = {
     "Sub Tank - Area K01": "HX&FX&LX&PX",   # el mas largo (techos, bloques,
                                             # boton oculto, nado)
     # --- Misiones que exigen forma Hu para hablar con NPCs [usuario] ---
-    "Mission - Pass The Test": "HU",
-    "Mission - Fight The Mavericks": "HU",
+    "Mission - Pass The Test": "HU&MODEL",        # ? (hablar + superar)
+    "Mission - Fight The Mavericks": "HU&MODEL",  # hablar con NPCs + pelear
 }

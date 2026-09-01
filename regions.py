@@ -47,18 +47,12 @@ def create_regions(world) -> None:
     menu.connect(rooms[start], "Start", rule(ROOM_RULES.get(start)))
     menu.connect(field, "Field access")
 
-    # transiciones: una entrance por arista dirigida (salvo internas y
-    # pads save-only). Regla = llave & regla de entrada a la sala destino
-    # & regla curada de la transición.
-    for d in ALL_EDGES:
-        if d["kind"] in NON_TRANSITION_KINDS:
-            continue
-        extra = DOOR_RULES.get(d["name"], DOOR_RULES.get("%s->%s" % (d["src"], d["dst"])))
-        r = and_rules(door_rule(d, player), rule(ROOM_RULES.get(d["dst"])), rule(extra))
-        rooms[d["src"]].connect(rooms[d["dst"]], d["name"], r)
-
-    # sub-regiones curadas (partes de una sala con requisito propio)
+    # sub-regiones curadas (partes de una sala con requisito propio). Una
+    # sub-región puede además RECIBIR puertas (doors_in: la puerta aterriza
+    # en ella, no en la sala) y EMITIR puertas (doors_out: la puerta sale
+    # de ella) — p. ej. el lado de una sala que queda detrás de un jefe.
     loc_region = {}   # location -> nombre de sub-región
+    door_in, door_out = {}, {}   # "src->dst" o nombre de arista -> sub-región
     for name, s in SUBREGIONS.items():
         sub = Region(name, player, mw)
         mw.regions.append(sub)
@@ -68,6 +62,23 @@ def create_regions(world) -> None:
         rooms[name] = sub
         for loc in s.get("locations", []):
             loc_region[loc] = name
+        for k in s.get("doors_in", []):
+            door_in[k] = name
+        for k in s.get("doors_out", []):
+            door_out[k] = name
+
+    # transiciones: una entrance por arista dirigida (salvo internas y
+    # pads save-only). Regla = llave & regla de entrada a la sala destino
+    # & regla curada de la transición.
+    for d in ALL_EDGES:
+        if d["kind"] in NON_TRANSITION_KINDS:
+            continue
+        pair = "%s->%s" % (d["src"], d["dst"])
+        extra = DOOR_RULES.get(d["name"], DOOR_RULES.get(pair))
+        r = and_rules(door_rule(d, player), rule(ROOM_RULES.get(d["dst"])), rule(extra))
+        src = rooms[door_out.get(d["name"], door_out.get(pair, d["src"]))]
+        dst = rooms[door_in.get(d["name"], door_in.get(pair, d["dst"]))]
+        src.connect(dst, d["name"], r)
 
     # locations
     active = locations_for_options(
@@ -78,7 +89,7 @@ def create_regions(world) -> None:
         room = v.get("room")
         if room in rooms:
             parent = rooms[loc_region.get(name, room)]
-            base = internal_gate_rule(room, player)
+            base = internal_gate_rule(room, player, name)
         else:
             parent, base = field, label_rule(room, player)
         loc = MMZXLocation(player, name, v["id"], parent)

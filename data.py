@@ -594,4 +594,6 @@ DOORS = [
     {'name': 'a04 curated to j01', 'src': 'a04', 'dst': 'j01', 'kind': 'curated', 'key': 'Blue Card Key', 'pos': None, 'dst_pos': None},
     {'name': 'b02 curated to d01', 'src': 'b02', 'dst': 'd01', 'kind': 'curated', 'key': None, 'pos': None, 'dst_pos': None},
     {'name': 'e07 curated to e08', 'src': 'e07', 'dst': 'e08', 'kind': 'curated', 'key': None, 'pos': None, 'dst_pos': None},
+    {'name': 'k01 fall to k02', 'src': 'k01', 'dst': 'k02', 'kind': 'curated', 'key': None, 'pos': None, 'dst_pos': None},
+    {'name': 'k02 fall to k03', 'src': 'k02', 'dst': 'k03', 'kind': 'curated', 'key': None, 'pos': None, 'dst_pos': None},
 ]

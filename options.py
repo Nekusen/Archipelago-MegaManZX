@@ -22,16 +22,19 @@ class Goal(Choice):
 
 class Level4Victories(Toggle):
     """Añade como checks las 'Level 4 Victory' de cada Pseudoroid
-    (derrotarlos con rango máximo)."""
+    (derrotarlos con rango máximo). ⚠️ v0.1: aún SIN EFECTO — la
+    detección de Level 4 no está implementada todavía (llega en una
+    actualización)."""
     display_name = "Level 4 Victory Checks"
 
 
 class SubmissionChecks(Toggle):
-    """Incluye las submisiones de NPCs (quests) como checks. En v0.1 su
-    detección es PROVISIONAL (pendiente de validar la bandera de
-    completada)."""
+    """Incluye las submisiones de NPCs (quests) como checks. ⚠️ v0.1: aún
+    SIN EFECTO — la detección de 'quest completada' no está validada, así
+    que las quests se excluyen del seed por ahora (se añadirán cuando su
+    detección esté lista, sin romper seeds antiguas)."""
     display_name = "Submission Checks"
-    default = 1
+    default = 0
 
 
 @dataclass

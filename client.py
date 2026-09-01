@@ -5,6 +5,7 @@ Dominio de memoria: "ARM9 System Bus" con direcciones absolutas 0x02xxxxxx
 (verificar el mapeo del core melonDS al montar; ver playbook §1).
 """
 
+import time
 from typing import TYPE_CHECKING, Any
 
 import worlds._bizhawk as bizhawk
@@ -44,6 +45,11 @@ class MMZXClient(BizHawkClient):
         super().__init__()
         self.local_checked: set[int] = set()
         self.applied_consumables = 0  # high-water de items consumibles aplicados
+        self.death_link_enabled = False
+        self.death_link_setup = False
+        self.prev_hp = None
+        self.prev_death_link = None
+        self.pending_death = False
 
     async def validate_rom(self, ctx: "BizHawkClientContext") -> bool:
         from CommonClient import logger
@@ -76,6 +82,10 @@ class MMZXClient(BizHawkClient):
         ctx.watcher_timeout = 0.125
         self.local_checked = set()
         self.applied_consumables = 0
+        self.death_link_setup = False
+        self.prev_hp = None
+        self.prev_death_link = None
+        self.pending_death = False
         return True
 
     async def set_auth(self, ctx: "BizHawkClientContext") -> None:
@@ -96,7 +106,16 @@ class MMZXClient(BizHawkClient):
     async def game_watcher(self, ctx: "BizHawkClientContext") -> None:
         if ctx.server is None or ctx.slot_data is None:
             return
+
+        # DeathLink: activar tag una vez según slot_data
+        if not self.death_link_setup:
+            self.death_link_setup = True
+            self.death_link_enabled = bool(ctx.slot_data.get("death_link", False))
+            if self.death_link_enabled:
+                await ctx.update_death_link(True)
+
         if not await self._in_game(ctx):
+            self.prev_hp = None
             return
 
         # ---- detectar checks ----
@@ -146,6 +165,10 @@ class MMZXClient(BizHawkClient):
 
         # ---- conceder items recibidos (idempotente, re-aplicar todo) ----
         await self._grant_items(ctx)
+
+        # ---- DeathLink ----
+        if self.death_link_enabled:
+            await self._handle_death_link(ctx)
 
         # ---- objetivo: Serpent derrotado (misión final completada) ----
         if not ctx.finished_game:
@@ -247,5 +270,32 @@ class MMZXClient(BizHawkClient):
         if writes:
             await bizhawk.write(ctx.bizhawk_ctx, writes)
 
-    def on_package(self, ctx: "BizHawkClientContext", cmd: str, args: dict[str, Any]) -> None:
-        super().on_package(ctx, cmd, args)
+    async def _handle_death_link(self, ctx) -> None:
+        """SEND: observa la muerte del juego (HP >0 → 0) y la envía.
+        RECEIVE: poll de ctx.last_death_link (lo actualiza CommonContext al
+        recibir un DeathLink) → best-effort pone HP=0. ⚠️ El poke a 0 puede
+        no matar al instante (exp105/106: el disparador de muerte real está
+        en el think del jugador, RE pendiente); mata en el siguiente daño.
+        """
+        try:
+            hp = (await bizhawk.read(ctx.bizhawk_ctx, [(HP, 1, DOM)]))[0][0]
+        except bizhawk.RequestFailedError:
+            return
+
+        if self.prev_death_link is None:
+            self.prev_death_link = ctx.last_death_link
+
+        # SEND: transición >0 -> 0 (muerte real del juego)
+        if self.prev_hp is not None and self.prev_hp > 0 and hp == 0:
+            await ctx.send_death(f"{ctx.player_names[ctx.slot]} se quedó sin energía.")
+            self.prev_death_link = ctx.last_death_link  # no auto-recibir el propio
+        self.prev_hp = hp
+
+        # RECEIVE: last_death_link avanzó por otro jugador
+        if ctx.last_death_link > self.prev_death_link:
+            self.prev_death_link = ctx.last_death_link
+            self.pending_death = True
+
+        if self.pending_death and hp > 0:
+            self.pending_death = False
+            await bizhawk.write(ctx.bizhawk_ctx, [(HP, b"\x00", DOM)])

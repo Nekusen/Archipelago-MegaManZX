@@ -12,7 +12,9 @@ import worlds._bizhawk as bizhawk
 from worlds._bizhawk.client import BizHawkClient
 
 from .data import (LOCATIONS, ITEMS, GOAL_BITS, MISSION_ACCEPT,
-                   MISSION_STATE_ADDR, MISSION_ACTIVE_FLAG)
+                   MISSION_STATE_ADDR, MISSION_ACTIVE_FLAG,
+                   STARTING_MODELS, STARTING_MODEL_ITEM, STARTING_TRANSERVERS,
+                   MODEL_X_POSSESSION, ACTIVE_MODEL_ADDR)
 
 if TYPE_CHECKING:
     from worlds._bizhawk.context import BizHawkClientContext
@@ -73,6 +75,11 @@ class MMZXClient(BizHawkClient):
         self.flag_watch = False
         self.flag_snap: bytes | None = None
         self.pending_dump = False   # /mmzx_dump: volcar estado del Transerver
+        # tutorial-skip: aplicación one-shot del estado inicial (modelo YAML
+        # + Transerver). 0=sin pedir, 1=esperando datastore, 2=aplicar
+        # cuando sea elegible, 3=hecho. /mmzx_start fuerza el estado 2.
+        self.start_state = 0
+        self.start_key: str | None = None
 
     async def validate_rom(self, ctx: "BizHawkClientContext") -> bool:
         from CommonClient import logger
@@ -171,6 +178,7 @@ class MMZXClient(BizHawkClient):
             ctx.command_processor.commands["mmzx_teleport"] = _cmd_teleport
             ctx.command_processor.commands["mmzx_flags"] = _cmd_flags
             ctx.command_processor.commands["mmzx_dump"] = _cmd_dump
+            ctx.command_processor.commands["mmzx_start"] = _cmd_start
 
         in_game, state_bytes = await self._in_game(ctx)
         if not in_game:
@@ -223,6 +231,9 @@ class MMZXClient(BizHawkClient):
         if self.pending_dump:
             self.pending_dump = False
             await self._dump_transerver(ctx)
+
+        # ---- tutorial-skip: aplicar el estado inicial (one-shot) ----
+        await self._start_state_tick(ctx, guard)
 
         # ---- conceder items recibidos (idempotente, re-aplicar todo) ----
         await self._grant_items(ctx, guard)
@@ -350,6 +361,106 @@ class MMZXClient(BizHawkClient):
         if ok:
             from CommonClient import logger
             logger.info("[mmzx] open-world: misión auto-aceptada → %s" % rec["name"])
+
+    async def _start_state_tick(self, ctx, guard) -> None:
+        """Tutorial-skip (v0.2): aplica UNA VEZ el estado inicial del YAML
+        (starting_model + starting_transerver) sobre el estado dorado
+        post-tutorial. One-shot persistente vía datastore del servidor
+        (clave mmzx_start_applied_<team>_<slot>); /mmzx_start fuerza una
+        re-aplicación manual (p.ej. si reinicias la partida del cartucho).
+
+        Elegibilidad: en juego, en el hub (subárea 70) y con acceso al
+        Transerver (0x02104627 bit4) — la firma del estado post-tutorial.
+        Así nunca se dispara en medio de la intro vanilla."""
+        if self.start_state >= 3:
+            return
+        self.start_key = "mmzx_start_applied_%s_%s" % (ctx.team, ctx.slot)
+
+        if self.start_state == 0:
+            # pedir el estado persistente al servidor
+            await ctx.send_msgs([
+                {"cmd": "SetNotify", "keys": [self.start_key]},
+                {"cmd": "Get", "keys": [self.start_key]},
+            ])
+            self.start_state = 1
+            return
+
+        if self.start_state == 1:
+            if self.start_key not in ctx.stored_data:
+                return   # aún sin respuesta del Get
+            if ctx.stored_data[self.start_key]:
+                self.start_state = 3   # ya aplicado en una sesión anterior
+                return
+            self.start_state = 2
+
+        # start_state == 2: aplicar cuando el juego esté en el estado elegible
+        try:
+            r = await bizhawk.read(ctx.bizhawk_ctx, [
+                (SUBAREA_STABLE, 1, DOM), (0x02104627, 1, DOM)])
+        except bizhawk.RequestFailedError:
+            return
+        sub, ts_access = r[0][0], r[1][0]
+        if sub != HUB_SUBAREA or not (ts_access & 0x10):
+            return
+        ok = await self._apply_start_state(ctx, guard)
+        if ok:
+            self.start_state = 3
+            await ctx.send_msgs([{
+                "cmd": "Set", "key": self.start_key, "default": False,
+                "want_reply": False,
+                "operations": [{"operation": "replace", "value": True}],
+            }])
+
+    async def _apply_start_state(self, ctx, guard) -> bool:
+        """Escribe el modelo inicial (posesión vivo+canónica + modelo activo)
+        y, si el Transerver inicial no es el hub, teleporta. Devuelve True si
+        las escrituras entraron (guarda de gameplay)."""
+        from CommonClient import logger
+        key = str(ctx.slot_data.get("starting_model", "model_x"))
+        rec = STARTING_MODELS.get(key)
+        if rec is None:
+            logger.info("[mmzx] starting_model desconocido: %r (ignorado)" % key)
+            return True
+
+        # posesiones: revocar X si toca + conceder las del modelo elegido
+        bit_ops: list[tuple[int, int, bool]] = []   # (addr, bit, on)
+        if rec["revoke_x"]:
+            xa, xb = MODEL_X_POSSESSION
+            bit_ops.append((xa, xb, False))
+        for addr, bit in rec["grant"]:
+            bit_ops.append((addr, bit, True))
+
+        addrs = sorted({a for a, _, _ in bit_ops})
+        writes: list[tuple[int, bytes, str]] = []
+        if addrs:
+            cur = await bizhawk.read(
+                ctx.bizhawk_ctx,
+                [(a, 1, DOM) for a in addrs] + [(a + CANON_OFF, 1, DOM) for a in addrs])
+            vals = {a: [cur[i][0], cur[len(addrs) + i][0]] for i, a in enumerate(addrs)}
+            for addr, bit, on in bit_ops:
+                for k in (0, 1):
+                    v = vals[addr][k]
+                    vals[addr][k] = (v | (1 << bit)) if on else (v & ~(1 << bit))
+            for i, a in enumerate(addrs):
+                if vals[a][0] != cur[i][0]:
+                    writes.append((a, bytes([vals[a][0]]), DOM))
+                if vals[a][1] != cur[len(addrs) + i][0]:
+                    writes.append((a + CANON_OFF, bytes([vals[a][1]]), DOM))
+        writes.append((ACTIVE_MODEL_ADDR, bytes([rec["active"]]), DOM))
+
+        ok = await bizhawk.guarded_write(ctx.bizhawk_ctx, writes, [guard])
+        if not ok:
+            return False
+
+        # Transerver inicial distinto del hub -> teleport (v0.2: solo hub)
+        ts_key = str(ctx.slot_data.get("starting_transerver", "guardian_hub"))
+        dest = STARTING_TRANSERVERS.get(ts_key)
+        if dest and dest[0] != HUB_SUBAREA:
+            await self._teleport(ctx, dest[0], dest[1], dest[2], guard)
+
+        logger.info("[mmzx] estado inicial aplicado: modelo=%s, transerver=%s"
+                    % (key, ts_key))
+        return True
 
     async def _teleport(self, ctx, sub, x, y, guard) -> None:
         """Teleport limpio (7 escrituras; docs/client_integration.md §6).
@@ -504,6 +615,18 @@ def _cmd_teleport(self, *args) -> None:
         return
     handler.pending_teleport = (sub, x, y)
     logger.info(f"Teleport encolado → subárea {sub} ({x},{y}).")
+
+
+def _cmd_start(self, *args) -> None:
+    """Tutorial-skip: fuerza la (re)aplicación del estado inicial del YAML
+    (modelo + Transerver). Úsalo si reinicias la partida del cartucho a mitad
+    de seed (la aplicación automática es one-shot por seed)."""
+    from CommonClient import logger
+    handler = self.ctx.client_handler
+    if not isinstance(handler, MMZXClient):
+        return
+    handler.start_state = 2   # aplicar en el próximo tick elegible
+    logger.info("mmzx_start: encolado (se aplica al estar en el hub, en juego).")
 
 
 def _cmd_flags(self, *args) -> None:

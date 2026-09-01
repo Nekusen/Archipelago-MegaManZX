@@ -10,7 +10,7 @@ import settings
 from BaseClasses import ItemClassification, Tutorial
 from worlds.AutoWorld import WebWorld, World
 
-from .data import LOCATIONS, ITEMS
+from .data import LOCATIONS, ITEMS, STARTING_MODEL_ITEM
 from .items import MMZXItem, item_name_to_id, get_classification, ITEM_GROUPS
 from .locations import location_name_to_id, locations_for_options, LOCATION_GROUPS
 from .options import MMZXOptions
@@ -81,6 +81,15 @@ class MMZXWorld(World):
         pool: list[MMZXItem] = []
         fixed = [n for n, v in ITEMS.items()
                  if v["classification"] != "filler" and v.get("pooled", True)]
+
+        # Modelo inicial (tutorial-skip): el item equivalente se pre-concede
+        # (start inventory) y sale del pool. Con 'none' no se pre-concede
+        # nada y Model X queda en el pool como item encontrable.
+        start_item = STARTING_MODEL_ITEM.get(self.options.starting_model.current_key)
+        if start_item and start_item in fixed:
+            fixed.remove(start_item)
+            self.multiworld.push_precollected(self.create_item(start_item))
+
         for name in fixed:
             pool.append(self.create_item(name))
 
@@ -114,5 +123,7 @@ class MMZXWorld(World):
             "level4_victories": bool(self.options.level4_victories.value),
             "submission_checks": bool(self.options.submission_checks.value),
             "mission_auto_accept": bool(self.options.mission_auto_accept.value),
+            "starting_model": self.options.starting_model.current_key,
+            "starting_transerver": self.options.starting_transerver.current_key,
             "version": "0.1.0",
         }

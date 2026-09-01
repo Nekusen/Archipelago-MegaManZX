@@ -155,12 +155,13 @@ LOCATIONS = {
 
 # name -> {id, classification, grant}
 ITEMS = {
-    'Model ZX': {'id': 13664256, 'classification': 'progression', 'grant': ['todo'], 'pooled': False},
-    'Biometal H': {'id': 13664257, 'classification': 'progression', 'grant': ['live_bit', 34620880, 1], 'pooled': True},
-    'Biometal F': {'id': 13664258, 'classification': 'progression', 'grant': ['live_bit', 34620880, 5], 'pooled': True},
-    'Biometal L': {'id': 13664259, 'classification': 'progression', 'grant': ['live_bit', 34620880, 3], 'pooled': True},
-    'Biometal P': {'id': 13664260, 'classification': 'progression', 'grant': ['live_bit', 34620880, 7], 'pooled': True},
-    'Biometal O': {'id': 13664261, 'classification': 'progression', 'grant': ['todo'], 'pooled': False},
+    'Model ZX': {'id': 13664256, 'classification': 'progression', 'grant': ['live_bit', 34620880, 0], 'pooled': True},
+    'Biometal H': {'id': 13664257, 'classification': 'progression', 'grant': ['live_bit', 34620881, 1], 'pooled': True},
+    'Biometal F': {'id': 13664258, 'classification': 'progression', 'grant': ['live_bit', 34620881, 5], 'pooled': True},
+    'Biometal L': {'id': 13664259, 'classification': 'progression', 'grant': ['live_bit', 34620881, 3], 'pooled': True},
+    'Biometal P': {'id': 13664260, 'classification': 'progression', 'grant': ['live_bit', 34620881, 7], 'pooled': True},
+    'Biometal O': {'id': 13664261, 'classification': 'progression', 'grant': ['live_bit', 34620882, 1], 'pooled': True},
+    'Model X': {'id': 13664262, 'classification': 'progression', 'grant': ['live_bit', 34620879, 7], 'pooled': True},
     'Yellow Card Key': {'id': 13664512, 'classification': 'progression', 'grant': ['live_bit', 34620925, 1], 'pooled': True},
     'Green Card Key': {'id': 13664513, 'classification': 'progression', 'grant': ['live_bit', 34620925, 0], 'pooled': True},
     'Red Card Key': {'id': 13664514, 'classification': 'progression', 'grant': ['live_bit', 34620924, 5], 'pooled': True},
@@ -219,4 +220,36 @@ MISSION_ACCEPT = {
     63: {'id': 14, 'state': 218, 'flag': [34620903, 2], 'name': 'Stop The Dig'},
     65: {'id': 15, 'state': 221, 'flag': [34620903, 5], 'name': 'Repel The Army'},
     66: {'id': 15, 'state': 221, 'flag': [34620903, 5], 'name': 'Repel The Army'},
+}
+
+# --- Modelo inicial (tutorial-skip, v0.2; exp171/176/178-180) ---
+# Posesión de modelos = flags del bloque de progreso (tablas de
+# categorías 0x020DE9AC/0x020DEB78; Hu hardcoded). El save dorado
+# arranca con Model X: para otros arranques se REVOCA X (CF.7) y
+# se pone la posesión + modelo activo (0x0214FC74) elegidos.
+MODEL_X_POSSESSION = [0x021045CF, 7]
+ACTIVE_MODEL_ADDR = 0x0214FC74
+# starting_model key -> {grant:[[addr,bit]..], revoke_x, active}
+STARTING_MODELS = {
+    'model_x':  {'grant': [[0x021045CF, 7]], 'revoke_x': False, 'active': 1},
+    'none':     {'grant': [], 'revoke_x': True, 'active': 0},
+    'model_zx': {'grant': [[0x021045D0, 0]], 'revoke_x': True, 'active': 2},
+    'model_hx': {'grant': [[0x021045D1, 1]], 'revoke_x': True, 'active': 3},
+    'model_fx': {'grant': [[0x021045D1, 5]], 'revoke_x': True, 'active': 4},
+    'model_lx': {'grant': [[0x021045D1, 3]], 'revoke_x': True, 'active': 5},
+    'model_px': {'grant': [[0x021045D1, 7]], 'revoke_x': True, 'active': 6},
+    'model_ox': {'grant': [[0x021045D2, 1]], 'revoke_x': True, 'active': 7},
+}
+# starting_model key -> item AP equivalente (para precollect)
+STARTING_MODEL_ITEM = {
+    'model_x': 'Model X', 'model_zx': 'Model ZX',
+    'model_hx': 'Biometal H', 'model_fx': 'Biometal F',
+    'model_lx': 'Biometal L', 'model_px': 'Biometal P',
+    'model_ox': 'Biometal O',
+}
+# Transervers de arranque: key -> (subárea, x_px, y_px). v0.2:
+# solo el hub (el save dorado ya deja ahí; sin teleport). Crecerá
+# al cablear la lógica de regiones.
+STARTING_TRANSERVERS = {
+    'guardian_hub': (70, 288, 351),
 }

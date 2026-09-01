@@ -37,6 +37,36 @@ class SubmissionChecks(Toggle):
     default = 0
 
 
+class StartingModel(Choice):
+    """Modelo con el que empiezas (v0.2, tutorial-skip). El arranque salta el
+    tutorial y te deja en el Transerver con este modelo (o ninguno = forma
+    humana, sin biometal, hasta que encuentres uno). El modelo elegido se
+    pre-concede (start inventory) y no ocupa sitio en el pool; Model X se
+    convierte en item encontrable salvo que empieces con él. Puedes poner
+    'random' en el YAML para uno aleatorio.
+    ⚠️ Hasta que el parche de ROM del arranque esté listo, el cliente aplica
+    el modelo al llegar al hub post-tutorial."""
+    display_name = "Starting Model"
+    option_model_x = 0
+    option_none = 1
+    option_model_zx = 2
+    option_model_hx = 3
+    option_model_fx = 4
+    option_model_lx = 5
+    option_model_px = 6
+    option_model_ox = 7
+    default = 0
+
+
+class StartingTranserver(Choice):
+    """Transerver donde empiezas (v0.2). Por ahora solo el hub de la base
+    Guardian (el punto post-tutorial natural); se añadirán Transervers de
+    área cuando la lógica de regiones esté cableada."""
+    display_name = "Starting Transerver"
+    option_guardian_hub = 0
+    default = 0
+
+
 class MissionAutoAccept(Toggle):
     """Modo 'open world' de misiones (v0.2, EXPERIMENTAL). Con ON, el cliente
     ACEPTA automáticamente la misión de la zona en la que entras (sin pasar
@@ -52,6 +82,8 @@ class MissionAutoAccept(Toggle):
 class MMZXOptions(PerGameCommonOptions):
     character: Character
     goal: Goal
+    starting_model: StartingModel
+    starting_transerver: StartingTranserver
     level4_victories: Level4Victories
     submission_checks: SubmissionChecks
     mission_auto_accept: MissionAutoAccept

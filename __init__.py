@@ -3,8 +3,10 @@
 RE completo en docs/client_integration.md; puente en worlds/mmzx/data.py.
 """
 
+import os
 from typing import ClassVar
 
+import settings
 from BaseClasses import ItemClassification, Tutorial
 from worlds.AutoWorld import WebWorld, World
 
@@ -13,7 +15,18 @@ from .items import MMZXItem, item_name_to_id, get_classification, ITEM_GROUPS
 from .locations import location_name_to_id, locations_for_options, LOCATION_GROUPS
 from .options import MMZXOptions
 from .regions import create_regions
+from .rom import MMZXPatch, write_patch_tokens, MMZX_US_MD5
 from . import client  # registra el BizHawkClient  # noqa: F401
+
+
+class MMZXSettings(settings.Group):
+    class RomFile(settings.UserFilePath):
+        """Ruta a la ROM de Mega Man ZX (USA)."""
+        description = "Mega Man ZX (USA) ROM File"
+        copy_to = "mmzx_us.nds"
+        md5s = [MMZX_US_MD5]
+
+    rom_file: RomFile = RomFile(RomFile.copy_to)
 
 
 class MMZXWebWorld(WebWorld):
@@ -31,6 +44,9 @@ class MMZXWorld(World):
     game = "Mega Man ZX"
     web = MMZXWebWorld()
     topology_present = True
+
+    settings_key = "mmzx_settings"
+    settings: ClassVar[MMZXSettings]  # type: ignore
 
     options_dataclass = MMZXOptions
     options: MMZXOptions  # type: ignore
@@ -83,6 +99,12 @@ class MMZXWorld(World):
         # no-logic: todo accesible. Solo la condición de victoria.
         self.multiworld.completion_condition[self.player] = \
             lambda state: state.has("Victory", self.player)
+
+    def generate_output(self, output_directory: str) -> None:
+        patch = MMZXPatch(player=self.player, player_name=self.player_name)
+        write_patch_tokens(patch, self.player_name, self.multiworld.seed_name)
+        out_name = self.multiworld.get_out_file_name_base(self.player)
+        patch.write(os.path.join(output_directory, out_name + patch.patch_file_ending))
 
     def fill_slot_data(self) -> dict:
         return {

@@ -176,3 +176,8 @@ ITEMS = {
 
 LOCATION_NAME_TO_ID = {n: v['id'] for n, v in LOCATIONS.items()}
 ITEM_NAME_TO_ID = {n: v['id'] for n, v in ITEMS.items()}
+
+# Objetivo (defeat Serpent): al completarse la misión final
+# (estado 0xF8, id 19) mission_complete_on_report (0x02031028)
+# pone AMBOS bits (derivado estático; validar en E2E):
+GOAL_BITS = [(0x021045EB, 7), (0x021045EC, 0)]

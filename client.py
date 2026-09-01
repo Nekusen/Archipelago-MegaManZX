@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Any
 import worlds._bizhawk as bizhawk
 from worlds._bizhawk.client import BizHawkClient
 
-from .data import LOCATIONS, ITEMS
+from .data import LOCATIONS, ITEMS, GOAL_BITS
 
 if TYPE_CHECKING:
     from worlds._bizhawk.context import BizHawkClientContext
@@ -46,12 +46,28 @@ class MMZXClient(BizHawkClient):
         self.applied_consumables = 0  # high-water de items consumibles aplicados
 
     async def validate_rom(self, ctx: "BizHawkClientContext") -> bool:
+        from CommonClient import logger
         try:
-            code = (await bizhawk.read(ctx.bizhawk_ctx, [(0x0C, 4, "ROM")]))[0]
+            reads = await bizhawk.read(ctx.bizhawk_ctx, [
+                (0x0C, 4, "ROM"),      # game code ARZE
+                (0x1000, 6, "ROM"),    # magia AP (rom.py)
+                (0x1010, 64, "ROM"),   # slot name
+            ])
         except bizhawk.RequestFailedError:
             return False
-        if code != ROM_GAME_CODE:
+        if reads[0] != ROM_GAME_CODE:
             return False
+        if reads[1] != b"MZXAP\x00":
+            logger.info("ERROR: esta ROM de Mega Man ZX no está parcheada "
+                        "para Archipelago. Genera el parche .apmmzx y ábrelo "
+                        "con el launcher para crear la ROM parcheada.")
+            return False
+        raw = reads[2]
+        end = raw.find(b"\x00")
+        try:
+            self.slot_name = raw[:end if end >= 0 else 64].decode("utf-8")
+        except UnicodeDecodeError:
+            self.slot_name = None
         ctx.game = self.game
         # El parche NO pre-coloca items en la ROM: el cliente concede TODO
         # por RAM, incluidos los items locales y el start inventory.
@@ -63,9 +79,8 @@ class MMZXClient(BizHawkClient):
         return True
 
     async def set_auth(self, ctx: "BizHawkClientContext") -> None:
-        # v0.1: el slot name se embebe en el parche (TODO rom.py); por
-        # ahora el jugador lo teclea si no está.
-        pass
+        if getattr(self, "slot_name", None):
+            ctx.auth = self.slot_name
 
     async def _in_game(self, ctx) -> bool:
         try:
@@ -124,8 +139,16 @@ class MMZXClient(BizHawkClient):
         # ---- conceder items recibidos (idempotente, re-aplicar todo) ----
         await self._grant_items(ctx)
 
-        # ---- objetivo ----
-        # (Serpent: pendiente de anclar el flag; se rellenará en Fase 3.)
+        # ---- objetivo: Serpent derrotado (misión final completada) ----
+        if not ctx.finished_game:
+            done = all(
+                (block[a - LIVE_BLOCK] if LIVE_BLOCK <= a < LIVE_BLOCK + LIVE_LEN else 0)
+                & (1 << b) for (a, b) in GOAL_BITS)
+            if done:
+                from NetUtils import ClientStatus
+                ctx.finished_game = True
+                await ctx.send_msgs([{"cmd": "StatusUpdate",
+                                      "status": ClientStatus.CLIENT_GOAL}])
 
     async def _grant_items(self, ctx) -> None:
         """Aplica los items recibidos.

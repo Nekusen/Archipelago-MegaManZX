@@ -104,3 +104,116 @@ def starting_room(world) -> str:
         if s == sub:
             return room
     return HUB_ROOM
+
+
+# ---------------------------------------------------------------------------
+# DSL de requisitos (logic_rules.py). Expresiones con `&` (AND), `|` (OR) y
+# paréntesis sobre estos átomos (ver la doctrina de movimiento en
+# logic_rules.py):
+#   HU X ZX HX FX LX PX OX      posesión del modelo/biometal (HU es siempre
+#                               cierto salvo con hu_in_pool)
+#   YELLOW GREEN RED BLUE WHITE PURPLE   Card Keys
+#   MODEL  = cualquier modelo no-Hu (escala paredes)   ALL6 = X&ZX&HX&FX&LX&PX
+#   ANY / TRUE = sin requisito
+# ---------------------------------------------------------------------------
+import re as _re
+
+ABILITY_ITEM = {
+    "X": "Model X", "ZX": "Model ZX", "HX": "Biometal H", "FX": "Biometal F",
+    "LX": "Biometal L", "PX": "Biometal P", "OX": "Biometal O", "HU": "Model Hu",
+    "YELLOW": "Yellow Card Key", "GREEN": "Green Card Key", "RED": "Red Card Key",
+    "BLUE": "Blue Card Key", "WHITE": "White Card Key", "PURPLE": "Purple Card Key",
+}
+MACROS = {
+    "MODEL": "(X|ZX|HX|FX|LX|PX|OX)",
+    "ALL6": "(X&ZX&HX&FX&LX&PX)",
+    "ANY": "TRUE",
+}
+_TOK = _re.compile(r"\s*([A-Za-z_][A-Za-z0-9_]*|[&|()])")
+
+
+def _tokens(expr: str):
+    out, pos = [], 0
+    expr = expr.strip()
+    while pos < len(expr):
+        m = _TOK.match(expr, pos)
+        if not m:
+            raise ValueError("expresión inválida %r en %d" % (expr, pos))
+        out.append(m.group(1))
+        pos = m.end()
+    return out
+
+
+def _parse(tokens, i=0):
+    """OR-expr := AND-expr ('|' AND-expr)*  — devuelve (ast, i)."""
+    node, i = _parse_and(tokens, i)
+    while i < len(tokens) and tokens[i] == "|":
+        rhs, i = _parse_and(tokens, i + 1)
+        node = ("or", node, rhs)
+    return node, i
+
+
+def _parse_and(tokens, i):
+    node, i = _parse_atom(tokens, i)
+    while i < len(tokens) and tokens[i] == "&":
+        rhs, i = _parse_atom(tokens, i + 1)
+        node = ("and", node, rhs)
+    return node, i
+
+
+def _parse_atom(tokens, i):
+    t = tokens[i]
+    if t == "(":
+        node, i = _parse(tokens, i + 1)
+        if i >= len(tokens) or tokens[i] != ")":
+            raise ValueError("falta el cierre de paréntesis en %r" % (tokens,))
+        return node, i + 1
+    up = t.upper()
+    if up in MACROS:
+        return _parse(_tokens(MACROS[up]))[0], i + 1
+    if up == "TRUE":
+        return ("true",), i + 1
+    if up in ABILITY_ITEM:
+        return ("item", ABILITY_ITEM[up]), i + 1
+    raise ValueError("átomo desconocido %r (HU/X/ZX/HX/FX/LX/PX/OX, llaves, MODEL, ALL6, ANY)" % t)
+
+
+def compile_rule(expr, player: int, hu_in_pool: bool):
+    """Compila una expresión del DSL a callable(state)->bool (None = sin regla)."""
+    if expr is None:
+        return None
+    toks = _tokens(expr)
+    ast, i = _parse(toks)
+    if i != len(toks):
+        raise ValueError("tokens sobrantes en %r" % expr)
+
+    def build(node):
+        k = node[0]
+        if k == "true":
+            return None
+        if k == "item":
+            name = node[1]
+            if name == "Model Hu" and not hu_in_pool:
+                return None          # Hu siempre disponible sin el parche
+            return lambda state: state.has(name, player)
+        a, b = build(node[1]), build(node[2])
+        if k == "and":
+            if a is None:
+                return b
+            if b is None:
+                return a
+            return lambda state: a(state) and b(state)
+        if a is None or b is None:     # or con un lado siempre cierto
+            return None
+        return lambda state: a(state) or b(state)
+    return build(ast)
+
+
+def and_rules(*rules):
+    """AND de callables (ignora None). Devuelve None si no queda nada."""
+    rs = [r for r in rules if r is not None]
+    if not rs:
+        return None
+    if len(rs) == 1:
+        return rs[0]
+    return lambda state: all(r(state) for r in rs)

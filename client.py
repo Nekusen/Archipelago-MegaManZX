@@ -141,7 +141,7 @@ class MMZXClient(BizHawkClient):
 
         # contar recibidos por tipo de concesión
         n_lifeup = n_subtank = 0
-        canon_bits: set[tuple[int, int]] = set()   # (canon_byte, bit) idempotentes
+        live_bits: set[tuple[int, int]] = set()    # (live_addr, bit) idempotentes
         new_consumables: list[str] = []
         for i, net in enumerate(ctx.items_received):
             entry = id_to_item.get(net.item)
@@ -153,14 +153,32 @@ class MMZXClient(BizHawkClient):
                 n_lifeup += 1
             elif kind == "subtank":
                 n_subtank += 1
+            elif kind == "live_bit":
+                live_bits.add((grant[1], grant[2]))
             elif kind in ("ecrystals", "oneup"):
                 if i >= self.applied_consumables:
                     new_consumables.append(kind)
-            # model / cardkey / transerver: TODO recetas exactas (bit de
-            # posesión pendiente de RE — no se conceden aún para no
-            # corromper flags). Ver docs/functions.md (biometales).
+            # kind == "todo": item sin receta aún (no en pool v0.1)
 
         writes: list[tuple[int, bytes, str]] = []
+
+        # Bits idempotentes (biometales 0x021045D0, card keys 0x021045FC/FD):
+        # set en VIVO (efecto inmediato) y en CANÓNICA (persistencia)
+        if live_bits:
+            by_addr: dict[int, int] = {}
+            for addr, bit in live_bits:
+                by_addr[addr] = by_addr.get(addr, 0) | (1 << bit)
+            addrs = sorted(by_addr)
+            cur = await bizhawk.read(ctx.bizhawk_ctx,
+                                     [(a, 1, DOM) for a in addrs]
+                                     + [(a + CANON_OFF, 1, DOM) for a in addrs])
+            for k, a in enumerate(addrs):
+                mask = by_addr[a]
+                live_v, canon_v = cur[k][0], cur[len(addrs) + k][0]
+                if live_v & mask != mask:
+                    writes.append((a, bytes([live_v | mask]), DOM))
+                if canon_v & mask != mask:
+                    writes.append((a + CANON_OFF, bytes([canon_v | mask]), DOM))
 
         # Life Ups (idempotente): bits 0..n-1 + HP máx
         if n_lifeup:

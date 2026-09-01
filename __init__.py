@@ -61,9 +61,10 @@ class MMZXWorld(World):
         )
         n_locations = len(active_locs)  # sin contar el evento Victory
 
-        # progresión + useful fijos; el resto se rellena con filler
+        # progresión + useful fijos (solo los "pooled"); resto filler
         pool: list[MMZXItem] = []
-        fixed = [n for n, v in ITEMS.items() if v["classification"] != "filler"]
+        fixed = [n for n, v in ITEMS.items()
+                 if v["classification"] != "filler" and v.get("pooled", True)]
         for name in fixed:
             pool.append(self.create_item(name))
 

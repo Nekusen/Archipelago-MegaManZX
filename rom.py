@@ -54,36 +54,41 @@ class MMZXPatchExtension(APPatchExtension):
     @staticmethod
     def patch_arm9(caller: APProcedurePatch, rom: bytes, cfg_file: str) -> bytes:
         """Descomprime el ARM9 (BLZ), aplica el redirect del tutorial-skip
-        (siempre) y el Hu-gate (si hu_in_pool), recomprime y devuelve la ROM.
-        ndspy va vendorizado en worlds/mmzx/ndspy/ (MIT)."""
+        (siempre) y el Hu-gate (si hu_in_pool), recomprime y recoloca el
+        arm9 IN-PLACE en su slot original: el resto de la imagen de 64 MiB
+        queda byte-idéntico (solo cambian arm9, su tamaño en cabecera 0x2C y
+        el CRC16 0x15E). ⚠️ NO usar el reempaquetado completo de ndspy
+        (nds.save()): compacta la ROM a ~44 MB y desplaza el layout, y
+        melonDS/BizHawk revienta con std::bad_alloc al cargarla (verificado
+        en BizHawk real, exp205). ndspy vendorizado (MIT) solo para el BLZ."""
+        import struct
+
         from . import ndspy  # noqa: F401  (paquete vendorizado)
         from .ndspy import rom as ndsrom
 
         cfg = caller.get_file(cfg_file)
         hu_in_pool = bool(cfg[0] & CFG_HU_IN_POOL) if cfg else False
 
+        d = bytearray(rom)
         nds = ndsrom.NintendoDSRom(bytes(rom))
         arm9 = nds.loadArm9()
 
-        def find_sec(ram):
+        def poke(ram, data, orig=None):
             for sec in arm9.sections:
                 if sec.ramAddress <= ram < sec.ramAddress + len(sec.data):
-                    return sec
+                    off = ram - sec.ramAddress
+                    cur = bytes(sec.data[off:off + len(data)])
+                    if cur == data:
+                        return  # idempotente
+                    if orig is not None and cur != orig:
+                        raise ValueError(
+                            "MMZX: bytes inesperados en 0x%08X (%s, esperado "
+                            "%s). ¿ROM incorrecta?" % (ram, cur.hex(), orig.hex()))
+                    buf = bytearray(sec.data)
+                    buf[off:off + len(data)] = data
+                    sec.data = bytes(buf)
+                    return
             raise ValueError("MMZX: 0x%08X fuera de las secciones ARM9" % ram)
-
-        def poke(ram, data, orig=None):
-            sec = find_sec(ram)
-            off = ram - sec.ramAddress
-            cur = bytes(sec.data[off:off + len(data)])
-            if cur == data:
-                return  # idempotente
-            if orig is not None and cur != orig:
-                raise ValueError(
-                    "MMZX: bytes inesperados en 0x%08X (%s, esperado %s). "
-                    "¿ROM incorrecta?" % (ram, cur.hex(), orig.hex()))
-            buf = bytearray(sec.data)
-            buf[off:off + len(data)] = data
-            sec.data = bytes(buf)
 
         # 1) tutorial-skip (siempre)
         poke(NEWGAME_HANDLER_RAM, NEWGAME_REDIRECT_THUMB, NEWGAME_HANDLER_ORIG)
@@ -93,8 +98,31 @@ class MMZXPatchExtension(APPatchExtension):
             poke(HUGATE_LISTS0_RAM, HUGATE_ARRAY_RAM.to_bytes(4, "little"),
                  HUGATE_LISTS0_ORIG)
 
-        nds.arm9 = arm9.save(compress=True)
-        return nds.save()
+        # recomprimir y recolocar in-place en el slot original del arm9
+        blob = arm9.save(compress=True)
+        post = bytes(nds.arm9PostData)         # footer nitrocode (12 B)
+        arm9_off = struct.unpack_from("<I", d, 0x20)[0]
+        others = [struct.unpack_from("<I", d, o)[0]
+                  for o in (0x30, 0x40, 0x48, 0x50, 0x68)]
+        slot_end = min(x for x in others if x > arm9_off)
+        if len(blob) + len(post) > slot_end - arm9_off:
+            raise ValueError(
+                "MMZX: el arm9 recomprimido (0x%X+%d) no cabe en su slot "
+                "(0x%X)" % (len(blob), len(post), slot_end - arm9_off))
+        d[arm9_off:arm9_off + len(blob)] = blob
+        end = arm9_off + len(blob)
+        d[end:end + len(post)] = post
+        d[end + len(post):slot_end] = b"\x00" * (slot_end - end - len(post))
+        struct.pack_into("<I", d, 0x2C, len(blob))
+
+        # CRC16 de cabecera (CRC-16/MODBUS sobre [0:0x15E])
+        crc = 0xFFFF
+        for b in bytes(d[:0x15E]):
+            crc ^= b
+            for _ in range(8):
+                crc = (crc >> 1) ^ 0xA001 if crc & 1 else crc >> 1
+        struct.pack_into("<H", d, 0x15E, crc)
+        return bytes(d)
 
 
 class MMZXPatch(APProcedurePatch, APTokenMixin):

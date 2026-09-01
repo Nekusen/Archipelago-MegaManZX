@@ -111,12 +111,7 @@ class MMZXClient(BizHawkClient):
         lifeup = live[1][0]
         subtank = live[1][1]
 
-        checked = set()
-        for name, v in LOCATIONS.items():
-            det = v.get("detect")
-            if not det or det[0] != "bit":
-                continue
-            addr, bit = det[1], det[2]
+        def bit_set(addr: int, bit: int) -> bool:
             if addr == LIFEUP_BYTE:
                 val = lifeup
             elif addr == SUBTANK_BYTE:
@@ -124,8 +119,21 @@ class MMZXClient(BizHawkClient):
             elif LIVE_BLOCK <= addr < LIVE_BLOCK + LIVE_LEN:
                 val = block[addr - LIVE_BLOCK]
             else:
+                return False
+            return bool(val & (1 << bit))
+
+        checked = set()
+        for name, v in LOCATIONS.items():
+            det = v.get("detect")
+            if not det:
                 continue
-            if val & (1 << bit):
+            if det[0] == "bit":
+                ok = bit_set(det[1], det[2])
+            elif det[0] == "all":   # todos los bits (misión completada)
+                ok = all(bit_set(a, b) for a, b in det[1])
+            else:
+                continue
+            if ok:
                 loc_id = v["id"]
                 if loc_id in ctx.server_locations:
                     checked.add(loc_id)

@@ -42,6 +42,11 @@ ROM_GAME_CODE = b"ARZE"       # MMZX USA
 # Hub por defecto del anti-softlock (z01 = subárea 70)
 HUB_SUBAREA, HUB_X, HUB_Y = 70, 288, 351
 
+# Diagnóstico de flags: ventana ancha del bloque de progreso (cubre
+# misiones/quests/historia/HQ) para trazar qué bits cambian al completar
+# una misión en vivo.
+FLAG_WATCH_BASE, FLAG_WATCH_LEN = 0x021045C0, 0x84
+
 
 class MMZXClient(BizHawkClient):
     game = "Mega Man ZX"
@@ -60,6 +65,9 @@ class MMZXClient(BizHawkClient):
         self.pending_teleport = None   # (subárea, x, y) o None
         self.added_commands = False
         self._win: tuple[int, int] | None = None   # ventana de detección (cache)
+        # diagnóstico de flags (para mapear "misión completada" en vivo)
+        self.flag_watch = False
+        self.flag_snap: bytes | None = None
 
     async def validate_rom(self, ctx: "BizHawkClientContext") -> bool:
         from CommonClient import logger
@@ -147,10 +155,11 @@ class MMZXClient(BizHawkClient):
             if self.death_link_enabled:
                 await ctx.update_death_link(True)
 
-        # comandos de cliente (anti-softlock)
+        # comandos de cliente (anti-softlock + diagnóstico de flags)
         if not self.added_commands:
             self.added_commands = True
             ctx.command_processor.commands["mmzx_teleport"] = _cmd_teleport
+            ctx.command_processor.commands["mmzx_flags"] = _cmd_flags
 
         in_game, state_bytes = await self._in_game(ctx)
         if not in_game:
@@ -195,6 +204,10 @@ class MMZXClient(BizHawkClient):
                 await ctx.check_locations(list(checked))
             self.local_checked = checked
 
+        # ---- diagnóstico: trazar bits que cambian (mapear misión completada) ----
+        if self.flag_watch:
+            await self._flag_watch_tick(ctx)
+
         # ---- conceder items recibidos (idempotente, re-aplicar todo) ----
         await self._grant_items(ctx, guard)
 
@@ -216,6 +229,33 @@ class MMZXClient(BizHawkClient):
                 ctx.finished_game = True
                 await ctx.send_msgs([{"cmd": "StatusUpdate",
                                       "status": ClientStatus.CLIENT_GOAL}])
+
+    async def _flag_watch_tick(self, ctx) -> None:
+        """Lee la ventana ancha del bloque de progreso y reporta en el log
+        qué bits cambian respecto al snapshot anterior. Sirve para mapear la
+        rutina de 'misión completada' en vivo: activar con /mmzx_flags, hacer
+        el snapshot, entregar la misión, y ver qué bit(s) se encienden."""
+        from CommonClient import logger
+        try:
+            cur = (await bizhawk.read(
+                ctx.bizhawk_ctx, [(FLAG_WATCH_BASE, FLAG_WATCH_LEN, DOM)]))[0]
+        except bizhawk.RequestFailedError:
+            return
+        if self.flag_snap is None:
+            self.flag_snap = cur
+            return
+        changes = []
+        for i in range(FLAG_WATCH_LEN):
+            diff = cur[i] ^ self.flag_snap[i]
+            if diff:
+                for b in range(8):
+                    if diff & (1 << b):
+                        on = bool(cur[i] & (1 << b))
+                        changes.append("0x%08X.%d %s" % (
+                            FLAG_WATCH_BASE + i, b, "ON" if on else "off"))
+        if changes:
+            logger.info("[mmzx_flags] cambios: " + ", ".join(changes))
+            self.flag_snap = cur
 
     async def _teleport(self, ctx, sub, x, y, guard) -> None:
         """Teleport limpio (7 escrituras; docs/client_integration.md §6).
@@ -370,3 +410,24 @@ def _cmd_teleport(self, *args) -> None:
         return
     handler.pending_teleport = (sub, x, y)
     logger.info(f"Teleport encolado → subárea {sub} ({x},{y}).")
+
+
+def _cmd_flags(self, *args) -> None:
+    """Diagnóstico: traza los bits del bloque de progreso que cambian.
+    Uso: /mmzx_flags on  (toma snapshot y empieza a trazar) · /mmzx_flags off.
+    Para mapear 'misión completada': /mmzx_flags on ANTES de entregar en el
+    Transerver; entrega la misión; los bits que salgan 'ON' son la firma."""
+    from CommonClient import logger
+    handler = self.ctx.client_handler
+    if not isinstance(handler, MMZXClient):
+        return
+    arg = (args[0].lower() if args else "on")
+    if arg in ("off", "0", "stop"):
+        handler.flag_watch = False
+        handler.flag_snap = None
+        logger.info("mmzx_flags: OFF")
+    else:
+        handler.flag_watch = True
+        handler.flag_snap = None   # se re-toma en el próximo tick
+        logger.info("mmzx_flags: ON (snapshot en el próximo frame de juego; "
+                    "ahora entrega la misión y observa los bits 'ON')")

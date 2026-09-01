@@ -59,6 +59,7 @@ class MMZXClient(BizHawkClient):
         self.pending_death = False
         self.pending_teleport = None   # (subárea, x, y) o None
         self.added_commands = False
+        self._win: tuple[int, int] | None = None   # ventana de detección (cache)
 
     async def validate_rom(self, ctx: "BizHawkClientContext") -> bool:
         from CommonClient import logger
@@ -101,6 +102,25 @@ class MMZXClient(BizHawkClient):
         if getattr(self, "slot_name", None):
             ctx.auth = self.slot_name
 
+    def _detect_window(self) -> tuple[int, int]:
+        """Rango [lo, hi) que cubre TODAS las direcciones de detect de las
+        locations (+ GOAL_BITS). Se calcula una vez. Robusto a direcciones
+        fuera del bloque 0x021045CC (p.ej. el flag del Sub Tank A-2)."""
+        if self._win is not None:
+            return self._win
+        addrs: list[int] = [a for a, _ in GOAL_BITS]
+        for v in LOCATIONS.values():
+            det = v.get("detect")
+            if not det:
+                continue
+            if det[0] == "bit":
+                addrs.append(det[1])
+            elif det[0] == "all":
+                addrs += [a for a, _ in det[1]]
+        lo, hi = min(addrs), max(addrs) + 1
+        self._win = (lo, hi)
+        return self._win
+
     async def _in_game(self, ctx):
         """Devuelve (en_juego, state_bytes). state_bytes sirve de GUARD para
         que las escrituras solo se apliquen si el juego SIGUE en gameplay
@@ -139,27 +159,19 @@ class MMZXClient(BizHawkClient):
         guard = (GAME_STATE, state_bytes, DOM)   # solo escribir si sigue en juego
 
         # ---- detectar checks ----
+        # Ventana de lectura calculada de TODAS las direcciones de detect
+        # (+ GOAL_BITS). Cubre el bloque de progreso 0x021045CC y tambien
+        # el flag del Sub Tank A-2 (0x02104589, por debajo del bloque).
+        lo, hi = self._detect_window()
         try:
-            live = (await bizhawk.read(ctx.bizhawk_ctx, [
-                (LIVE_BLOCK, LIVE_LEN, DOM),
-                (LIFEUP_BYTE, 2, DOM)])
-            )
+            block = (await bizhawk.read(ctx.bizhawk_ctx, [(lo, hi - lo, DOM)]))[0]
         except bizhawk.RequestFailedError:
             return
-        block = live[0]
-        lifeup = live[1][0]
-        subtank = live[1][1]
 
         def bit_set(addr: int, bit: int) -> bool:
-            if addr == LIFEUP_BYTE:
-                val = lifeup
-            elif addr == SUBTANK_BYTE:
-                val = subtank
-            elif LIVE_BLOCK <= addr < LIVE_BLOCK + LIVE_LEN:
-                val = block[addr - LIVE_BLOCK]
-            else:
-                return False
-            return bool(val & (1 << bit))
+            if lo <= addr < hi:
+                return bool(block[addr - lo] & (1 << bit))
+            return False
 
         checked = set()
         for name, v in LOCATIONS.items():
@@ -198,9 +210,7 @@ class MMZXClient(BizHawkClient):
 
         # ---- objetivo: Serpent derrotado (misión final completada) ----
         if not ctx.finished_game:
-            done = all(
-                (block[a - LIVE_BLOCK] if LIVE_BLOCK <= a < LIVE_BLOCK + LIVE_LEN else 0)
-                & (1 << b) for (a, b) in GOAL_BITS)
+            done = all(bit_set(a, b) for (a, b) in GOAL_BITS)
             if done:
                 from NetUtils import ClientStatus
                 ctx.finished_game = True

@@ -56,6 +56,24 @@ HUGATE_LISTS0_ORIG = b"\x00\x00\x00\x00"
 
 CFG_HU_IN_POOL = 0x01                     # byte 0 del config: bit0 = hu_in_pool
 
+# --- Guarda del dibujador de sprites OAM (exp214-225, 2026-09-02) ---
+# FUN_02009b74 (Thumb, 208 B + pool de 24 B) construye las entradas OAM de un
+# drawable: hace UN bounds-check antes del bucle y sale del bucle solo con
+# `subs r5,#1; beq`. Si el count de sprites del frame es 0 (tabla OAM
+# machacada: p.ej. el bloque de 139 KB de un jefe cargado en 0x0224C000
+# encima del heap de graficos del nivel mientras hay entidades vivas, al
+# aparecer por teleport en la zona del jefe), el bucle da la vuelta y
+# escribe sprites por toda la RAM (cursor 0x020F728C) -> soft-lock. Parche
+# MINIMO (1 byte): el bucle termina con `subs r5,#1 ; beq exit`
+# (0x02009C2E/30); `beq` (D001) -> `bls` (D901): LS = borrow (r5 era 0) OR
+# Z (llego a 0), asi que con count==0 sale tras UNA iteracion (acotada por
+# el bounds-check previo) en vez de dar la vuelta a 0xFFFFFFFF. Con
+# count>=1 el comportamiento es identico. (Una relocalizacion a cueva de
+# 240 B tambien funcionaba, exp225, pero rompia el limite del slot BLZ.)
+OAMLOOP_BR_RAM = 0x02009C30
+OAMLOOP_BR_ORIG = bytes.fromhex("01d0")   # beq +2
+OAMLOOP_BR_NEW = bytes.fromhex("01d9")    # bls +2
+
 
 class MMZXPatchExtension(APPatchExtension):
     game = "Mega Man ZX"
@@ -103,6 +121,9 @@ class MMZXPatchExtension(APPatchExtension):
         #    + code-cave condicional por game_state
         poke(SKIP_ENTRY_RAM, SKIP_ENTRY, SKIP_ENTRY_ORIG)
         poke(SKIP_CAVE_RAM, SKIP_CAVE)
+        # 1b) guarda del dibujador OAM (siempre; robustez anti soft-lock):
+        #     `beq` -> `bls` al final del bucle de sprites de FUN_02009b74
+        poke(OAMLOOP_BR_RAM, OAMLOOP_BR_NEW, OAMLOOP_BR_ORIG)
         # 2) Hu-gate (opcional)
         if hu_in_pool:
             poke(HUGATE_ARRAY_RAM, HUGATE_FLAG_INDEX.to_bytes(4, "little"))

@@ -181,3 +181,42 @@ ITEM_NAME_TO_ID = {n: v['id'] for n, v in ITEMS.items()}
 # (estado 0xF8, id 19) mission_complete_on_report (0x02031028)
 # pone AMBOS bits (derivado estático; validar en E2E):
 GOAL_BITS = [(0x021045EB, 7), (0x021045EC, 0)]
+
+# --- Modo AUTO force-accept de misiones (v0.2) ---
+# Al entrar en la subárea destino de una misión, el cliente la
+# fuerza como aceptada (replica FUN_02031f10, validado exp067):
+# start flag (vivo+canónica) + estado en MISSION_STATE_ADDR +
+# MISSION_ACTIVE_FLAG=1. Excluye Troop(4)/Protect HQ(13) (auto
+# por hito). subárea -> {id, state, flag:[addr,bit], name}.
+MISSION_STATE_ADDR = 0x021046AC
+MISSION_ACTIVE_FLAG = 0x02160FA8
+MISSION_ACCEPT = {
+    2: {'id': 1, 'state': 146, 'flag': [34620894, 2], 'name': 'Catch The Maverick'},
+    5: {'id': 2, 'state': 149, 'flag': [34620894, 5], 'name': 'Locate Giro'},
+    6: {'id': 2, 'state': 149, 'flag': [34620894, 5], 'name': 'Locate Giro'},
+    9: {'id': 3, 'state': 153, 'flag': [34620895, 1], 'name': 'Pass The Test'},
+    10: {'id': 3, 'state': 153, 'flag': [34620895, 1], 'name': 'Pass The Test'},
+    18: {'id': 16, 'state': 225, 'flag': [34620904, 1], 'name': 'Destroy Model W'},
+    19: {'id': 16, 'state': 225, 'flag': [34620904, 1], 'name': 'Destroy Model W'},
+    26: {'id': 5, 'state': 171, 'flag': [34620897, 3], 'name': 'Search The Plant'},
+    28: {'id': 6, 'state': 174, 'flag': [34620897, 6], 'name': 'Find The Survivors'},
+    29: {'id': 6, 'state': 174, 'flag': [34620897, 6], 'name': 'Find The Survivors'},
+    30: {'id': 6, 'state': 174, 'flag': [34620897, 6], 'name': 'Find The Survivors'},
+    31: {'id': 6, 'state': 174, 'flag': [34620897, 6], 'name': 'Find The Survivors'},
+    32: {'id': 6, 'state': 174, 'flag': [34620897, 6], 'name': 'Find The Survivors'},
+    33: {'id': 7, 'state': 177, 'flag': [34620898, 1], 'name': 'Fight The Mavericks'},
+    34: {'id': 7, 'state': 177, 'flag': [34620898, 1], 'name': 'Fight The Mavericks'},
+    35: {'id': 7, 'state': 177, 'flag': [34620898, 1], 'name': 'Fight The Mavericks'},
+    36: {'id': 7, 'state': 177, 'flag': [34620898, 1], 'name': 'Fight The Mavericks'},
+    37: {'id': 7, 'state': 177, 'flag': [34620898, 1], 'name': 'Fight The Mavericks'},
+    41: {'id': 8, 'state': 193, 'flag': [34620900, 1], 'name': 'Secure The Biometal'},
+    44: {'id': 9, 'state': 197, 'flag': [34620900, 5], 'name': 'Save The People'},
+    51: {'id': 10, 'state': 201, 'flag': [34620901, 1], 'name': 'Recover The Disk'},
+    55: {'id': 11, 'state': 204, 'flag': [34620901, 4], 'name': 'Attack The Excavators'},
+    60: {'id': 12, 'state': 208, 'flag': [34620902, 0], 'name': 'Protect The Lab'},
+    61: {'id': 14, 'state': 218, 'flag': [34620903, 2], 'name': 'Stop The Dig'},
+    62: {'id': 14, 'state': 218, 'flag': [34620903, 2], 'name': 'Stop The Dig'},
+    63: {'id': 14, 'state': 218, 'flag': [34620903, 2], 'name': 'Stop The Dig'},
+    65: {'id': 15, 'state': 221, 'flag': [34620903, 5], 'name': 'Repel The Army'},
+    66: {'id': 15, 'state': 221, 'flag': [34620903, 5], 'name': 'Repel The Army'},
+}

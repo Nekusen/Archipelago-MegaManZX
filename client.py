@@ -11,7 +11,8 @@ from typing import TYPE_CHECKING, Any
 import worlds._bizhawk as bizhawk
 from worlds._bizhawk.client import BizHawkClient
 
-from .data import LOCATIONS, ITEMS, GOAL_BITS
+from .data import (LOCATIONS, ITEMS, GOAL_BITS, MISSION_ACCEPT,
+                   MISSION_STATE_ADDR, MISSION_ACTIVE_FLAG)
 
 if TYPE_CHECKING:
     from worlds._bizhawk.context import BizHawkClientContext
@@ -59,6 +60,9 @@ class MMZXClient(BizHawkClient):
         self.applied_consumables = 0  # high-water de items consumibles aplicados
         self.death_link_enabled = False
         self.death_link_setup = False
+        self.mission_auto_accept = False   # modo open-world (slot_data)
+        self.mission_setup = False
+        self.last_accept_sub = None        # última subárea auto-aceptada
         self.prev_hp = None
         self.prev_death_link = None
         self.pending_death = False
@@ -156,6 +160,11 @@ class MMZXClient(BizHawkClient):
             if self.death_link_enabled:
                 await ctx.update_death_link(True)
 
+        # Modo open-world: leer la opción una vez
+        if not self.mission_setup:
+            self.mission_setup = True
+            self.mission_auto_accept = bool(ctx.slot_data.get("mission_auto_accept", False))
+
         # comandos de cliente (anti-softlock + diagnóstico de flags)
         if not self.added_commands:
             self.added_commands = True
@@ -217,6 +226,10 @@ class MMZXClient(BizHawkClient):
 
         # ---- conceder items recibidos (idempotente, re-aplicar todo) ----
         await self._grant_items(ctx, guard)
+
+        # ---- open-world: auto-aceptar la misión de la zona actual ----
+        if self.mission_auto_accept:
+            await self._auto_accept_mission(ctx, guard)
 
         # ---- DeathLink ----
         if self.death_link_enabled:
@@ -299,6 +312,44 @@ class MMZXClient(BizHawkClient):
             ts_region[0x10], ts_region[0x07], ts_region[0x08]))
         logger.info("[mmzx_dump] misiones con FLAG de inicio puesto: "
                     + (", ".join(started) if started else "ninguna"))
+
+    async def _auto_accept_mission(self, ctx, guard) -> None:
+        """Open-world: al ENTRAR en la subárea destino de una misión, la
+        fuerza como aceptada (replica FUN_02031f10, validado exp067): start
+        flag (vivo+canónica) + estado en MISSION_STATE_ADDR + MISSION_ACTIVE_
+        FLAG=1. Solo al CAMBIAR de zona (no cada frame) y si no es ya la
+        misión activa. Excluye Troop/Protect HQ (no están en MISSION_ACCEPT;
+        se auto-lanzan por historia)."""
+        try:
+            sub = (await bizhawk.read(ctx.bizhawk_ctx, [(SUBAREA_STABLE, 1, DOM)]))[0][0]
+        except bizhawk.RequestFailedError:
+            return
+        if sub == self.last_accept_sub:
+            return
+        self.last_accept_sub = sub
+        rec = MISSION_ACCEPT.get(sub)
+        if not rec:
+            return
+        try:
+            cur_state = int.from_bytes((await bizhawk.read(
+                ctx.bizhawk_ctx, [(MISSION_STATE_ADDR, 4, DOM)]))[0], "little")
+        except bizhawk.RequestFailedError:
+            return
+        if cur_state == rec["state"]:
+            return   # ya es la misión activa
+        addr, bit = rec["flag"]
+        canon = addr + (CANON_BLOCK - LIVE_BLOCK)
+        cur = await bizhawk.read(ctx.bizhawk_ctx, [(addr, 1, DOM), (canon, 1, DOM)])
+        writes = [
+            (addr, bytes([cur[0][0] | (1 << bit)]), DOM),
+            (canon, bytes([cur[1][0] | (1 << bit)]), DOM),
+            (MISSION_STATE_ADDR, rec["state"].to_bytes(4, "little"), DOM),
+            (MISSION_ACTIVE_FLAG, b"\x01", DOM),
+        ]
+        ok = await bizhawk.guarded_write(ctx.bizhawk_ctx, writes, [guard])
+        if ok:
+            from CommonClient import logger
+            logger.info("[mmzx] open-world: misión auto-aceptada → %s" % rec["name"])
 
     async def _teleport(self, ctx, sub, x, y, guard) -> None:
         """Teleport limpio (7 escrituras; docs/client_integration.md §6).

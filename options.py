@@ -37,11 +37,23 @@ class SubmissionChecks(Toggle):
     default = 0
 
 
+class MissionAutoAccept(Toggle):
+    """Modo 'open world' de misiones (v0.2, EXPERIMENTAL). Con ON, el cliente
+    ACEPTA automáticamente la misión de la zona en la que entras (sin pasar
+    por el Transerver), para poder hacerlas en cualquier orden. Las misiones
+    que el juego lanza solas por historia (Model ZX en la base Guardian, y
+    Protect HQ) se disparan igual, no se auto-aceptan. Con OFF, aceptación
+    manual en el Transerver (vanilla)."""
+    display_name = "Mission Auto-Accept (Open World)"
+    default = 0
+
+
 @dataclass
 class MMZXOptions(PerGameCommonOptions):
     character: Character
     goal: Goal
     level4_victories: Level4Victories
     submission_checks: SubmissionChecks
+    mission_auto_accept: MissionAutoAccept
     death_link: DeathLink
     start_inventory_from_pool: StartInventoryPool

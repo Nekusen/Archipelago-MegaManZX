@@ -113,5 +113,6 @@ class MMZXWorld(World):
             "death_link": bool(self.options.death_link.value),
             "level4_victories": bool(self.options.level4_victories.value),
             "submission_checks": bool(self.options.submission_checks.value),
+            "mission_auto_accept": bool(self.options.mission_auto_accept.value),
             "version": "0.1.0",
         }

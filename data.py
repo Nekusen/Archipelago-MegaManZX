@@ -417,7 +417,7 @@ MISSION_ACCEPT = {
 # la sala): el cliente acepta la misión del área al acercarse a la
 # puerta izquierda (x <= HUB_FLOOR_DOOR_X); agente exp370-379.
 HUB_FLOOR_BOSS = {1888: 26, 2272: 32, 2656: 37, 3424: 44, 4192: 55, 4576: 60, 4960: 63, 5344: 66}
-HUB_FLOOR_DOOR_X = 352
+HUB_FLOOR_DOOR_X = 368
 HUB_FLOOR_Y = {'A': 352, 'B': 736, 'C': 1120, 'D': 1504, 'E': 1888, 'F': 2272, 'G': 2656, 'H': 3040, 'I': 3424, 'J': 3808, 'K': 4192, 'L': 4576, 'M': 4960, 'N': 4960, 'O': 5344, 'X': 5728}
 
 # --- Modelo inicial (tutorial-skip, v0.2; exp171/176/178-180) ---

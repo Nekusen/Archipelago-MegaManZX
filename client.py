@@ -29,7 +29,8 @@ DOM = "ARM9 System Bus"
 LIVE_BLOCK = 0x021045CC       # copia viva del bloque de progreso
 CANON_BLOCK = 0x021602B4      # copia canónica (conceder = set bit aquí)
 LIVE_LEN = 0x60               # ventana viva a leer (cubre disks/misiones/keys)
-PLAYER_POS = 0x0214FB65      # u32 x<<8 y u32 y<<8 (8 bytes; px = >>8)
+PLAYER_POS = 0x0214FB64      # u32 x<<8 (0x0214FB64) y u32 y<<8 (0x0214FB68); px = >>8
+                             # (exp342: la doc decía FB65/FB69, que da basura leído como u32)
 POS_KEY = "mmzx_pos_%d"     # almacén de datos: [subárea, x, y] para UT (auto-tab/icono)
 POS_INTERVAL = 1.0           # s entre envíos si no cambia la subárea
 POS_MIN_DELTA = 48           # px de movimiento mínimo para reenviar
@@ -146,6 +147,9 @@ class MMZXClient(BizHawkClient):
         self.mission_auto_accept = False   # modo open-world (slot_data)
         self.mission_setup = False
         self.last_accept_sub = None        # última subárea auto-aceptada
+        self.force_accept = False          # /mmzx_accept: forzar en el próximo tick
+        self._stage_failed: set[str] = set()   # etapas con excepción ya trazada
+        self.pending_where = False         # /mmzx_where: volcar posición/estado al log
         self.prev_hp = None
         self.prev_death_link = None
         self.pending_death = False
@@ -266,6 +270,22 @@ class MMZXClient(BizHawkClient):
         launched = reads[3][0] == 6
         return (launched and sub != 0 and hp > 0 and state == STATE_INGAME), state_bytes
 
+    async def _stage(self, name: str, coro) -> None:
+        """Ejecuta una etapa del watcher capturando cualquier excepción: el
+        framework de BizHawk no las captura y una sola mataría el bucle en
+        silencio. Se traza en el log (una vez por etapa hasta que vuelva a
+        funcionar)."""
+        try:
+            await coro
+            self._stage_failed.discard(name)
+        except bizhawk.RequestFailedError:
+            raise
+        except Exception:
+            if name not in self._stage_failed:
+                self._stage_failed.add(name)
+                from CommonClient import logger
+                logger.exception("[mmzx] etapa '%s' falló (se sigue con el resto)" % name)
+
     async def game_watcher(self, ctx: "BizHawkClientContext") -> None:
         if ctx.server is None or ctx.slot_data is None:
             return
@@ -289,6 +309,8 @@ class MMZXClient(BizHawkClient):
             ctx.command_processor.commands["mmzx_flags"] = _cmd_flags
             ctx.command_processor.commands["mmzx_dump"] = _cmd_dump
             ctx.command_processor.commands["mmzx_start"] = _cmd_start
+            ctx.command_processor.commands["mmzx_accept"] = _cmd_accept
+            ctx.command_processor.commands["mmzx_where"] = _cmd_where
 
         # ---- tutorial-skip: estado one-shot (datastore) + imagen dorada ----
         # Resolver PRONTO (también en menús) la máquina one-shot del modelo
@@ -322,8 +344,12 @@ class MMZXClient(BizHawkClient):
         if msg == bytes([0xFF] * 4):
             return
 
+        if self.pending_where:
+            self.pending_where = False
+            await self._stage("where", self._log_where(ctx))
+
         # ---- posición del jugador -> almacén de datos (UT: auto-tab e icono) ----
-        await self._send_position(ctx)
+        await self._stage("posicion", self._send_position(ctx))
 
         # ---- detectar checks ----
         # Ventana de lectura calculada de TODAS las direcciones de detect
@@ -366,7 +392,7 @@ class MMZXClient(BizHawkClient):
 
         # ---- pickups respawneables: sondear el buzón (solo si el slot los
         #      activa); los ids ya vistos persisten en mailbox_checked ----
-        await self._poll_pickup_mailbox(ctx)
+        await self._stage("buzon de pickups", self._poll_pickup_mailbox(ctx))
         checked |= self.mailbox_checked
 
         if checked != self.local_checked:
@@ -377,35 +403,35 @@ class MMZXClient(BizHawkClient):
 
         # ---- diagnóstico: trazar bits que cambian (mapear misión completada) ----
         if self.flag_watch:
-            await self._flag_watch_tick(ctx)
+            await self._stage("flags", self._flag_watch_tick(ctx))
 
         # ---- diagnóstico: volcar estado del Transerver (a petición) ----
         if self.pending_dump:
             self.pending_dump = False
-            await self._dump_transerver(ctx)
+            await self._stage("dump", self._dump_transerver(ctx))
 
         # ---- tutorial-skip: aplicar el estado inicial (one-shot) ----
-        await self._start_state_tick(ctx, guard)
+        await self._stage("estado inicial", self._start_state_tick(ctx, guard))
 
         # ---- conceder items recibidos (idempotente, re-aplicar todo) ----
-        await self._grant_items(ctx, guard)
+        await self._stage("items", self._grant_items(ctx, guard))
 
         # ---- #5: revertir formas de jefe / Troop no poseídas por item AP ----
-        await self._revert_unowned_models(ctx, guard)
+        await self._stage("modelos", self._revert_unowned_models(ctx, guard))
 
         # ---- open-world: auto-aceptar la misión de la zona actual ----
         if self.mission_auto_accept:
-            await self._auto_accept_mission(ctx, guard)
+            await self._stage("auto-accept", self._auto_accept_mission(ctx, guard))
 
         # ---- DeathLink ----
         if self.death_link_enabled:
-            await self._handle_death_link(ctx, guard)
+            await self._stage("deathlink", self._handle_death_link(ctx, guard))
 
         # ---- anti-softlock: teleport pedido por comando ----
         if self.pending_teleport is not None:
             sub, x, y = self.pending_teleport
             self.pending_teleport = None
-            await self._teleport(ctx, sub, x, y, guard)
+            await self._stage("teleport", self._teleport(ctx, sub, x, y, guard))
 
         # ---- objetivo: Serpent derrotado (misión final completada) ----
         if not ctx.finished_game:
@@ -418,6 +444,20 @@ class MMZXClient(BizHawkClient):
                 ctx.finished_game = True
                 await ctx.send_msgs([{"cmd": "StatusUpdate",
                                       "status": ClientStatus.CLIENT_GOAL}])
+
+    async def _log_where(self, ctx) -> None:
+        """/mmzx_where: subárea, posición, estado y misión al log."""
+        from CommonClient import logger
+        r = await bizhawk.read(ctx.bizhawk_ctx, [
+            (SUBAREA_STABLE, 1, DOM), (PLAYER_POS, 8, DOM), (GAME_STATE, 4, DOM),
+            (HP, 1, DOM), (TITLE_CAROUSEL_STEP, 1, DOM), (MISSION_STATE_ADDR, 4, DOM),
+            (MISSION_ACTIVE_BYTE, 1, DOM), (0x0214F6C0, 4, DOM), (0x0214FC74, 1, DOM)])
+        x = int.from_bytes(r[1][0:4], "little") >> 8
+        y = int.from_bytes(r[1][4:8], "little") >> 8
+        logger.info("[mmzx] where: sub=%d pos=(%d,%d) gs=%06X hp=%d paso=%d mision(estado)=%d 462B=%02X handler=%d modelo=%d auto_accept=%s items=%d"
+                    % (r[0][0], x, y, int.from_bytes(r[2], "little"), r[3][0], r[4][0],
+                       int.from_bytes(r[5], "little"), r[6][0], int.from_bytes(r[7], "little"), r[8][0],
+                       self.mission_auto_accept, len(ctx.items_received)))
 
     async def _send_position(self, ctx) -> None:
         """Escribe [subárea, x, y] en la clave mmzx_pos_<slot> del almacén de
@@ -494,7 +534,12 @@ class MMZXClient(BizHawkClient):
         self.mailbox_count = count
         if new_ids:
             from CommonClient import logger
-            names = [ctx.location_names.lookup_in_game(i) for i in new_ids]
+            names = []
+            for i in new_ids:
+                try:
+                    names.append(ctx.location_names.lookup_in_game(i, "Mega Man ZX"))
+                except Exception:
+                    names.append(str(i))
             logger.info("[mmzx] pickup recogido: %s" % ", ".join(names))
 
     async def _flag_watch_tick(self, ctx) -> None:
@@ -592,22 +637,27 @@ class MMZXClient(BizHawkClient):
                 return
             x = int.from_bytes(r[0][0:4], "little") >> 8
             y = int.from_bytes(r[0][4:8], "little") >> 8
-            floor = next((fy for fy in HUB_FLOOR_BOSS if abs(y - (fy - 17)) <= 48), None)
-            if floor is None or x > HUB_FLOOR_DOOR_X:
+            floor = next((fy for fy in HUB_FLOOR_BOSS if abs(y - (fy - 17)) <= 64), None)
+            if floor is None or (x > HUB_FLOOR_DOOR_X and not self.force_accept):
                 self.last_accept_sub = None
                 return
-            if self.last_accept_sub == ("hub", floor):
+            if self.last_accept_sub == ("hub", floor) and not self.force_accept:
                 return
-            self.last_accept_sub = ("hub", floor)
+            key = ("hub", floor)
             rec = MISSION_ACCEPT.get(HUB_FLOOR_BOSS[floor])
+            from CommonClient import logger
+            logger.info("[mmzx] piso del hub y=%d (jugador %d,%d): misión %s"
+                        % (floor, x, y, rec["name"] if rec else "?"))
         else:
-            if sub == self.last_accept_sub:
+            if sub == self.last_accept_sub and not self.force_accept:
                 return
-            self.last_accept_sub = sub
+            key = sub
             # (Las salas de JEFE ya no se excluyen: con la guarda OAM de la ROM
             # forzar la misión dentro no corrompe la sala; agente exp379/379b.)
             rec = MISSION_ACCEPT.get(sub)
+        self.force_accept = False
         if not rec:
+            self.last_accept_sub = key
             return
         # misión ya COMPLETADA (bits de "completada" = detección de su
         # location): no re-aceptarla (evitaría un segundo Report/recompensa)
@@ -618,6 +668,9 @@ class MMZXClient(BizHawkClient):
             except bizhawk.RequestFailedError:
                 return
             if all(vals[i][0] & (1 << b) for i, (_, b) in enumerate(done_bits)):
+                self.last_accept_sub = key
+                from CommonClient import logger
+                logger.info("[mmzx] %s ya completada: no se re-acepta" % rec["name"])
                 return
         try:
             cur_state = int.from_bytes((await bizhawk.read(
@@ -625,6 +678,7 @@ class MMZXClient(BizHawkClient):
         except bizhawk.RequestFailedError:
             return
         if cur_state == rec["state"]:
+            self.last_accept_sub = key
             return   # ya es la misión activa
         addr, bit = rec["flag"]
         canon = addr + (CANON_BLOCK - LIVE_BLOCK)
@@ -655,9 +709,12 @@ class MMZXClient(BizHawkClient):
             writes.append((ea, bytes([ecur[0][0] | (1 << eb)]), DOM))
             writes.append((ea + CANON_OFF, bytes([ecur[1][0] | (1 << eb)]), DOM))
         ok = await bizhawk.guarded_write(ctx.bizhawk_ctx, writes, [guard])
+        from CommonClient import logger
         if ok:
-            from CommonClient import logger
+            self.last_accept_sub = key      # solo se marca si la escritura entró
             logger.info("[mmzx] open-world: misión auto-aceptada → %s" % rec["name"])
+        else:
+            logger.info("[mmzx] aceptación de %s no aplicada (guarda de estado); se reintenta" % rec["name"])
 
     async def _start_state_resolve(self, ctx) -> None:
         """Avanza la máquina one-shot del skip usando el datastore del
@@ -1081,6 +1138,28 @@ def _cmd_teleport(self, *args) -> None:
         return
     handler.pending_teleport = (sub, x, y)
     logger.info(f"Teleport encolado → subárea {sub} ({x},{y}).")
+
+
+def _cmd_where(self, *args) -> None:
+    """Diagnóstico: escribe en el log la subárea, posición y estado actuales."""
+    from CommonClient import logger
+    handler = self.ctx.client_handler
+    if not isinstance(handler, MMZXClient):
+        return
+    handler.pending_where = True
+    logger.info("mmzx_where: encolado (se vuelca en el próximo tick en juego).")
+
+
+def _cmd_accept(self, *args) -> None:
+    """Fuerza la aceptación de la misión de la zona actual (o del piso del hub
+    en el que estás) en el próximo tick, aunque ya se hubiera intentado."""
+    from CommonClient import logger
+    handler = self.ctx.client_handler
+    if not isinstance(handler, MMZXClient):
+        return
+    handler.force_accept = True
+    handler.last_accept_sub = None
+    logger.info("mmzx_accept: encolado (se aplica en el próximo tick en juego).")
 
 
 def _cmd_start(self, *args) -> None:

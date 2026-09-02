@@ -18,6 +18,7 @@ from .options import MMZXOptions
 from .regions import create_regions
 from .rom import MMZXPatch, write_patch_tokens, MMZX_US_MD5
 from . import client  # registra el BizHawkClient  # noqa: F401
+from . import tracker_pos  # auto-tab / icono de posición para Universal Tracker
 
 
 class MMZXSettings(settings.Group):
@@ -62,10 +63,16 @@ class MMZXWorld(World):
     # Universal Tracker: pestaña de mapa con el pack PopTracker embebido en
     # worlds/mmzx/tracker/ (tools/gen_tracker_pack.py; la lógica la pone UT
     # desde este mismo mundo). UT ignora el atributo si no está instalado.
+    # Auto-tab + icono de posición: el cliente escribe mmzx_pos_<slot> =
+    # [subárea, x, y] en el almacén de datos; ver tracker_pos.py.
     tracker_world = {
         "map_page_folder": "tracker",
         "map_page_maps": "maps.json",
         "map_page_locations": "locations.json",
+        "map_page_setting_key": "mmzx_pos_{player}",
+        "map_page_index": tracker_pos.map_page_index,
+        "location_setting_key": "mmzx_pos_{player}",
+        "location_icon_coords": tracker_pos.location_icon_coords,
     }
 
     def create_regions(self) -> None:

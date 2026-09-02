@@ -28,6 +28,10 @@ DOM = "ARM9 System Bus"
 LIVE_BLOCK = 0x021045CC       # copia viva del bloque de progreso
 CANON_BLOCK = 0x021602B4      # copia canónica (conceder = set bit aquí)
 LIVE_LEN = 0x60               # ventana viva a leer (cubre disks/misiones/keys)
+PLAYER_POS = 0x0214FB65      # u32 x<<8 y u32 y<<8 (8 bytes; px = >>8)
+POS_KEY = "mmzx_pos_%d"     # almacén de datos: [subárea, x, y] para UT (auto-tab/icono)
+POS_INTERVAL = 1.0           # s entre envíos si no cambia la subárea
+POS_MIN_DELTA = 48           # px de movimiento mínimo para reenviar
 MSG_BANK = 0x02104588         # u32 índice del último banco de texto (0xFFFFFFFF = boot)
 LIFEUP_BYTE = 0x0214FC77
 SUBTANK_BYTE = 0x0214FC78
@@ -158,6 +162,7 @@ class MMZXClient(BizHawkClient):
         self.mailbox_checked: set[int] = set()
         self.mailbox_map: dict[tuple[int, int], int] | None = None
         self.mailbox_enabled: bool | None = None
+        self.pos_last = None          # (sub, x, y, t) del último envío de posición
 
     async def validate_rom(self, ctx: "BizHawkClientContext") -> bool:
         from CommonClient import logger
@@ -197,6 +202,7 @@ class MMZXClient(BizHawkClient):
         self.mailbox_count = None
         self.mailbox_checked = set()
         self.mailbox_enabled = None
+        self.pos_last = None
         return True
 
     async def set_auth(self, ctx: "BizHawkClientContext") -> None:
@@ -301,6 +307,9 @@ class MMZXClient(BizHawkClient):
         if msg == bytes([0xFF] * 4):
             return
 
+        # ---- posición del jugador -> almacén de datos (UT: auto-tab e icono) ----
+        await self._send_position(ctx)
+
         # ---- detectar checks ----
         # Ventana de lectura calculada de TODAS las direcciones de detect
         # (+ GOAL_BITS). Cubre el bloque de progreso 0x021045CC y tambien
@@ -392,6 +401,36 @@ class MMZXClient(BizHawkClient):
                 ctx.finished_game = True
                 await ctx.send_msgs([{"cmd": "StatusUpdate",
                                       "status": ClientStatus.CLIENT_GOAL}])
+
+    async def _send_position(self, ctx) -> None:
+        """Escribe [subárea, x, y] en la clave mmzx_pos_<slot> del almacén de
+        datos para el auto-tab y el icono del mapa de Universal Tracker.
+        UT recarga la pestaña de mapa en cada cambio de la clave (sin
+        limitación por su parte), así que se limita aquí: al cambiar de
+        subárea (inmediato) o, como mucho, cada POS_INTERVAL s y solo si el
+        jugador se ha movido >= POS_MIN_DELTA px."""
+        if not getattr(ctx, "slot", None):
+            return
+        try:
+            r = await bizhawk.read(ctx.bizhawk_ctx, [(SUBAREA_STABLE, 1, DOM), (PLAYER_POS, 8, DOM)])
+        except bizhawk.RequestFailedError:
+            return
+        sub = r[0][0]
+        x = int.from_bytes(r[1][0:4], "little") >> 8
+        y = int.from_bytes(r[1][4:8], "little") >> 8
+        now = time.monotonic()
+        last = self.pos_last
+        if last is not None and sub == last[0]:
+            if now - last[3] < POS_INTERVAL:
+                return
+            if abs(x - last[1]) < POS_MIN_DELTA and abs(y - last[2]) < POS_MIN_DELTA:
+                return
+        self.pos_last = (sub, x, y, now)
+        await ctx.send_msgs([{
+            "cmd": "Set", "key": POS_KEY % ctx.slot, "default": [0, 0, 0],
+            "want_reply": False,
+            "operations": [{"operation": "replace", "value": [int(sub), int(x), int(y)]}],
+        }])
 
     async def _poll_pickup_mailbox(self, ctx) -> None:
         """Pickups respawneables (v0.2): lee el buzón que rellena el parche

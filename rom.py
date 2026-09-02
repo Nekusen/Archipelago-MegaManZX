@@ -74,6 +74,24 @@ OAMLOOP_BR_RAM = 0x02009C30
 OAMLOOP_BR_ORIG = bytes.fromhex("01d0")   # beq +2
 OAMLOOP_BR_NEW = bytes.fromhex("01d9")    # bls +2
 
+# --- Posesión de biometales "solo item AP" (H/F/L/P) — exp240, 2026-09-02 ---
+# La posesión de un modelo la resuelve FUN_0203e414 sobre tablas de categoría
+# (counts @0x020DE9AC, listas @0x020DEB78). Para HX/FX/LX/PX cada lista tiene
+# DOS flags: el bit "D0" (0x021045D0.x, que pone la VICTORIA del jefe y que es
+# el flag de DETECCIÓN de la location "Obtain Biometal X") y el bit "D1"
+# (0x021045D1.x, que concede el ITEM AP). Con count=2 basta CUALQUIERA -> el
+# jefe te da el modelo (doble-grant del playtest #2). Parche: dejar la lista
+# apuntando SOLO al flag D1 (list[0]=flag D1, count=1) -> la victoria del jefe
+# enciende D0.x (dispara el check) pero NO concede posesión; solo el item AP
+# (D1.x) la concede. Verificado exp240 (D0-solo -> pos=0; D1 -> pos=1).
+# cat -> (count_addr, list0_addr, flag_D1, orig_count, orig_list0_u32)
+BIOMETAL_CAT_PATCH = {
+    3: (0x020DE9AF, 0x020DE9CC, 41, 33),   # HX
+    4: (0x020DE9B0, 0x020DE9BC, 45, 37),   # FX
+    5: (0x020DE9B1, 0x020DE9E4, 43, 35),   # LX
+    6: (0x020DE9B2, 0x020DE9F4, 47, 39),   # PX
+}
+
 
 class MMZXPatchExtension(APPatchExtension):
     game = "Mega Man ZX"
@@ -124,6 +142,12 @@ class MMZXPatchExtension(APPatchExtension):
         # 1b) guarda del dibujador OAM (siempre; robustez anti soft-lock):
         #     `beq` -> `bls` al final del bucle de sprites de FUN_02009b74
         poke(OAMLOOP_BR_RAM, OAMLOOP_BR_NEW, OAMLOOP_BR_ORIG)
+        # 1c) posesión de biometales "solo item AP" (siempre): la victoria del
+        #     jefe deja de conceder el modelo; solo el item AP (D1.x) lo hace
+        for cnt_a, lst_a, flag_d1, orig_flag in BIOMETAL_CAT_PATCH.values():
+            poke(lst_a, flag_d1.to_bytes(4, "little"),
+                 orig_flag.to_bytes(4, "little"))
+            poke(cnt_a, b"\x01", b"\x02")
         # 2) Hu-gate (opcional)
         if hu_in_pool:
             poke(HUGATE_ARRAY_RAM, HUGATE_FLAG_INDEX.to_bytes(4, "little"))

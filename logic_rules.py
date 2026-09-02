@@ -117,8 +117,8 @@ SUBREGIONS = {
     # A-1: dos cuevas (sub-salas) por puertas internas: (54,70)->(418,22) y
     # (135,56)->(450,22). Disk E-1 (477,21) esta en la segunda, cuya puerta
     # tiene "Fire thorns" (135,55) delante -> quemarlas con FX.
-    "a01/cueva-e1": {"parent": "a01", "req": "FX",   # ?
-                     "locations": ["A-1: Disk E-1"]},
+    "a01/cueva-e1": {"parent": "a01", "req": "HX",   # usuario (playtest 4): HX;
+                     "locations": ["A-1: Disk E-1"]},    # (hipotesis previa FX por las Fire thorns)
     # A-2: el tramo inferior (llegada desde A-1) queda separado del resto
     # por el miniboss Giga Aspis: hay que matarlo para pasar (Hu no ataca).
     "a02/sur": {"parent": "a02", "req": "MODEL", "back": "MODEL",   # ?
@@ -197,6 +197,23 @@ GATE_RULES = {
 
 INTERNAL_GATE_EXEMPT = {
     "K-4: Disk E-26",   # K-4: extremo oeste del pasillo central, sin puerta Blanca
+    # C-1 (ciudad): la puerta Verde interna (1776,912) lleva al interior
+    # (7456,1104) donde estan el 1-Up, Weapon Energy L (4) y E-Crystal L (9);
+    # el resto de pickups de C-1 esta en la calle o tras puertas interiores
+    # libres (inferido de los destinos de las puertas; ? sin validar).
+    "C-1: E-Crystal L",
+    "C-1: E-Crystal L (2)",
+    "C-1: E-Crystal L (3)",
+    "C-1: E-Crystal L (4)",
+    "C-1: E-Crystal L (5)",
+    "C-1: E-Crystal L (6)",
+    "C-1: E-Crystal L (7)",
+    "C-1: E-Crystal L (8)",
+    "C-1: Energy Capsule L",
+    "C-1: Energy Capsule XL",
+    "C-1: Weapon Energy L",
+    "C-1: Weapon Energy L (2)",
+    "C-1: Weapon Energy L (3)",
 }
 
 # Requisito adicional por location (AND con el de su sala/sub-region).
@@ -207,9 +224,9 @@ LOCATION_RULES = {
     "A-4: Disk E-20": "MODEL",     # ? A-4: arriba a la derecha de la estructura
                               # alta (escalera + columna vertical)
     # --- Area B (interordi) ---
-    "B-1: Disk E-24": "MODEL",     # ? B-1: repisa elevada al fondo derecho
-    "B-2: Disk E-17": "MODEL",     # ? B-2: en lo alto de un pilar (tile y=29)
-    "B-2: Disk B-1": "MODEL",      # ? B-2: cima de la estructura derecha (y=28)
+    "B-1: Disk E-24": "HX",     # ? B-1: repisa elevada al fondo derecho
+    "B-2: Disk E-17": "HX",     # ? B-2: en lo alto de un pilar (tile y=29)
+    "B-2: Disk B-1": "HX",      # ? B-2: cima de la estructura derecha (y=28)
     "B-4: Disk E-11": "MODEL",     # ? B-4: estructura alta arriba a la derecha
     "Quest - Purify The Lakes": "LX&MODEL",  # ? B-4: 5 Pure Water Tanks en
                                              # el lago (bajo el agua; romperlos)
@@ -321,4 +338,24 @@ LOCATION_RULES = {
     # --- Misiones que exigen forma Hu para hablar con NPCs [usuario] ---
     "Mission - Pass The Test": "HU&MODEL",        # ? (hablar + superar)
     "Mission - Fight The Mavericks": "HU&MODEL",  # hablar con NPCs + pelear
+    # --- Playtest 4 (usuario, Universal Tracker, 2026-09-02): observado in-game ---
+    "A-1: 1-Up": "HX",
+    "A-1: Energy Capsule L": "HX",
+    "A-1: Disk E-31": "HX",
+    "A-1: Energy Capsule L (3)": "HX",
+    "A-1: E-Crystal L (2)": "HX",
+    "A-1: E-Crystal L (3)": "HX",
+    "A-2: Energy Capsule L": "HX",
+    "A-2: E-Crystal L": "HX",
+    "A-2: Disk E-27": "HX",
+    "B-1: E-Crystal L": "HX",
+    "B-3: 1-Up": "HX",
+    "B-3: E-Crystal L": "HX",
+    "B-3: E-Crystal L (2)": "HX",
+    "C-1: Weapon Energy L": "HX",
+    "C-1: E-Crystal L": "HX",
+    "C-1: E-Crystal L (2)": "HX",
+    "C-1: E-Crystal L (5)": "HX",
+    "B-3: Energy Capsule XL": "HU",
+    "A-4: E-Crystal L": "HU|LX",
 }

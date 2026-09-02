@@ -92,6 +92,39 @@ class MissionAutoAccept(DefaultOnToggle):
     display_name = "Mission Auto-Accept (Open World)"
 
 
+class PickupChecks1Up(Toggle):
+    """(v0.2) Los 1-Up colocados en el mapa (7) cuentan como checks: la
+    PRIMERA vez que recoges cada uno envía su location; después siguen
+    reapareciendo y dando vida como siempre. Añade 7 locations (y otros
+    tantos items de relleno al pool)."""
+    display_name = "Pickup Checks: 1-Ups"
+    default = 0
+
+
+class PickupChecksEnergy(Toggle):
+    """(v0.2) Las cápsulas de energía (Energy Capsule L/XL) colocadas en el
+    mapa (45) cuentan como checks: la PRIMERA recogida de cada una envía su
+    location; después siguen reapareciendo y curando. Añade 45 locations."""
+    display_name = "Pickup Checks: Energy Capsules"
+    default = 0
+
+
+class PickupChecksWeapon(Toggle):
+    """(v0.2) Las recargas de arma (Weapon Energy L) colocadas en el mapa
+    (25) cuentan como checks: la PRIMERA recogida de cada una envía su
+    location; después siguen reapareciendo. Añade 25 locations."""
+    display_name = "Pickup Checks: Weapon Energy"
+    default = 0
+
+
+class PickupChecksCrystals(Toggle):
+    """(v0.2) Los E-Crystal L colocados en el mapa (56) cuentan como checks:
+    la PRIMERA recogida de cada uno envía su location; después siguen
+    reapareciendo y dando cristales. Añade 56 locations."""
+    display_name = "Pickup Checks: E-Crystals"
+    default = 0
+
+
 @dataclass
 class MMZXOptions(PerGameCommonOptions):
     character: Character
@@ -102,5 +135,9 @@ class MMZXOptions(PerGameCommonOptions):
     level4_victories: Level4Victories
     submission_checks: SubmissionChecks
     mission_auto_accept: MissionAutoAccept
+    pickup_checks_1up: PickupChecks1Up
+    pickup_checks_energy: PickupChecksEnergy
+    pickup_checks_weapon: PickupChecksWeapon
+    pickup_checks_crystals: PickupChecksCrystals
     death_link: DeathLink
     start_inventory_from_pool: StartInventoryPool

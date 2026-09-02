@@ -24,7 +24,7 @@ van a la región de su sala (o a su sub-región curada).
 from BaseClasses import Region
 
 from .data import LOCATIONS
-from .locations import MMZXLocation, locations_for_options
+from .locations import MMZXLocation, locations_for_options, pickup_flags_from_options
 from .logic import (ALL_EDGES, NON_TRANSITION_KINDS, ROOM_NAMES, and_rules,
                     compile_rule, door_rule, gate_expr, internal_gate_rule,
                     label_rule, starting_room, transerver_rule)
@@ -91,6 +91,7 @@ def create_regions(world) -> None:
     active = locations_for_options(
         include_quests=bool(world.options.submission_checks.value),
         include_level4=bool(world.options.level4_victories.value),
+        pickups=pickup_flags_from_options(world.options),
     )
     for name, v in active.items():
         room = v.get("room")

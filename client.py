@@ -16,6 +16,7 @@ from .data import (LOCATIONS, ITEMS, GOAL_BITS, GOAL_BITS_ALT, MISSION_ACCEPT,
                    STARTING_MODELS, STARTING_MODEL_ITEM, STARTING_TRANSERVERS,
                    MODEL_X_POSSESSION, ACTIVE_MODEL_ADDR)
 from .data import EVENT_GATES, EVENT_GATES_OPEN, EVENT_GATES_ALL6
+from .data import PICKUP_MAILBOX_ADDR, PICKUP_MAILBOX_SLOTS
 from .golden import GOLDEN_IMAGE, GOLDEN_IMAGE_ADDR
 
 if TYPE_CHECKING:
@@ -79,6 +80,11 @@ MODEL_POSSESSION = {
 # FUN_02009184 ("¿misión X activa?") exige (&6). Lo limpia el Report.
 # Canónica en +0x5BCE8. Sin él, la arena del jefe no se armaba (exp229/231).
 MISSION_ACTIVE_BYTE = 0x0210462B
+# Bloque de estado de HISTORIA (agente exp350-359): id de mision activa +
+# objeto del handler por mision (tabla 0x020CF0F4). Sin instalarlo, el
+# force-accept no dispara cutscenes ni flags por rectangulo (verjas).
+STORY_HANDLER_ID = 0x0214F6C0
+STORY_HANDLER_OBJ = 0x0214F6C4     # 0x114 B; +9 = id de cutscene (0xFF = ninguna)
 
 # Subáreas de JEFE (y de fin de misión) donde NO se auto-acepta al entrar
 # (exp212/213): e07 26, f05 32, g05 37, i03 44, k04 55, l04 60, m03 63,
@@ -98,6 +104,13 @@ HUB_SUBAREA, HUB_X, HUB_Y = 70, 384, 335
 # misiones/quests/historia/HQ) para trazar qué bits cambian al completar
 # una misión en vivo.
 FLAG_WATCH_BASE, FLAG_WATCH_LEN = 0x021045C0, 0x84
+
+# Pickups respawneables como checks (v0.2, agente exp360-369): el parche
+# rom.py PICKUP_MAILBOX_* escribe en un BUZÓN de RAM (u32 contador + anillo
+# de PICKUP_MAILBOX_SLOTS entradas [sub, idx, role, 0]) cada refill de
+# layout recogido. Opciones de slot_data que activan el sondeo.
+PICKUP_OPTION_KEYS = ("pickup_checks_1up", "pickup_checks_energy",
+                      "pickup_checks_weapon", "pickup_checks_crystals")
 
 
 class MMZXClient(BizHawkClient):
@@ -138,6 +151,13 @@ class MMZXClient(BizHawkClient):
         # visto, para revertir si un megamerge de jefe / Troop fuerza una forma
         # que el jugador aún no ha recibido.
         self.last_legit_model = 1
+        # buzón de pickups respawneables: contador visto, ids ya enviados
+        # (las repeticiones por respawn se filtran aquí), mapa (sub, idx) ->
+        # id de location y si el slot activa alguna categoría (slot_data).
+        self.mailbox_count: int | None = None
+        self.mailbox_checked: set[int] = set()
+        self.mailbox_map: dict[tuple[int, int], int] | None = None
+        self.mailbox_enabled: bool | None = None
 
     async def validate_rom(self, ctx: "BizHawkClientContext") -> bool:
         from CommonClient import logger
@@ -174,6 +194,9 @@ class MMZXClient(BizHawkClient):
         self.prev_hp = None
         self.prev_death_link = None
         self.pending_death = False
+        self.mailbox_count = None
+        self.mailbox_checked = set()
+        self.mailbox_enabled = None
         return True
 
     async def set_auth(self, ctx: "BizHawkClientContext") -> None:
@@ -315,6 +338,11 @@ class MMZXClient(BizHawkClient):
                 if loc_id in ctx.server_locations:
                     checked.add(loc_id)
 
+        # ---- pickups respawneables: sondear el buzón (solo si el slot los
+        #      activa); los ids ya vistos persisten en mailbox_checked ----
+        await self._poll_pickup_mailbox(ctx)
+        checked |= self.mailbox_checked
+
         if checked != self.local_checked:
             newly = checked - self.local_checked
             if newly:
@@ -364,6 +392,54 @@ class MMZXClient(BizHawkClient):
                 ctx.finished_game = True
                 await ctx.send_msgs([{"cmd": "StatusUpdate",
                                       "status": ClientStatus.CLIENT_GOAL}])
+
+    async def _poll_pickup_mailbox(self, ctx) -> None:
+        """Pickups respawneables (v0.2): lee el buzón que rellena el parche
+        (u32 contador + anillo de PICKUP_MAILBOX_SLOTS entradas u32
+        [u8 subárea, u8 índice de coords, u8 role, 0]; la entrada k del
+        contador vive en +4 + (k % SLOTS)*4). Cada (sub, idx) nuevo se mapea a
+        su location (detect ['mailbox', sub, idx]) y se acumula en
+        mailbox_checked; las repeticiones (el pickup respawnea al reentrar) no
+        hacen nada. Si el contador RETROCEDE (reset del emulador: el buzón
+        vive en RAM y arranca a 0) o es el primer tick, se procesan como
+        mucho las últimas SLOTS entradas y se re-sincroniza. Sin opción
+        pickup_checks_* activa en el slot no se lee nada."""
+        if self.mailbox_enabled is None:
+            self.mailbox_enabled = any(bool(ctx.slot_data.get(k, False))
+                                       for k in PICKUP_OPTION_KEYS)
+        if not self.mailbox_enabled:
+            return
+        if self.mailbox_map is None:
+            self.mailbox_map = {}
+            for v in LOCATIONS.values():
+                det = v.get("detect")
+                if det and det[0] == "mailbox":
+                    self.mailbox_map[(int(det[1]), int(det[2]))] = v["id"]
+        try:
+            raw = (await bizhawk.read(ctx.bizhawk_ctx, [
+                (PICKUP_MAILBOX_ADDR, 4 + 4 * PICKUP_MAILBOX_SLOTS, DOM)]))[0]
+        except bizhawk.RequestFailedError:
+            return
+        count = int.from_bytes(raw[:4], "little")
+        if self.mailbox_count is None or count < self.mailbox_count:
+            start = max(0, count - PICKUP_MAILBOX_SLOTS)      # re-sincronizar
+        else:
+            start = max(self.mailbox_count, count - PICKUP_MAILBOX_SLOTS)
+        new_ids = []
+        for k in range(start, count):
+            off = 4 + 4 * (k % PICKUP_MAILBOX_SLOTS)
+            sub, idx = raw[off], raw[off + 1]
+            loc_id = self.mailbox_map.get((sub, idx))
+            if loc_id is None or loc_id not in ctx.server_locations:
+                continue
+            if loc_id not in self.mailbox_checked:
+                self.mailbox_checked.add(loc_id)
+                new_ids.append(loc_id)
+        self.mailbox_count = count
+        if new_ids:
+            from CommonClient import logger
+            names = [ctx.location_names.lookup_in_game(i) for i in new_ids]
+            logger.info("[mmzx] pickup recogido: %s" % ", ".join(names))
 
     async def _flag_watch_tick(self, ctx) -> None:
         """Lee la ventana ancha del bloque de progreso y reporta en el log
@@ -473,6 +549,14 @@ class MMZXClient(BizHawkClient):
             (act, bytes([cur[2][0] | 0x02]), DOM),
             (act_c, bytes([cur[3][0] | 0x02]), DOM),
         ]
+        # Handler de HISTORIA de la mision (receta FUN_0201b5ec, validada por
+        # el agente exp350-359 para las misiones 6/14/16): objeto a cero, sin
+        # cutscene activa (+9 = 0xFF) e id de mision. Con el se ejecutan las
+        # cutscenes por rectangulo y los flags de la mision como en vanilla.
+        obj = bytearray(0x114)
+        obj[9] = 0xFF
+        writes.append((STORY_HANDLER_OBJ, bytes(obj), DOM))
+        writes.append((STORY_HANDLER_ID, int(rec["id"]).to_bytes(4, "little"), DOM))
         # bits extra de la misión (p.ej. Troop: 0x021045E0.7 = "ya lanzada" para
         # que la sala de mando X-2 no la relance por historia), vivo+canónica
         for ea, eb in rec.get("extra", []):

@@ -59,9 +59,11 @@ DOOR_RULES = {
                            # (tile y=47 vs suelo 69): hay que escalar
     "a03->h04": "FX",      # ? Fire thorns (118,55) en el pasillo a la
                            # puerta Purpura (131,55): quemarlas
-    # a04->m01: + ALL6 por el SELLO de M-1 (ovl104 FUN_02194350: capas por
-    # modelo, 6/6 -> capa extra; agente exp290-299; hipotesis conservadora)
-    "a04->m01": "MODEL&RED&ALL6",   # ? puerta en la estructura alta (54,20): se
+    # a04->m01: el "sello de los 6 biometales" de M-1 era un mito: lo abre
+    # una cutscene de Stop The Dig (agente exp350-359) y el cliente pone su
+    # flag (395); las capas de ovl104 son cosmeticas. Sin ALL6 aqui (el goal
+    # lo exige en D-2 -> D-4).
+    "a04->m01": "MODEL&RED",   # ? puerta en la estructura alta (54,20): se
                                # sube por escalera y columna; y nada mas
                                # entrar en M-1 esta la puerta Roja interna
                                # (56,46) + el Orehawk (miniboss)
@@ -178,16 +180,19 @@ SUBREGIONS = {
 # libre (el cliente pone el flag: data.EVENT_GATES_OPEN) o desconocido
 # provisional. Qué las abre en vanilla: agente exp350-359 (pendiente).
 GATE_RULES = {
-    381: None,      # F-3 -> F-4 (verja, se entra con UP): el cliente la abre
-    382: None,      # G-2 -> G-4 (verja): el cliente la abre
-    191: None,      # G-2 verja interna 0x42 (0x021045E3.7, ¿bit de misión?): provisional
-    225: "ALL6",    # D-2 -> D-4 (HQ de Slither; 0x021045E8.1 = inicio de "Destroy
-                    #   Model W"): requisito de diseño = 6 biometales; el cliente
-                    #   pone el flag al tenerlos (EVENT_GATES_ALL6). Condiciones
-                    #   extra de esa puerta (rol 0xDA): pendiente agente
-    395: "ALL6",    # M-1 verja interna (0x021045FD.3): ¿sello de los 6 biometales?
-    768: None,      # N-1 verjas internas (0x0210462C.0/.1): desconocido, provisional
-    769: None,
+    381: None,      # F-3 -> F-4 (verja, UP): vanilla = 3 cutscenes del handler de
+                    #   Find The Survivors; el cliente la abre siempre
+    382: None,      # G-2 -> G-4 (verja): vanilla = 8o rehen rescatado en forma
+                    #   humana; el cliente la abre siempre
+    191: "FIGHT_THE_MAVERICKS",   # G-2 interna (parte baja): complete-bit de la
+                    #   mision 7 = se abre al reportarla (evento de mision)
+    225: "ALL6",    # D-2 -> D-4 (HQ de Slither): mision 16 aceptada (225) + la
+                    #   verja solo existe con el flag 378; el cliente pone ambos
+                    #   al tener los 6 biometales (EVENT_GATES_ALL6; diseno del goal)
+    395: None,      # M-1 sello: vanilla = cutscene del handler de Stop The Dig,
+                    #   NO mira biometales; el cliente la abre siempre
+    768: None,      # N-1 puertas Zero 3 / Zero 4: cartucho GBA (recalculado cada
+    769: None,      #   frame); no gatean ninguna location (Disk B-2 en (488,648))
 }
 
 INTERNAL_GATE_EXEMPT = {

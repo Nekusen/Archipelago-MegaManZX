@@ -128,6 +128,140 @@ PICKUP_FLAG_PATCH = [
 ]
 
 
+# --- BUZÓN de pickups respawneables (agente exp360-369, 2026-09-02) ---
+# Los refills colocados en el mapa (salud/WE/E-Crystal/1-Up, kind 6 sub 0)
+# son locations OPCIONALES: la primera recogida de cada uno envía el check y
+# después siguen respawneando. No hay flag persistente: el juego los instancia
+# desde la tabla de coords de la sala (0x020C9C7C+0x240) por el spawner
+# FUN_0200ca8c, que asocia a cada entidad viva un REGISTRO de spawn (pool
+# 0x02107FB4, 48 x 12 B: +0 next, +4 entidad, +8 u16 índice de coords, +0xA
+# attr; lista activa en 0x021081F4). Los drops de enemigos (FUN_020a37d8) no
+# tienen registro. Parche: el `bl FUN_0200fc0c` del prólogo del think
+# item_entity_update (FUN_020a309c, 0x020A30A2) pasa a `bl cave`; el cave
+# (Thumb, 88 B en el hueco de ceros del arm9) llama a FUN_0200fc0c y, si la
+# entidad r5 está "recogida" (+0x94 & 4 && +0xC0 != 0: el mismo test del
+# think), busca su registro y escribe en el buzón
+#   MAILBOX+0  u32 contador (sube 1 por recogida con identidad)
+#   MAILBOX+4  anillo de 8 x u32 [u8 subárea 0x02108228, u8 índice de coords,
+#              u8 role (+0x14), 0]  (entrada = contador & 7)
+# El cliente sondea el contador y mapea (sub, idx) -> location (data.py
+# LOCATIONS detect ['mailbox', sub, idx]); las repeticiones (respawn) las
+# filtra el cliente. Verificado en RAM (exp364/365: 9 pickups en a01/c01 con
+# índice correcto, re-entrada vuelve a escribir, drop de enemigo no escribe)
+# y horneado por rom.py (exp366, arranque en frío por el skip). Hueco
+# 0x020CB490-0x020CB9D4 sin lecturas ni escrituras en sesión (exp363).
+PICKUP_MAILBOX_HOOK_RAM = 0x020A30A2
+PICKUP_MAILBOX_HOOK_ORIG = bytes.fromhex("6cf7b3fd")   # bl FUN_0200fc0c
+PICKUP_MAILBOX_HOOK_NEW = bytes.fromhex("28f0fdf9")    # bl 0x020CB4A0 (Thumb)
+PICKUP_MAILBOX_CAVE_RAM = 0x020CB4A0                   # tras SKIP_CAVE (0x020CB460+48)
+# push{r4,lr}; bl FUN_0200fc0c; ldr r0,[r5,#0x94]; lsrs #3; bcc done;
+# ldr r0,[r5,#0xC0]; beq done; r1=[0x021081F4]; loop: beq done; [r1+4]==r5?
+# -> found; r1=[r1]; b loop; found: r2=u16[r1+8]<<8 | u8[0x02108228] |
+# u8[r5+0x14]<<16; r3=MAILBOX; r0=[r3]; [r3+4+(r0&7)*4]=r2; [r3]=r0+1;
+# done: pop{r4,pc}; pool: 0x021081F4, 0x02108228, MAILBOX
+PICKUP_MAILBOX_CAVE = bytes.fromhex(
+    "10b544f7b3fb94202858c0081dd3c0202858002819d00d490968002915d04a68"
+    "aa4201d00968f8e70a891202084800780243287d00040243064b186807240440"
+    "a400e41862600130186010bdf48110022882100200b50c02")
+PICKUP_MAILBOX_RAM = 0x020CB500          # = data.PICKUP_MAILBOX_ADDR (gen_ap_data)
+PICKUP_MAILBOX_SLOTS = 8
+
+
+# --- Compresor BLZ con parse ÓPTIMO (agente exp360-369, exp367) ---
+# El arm9 recomprimido debe caber en su slot de la ROM (0x8F400 B). El greedy
+# de ndspy dejaba 76 B de margen y el cave del buzón ya no cabía. Mismo
+# formato (LZ hacia atrás: literal 9 bits, match 17 bits con len 3..18 y
+# disp 0..0xFFF, sin solapamiento, igual que ndspy) pero eligiendo los tokens
+# por programación dinámica: 0x8DB04 B frente a 0x8F3A8 B del greedy (6.3 KB
+# de margen; 5.6 s frente a 3.2 s). Round-trip verificado con
+# ndspy.codeCompression.decompress y arranque real (exp366). Se inyecta en
+# ndspy por monkeypatch de _lzCommon.compress SOLO durante arm9.save().
+def _lz_compress_optimal(data, posSubtract, maxMatchDiff, maxMatchLen, zerosAtEnd,
+                         searchReverse):
+    """Misma firma/retorno que ndspy._lzCommon.compress:
+    (stream, ignorableDataAmount, ignorableCompressedAmount)."""
+    n = len(data)
+    data = bytes(data)
+    maxlen = [0] * (n + 1)
+    mpos = [0] * (n + 1)
+    find = data.rfind if searchReverse else data.find
+    for pos in range(n):
+        start = pos - maxMatchDiff
+        if start < 0:
+            start = 0
+        if find(data[pos:pos + 3], start, pos) == -1:
+            continue
+        lower, upper = 3, min(maxMatchLen, n - pos)
+        rec_p = rec_l = 0
+        while lower <= upper:
+            length = (lower + upper) >> 1
+            p = find(data[pos:pos + length], start, pos)
+            if p == -1:
+                upper = length - 1
+            else:
+                if length > rec_l:
+                    rec_p, rec_l = p, length
+                lower = length + 1
+        maxlen[pos] = rec_l
+        mpos[pos] = rec_p
+    best = [0] * (n + 2)
+    choice = [0] * (n + 1)      # 0 = literal, L>=3 = match de longitud L
+    for i in range(n - 1, -1, -1):
+        b = 9 + best[i + 1]
+        c = 0
+        for length in range(3, maxlen[i] + 1):
+            v = 17 + best[i + length]
+            if v < b:
+                b, c = v, length
+        best[i] = b
+        choice[i] = c
+    result = bytearray()
+    current = 0
+    ignorable_d = ignorable_c = 0
+    best_savings = 0
+    while current < n:
+        flags = 0
+        flags_off = len(result)
+        result.append(0)
+        ignorable_c += 1
+        for i in range(8):
+            if current >= n:
+                if zerosAtEnd:
+                    result.append(0)
+                continue
+            length = choice[current]
+            if length >= 3:
+                disp = current - mpos[current] - posSubtract
+                flags |= 1 << (7 - i)
+                result.append((((length - 3) & 0xF) << 4) | ((disp >> 8) & 0xF))
+                result.append(disp & 0xFF)
+                current += length
+                ignorable_d += length
+                ignorable_c += 2
+            else:
+                result.append(data[current])
+                current += 1
+                ignorable_d += 1
+                ignorable_c += 1
+            savings = current - len(result)
+            if savings > best_savings:
+                ignorable_d = ignorable_c = 0
+                best_savings = savings
+        result[flags_off] = flags
+    return bytes(result), ignorable_d, ignorable_c
+
+
+def _save_arm9_compressed(arm9) -> bytes:
+    """arm9.save(compress=True) usando el compresor óptimo."""
+    from .ndspy import codeCompression
+    orig = codeCompression._lzCommon.compress
+    codeCompression._lzCommon.compress = _lz_compress_optimal
+    try:
+        return arm9.save(compress=True)
+    finally:
+        codeCompression._lzCommon.compress = orig
+
+
 class MMZXPatchExtension(APPatchExtension):
     game = "Mega Man ZX"
 
@@ -186,14 +320,21 @@ class MMZXPatchExtension(APPatchExtension):
         # 1d) Life Ups / Sub Tanks: "recogido" = nibble alto (siempre)
         for ram, orig, new in PICKUP_FLAG_PATCH:
             poke(ram, bytes.fromhex(new), bytes.fromhex(orig))
+        # 1e) buzón de pickups respawneables (siempre; el cliente solo lo usa
+        #     con las opciones pickup_checks_*): hook + cave + buzón a ceros
+        assert len(PICKUP_MAILBOX_CAVE) <= PICKUP_MAILBOX_RAM - PICKUP_MAILBOX_CAVE_RAM
+        poke(PICKUP_MAILBOX_CAVE_RAM, PICKUP_MAILBOX_CAVE,
+             bytes(len(PICKUP_MAILBOX_CAVE)))
+        poke(PICKUP_MAILBOX_HOOK_RAM, PICKUP_MAILBOX_HOOK_NEW, PICKUP_MAILBOX_HOOK_ORIG)
         # 2) Hu-gate (opcional)
         if hu_in_pool:
             poke(HUGATE_ARRAY_RAM, HUGATE_FLAG_INDEX.to_bytes(4, "little"))
             poke(HUGATE_LISTS0_RAM, HUGATE_ARRAY_RAM.to_bytes(4, "little"),
                  HUGATE_LISTS0_ORIG)
 
-        # recomprimir y recolocar in-place en el slot original del arm9
-        blob = arm9.save(compress=True)
+        # recomprimir (parse óptimo: el greedy de ndspy ya no cabía en el
+        # slot con el cave del buzón) y recolocar in-place en el slot original
+        blob = _save_arm9_compressed(arm9)
         post = bytes(nds.arm9PostData)         # footer nitrocode (12 B)
         arm9_off = struct.unpack_from("<I", d, 0x20)[0]
         others = [struct.unpack_from("<I", d, o)[0]

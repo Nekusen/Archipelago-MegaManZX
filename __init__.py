@@ -12,7 +12,8 @@ from worlds.AutoWorld import WebWorld, World
 
 from .data import LOCATIONS, ITEMS, STARTING_MODEL_ITEM, START_TRANSERVER_AREA
 from .items import MMZXItem, item_name_to_id, get_classification, ITEM_GROUPS
-from .locations import location_name_to_id, locations_for_options, LOCATION_GROUPS
+from .locations import (location_name_to_id, locations_for_options, LOCATION_GROUPS,
+                        pickup_flags_from_options)
 from .options import MMZXOptions
 from .regions import create_regions
 from .rom import MMZXPatch, write_patch_tokens, MMZX_US_MD5
@@ -83,6 +84,7 @@ class MMZXWorld(World):
         active_locs = locations_for_options(
             include_quests=bool(self.options.submission_checks.value),
             include_level4=bool(self.options.level4_victories.value),
+            pickups=pickup_flags_from_options(self.options),
         )
         n_locations = len(active_locs)  # sin contar el evento Victory
 
@@ -152,5 +154,11 @@ class MMZXWorld(World):
             "starting_model": self.options.starting_model.current_key,
             "starting_transerver": self.options.starting_transerver.current_key,
             "hu_in_pool": bool(self.options.hu_in_pool.value),
+            # pickups respawneables como checks (v0.2): el cliente sondea el
+            # buzón solo si alguna categoría está activa
+            "pickup_checks_1up": bool(self.options.pickup_checks_1up.value),
+            "pickup_checks_energy": bool(self.options.pickup_checks_energy.value),
+            "pickup_checks_weapon": bool(self.options.pickup_checks_weapon.value),
+            "pickup_checks_crystals": bool(self.options.pickup_checks_crystals.value),
             "version": "0.1.0",
         }

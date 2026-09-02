@@ -96,7 +96,8 @@ DOOR_RULES = {
     # eleccion), asi que el hielo de la ruta principal NO exige FX.
     "f01->f02": "MODEL",   # ? cubos/cajas de hielo tapando la puerta
     "f02->f03": "MODEL",   # ? cubos en el pasillo superior (109-111,32)
-    "f03->f04": "MODEL",   # ? cubos junto a la puerta Azul (27-29,98-100)
+    "f03->f04": "MODEL",   # ? cubos de hielo junto a la VERJA de evento (flag
+                           #   381, la abre el cliente; NO es puerta Azul: exp341d)
     "f04->f05": "MODEL",   # ? filas de cubos/cajas a lo largo de F-4
     # --- Area C ---
     "c01->c02": "HU|HX",   # bloque derecho de C-1: hueco de 1 tile (Hu) o
@@ -172,6 +173,23 @@ SUBREGIONS = {
 
 # Locations FISICAS de salas con puerta interna con llave a las que esa
 # llave NO afecta (analizadas): quedan fuera de la regla coarse.
+# Verjas de EVENTO (puertas con bit 1 del rol: tabla 2 de FUN_020924d0, un
+# flag del bloque por tipo; exp341b-e). Regla de lógica por flag; None =
+# libre (el cliente pone el flag: data.EVENT_GATES_OPEN) o desconocido
+# provisional. Qué las abre en vanilla: agente exp350-359 (pendiente).
+GATE_RULES = {
+    381: None,      # F-3 -> F-4 (verja, se entra con UP): el cliente la abre
+    382: None,      # G-2 -> G-4 (verja): el cliente la abre
+    191: None,      # G-2 verja interna 0x42 (0x021045E3.7, ¿bit de misión?): provisional
+    225: "ALL6",    # D-2 -> D-4 (HQ de Slither; 0x021045E8.1 = inicio de "Destroy
+                    #   Model W"): requisito de diseño = 6 biometales; el cliente
+                    #   pone el flag al tenerlos (EVENT_GATES_ALL6). Condiciones
+                    #   extra de esa puerta (rol 0xDA): pendiente agente
+    395: "ALL6",    # M-1 verja interna (0x021045FD.3): ¿sello de los 6 biometales?
+    768: None,      # N-1 verjas internas (0x0210462C.0/.1): desconocido, provisional
+    769: None,
+}
+
 INTERNAL_GATE_EXEMPT = {
     "K-4: Disk E-26",   # K-4: extremo oeste del pasillo central, sin puerta Blanca
 }

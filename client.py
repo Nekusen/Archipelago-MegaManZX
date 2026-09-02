@@ -15,6 +15,7 @@ from .data import (LOCATIONS, ITEMS, GOAL_BITS, GOAL_BITS_ALT, MISSION_ACCEPT,
                    MISSION_STATE_ADDR, MISSION_ACTIVE_FLAG,
                    STARTING_MODELS, STARTING_MODEL_ITEM, STARTING_TRANSERVERS,
                    MODEL_X_POSSESSION, ACTIVE_MODEL_ADDR)
+from .data import EVENT_GATES, EVENT_GATES_OPEN, EVENT_GATES_ALL6
 from .golden import GOLDEN_IMAGE, GOLDEN_IMAGE_ADDR
 
 if TYPE_CHECKING:
@@ -713,6 +714,18 @@ class MMZXClient(BizHawkClient):
                 if i >= self.applied_consumables:
                     new_consumables.append(kind)
             # kind == "todo": item sin receta aún (no en pool v0.1)
+
+        # Verjas de EVENTO (puertas con bit 1 del rol; exp341): las de
+        # EVENT_GATES_OPEN se abren siempre (open world) y las de
+        # EVENT_GATES_ALL6 al tener los 6 biometales por items AP (requisito
+        # de diseño del goal: HQ de Slither D-2 -> D-4, sello de M-1).
+        for fl in EVENT_GATES_OPEN:
+            live_bits.add(tuple(EVENT_GATES[fl]))
+        received = {id_to_item[net.item][0] for net in ctx.items_received if net.item in id_to_item}
+        if all(n in received for n in ("Model X", "Model ZX", "Biometal H",
+                                       "Biometal F", "Biometal L", "Biometal P")):
+            for fl in EVENT_GATES_ALL6:
+                live_bits.add(tuple(EVENT_GATES[fl]))
 
         writes: list[tuple[int, bytes, str]] = []
 

@@ -50,20 +50,50 @@ for _d in DOORS:
         _tmp[_d["src"]].append(_d["key"])
 _INTERNAL_GATES: dict[str, tuple[str, ...]] = {r: tuple(ks) for r, ks in _tmp.items()}
 del _tmp
+# sala -> flags de VERJA DE EVENTO de sus puertas internas (tabla 2 de
+# FUN_020924d0; regla por flag en logic_rules.GATE_RULES)
+_tmp_g: dict[str, list[int]] = {}
+for _d in DOORS:
+    if _d["kind"] == "internal" and _d.get("gate") is not None \
+            and _d["gate"] not in _tmp_g.setdefault(_d["src"], []):
+        _tmp_g[_d["src"]].append(_d["gate"])
+_INTERNAL_GATE_FLAGS: dict[str, tuple[int, ...]] = {r: tuple(v) for r, v in _tmp_g.items()}
+del _tmp_g
 
 
-def internal_gate_rule(room: str, player: int, location: str = None):
+def gate_expr(edge: dict):
+    """Expresión DSL de la verja de evento de una arista (o None si no tiene
+    o si es libre = el cliente abre la verja)."""
+    g = edge.get("gate")
+    if g is None:
+        return None
+    from .logic_rules import GATE_RULES
+    return GATE_RULES.get(g)
+
+
+def internal_gate_rule(room: str, player: int, location: str = None, hu_in_pool: bool = False):
     """Regla coarse para locations FÍSICAS de una sala con gate interno (o
-    None). Las locations listadas en logic_rules.INTERNAL_GATE_EXEMPT quedan
-    fuera (ya analizadas: la llave interna no las afecta)."""
+    None): llaves de sus puertas internas Y verjas de evento internas. Las
+    locations listadas en logic_rules.INTERNAL_GATE_EXEMPT quedan fuera (ya
+    analizadas: el gate interno no las afecta)."""
     keys = _INTERNAL_GATES.get(room)
-    if not keys:
+    flags = _INTERNAL_GATE_FLAGS.get(room)
+    if not keys and not flags:
         return None
     if location is not None:
         from .logic_rules import INTERNAL_GATE_EXEMPT
         if location in INTERNAL_GATE_EXEMPT:
             return None
-    return lambda state: state.has_all(keys, player)
+    rules = []
+    if keys:
+        rules.append(lambda state: state.has_all(keys, player))
+    if flags:
+        from .logic_rules import GATE_RULES
+        for f in flags:
+            expr = GATE_RULES.get(f)
+            if expr:
+                rules.append(compile_rule(expr, player, hu_in_pool))
+    return and_rules(*rules)
 
 
 def door_rule(edge: dict, player: int):

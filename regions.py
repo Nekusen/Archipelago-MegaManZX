@@ -26,8 +26,8 @@ from BaseClasses import Region
 from .data import LOCATIONS
 from .locations import MMZXLocation, locations_for_options
 from .logic import (ALL_EDGES, NON_TRANSITION_KINDS, ROOM_NAMES, and_rules,
-                    compile_rule, door_rule, internal_gate_rule, label_rule,
-                    starting_room, transerver_rule)
+                    compile_rule, door_rule, gate_expr, internal_gate_rule,
+                    label_rule, starting_room, transerver_rule)
 from .logic_rules import DOOR_RULES, LOCATION_RULES, ROOM_RULES, SUBREGIONS
 
 
@@ -79,8 +79,10 @@ def create_regions(world) -> None:
         # hub hacia un destino exige su item "Transerver Access - Area X"
         # (el acceso A PIE sigue existiendo por las puertas físicas y los
         # pasillos de piso). Entrar a la red (sala -> hub) es libre.
+        # Verjas de EVENTO (bit 1 del rol): regla por flag (GATE_RULES) o
+        # libre si el cliente pone el flag (EVENT_GATES_OPEN).
         r = and_rules(door_rule(d, player), rule(ROOM_RULES.get(d["dst"])), rule(extra),
-                      transerver_rule(d, player))
+                      transerver_rule(d, player), rule(gate_expr(d)))
         src = rooms[door_out.get(d["name"], door_out.get(pair, d["src"]))]
         dst = rooms[door_in.get(d["name"], door_in.get(pair, d["dst"]))]
         src.connect(dst, d["name"], r)
@@ -94,7 +96,7 @@ def create_regions(world) -> None:
         room = v.get("room")
         if room in rooms:
             parent = rooms[loc_region.get(name, room)]
-            base = internal_gate_rule(room, player, name)
+            base = internal_gate_rule(room, player, name, hu_in_pool)
         else:
             parent, base = field, label_rule(room, player)
         loc = MMZXLocation(player, name, v["id"], parent)

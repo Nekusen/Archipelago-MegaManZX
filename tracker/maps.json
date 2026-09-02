@@ -1,0 +1,98 @@
+[
+  {
+    "name": "area_a",
+    "img": "images/area_a.png",
+    "location_size": 22,
+    "location_border_thickness": 2
+  },
+  {
+    "name": "area_b",
+    "img": "images/area_b.png",
+    "location_size": 22,
+    "location_border_thickness": 2
+  },
+  {
+    "name": "area_c",
+    "img": "images/area_c.png",
+    "location_size": 22,
+    "location_border_thickness": 2
+  },
+  {
+    "name": "area_d",
+    "img": "images/area_d.png",
+    "location_size": 22,
+    "location_border_thickness": 2
+  },
+  {
+    "name": "area_e",
+    "img": "images/area_e.png",
+    "location_size": 22,
+    "location_border_thickness": 2
+  },
+  {
+    "name": "area_f",
+    "img": "images/area_f.png",
+    "location_size": 22,
+    "location_border_thickness": 2
+  },
+  {
+    "name": "area_g",
+    "img": "images/area_g.png",
+    "location_size": 22,
+    "location_border_thickness": 2
+  },
+  {
+    "name": "area_h",
+    "img": "images/area_h.png",
+    "location_size": 22,
+    "location_border_thickness": 2
+  },
+  {
+    "name": "area_i",
+    "img": "images/area_i.png",
+    "location_size": 22,
+    "location_border_thickness": 2
+  },
+  {
+    "name": "area_j",
+    "img": "images/area_j.png",
+    "location_size": 22,
+    "location_border_thickness": 2
+  },
+  {
+    "name": "area_k",
+    "img": "images/area_k.png",
+    "location_size": 22,
+    "location_border_thickness": 2
+  },
+  {
+    "name": "area_l",
+    "img": "images/area_l.png",
+    "location_size": 22,
+    "location_border_thickness": 2
+  },
+  {
+    "name": "area_m",
+    "img": "images/area_m.png",
+    "location_size": 22,
+    "location_border_thickness": 2
+  },
+  {
+    "name": "area_n",
+    "img": "images/area_n.png",
+    "location_size": 22,
+    "location_border_thickness": 2
+  },
+  {
+    "name": "area_o",
+    "img": "images/area_o.png",
+    "location_size": 22,
+    "location_border_thickness": 2
+  },
+  {
+    "name": "area_x",
+    "img": "images/area_x.png",
+    "location_size": 22,
+    "location_border_thickness": 2
+  }
+]

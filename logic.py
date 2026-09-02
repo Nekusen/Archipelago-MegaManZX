@@ -160,7 +160,6 @@ MACROS = {
 # estos átomos lo exigen (p.ej. la puerta E-7 -> E-8 exige SEARCH_THE_PLANT:
 # bits 0x021045E1.4 && 0x021045FD.4, exp285-287 agente seams).
 MISSION_EVENT = {
-    "CATCH_THE_MAVERICK": "Cleared: Catch The Maverick",
     "LOCATE_GIRO": "Cleared: Locate Giro",
     "PASS_THE_TEST": "Cleared: Pass The Test",
     "TROOP_REINFORCEMENT": "Cleared: Troop Reinforcement",

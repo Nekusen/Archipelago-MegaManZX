@@ -1,0 +1,2678 @@
+[
+  {
+    "name": "Area A",
+    "children": [
+      {
+        "name": "Missions / Biometals / Quests",
+        "children": [
+          {
+            "name": "Quest - Find The Flower",
+            "map_locations": [
+              {
+                "map": "area_a",
+                "x": 24,
+                "y": 58
+              }
+            ],
+            "sections": [
+              {
+                "name": "Quest - Find The Flower",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "Quest - Find Mushroom",
+            "map_locations": [
+              {
+                "map": "area_a",
+                "x": 536,
+                "y": 58
+              }
+            ],
+            "sections": [
+              {
+                "name": "Quest - Find Mushroom",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "A-1",
+        "children": [
+          {
+            "name": "A-1: Disk E-1",
+            "map_locations": [
+              {
+                "map": "area_a",
+                "x": 1880,
+                "y": 209
+              }
+            ],
+            "sections": [
+              {
+                "name": "A-1: Disk E-1",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "A-1: Disk E-31",
+            "map_locations": [
+              {
+                "map": "area_a",
+                "x": 790,
+                "y": 327
+              }
+            ],
+            "sections": [
+              {
+                "name": "A-1: Disk E-31",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "A-1: Disk O-9",
+            "map_locations": [
+              {
+                "map": "area_a",
+                "x": 595,
+                "y": 402
+              }
+            ],
+            "sections": [
+              {
+                "name": "A-1: Disk O-9",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "A-2",
+        "children": [
+          {
+            "name": "A-2: Disk B-3",
+            "map_locations": [
+              {
+                "map": "area_a",
+                "x": 780,
+                "y": 728
+              }
+            ],
+            "sections": [
+              {
+                "name": "A-2: Disk B-3",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "A-2: Sub Tank",
+            "map_locations": [
+              {
+                "map": "area_a",
+                "x": 120,
+                "y": 631
+              }
+            ],
+            "sections": [
+              {
+                "name": "A-2: Sub Tank",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "A-2: Disk E-27",
+            "map_locations": [
+              {
+                "map": "area_a",
+                "x": 1259,
+                "y": 641
+              }
+            ],
+            "sections": [
+              {
+                "name": "A-2: Disk E-27",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "A-2: Disk E-29",
+            "map_locations": [
+              {
+                "map": "area_a",
+                "x": 1084,
+                "y": 728
+              }
+            ],
+            "sections": [
+              {
+                "name": "A-2: Disk E-29",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "A-3",
+        "children": [
+          {
+            "name": "A-3: Disk E-46",
+            "map_locations": [
+              {
+                "map": "area_a",
+                "x": 305,
+                "y": 1025
+              }
+            ],
+            "sections": [
+              {
+                "name": "A-3: Disk E-46",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "A-4",
+        "children": [
+          {
+            "name": "A-4: Disk E-20",
+            "map_locations": [
+              {
+                "map": "area_a",
+                "x": 301,
+                "y": 1220
+              }
+            ],
+            "sections": [
+              {
+                "name": "A-4: Disk E-20",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Area B",
+    "children": [
+      {
+        "name": "Missions / Biometals / Quests",
+        "children": [
+          {
+            "name": "Mission - Locate Giro",
+            "map_locations": [
+              {
+                "map": "area_b",
+                "x": 24,
+                "y": 58
+              }
+            ],
+            "sections": [
+              {
+                "name": "Mission - Locate Giro",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "Quest - Purify The Lakes",
+            "map_locations": [
+              {
+                "map": "area_b",
+                "x": 536,
+                "y": 58
+              }
+            ],
+            "sections": [
+              {
+                "name": "Quest - Purify The Lakes",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "Quest - Find The Purse",
+            "map_locations": [
+              {
+                "map": "area_b",
+                "x": 1048,
+                "y": 58
+              }
+            ],
+            "sections": [
+              {
+                "name": "Quest - Find The Purse",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "B-1",
+        "children": [
+          {
+            "name": "B-1: Disk E-24",
+            "map_locations": [
+              {
+                "map": "area_b",
+                "x": 1229,
+                "y": 343
+              }
+            ],
+            "sections": [
+              {
+                "name": "B-1: Disk E-24",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "B-2",
+        "children": [
+          {
+            "name": "B-2: Disk B-1",
+            "map_locations": [
+              {
+                "map": "area_b",
+                "x": 1042,
+                "y": 613
+              }
+            ],
+            "sections": [
+              {
+                "name": "B-2: Disk B-1",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "B-2: Disk E-17",
+            "map_locations": [
+              {
+                "map": "area_b",
+                "x": 658,
+                "y": 617
+              }
+            ],
+            "sections": [
+              {
+                "name": "B-2: Disk E-17",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "B-2: Disk E-28",
+            "map_locations": [
+              {
+                "map": "area_b",
+                "x": 422,
+                "y": 728
+              }
+            ],
+            "sections": [
+              {
+                "name": "B-2: Disk E-28",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "B-4",
+        "children": [
+          {
+            "name": "B-4: Disk E-11",
+            "map_locations": [
+              {
+                "map": "area_b",
+                "x": 548,
+                "y": 1516
+              }
+            ],
+            "sections": [
+              {
+                "name": "B-4: Disk E-11",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Area C",
+    "children": [
+      {
+        "name": "Missions / Biometals / Quests",
+        "children": [
+          {
+            "name": "Mission - Pass The Test",
+            "map_locations": [
+              {
+                "map": "area_c",
+                "x": 24,
+                "y": 58
+              }
+            ],
+            "sections": [
+              {
+                "name": "Mission - Pass The Test",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "Quest - Trim The Weeds",
+            "map_locations": [
+              {
+                "map": "area_c",
+                "x": 536,
+                "y": 58
+              }
+            ],
+            "sections": [
+              {
+                "name": "Quest - Trim The Weeds",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "Quest - Quiz Partner",
+            "map_locations": [
+              {
+                "map": "area_c",
+                "x": 1048,
+                "y": 58
+              }
+            ],
+            "sections": [
+              {
+                "name": "Quest - Quiz Partner",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "Quest - Another Quiz",
+            "map_locations": [
+              {
+                "map": "area_c",
+                "x": 1560,
+                "y": 58
+              }
+            ],
+            "sections": [
+              {
+                "name": "Quest - Another Quiz",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "Quest - Sending A Letter",
+            "map_locations": [
+              {
+                "map": "area_c",
+                "x": 24,
+                "y": 94
+              }
+            ],
+            "sections": [
+              {
+                "name": "Quest - Sending A Letter",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "Quest - Sending Another Letter",
+            "map_locations": [
+              {
+                "map": "area_c",
+                "x": 536,
+                "y": 94
+              }
+            ],
+            "sections": [
+              {
+                "name": "Quest - Sending Another Letter",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "Quest - Yet Another Letter",
+            "map_locations": [
+              {
+                "map": "area_c",
+                "x": 1048,
+                "y": 94
+              }
+            ],
+            "sections": [
+              {
+                "name": "Quest - Yet Another Letter",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "Quest - Not Another Letter",
+            "map_locations": [
+              {
+                "map": "area_c",
+                "x": 1560,
+                "y": 94
+              }
+            ],
+            "sections": [
+              {
+                "name": "Quest - Not Another Letter",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "Quest - Guess What A Letter",
+            "map_locations": [
+              {
+                "map": "area_c",
+                "x": 24,
+                "y": 130
+              }
+            ],
+            "sections": [
+              {
+                "name": "Quest - Guess What A Letter",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "Quest - One More Letter",
+            "map_locations": [
+              {
+                "map": "area_c",
+                "x": 536,
+                "y": 130
+              }
+            ],
+            "sections": [
+              {
+                "name": "Quest - One More Letter",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "Quest - Clean The Room",
+            "map_locations": [
+              {
+                "map": "area_c",
+                "x": 1048,
+                "y": 130
+              }
+            ],
+            "sections": [
+              {
+                "name": "Quest - Clean The Room",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "C-2",
+        "children": [
+          {
+            "name": "C-2: Disk E-30",
+            "map_locations": [
+              {
+                "map": "area_c",
+                "x": 1229,
+                "y": 947
+              }
+            ],
+            "sections": [
+              {
+                "name": "C-2: Disk E-30",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "C-2: Disk O-17",
+            "map_locations": [
+              {
+                "map": "area_c",
+                "x": 963,
+                "y": 840
+              }
+            ],
+            "sections": [
+              {
+                "name": "C-2: Disk O-17",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "C-2: Disk O-18",
+            "map_locations": [
+              {
+                "map": "area_c",
+                "x": 422,
+                "y": 860
+              }
+            ],
+            "sections": [
+              {
+                "name": "C-2: Disk O-18",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "C-3",
+        "children": [
+          {
+            "name": "C-3: Disk E-49",
+            "map_locations": [
+              {
+                "map": "area_c",
+                "x": 146,
+                "y": 1182
+              }
+            ],
+            "sections": [
+              {
+                "name": "C-3: Disk E-49",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Area D",
+    "children": [
+      {
+        "name": "Missions / Biometals / Quests",
+        "children": [
+          {
+            "name": "Mission - Troop Reinforcement",
+            "map_locations": [
+              {
+                "map": "area_d",
+                "x": 24,
+                "y": 58
+              }
+            ],
+            "sections": [
+              {
+                "name": "Mission - Troop Reinforcement",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "Mission - Destroy Model W",
+            "map_locations": [
+              {
+                "map": "area_d",
+                "x": 536,
+                "y": 58
+              }
+            ],
+            "sections": [
+              {
+                "name": "Mission - Destroy Model W",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "D-1",
+        "children": [
+          {
+            "name": "D-1: Life Up",
+            "map_locations": [
+              {
+                "map": "area_d",
+                "x": 583,
+                "y": 259
+              }
+            ],
+            "sections": [
+              {
+                "name": "D-1: Life Up",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "D-1: Disk E-12",
+            "map_locations": [
+              {
+                "map": "area_d",
+                "x": 525,
+                "y": 259
+              }
+            ],
+            "sections": [
+              {
+                "name": "D-1: Disk E-12",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "D-1: Disk E-19",
+            "map_locations": [
+              {
+                "map": "area_d",
+                "x": 709,
+                "y": 241
+              }
+            ],
+            "sections": [
+              {
+                "name": "D-1: Disk E-19",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "D-2",
+        "children": [
+          {
+            "name": "D-2: Disk B-4",
+            "map_locations": [
+              {
+                "map": "area_d",
+                "x": 1608,
+                "y": 480
+              }
+            ],
+            "sections": [
+              {
+                "name": "D-2: Disk B-4",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "D-2: Disk M-4",
+            "map_locations": [
+              {
+                "map": "area_d",
+                "x": 679,
+                "y": 519
+              }
+            ],
+            "sections": [
+              {
+                "name": "D-2: Disk M-4",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "D-2: Disk E-40",
+            "map_locations": [
+              {
+                "map": "area_d",
+                "x": 685,
+                "y": 480
+              }
+            ],
+            "sections": [
+              {
+                "name": "D-2: Disk E-40",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "D-2: Disk O-12",
+            "map_locations": [
+              {
+                "map": "area_d",
+                "x": 1303,
+                "y": 480
+              }
+            ],
+            "sections": [
+              {
+                "name": "D-2: Disk O-12",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "D-3",
+        "children": [
+          {
+            "name": "D-3: Disk E-6",
+            "map_locations": [
+              {
+                "map": "area_d",
+                "x": 519,
+                "y": 773
+              }
+            ],
+            "sections": [
+              {
+                "name": "D-3: Disk E-6",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "D-4",
+        "children": [
+          {
+            "name": "D-4: Disk B-5",
+            "map_locations": [
+              {
+                "map": "area_d",
+                "x": 988,
+                "y": 1318
+              }
+            ],
+            "sections": [
+              {
+                "name": "D-4: Disk B-5",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "D-5",
+        "children": [
+          {
+            "name": "D-5: Disk B-6",
+            "map_locations": [
+              {
+                "map": "area_d",
+                "x": 479,
+                "y": 1615
+              }
+            ],
+            "sections": [
+              {
+                "name": "D-5: Disk B-6",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Area E",
+    "children": [
+      {
+        "name": "Missions / Biometals / Quests",
+        "children": [
+          {
+            "name": "Obtain Biometal H",
+            "map_locations": [
+              {
+                "map": "area_e",
+                "x": 24,
+                "y": 58
+              }
+            ],
+            "sections": [
+              {
+                "name": "Obtain Biometal H",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "Mission - Search The Plant",
+            "map_locations": [
+              {
+                "map": "area_e",
+                "x": 536,
+                "y": 58
+              }
+            ],
+            "sections": [
+              {
+                "name": "Mission - Search The Plant",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "Quest - Smash The Rock",
+            "map_locations": [
+              {
+                "map": "area_e",
+                "x": 1048,
+                "y": 58
+              }
+            ],
+            "sections": [
+              {
+                "name": "Quest - Smash The Rock",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "E-1",
+        "children": [
+          {
+            "name": "E-1: Disk E-4",
+            "map_locations": [
+              {
+                "map": "area_e",
+                "x": 507,
+                "y": 329
+              }
+            ],
+            "sections": [
+              {
+                "name": "E-1: Disk E-4",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "E-4",
+        "children": [
+          {
+            "name": "E-4: Sub Tank",
+            "map_locations": [
+              {
+                "map": "area_e",
+                "x": 745,
+                "y": 1046
+              }
+            ],
+            "sections": [
+              {
+                "name": "E-4: Sub Tank",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "E-4: Disk E-8",
+            "map_locations": [
+              {
+                "map": "area_e",
+                "x": 854,
+                "y": 883
+              }
+            ],
+            "sections": [
+              {
+                "name": "E-4: Disk E-8",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "E-4: Disk E-21",
+            "map_locations": [
+              {
+                "map": "area_e",
+                "x": 921,
+                "y": 1122
+              }
+            ],
+            "sections": [
+              {
+                "name": "E-4: Disk E-21",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "E-5",
+        "children": [
+          {
+            "name": "E-5: Disk M-5",
+            "map_locations": [
+              {
+                "map": "area_e",
+                "x": 617,
+                "y": 1308
+              }
+            ],
+            "sections": [
+              {
+                "name": "E-5: Disk M-5",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "E-5: Disk E-37",
+            "map_locations": [
+              {
+                "map": "area_e",
+                "x": 748,
+                "y": 1308
+              }
+            ],
+            "sections": [
+              {
+                "name": "E-5: Disk E-37",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "E-8",
+        "children": [
+          {
+            "name": "E-8: Disk B-8",
+            "map_locations": [
+              {
+                "map": "area_e",
+                "x": 1216,
+                "y": 1919
+              }
+            ],
+            "sections": [
+              {
+                "name": "E-8: Disk B-8",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Area F",
+    "children": [
+      {
+        "name": "Missions / Biometals / Quests",
+        "children": [
+          {
+            "name": "Obtain Biometal L",
+            "map_locations": [
+              {
+                "map": "area_f",
+                "x": 24,
+                "y": 58
+              }
+            ],
+            "sections": [
+              {
+                "name": "Obtain Biometal L",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "Mission - Find The Survivors",
+            "map_locations": [
+              {
+                "map": "area_f",
+                "x": 536,
+                "y": 58
+              }
+            ],
+            "sections": [
+              {
+                "name": "Mission - Find The Survivors",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "Quest - Find The Pearl",
+            "map_locations": [
+              {
+                "map": "area_f",
+                "x": 1048,
+                "y": 58
+              }
+            ],
+            "sections": [
+              {
+                "name": "Quest - Find The Pearl",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "F-1",
+        "children": [
+          {
+            "name": "F-1: Disk E-39",
+            "map_locations": [
+              {
+                "map": "area_f",
+                "x": 252,
+                "y": 277
+              }
+            ],
+            "sections": [
+              {
+                "name": "F-1: Disk E-39",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "F-2",
+        "children": [
+          {
+            "name": "F-2: Life Up",
+            "map_locations": [
+              {
+                "map": "area_f",
+                "x": 200,
+                "y": 592
+              }
+            ],
+            "sections": [
+              {
+                "name": "F-2: Life Up",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "F-2: Disk E-15",
+            "map_locations": [
+              {
+                "map": "area_f",
+                "x": 279,
+                "y": 701
+              }
+            ],
+            "sections": [
+              {
+                "name": "F-2: Disk E-15",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "F-2: Disk E-44",
+            "map_locations": [
+              {
+                "map": "area_f",
+                "x": 399,
+                "y": 728
+              }
+            ],
+            "sections": [
+              {
+                "name": "F-2: Disk E-44",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "F-3",
+        "children": [
+          {
+            "name": "F-3: Disk E-2",
+            "map_locations": [
+              {
+                "map": "area_f",
+                "x": 559,
+                "y": 1096
+              }
+            ],
+            "sections": [
+              {
+                "name": "F-3: Disk E-2",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "F-3: Disk E-48",
+            "map_locations": [
+              {
+                "map": "area_f",
+                "x": 140,
+                "y": 1051
+              }
+            ],
+            "sections": [
+              {
+                "name": "F-3: Disk E-48",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "F-4",
+        "children": [
+          {
+            "name": "F-4: Disk B-15",
+            "map_locations": [
+              {
+                "map": "area_f",
+                "x": 444,
+                "y": 1596
+              }
+            ],
+            "sections": [
+              {
+                "name": "F-4: Disk B-15",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "F-4: Disk E-45",
+            "map_locations": [
+              {
+                "map": "area_f",
+                "x": 429,
+                "y": 1654
+              }
+            ],
+            "sections": [
+              {
+                "name": "F-4: Disk E-45",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Area G",
+    "children": [
+      {
+        "name": "Missions / Biometals / Quests",
+        "children": [
+          {
+            "name": "Obtain Biometal F",
+            "map_locations": [
+              {
+                "map": "area_g",
+                "x": 24,
+                "y": 58
+              }
+            ],
+            "sections": [
+              {
+                "name": "Obtain Biometal F",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "Mission - Fight The Mavericks",
+            "map_locations": [
+              {
+                "map": "area_g",
+                "x": 536,
+                "y": 58
+              }
+            ],
+            "sections": [
+              {
+                "name": "Mission - Fight The Mavericks",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "Quest - Find The Boy",
+            "map_locations": [
+              {
+                "map": "area_g",
+                "x": 1048,
+                "y": 58
+              }
+            ],
+            "sections": [
+              {
+                "name": "Quest - Find The Boy",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "G-1",
+        "children": [
+          {
+            "name": "G-1: Disk E-38",
+            "map_locations": [
+              {
+                "map": "area_g",
+                "x": 252,
+                "y": 301
+              }
+            ],
+            "sections": [
+              {
+                "name": "G-1: Disk E-38",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "G-2",
+        "children": [
+          {
+            "name": "G-2: Disk E-16",
+            "map_locations": [
+              {
+                "map": "area_g",
+                "x": 894,
+                "y": 195
+              }
+            ],
+            "sections": [
+              {
+                "name": "G-2: Disk E-16",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "G-3",
+        "children": [
+          {
+            "name": "G-3: Disk E-9",
+            "map_locations": [
+              {
+                "map": "area_g",
+                "x": 1210,
+                "y": 232
+              }
+            ],
+            "sections": [
+              {
+                "name": "G-3: Disk E-9",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "G-5",
+        "children": [
+          {
+            "name": "G-5: Disk B-11",
+            "map_locations": [
+              {
+                "map": "area_g",
+                "x": 747,
+                "y": 1566
+              }
+            ],
+            "sections": [
+              {
+                "name": "G-5: Disk B-11",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "G-5: Disk E-32",
+            "map_locations": [
+              {
+                "map": "area_g",
+                "x": 252,
+                "y": 1610
+              }
+            ],
+            "sections": [
+              {
+                "name": "G-5: Disk E-32",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Area H",
+    "children": [
+      {
+        "name": "Missions / Biometals / Quests",
+        "children": [
+          {
+            "name": "Obtain Biometal P",
+            "map_locations": [
+              {
+                "map": "area_h",
+                "x": 24,
+                "y": 58
+              }
+            ],
+            "sections": [
+              {
+                "name": "Obtain Biometal P",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "Mission - Secure The Biometal",
+            "map_locations": [
+              {
+                "map": "area_h",
+                "x": 536,
+                "y": 58
+              }
+            ],
+            "sections": [
+              {
+                "name": "Mission - Secure The Biometal",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "H-3",
+        "children": [
+          {
+            "name": "H-3: Disk M-8",
+            "map_locations": [
+              {
+                "map": "area_h",
+                "x": 554,
+                "y": 1205
+              }
+            ],
+            "sections": [
+              {
+                "name": "H-3: Disk M-8",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "H-3: Disk E-10",
+            "map_locations": [
+              {
+                "map": "area_h",
+                "x": 449,
+                "y": 1149
+              }
+            ],
+            "sections": [
+              {
+                "name": "H-3: Disk E-10",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "H-4",
+        "children": [
+          {
+            "name": "H-4: Disk B-7",
+            "map_locations": [
+              {
+                "map": "area_h",
+                "x": 264,
+                "y": 1364
+              }
+            ],
+            "sections": [
+              {
+                "name": "H-4: Disk B-7",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Area I",
+    "children": [
+      {
+        "name": "Missions / Biometals / Quests",
+        "children": [
+          {
+            "name": "Mission - Save The People",
+            "map_locations": [
+              {
+                "map": "area_i",
+                "x": 24,
+                "y": 58
+              }
+            ],
+            "sections": [
+              {
+                "name": "Mission - Save The People",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "I-1",
+        "children": [
+          {
+            "name": "I-1: Disk E-3",
+            "map_locations": [
+              {
+                "map": "area_i",
+                "x": 511,
+                "y": 249
+              }
+            ],
+            "sections": [
+              {
+                "name": "I-1: Disk E-3",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "I-2",
+        "children": [
+          {
+            "name": "I-2: Disk E-33",
+            "map_locations": [
+              {
+                "map": "area_i",
+                "x": 1257,
+                "y": 192
+              }
+            ],
+            "sections": [
+              {
+                "name": "I-2: Disk E-33",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "I-2: Disk E-34",
+            "map_locations": [
+              {
+                "map": "area_i",
+                "x": 1120,
+                "y": 249
+              }
+            ],
+            "sections": [
+              {
+                "name": "I-2: Disk E-34",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "I-3",
+        "children": [
+          {
+            "name": "I-3: Disk B-9",
+            "map_locations": [
+              {
+                "map": "area_i",
+                "x": 55,
+                "y": 631
+              }
+            ],
+            "sections": [
+              {
+                "name": "I-3: Disk B-9",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "I-4",
+        "children": [
+          {
+            "name": "I-4: Disk M-1",
+            "map_locations": [
+              {
+                "map": "area_i",
+                "x": 1126,
+                "y": 533
+              }
+            ],
+            "sections": [
+              {
+                "name": "I-4: Disk M-1",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "I-4: Disk E-14",
+            "map_locations": [
+              {
+                "map": "area_i",
+                "x": 1205,
+                "y": 533
+              }
+            ],
+            "sections": [
+              {
+                "name": "I-4: Disk E-14",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "I-5",
+        "children": [
+          {
+            "name": "I-5: Life Up",
+            "map_locations": [
+              {
+                "map": "area_i",
+                "x": 552,
+                "y": 1142
+              }
+            ],
+            "sections": [
+              {
+                "name": "I-5: Life Up",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "I-5: Disk M-6",
+            "map_locations": [
+              {
+                "map": "area_i",
+                "x": 279,
+                "y": 1180
+              }
+            ],
+            "sections": [
+              {
+                "name": "I-5: Disk M-6",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "I-5: Disk E-13",
+            "map_locations": [
+              {
+                "map": "area_i",
+                "x": 647,
+                "y": 1154
+              }
+            ],
+            "sections": [
+              {
+                "name": "I-5: Disk E-13",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "I-5: Disk E-23",
+            "map_locations": [
+              {
+                "map": "area_i",
+                "x": 500,
+                "y": 1192
+              }
+            ],
+            "sections": [
+              {
+                "name": "I-5: Disk E-23",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Area J",
+    "children": [
+      {
+        "name": "Missions / Biometals / Quests",
+        "children": [
+          {
+            "name": "Mission - Recover The Disk",
+            "map_locations": [
+              {
+                "map": "area_j",
+                "x": 24,
+                "y": 58
+              }
+            ],
+            "sections": [
+              {
+                "name": "Mission - Recover The Disk",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "J-1",
+        "children": [
+          {
+            "name": "J-1: Life Up",
+            "map_locations": [
+              {
+                "map": "area_j",
+                "x": 205,
+                "y": 370
+              }
+            ],
+            "sections": [
+              {
+                "name": "J-1: Life Up",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "J-2",
+        "children": [
+          {
+            "name": "J-2: Disk E-7",
+            "map_locations": [
+              {
+                "map": "area_j",
+                "x": 1280,
+                "y": 257
+              }
+            ],
+            "sections": [
+              {
+                "name": "J-2: Disk E-7",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "J-3",
+        "children": [
+          {
+            "name": "J-3: Disk M-7",
+            "map_locations": [
+              {
+                "map": "area_j",
+                "x": 480,
+                "y": 831
+              }
+            ],
+            "sections": [
+              {
+                "name": "J-3: Disk M-7",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "J-3: Disk E-36",
+            "map_locations": [
+              {
+                "map": "area_j",
+                "x": 552,
+                "y": 677
+              }
+            ],
+            "sections": [
+              {
+                "name": "J-3: Disk E-36",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "J-5",
+        "children": [
+          {
+            "name": "J-5: Disk B-16",
+            "map_locations": [
+              {
+                "map": "area_j",
+                "x": 565,
+                "y": 1107
+              }
+            ],
+            "sections": [
+              {
+                "name": "J-5: Disk B-16",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Area K",
+    "children": [
+      {
+        "name": "Missions / Biometals / Quests",
+        "children": [
+          {
+            "name": "Mission - Attack The Excavators",
+            "map_locations": [
+              {
+                "map": "area_k",
+                "x": 24,
+                "y": 58
+              }
+            ],
+            "sections": [
+              {
+                "name": "Mission - Attack The Excavators",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "Quest - Find The Rock",
+            "map_locations": [
+              {
+                "map": "area_k",
+                "x": 536,
+                "y": 58
+              }
+            ],
+            "sections": [
+              {
+                "name": "Quest - Find The Rock",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "Quest - Gather The Screws",
+            "map_locations": [
+              {
+                "map": "area_k",
+                "x": 1048,
+                "y": 58
+              }
+            ],
+            "sections": [
+              {
+                "name": "Quest - Gather The Screws",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "K-1",
+        "children": [
+          {
+            "name": "K-1: Sub Tank",
+            "map_locations": [
+              {
+                "map": "area_k",
+                "x": 1774,
+                "y": 447
+              }
+            ],
+            "sections": [
+              {
+                "name": "K-1: Sub Tank",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "K-1: Disk E-22",
+            "map_locations": [
+              {
+                "map": "area_k",
+                "x": 832,
+                "y": 277
+              }
+            ],
+            "sections": [
+              {
+                "name": "K-1: Disk E-22",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "K-3",
+        "children": [
+          {
+            "name": "K-3: Disk M-9",
+            "map_locations": [
+              {
+                "map": "area_k",
+                "x": 399,
+                "y": 823
+              }
+            ],
+            "sections": [
+              {
+                "name": "K-3: Disk M-9",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "K-3: Disk E-35",
+            "map_locations": [
+              {
+                "map": "area_k",
+                "x": 483,
+                "y": 721
+              }
+            ],
+            "sections": [
+              {
+                "name": "K-3: Disk E-35",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "K-3: Disk E-43",
+            "map_locations": [
+              {
+                "map": "area_k",
+                "x": 644,
+                "y": 819
+              }
+            ],
+            "sections": [
+              {
+                "name": "K-3: Disk E-43",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "K-4",
+        "children": [
+          {
+            "name": "K-4: Disk B-12",
+            "map_locations": [
+              {
+                "map": "area_k",
+                "x": 985,
+                "y": 1009
+              }
+            ],
+            "sections": [
+              {
+                "name": "K-4: Disk B-12",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "K-4: Disk E-26",
+            "map_locations": [
+              {
+                "map": "area_k",
+                "x": 864,
+                "y": 681
+              }
+            ],
+            "sections": [
+              {
+                "name": "K-4: Disk E-26",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "K-5",
+        "children": [
+          {
+            "name": "K-5: Disk E-25",
+            "map_locations": [
+              {
+                "map": "area_k",
+                "x": 136,
+                "y": 1428
+              }
+            ],
+            "sections": [
+              {
+                "name": "K-5: Disk E-25",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Area L",
+    "children": [
+      {
+        "name": "Missions / Biometals / Quests",
+        "children": [
+          {
+            "name": "Mission - Protect The Lab",
+            "map_locations": [
+              {
+                "map": "area_l",
+                "x": 24,
+                "y": 58
+              }
+            ],
+            "sections": [
+              {
+                "name": "Mission - Protect The Lab",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "Quest - Deliver The Aid Kit",
+            "map_locations": [
+              {
+                "map": "area_l",
+                "x": 536,
+                "y": 58
+              }
+            ],
+            "sections": [
+              {
+                "name": "Quest - Deliver The Aid Kit",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "L-1",
+        "children": [
+          {
+            "name": "L-1: Disk E-18",
+            "map_locations": [
+              {
+                "map": "area_l",
+                "x": 808,
+                "y": 254
+              }
+            ],
+            "sections": [
+              {
+                "name": "L-1: Disk E-18",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "L-2",
+        "children": [
+          {
+            "name": "L-2: Disk E-41",
+            "map_locations": [
+              {
+                "map": "area_l",
+                "x": 396,
+                "y": 571
+              }
+            ],
+            "sections": [
+              {
+                "name": "L-2: Disk E-41",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "L-3",
+        "children": [
+          {
+            "name": "L-3: Disk E-5",
+            "map_locations": [
+              {
+                "map": "area_l",
+                "x": 993,
+                "y": 1201
+              }
+            ],
+            "sections": [
+              {
+                "name": "L-3: Disk E-5",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "L-4",
+        "children": [
+          {
+            "name": "L-4: Disk B-13",
+            "map_locations": [
+              {
+                "map": "area_l",
+                "x": 282,
+                "y": 1742
+              }
+            ],
+            "sections": [
+              {
+                "name": "L-4: Disk B-13",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Area M",
+    "children": [
+      {
+        "name": "Missions / Biometals / Quests",
+        "children": [
+          {
+            "name": "Mission - Stop The Dig",
+            "map_locations": [
+              {
+                "map": "area_m",
+                "x": 24,
+                "y": 58
+              }
+            ],
+            "sections": [
+              {
+                "name": "Mission - Stop The Dig",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "M-1",
+        "children": [
+          {
+            "name": "M-1: Disk M-2",
+            "map_locations": [
+              {
+                "map": "area_m",
+                "x": 1377,
+                "y": 193
+              }
+            ],
+            "sections": [
+              {
+                "name": "M-1: Disk M-2",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "M-1: Disk E-50",
+            "map_locations": [
+              {
+                "map": "area_m",
+                "x": 1503,
+                "y": 307
+              }
+            ],
+            "sections": [
+              {
+                "name": "M-1: Disk E-50",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "M-3",
+        "children": [
+          {
+            "name": "M-3: Disk B-10",
+            "map_locations": [
+              {
+                "map": "area_m",
+                "x": 195,
+                "y": 1012
+              }
+            ],
+            "sections": [
+              {
+                "name": "M-3: Disk B-10",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Area N",
+    "children": [
+      {
+        "name": "N-1",
+        "children": [
+          {
+            "name": "N-1: Disk B-2",
+            "map_locations": [
+              {
+                "map": "area_n",
+                "x": 240,
+                "y": 353
+              }
+            ],
+            "sections": [
+              {
+                "name": "N-1: Disk B-2",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Area O",
+    "children": [
+      {
+        "name": "Missions / Biometals / Quests",
+        "children": [
+          {
+            "name": "Mission - Repel The Army",
+            "map_locations": [
+              {
+                "map": "area_o",
+                "x": 24,
+                "y": 58
+              }
+            ],
+            "sections": [
+              {
+                "name": "Mission - Repel The Army",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "O-1",
+        "children": [
+          {
+            "name": "O-1: Disk M-3",
+            "map_locations": [
+              {
+                "map": "area_o",
+                "x": 627,
+                "y": 347
+              }
+            ],
+            "sections": [
+              {
+                "name": "O-1: Disk M-3",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "O-1: Disk E-42",
+            "map_locations": [
+              {
+                "map": "area_o",
+                "x": 554,
+                "y": 303
+              }
+            ],
+            "sections": [
+              {
+                "name": "O-1: Disk E-42",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "O-2",
+        "children": [
+          {
+            "name": "O-2: Disk B-14",
+            "map_locations": [
+              {
+                "map": "area_o",
+                "x": 1287,
+                "y": 729
+              }
+            ],
+            "sections": [
+              {
+                "name": "O-2: Disk B-14",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Area X (Guardian HQ)",
+    "children": [
+      {
+        "name": "Missions / Biometals / Quests",
+        "children": [
+          {
+            "name": "Mission - Protect Hq",
+            "map_locations": [
+              {
+                "map": "area_x",
+                "x": 24,
+                "y": 58
+              }
+            ],
+            "sections": [
+              {
+                "name": "Mission - Protect Hq",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "Quest - Deliver A Reply",
+            "map_locations": [
+              {
+                "map": "area_x",
+                "x": 536,
+                "y": 58
+              }
+            ],
+            "sections": [
+              {
+                "name": "Quest - Deliver A Reply",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "X-1",
+        "children": [
+          {
+            "name": "X-1: Disk O-1",
+            "map_locations": [
+              {
+                "map": "area_x",
+                "x": 943,
+                "y": 531
+              }
+            ],
+            "sections": [
+              {
+                "name": "X-1: Disk O-1",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "X-1: Disk O-2",
+            "map_locations": [
+              {
+                "map": "area_x",
+                "x": 199,
+                "y": 562
+              }
+            ],
+            "sections": [
+              {
+                "name": "X-1: Disk O-2",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "X-1: Disk O-4",
+            "map_locations": [
+              {
+                "map": "area_x",
+                "x": 820,
+                "y": 411
+              }
+            ],
+            "sections": [
+              {
+                "name": "X-1: Disk O-4",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "X-1: Disk O-5",
+            "map_locations": [
+              {
+                "map": "area_x",
+                "x": 820,
+                "y": 260
+              }
+            ],
+            "sections": [
+              {
+                "name": "X-1: Disk O-5",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "X-1: Disk O-6",
+            "map_locations": [
+              {
+                "map": "area_x",
+                "x": 1195,
+                "y": 260
+              }
+            ],
+            "sections": [
+              {
+                "name": "X-1: Disk O-6",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "X-1: Disk O-7",
+            "map_locations": [
+              {
+                "map": "area_x",
+                "x": 413,
+                "y": 707
+              }
+            ],
+            "sections": [
+              {
+                "name": "X-1: Disk O-7",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "X-1: Disk O-8",
+            "map_locations": [
+              {
+                "map": "area_x",
+                "x": 300,
+                "y": 562
+              }
+            ],
+            "sections": [
+              {
+                "name": "X-1: Disk O-8",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "X-1: Disk O-10",
+            "map_locations": [
+              {
+                "map": "area_x",
+                "x": 504,
+                "y": 562
+              }
+            ],
+            "sections": [
+              {
+                "name": "X-1: Disk O-10",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "X-1: Disk O-13",
+            "map_locations": [
+              {
+                "map": "area_x",
+                "x": 407,
+                "y": 499
+              }
+            ],
+            "sections": [
+              {
+                "name": "X-1: Disk O-13",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "X-1: Disk O-14",
+            "map_locations": [
+              {
+                "map": "area_x",
+                "x": 110,
+                "y": 411
+              }
+            ],
+            "sections": [
+              {
+                "name": "X-1: Disk O-14",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "X-1: Disk O-15",
+            "map_locations": [
+              {
+                "map": "area_x",
+                "x": 1397,
+                "y": 260
+              }
+            ],
+            "sections": [
+              {
+                "name": "X-1: Disk O-15",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "X-1: Disk O-19",
+            "map_locations": [
+              {
+                "map": "area_x",
+                "x": 1195,
+                "y": 411
+              }
+            ],
+            "sections": [
+              {
+                "name": "X-1: Disk O-19",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "X-1: Disk O-20",
+            "map_locations": [
+              {
+                "map": "area_x",
+                "x": 508,
+                "y": 499
+              }
+            ],
+            "sections": [
+              {
+                "name": "X-1: Disk O-20",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "X-2",
+        "children": [
+          {
+            "name": "X-2: Disk O-3",
+            "map_locations": [
+              {
+                "map": "area_x",
+                "x": 239,
+                "y": 1134
+              }
+            ],
+            "sections": [
+              {
+                "name": "X-2: Disk O-3",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "X-2: Disk O-16",
+            "map_locations": [
+              {
+                "map": "area_x",
+                "x": 416,
+                "y": 1146
+              }
+            ],
+            "sections": [
+              {
+                "name": "X-2: Disk O-16",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "X-3",
+        "children": [
+          {
+            "name": "X-3: Disk O-11",
+            "map_locations": [
+              {
+                "map": "area_x",
+                "x": 1215,
+                "y": 1140
+              }
+            ],
+            "sections": [
+              {
+                "name": "X-3: Disk O-11",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -26,6 +26,7 @@ DOM = "ARM9 System Bus"
 LIVE_BLOCK = 0x021045CC       # copia viva del bloque de progreso
 CANON_BLOCK = 0x021602B4      # copia canónica (conceder = set bit aquí)
 LIVE_LEN = 0x60               # ventana viva a leer (cubre disks/misiones/keys)
+MSG_BANK = 0x02104588         # u32 índice del último banco de texto (0xFFFFFFFF = boot)
 LIFEUP_BYTE = 0x0214FC77
 SUBTANK_BYTE = 0x0214FC78
 ECRYSTALS = 0x0214FC70        # u24
@@ -179,9 +180,10 @@ class MMZXClient(BizHawkClient):
             ctx.auth = self.slot_name
 
     def _detect_window(self) -> tuple[int, int]:
-        """Rango [lo, hi) que cubre TODAS las direcciones de detect de las
-        locations (+ GOAL_BITS). Se calcula una vez. Robusto a direcciones
-        fuera del bloque 0x021045CC (p.ej. el flag del Sub Tank A-2)."""
+        """Rango [lo, hi) que cubre las direcciones de detect DEL BLOQUE de
+        progreso (+ GOAL_BITS). Las direcciones lejanas (Life Ups/Sub Tanks:
+        bytes de capacidad 0x0214FC77/78, nibble alto = recogido fisico) se
+        leen aparte (self._extra_addrs) para no leer 190 KiB por tick."""
         if self._win is not None:
             return self._win
         addrs: list[int] = [a for a, _ in GOAL_BITS] + [a for a, _ in GOAL_BITS_ALT]
@@ -193,7 +195,9 @@ class MMZXClient(BizHawkClient):
                 addrs.append(det[1])
             elif det[0] == "all":
                 addrs += [a for a, _ in det[1]]
-        lo, hi = min(addrs), max(addrs) + 1
+        near = [a for a in addrs if abs(a - LIVE_BLOCK) < 0x1000]
+        self._extra_addrs = sorted({a for a in addrs if abs(a - LIVE_BLOCK) >= 0x1000})
+        lo, hi = min(near), max(near) + 1
         self._win = (lo, hi)
         return self._win
 
@@ -255,22 +259,43 @@ class MMZXClient(BizHawkClient):
         in_game, state_bytes = await self._in_game(ctx)
         if not in_game:
             self.prev_hp = None
+            self.ingame_ticks = 0
             return
         guard = (GAME_STATE, state_bytes, DOM)   # solo escribir si sigue en juego
+        # Debounce de arranque (agente exp310-319): al lanzar la partida hay
+        # ~37 frames en los que _in_game ya es True pero estructuras fuera del
+        # bloque siguen con el relleno de boot 0xFF (p.ej. el struct de
+        # mensajes 0x02104588). Ningún check ni escritura hasta que el juego
+        # lleve varios ticks estable y el struct de mensajes esté inicializado.
+        self.ingame_ticks = getattr(self, "ingame_ticks", 0) + 1
+        if self.ingame_ticks < 3:
+            return
+        try:
+            msg = (await bizhawk.read(ctx.bizhawk_ctx, [(MSG_BANK, 4, DOM)]))[0]
+        except bizhawk.RequestFailedError:
+            return
+        if msg == bytes([0xFF] * 4):
+            return
 
         # ---- detectar checks ----
         # Ventana de lectura calculada de TODAS las direcciones de detect
         # (+ GOAL_BITS). Cubre el bloque de progreso 0x021045CC y tambien
         # el flag del Sub Tank A-2 (0x02104589, por debajo del bloque).
         lo, hi = self._detect_window()
+        extra = self._extra_addrs
         try:
-            block = (await bizhawk.read(ctx.bizhawk_ctx, [(lo, hi - lo, DOM)]))[0]
+            reads = await bizhawk.read(ctx.bizhawk_ctx,
+                                       [(lo, hi - lo, DOM)] + [(a, 1, DOM) for a in extra])
         except bizhawk.RequestFailedError:
             return
+        block = reads[0]
+        extra_val = {a: reads[1 + i][0] for i, a in enumerate(extra)}
 
         def bit_set(addr: int, bit: int) -> bool:
             if lo <= addr < hi:
                 return bool(block[addr - lo] & (1 << bit))
+            if addr in extra_val:
+                return bool(extra_val[addr] & (1 << bit))
             return False
 
         checked = set()

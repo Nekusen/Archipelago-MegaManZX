@@ -58,6 +58,15 @@ class MMZXWorld(World):
 
     origin_region_name = "Menu"
 
+    # Universal Tracker: pestaña de mapa con el pack PopTracker embebido en
+    # worlds/mmzx/tracker/ (tools/gen_tracker_pack.py; la lógica la pone UT
+    # desde este mismo mundo). UT ignora el atributo si no está instalado.
+    tracker_world = {
+        "map_page_folder": "tracker",
+        "map_page_maps": "maps.json",
+        "map_page_locations": "locations.json",
+    }
+
     def create_regions(self) -> None:
         create_regions(self)
 

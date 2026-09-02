@@ -5,6 +5,9 @@ hub (exp186/195). El cliente los escribe ahí durante los menús de la primera
 sesión; el parche de ROM redirige "New Game" al handler de LOAD, que entra a
 la escena usando este bloque canónico + descriptor (hub jugable, sin intro).
 Estado seed-independiente: el modelo del YAML se aplica ENCIMA por el cliente.
+Corrección 2026-09-02 (agente exp310-319): imagen[0x44] bit0 (= 0x02104604.0,
+Disk B-3 de A-2, cogido en el tutorial por quien capturó la imagen) puesto a 0
+para que el disco sea recogible. Mapeo: RAM[0x021045CC+k] = imagen[0x0C+k].
 """
 
 import base64
@@ -12,7 +15,7 @@ import base64
 GOLDEN_IMAGE_ADDR = 0x021602A8
 GOLDEN_IMAGE_B64 = (
     "ugUBAAAAAABGEBF6AAAAgAAAGAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-    "AAAAAAAAAAAQAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAACCAAAAAAA"
+    "AAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAACCAAAAAAA"
     "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
     "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAZAAAAAAAAAAIBwAAAAAAAOgDAAAAAAAA"
     "ZAAAAAAAAACSAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"

@@ -106,6 +106,28 @@ BIOMETAL_CAT_PATCH = {
 }
 
 
+# --- Life Ups / Sub Tanks: "recogido" != "capacidad" (agente exp300-309,
+# 2026-09-02; verificado en RAM: recogida, spawn, puerta, muerte, save+reset+
+# Continue). En vanilla el byte de capacidad 0x0214FC77 (Life Ups) /
+# 0x0214FC78 (Sub Tanks) usa los bits 0-3 como "slot recogido" (= capacidad
+# y = gate del spawn del pickup, FUN_020a3dd4) y se persiste en el save. En
+# el randomizer el nibble BAJO es el conteo de items AP (cliente, capacidad
+# autoritativa) y el nibble ALTO (bit 4+idx) pasa a ser "recogido fisico":
+# lo pone el pickup (grant_life_up FUN_02045008 / grant_sub_tank
+# FUN_02044ca4 parcheados), gatea el spawn y es la DETECCION del check.
+# El pickup ya no sube HP max ni toca los contenidos de tanque. La quest de
+# los Energy Packs (report -> grant_sub_tank idx 3) pone FC78.7: sin tanque.
+PICKUP_FLAG_PATCH = [
+    # (RAM, bytes originales, bytes nuevos)
+    (0x02045014, "0121", "1021"),          # grant_life_up: movs r1,#1 -> #0x10 (bit 4+idx)
+    (0x0204501E, "00f005f8", "c046c046"),  # grant_life_up: bl FUN_0204502c(p,4) -> nop nop (sin +4 HP max)
+    (0x02044CAA, "0124", "1024"),          # grant_sub_tank: movs r4,#1 -> #0x10
+    (0x02044CD4, "0a54", "c046"),          # grant_sub_tank: strb (contenido del tanque) -> nop
+    (0x020A3E30, "0121", "1021"),          # spawn Life Up (FUN_020a3dd4): gate por bit 4+idx
+    (0x020A3E86, "0121", "1021"),          # spawn Sub Tank: gate por bit 4+idx
+]
+
+
 class MMZXPatchExtension(APPatchExtension):
     game = "Mega Man ZX"
 
@@ -161,6 +183,9 @@ class MMZXPatchExtension(APPatchExtension):
             poke(lst_a, flag_d1.to_bytes(4, "little"),
                  orig_flag.to_bytes(4, "little"))
             poke(cnt_a, b"\x01", b"\x02")
+        # 1d) Life Ups / Sub Tanks: "recogido" = nibble alto (siempre)
+        for ram, orig, new in PICKUP_FLAG_PATCH:
+            poke(ram, bytes.fromhex(new), bytes.fromhex(orig))
         # 2) Hu-gate (opcional)
         if hu_in_pool:
             poke(HUGATE_ARRAY_RAM, HUGATE_FLAG_INDEX.to_bytes(4, "little"))

@@ -60,6 +60,12 @@ MODEL_POSSESSION = {
     7: ("Biometal O", 0x021045D2, 1),
 }
 
+# Byte "misión en curso" del bloque de partida (0x0210460C+0x1F): bit1 lo
+# pone FUN_02031f10 al aceptar (id<17), bit2 para misiones de historia;
+# FUN_02009184 ("¿misión X activa?") exige (&6). Lo limpia el Report.
+# Canónica en +0x5BCE8. Sin él, la arena del jefe no se armaba (exp229/231).
+MISSION_ACTIVE_BYTE = 0x0210462B
+
 ROM_GAME_CODE = b"ARZE"       # MMZX USA
 
 # Hub por defecto del anti-softlock (z01 = subárea 70)
@@ -394,12 +400,17 @@ class MMZXClient(BizHawkClient):
             return   # ya es la misión activa
         addr, bit = rec["flag"]
         canon = addr + (CANON_BLOCK - LIVE_BLOCK)
-        cur = await bizhawk.read(ctx.bizhawk_ctx, [(addr, 1, DOM), (canon, 1, DOM)])
+        act, act_c = MISSION_ACTIVE_BYTE, MISSION_ACTIVE_BYTE + (CANON_BLOCK - LIVE_BLOCK)
+        cur = await bizhawk.read(ctx.bizhawk_ctx, [
+            (addr, 1, DOM), (canon, 1, DOM), (act, 1, DOM), (act_c, 1, DOM)])
         writes = [
             (addr, bytes([cur[0][0] | (1 << bit)]), DOM),
             (canon, bytes([cur[1][0] | (1 << bit)]), DOM),
             (MISSION_STATE_ADDR, rec["state"].to_bytes(4, "little"), DOM),
             (MISSION_ACTIVE_FLAG, b"\x01", DOM),
+            # "misión en curso" (bit1): lo pone FUN_02031f10; lo exige FUN_02009184
+            (act, bytes([cur[2][0] | 0x02]), DOM),
+            (act_c, bytes([cur[3][0] | 0x02]), DOM),
         ]
         ok = await bizhawk.guarded_write(ctx.bizhawk_ctx, writes, [guard])
         if ok:

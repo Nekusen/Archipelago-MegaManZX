@@ -366,7 +366,14 @@ MISSION_ACCEPT = {
     17: {'id': 4, 'state': 162, 'flag': [34620896, 2], 'name': 'Troop Reinforcement', 'extra': [[34620896, 7]]},
     18: {'id': 16, 'state': 225, 'flag': [34620904, 1], 'name': 'Destroy Model W'},
     19: {'id': 16, 'state': 225, 'flag': [34620904, 1], 'name': 'Destroy Model W'},
+    20: {'id': 5, 'state': 171, 'flag': [34620897, 3], 'name': 'Search The Plant'},
+    21: {'id': 5, 'state': 171, 'flag': [34620897, 3], 'name': 'Search The Plant'},
+    22: {'id': 5, 'state': 171, 'flag': [34620897, 3], 'name': 'Search The Plant'},
+    23: {'id': 5, 'state': 171, 'flag': [34620897, 3], 'name': 'Search The Plant'},
+    24: {'id': 5, 'state': 171, 'flag': [34620897, 3], 'name': 'Search The Plant'},
+    25: {'id': 5, 'state': 171, 'flag': [34620897, 3], 'name': 'Search The Plant'},
     26: {'id': 5, 'state': 171, 'flag': [34620897, 3], 'name': 'Search The Plant'},
+    27: {'id': 5, 'state': 171, 'flag': [34620897, 3], 'name': 'Search The Plant'},
     28: {'id': 6, 'state': 174, 'flag': [34620897, 6], 'name': 'Find The Survivors'},
     29: {'id': 6, 'state': 174, 'flag': [34620897, 6], 'name': 'Find The Survivors'},
     30: {'id': 6, 'state': 174, 'flag': [34620897, 6], 'name': 'Find The Survivors'},
@@ -377,10 +384,28 @@ MISSION_ACCEPT = {
     35: {'id': 7, 'state': 177, 'flag': [34620898, 1], 'name': 'Fight The Mavericks'},
     36: {'id': 7, 'state': 177, 'flag': [34620898, 1], 'name': 'Fight The Mavericks'},
     37: {'id': 7, 'state': 177, 'flag': [34620898, 1], 'name': 'Fight The Mavericks'},
+    38: {'id': 8, 'state': 193, 'flag': [34620900, 1], 'name': 'Secure The Biometal'},
+    39: {'id': 8, 'state': 193, 'flag': [34620900, 1], 'name': 'Secure The Biometal'},
+    40: {'id': 8, 'state': 193, 'flag': [34620900, 1], 'name': 'Secure The Biometal'},
     41: {'id': 8, 'state': 193, 'flag': [34620900, 1], 'name': 'Secure The Biometal'},
+    42: {'id': 9, 'state': 197, 'flag': [34620900, 5], 'name': 'Save The People'},
+    43: {'id': 9, 'state': 197, 'flag': [34620900, 5], 'name': 'Save The People'},
     44: {'id': 9, 'state': 197, 'flag': [34620900, 5], 'name': 'Save The People'},
+    45: {'id': 9, 'state': 197, 'flag': [34620900, 5], 'name': 'Save The People'},
+    46: {'id': 9, 'state': 197, 'flag': [34620900, 5], 'name': 'Save The People'},
+    47: {'id': 10, 'state': 201, 'flag': [34620901, 1], 'name': 'Recover The Disk'},
+    48: {'id': 10, 'state': 201, 'flag': [34620901, 1], 'name': 'Recover The Disk'},
+    49: {'id': 10, 'state': 201, 'flag': [34620901, 1], 'name': 'Recover The Disk'},
+    50: {'id': 10, 'state': 201, 'flag': [34620901, 1], 'name': 'Recover The Disk'},
     51: {'id': 10, 'state': 201, 'flag': [34620901, 1], 'name': 'Recover The Disk'},
+    52: {'id': 11, 'state': 204, 'flag': [34620901, 4], 'name': 'Attack The Excavators'},
+    53: {'id': 11, 'state': 204, 'flag': [34620901, 4], 'name': 'Attack The Excavators'},
+    54: {'id': 11, 'state': 204, 'flag': [34620901, 4], 'name': 'Attack The Excavators'},
     55: {'id': 11, 'state': 204, 'flag': [34620901, 4], 'name': 'Attack The Excavators'},
+    56: {'id': 11, 'state': 204, 'flag': [34620901, 4], 'name': 'Attack The Excavators'},
+    57: {'id': 12, 'state': 208, 'flag': [34620902, 0], 'name': 'Protect The Lab'},
+    58: {'id': 12, 'state': 208, 'flag': [34620902, 0], 'name': 'Protect The Lab'},
+    59: {'id': 12, 'state': 208, 'flag': [34620902, 0], 'name': 'Protect The Lab'},
     60: {'id': 12, 'state': 208, 'flag': [34620902, 0], 'name': 'Protect The Lab'},
     61: {'id': 14, 'state': 218, 'flag': [34620903, 2], 'name': 'Stop The Dig'},
     62: {'id': 14, 'state': 218, 'flag': [34620903, 2], 'name': 'Stop The Dig'},
@@ -388,6 +413,12 @@ MISSION_ACCEPT = {
     65: {'id': 15, 'state': 221, 'flag': [34620903, 5], 'name': 'Repel The Army'},
     66: {'id': 15, 'state': 221, 'flag': [34620903, 5], 'name': 'Repel The Army'},
 }
+# Pisos del hub con puerta hacia una sala de JEFE (y_piso -> subárea de
+# la sala): el cliente acepta la misión del área al acercarse a la
+# puerta izquierda (x <= HUB_FLOOR_DOOR_X); agente exp370-379.
+HUB_FLOOR_BOSS = {1888: 26, 2272: 32, 2656: 37, 3424: 44, 4192: 55, 4576: 60, 4960: 63, 5344: 66}
+HUB_FLOOR_DOOR_X = 352
+HUB_FLOOR_Y = {'A': 352, 'B': 736, 'C': 1120, 'D': 1504, 'E': 1888, 'F': 2272, 'G': 2656, 'H': 3040, 'I': 3424, 'J': 3808, 'K': 4192, 'L': 4576, 'M': 4960, 'N': 4960, 'O': 5344, 'X': 5728}
 
 # --- Modelo inicial (tutorial-skip, v0.2; exp171/176/178-180) ---
 # Posesión de modelos = flags del bloque de progreso (tablas de

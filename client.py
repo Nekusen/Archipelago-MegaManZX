@@ -16,6 +16,7 @@ from .data import (LOCATIONS, ITEMS, GOAL_BITS, GOAL_BITS_ALT, MISSION_ACCEPT,
                    STARTING_MODELS, STARTING_MODEL_ITEM, STARTING_TRANSERVERS,
                    MODEL_X_POSSESSION, ACTIVE_MODEL_ADDR)
 from .data import EVENT_GATES, EVENT_GATES_OPEN, EVENT_GATES_ALL6
+from .data import HUB_FLOOR_BOSS, HUB_FLOOR_DOOR_X, HUB_FLOOR_Y
 from .data import PICKUP_MAILBOX_ADDR, PICKUP_MAILBOX_SLOTS
 from .golden import GOLDEN_IMAGE, GOLDEN_IMAGE_ADDR
 
@@ -93,7 +94,7 @@ STORY_HANDLER_OBJ = 0x0214F6C4     # 0x114 B; +9 = id de cutscene (0xFF = ningun
 # Subáreas de JEFE (y de fin de misión) donde NO se auto-acepta al entrar
 # (exp212/213): e07 26, f05 32, g05 37, i03 44, k04 55, l04 60, m03 63,
 # o02 66; h04 41, j05 51, d05 19.
-BOSS_SUBAREAS = {26, 32, 37, 44, 55, 60, 63, 66, 41, 51, 19}
+BOSS_SUBAREAS = {26, 32, 37, 44, 55, 60, 63, 66, 41, 51, 19}   # informativo; ya no excluye (agente exp379: sin corrupción con la guarda OAM)
 
 ROM_GAME_CODE = b"ARZE"       # MMZX USA
 
@@ -543,6 +544,15 @@ class MMZXClient(BizHawkClient):
         logger.info("[mmzx_dump] misiones con FLAG de inicio puesto: "
                     + (", ".join(started) if started else "ninguna"))
 
+    @staticmethod
+    def _mission_done_bits(name: str):
+        """Bits de 'completada' de una misión (detect 'all' de su location)."""
+        v = LOCATIONS.get("Mission - " + name) or {}
+        det = v.get("detect")
+        if det and det[0] == "all":
+            return [(a, b) for a, b in det[1]]
+        return []
+
     async def _auto_accept_mission(self, ctx, guard) -> None:
         """Open-world: al ENTRAR en la subárea destino de una misión, la
         fuerza como aceptada (replica FUN_02031f10, validado exp067): start
@@ -554,19 +564,45 @@ class MMZXClient(BizHawkClient):
             sub = (await bizhawk.read(ctx.bizhawk_ctx, [(SUBAREA_STABLE, 1, DOM)]))[0][0]
         except bizhawk.RequestFailedError:
             return
-        if sub == self.last_accept_sub:
-            return
-        self.last_accept_sub = sub
-        if sub in BOSS_SUBAREAS:
-            # Llegar por warp/teleport al pad de una sala de JEFE y forzar la
-            # misión ahí spawnea al jefe encima del jugador (exp212/213:
-            # G-5/K-4/L-4 se corrompían; la guarda OAM lo mitiga pero no está
-            # re-validado). Se acepta al entrar en cualquier OTRA subárea del
-            # área (todas tienen >= 2): sal del pad y vuelve.
-            return
-        rec = MISSION_ACCEPT.get(sub)
+        if sub == HUB_SUBAREA:
+            # Piso del hub con puerta hacia una sala de JEFE: la puerta del
+            # piso (G-5/K-4/L-4) y los shutters de la arena exigen la misión
+            # del área aceptada o completada (agente exp370-379). Se acepta
+            # al acercarse a la puerta izquierda (x <= HUB_FLOOR_DOOR_X) para
+            # no convertir la consola del piso en "Abort the mission?".
+            try:
+                r = await bizhawk.read(ctx.bizhawk_ctx, [(PLAYER_POS, 8, DOM)])
+            except bizhawk.RequestFailedError:
+                return
+            x = int.from_bytes(r[0][0:4], "little") >> 8
+            y = int.from_bytes(r[0][4:8], "little") >> 8
+            floor = next((fy for fy in HUB_FLOOR_BOSS if abs(y - (fy - 17)) <= 48), None)
+            if floor is None or x > HUB_FLOOR_DOOR_X:
+                self.last_accept_sub = None
+                return
+            if self.last_accept_sub == ("hub", floor):
+                return
+            self.last_accept_sub = ("hub", floor)
+            rec = MISSION_ACCEPT.get(HUB_FLOOR_BOSS[floor])
+        else:
+            if sub == self.last_accept_sub:
+                return
+            self.last_accept_sub = sub
+            # (Las salas de JEFE ya no se excluyen: con la guarda OAM de la ROM
+            # forzar la misión dentro no corrompe la sala; agente exp379/379b.)
+            rec = MISSION_ACCEPT.get(sub)
         if not rec:
             return
+        # misión ya COMPLETADA (bits de "completada" = detección de su
+        # location): no re-aceptarla (evitaría un segundo Report/recompensa)
+        done_bits = self._mission_done_bits(rec["name"])
+        if done_bits:
+            try:
+                vals = await bizhawk.read(ctx.bizhawk_ctx, [(a, 1, DOM) for a, _ in done_bits])
+            except bizhawk.RequestFailedError:
+                return
+            if all(vals[i][0] & (1 << b) for i, (_, b) in enumerate(done_bits)):
+                return
         try:
             cur_state = int.from_bytes((await bizhawk.read(
                 ctx.bizhawk_ctx, [(MISSION_STATE_ADDR, 4, DOM)]))[0], "little")
@@ -992,17 +1028,24 @@ class MMZXClient(BizHawkClient):
 
 def _cmd_teleport(self, *args) -> None:
     """Anti-softlock: teletransporta a una subárea. Sin argumentos → hub
-    (z01). Uso: /mmzx_teleport [subárea] [x_px] [y_px]"""
+    (z01). Uso: /mmzx_teleport [subárea] [x_px] [y_px]  ·  /mmzx_teleport K
+    (letra de área → piso de esa área en el hub, junto a la consola)"""
     from CommonClient import logger
     handler = self.ctx.client_handler
     if not isinstance(handler, MMZXClient):
+        return
+    if len(args) >= 1 and str(args[0]).strip().upper() in HUB_FLOOR_Y:
+        # letra de área -> piso del hub (sub 70) de esa área, junto a la consola
+        letter = str(args[0]).strip().upper()
+        handler.pending_teleport = (HUB_SUBAREA, HUB_X, HUB_FLOOR_Y[letter] - 1)
+        logger.info(f"Teleport encolado → hub, piso {letter} ({HUB_X},{HUB_FLOOR_Y[letter] - 1}).")
         return
     try:
         sub = int(args[0]) if len(args) >= 1 else HUB_SUBAREA
         x = int(args[1]) if len(args) >= 2 else HUB_X
         y = int(args[2]) if len(args) >= 3 else HUB_Y
     except ValueError:
-        logger.error("mmzx_teleport: argumentos no numéricos")
+        logger.error("mmzx_teleport: argumentos no numéricos (o letra de área A..X)")
         return
     handler.pending_teleport = (sub, x, y)
     logger.info(f"Teleport encolado → subárea {sub} ({x},{y}).")

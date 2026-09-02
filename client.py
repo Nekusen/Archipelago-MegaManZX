@@ -577,6 +577,14 @@ class MMZXClient(BizHawkClient):
                 n_subtank += 1
             elif kind == "live_bit":
                 live_bits.add((grant[1], grant[2]))
+            elif kind == "transerver":
+                # acceso a la red de Transervers: si el bit del destino es
+                # conocido (exp230) se enciende en el bitfield 0x02104627/28
+                # (vivo+canónica) para que aparezca en la lista de Transport
+                # del juego; si no, el item gatea solo la lógica (el warp del
+                # cliente /mmzx_teleport cubre el desplazamiento).
+                if len(grant) >= 3:
+                    live_bits.add((grant[1], grant[2]))
             elif kind in ("ecrystals", "oneup"):
                 if i >= self.applied_consumables:
                     new_consumables.append(kind)

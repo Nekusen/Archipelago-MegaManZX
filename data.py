@@ -171,7 +171,19 @@ ITEMS = {
     'Purple Card Key': {'id': 13664517, 'classification': 'progression', 'grant': ['live_bit', 34620924, 7], 'pooled': True},
     'Life Up': {'id': 13664528, 'classification': 'useful', 'grant': ['lifeup'], 'pooled': True},
     'Sub Tank': {'id': 13664529, 'classification': 'useful', 'grant': ['subtank'], 'pooled': True},
-    'Transerver Access': {'id': 13664544, 'classification': 'progression', 'grant': ['todo'], 'pooled': False},
+    'Transerver Access - Area A': {'id': 13664544, 'classification': 'progression', 'grant': ['transerver'], 'pooled': True},
+    'Transerver Access - Area B': {'id': 13664545, 'classification': 'progression', 'grant': ['transerver'], 'pooled': True},
+    'Transerver Access - Area C': {'id': 13664546, 'classification': 'progression', 'grant': ['transerver', 34620967, 6], 'pooled': True},
+    'Transerver Access - Area D': {'id': 13664547, 'classification': 'progression', 'grant': ['transerver', 34620967, 7], 'pooled': True},
+    'Transerver Access - Area E': {'id': 13664548, 'classification': 'progression', 'grant': ['transerver', 34620968, 0], 'pooled': True},
+    'Transerver Access - Area F': {'id': 13664549, 'classification': 'progression', 'grant': ['transerver', 34620968, 1], 'pooled': True},
+    'Transerver Access - Area G': {'id': 13664550, 'classification': 'progression', 'grant': ['transerver'], 'pooled': True},
+    'Transerver Access - Area I': {'id': 13664551, 'classification': 'progression', 'grant': ['transerver', 34620968, 3], 'pooled': True},
+    'Transerver Access - Area K': {'id': 13664552, 'classification': 'progression', 'grant': ['transerver'], 'pooled': True},
+    'Transerver Access - Area L': {'id': 13664553, 'classification': 'progression', 'grant': ['transerver'], 'pooled': True},
+    'Transerver Access - Area M': {'id': 13664554, 'classification': 'progression', 'grant': ['transerver', 34620968, 6], 'pooled': True},
+    'Transerver Access - Area O': {'id': 13664555, 'classification': 'progression', 'grant': ['transerver', 34620968, 7], 'pooled': True},
+    'Transerver Access - Area X': {'id': 13664556, 'classification': 'progression', 'grant': ['transerver'], 'pooled': True},
     'E-Crystals': {'id': 13664768, 'classification': 'filler', 'grant': ['ecrystals'], 'pooled': True},
     '1-Up': {'id': 13664769, 'classification': 'filler', 'grant': ['oneup'], 'pooled': True},
 }
@@ -336,6 +348,39 @@ ROOM_SUBAREA = {
     'z02': 71,
 }
 TRANSERVER_ROOMS = ['a02', 'b02', 'c01', 'c02', 'd02', 'd03', 'e07', 'f05', 'g05', 'i01', 'i03', 'k04', 'l04', 'm03', 'n01', 'o02', 'x01']
+# Red de Transervers (modelo HÍBRIDO): sala destino -> item de
+# acceso que abre su warp en la lógica y su bit en el juego.
+TRANSERVER_ACCESS = {
+    'a02': 'Transerver Access - Area A',
+    'b02': 'Transerver Access - Area B',
+    'c01': 'Transerver Access - Area B',
+    'c02': 'Transerver Access - Area C',
+    'c03': 'Transerver Access - Area C',
+    'd01': 'Transerver Access - Area C',
+    'd02': 'Transerver Access - Area D',
+    'd03': 'Transerver Access - Area D',
+    'e07': 'Transerver Access - Area E',
+    'i01': 'Transerver Access - Area E',
+    'f05': 'Transerver Access - Area F',
+    'g05': 'Transerver Access - Area G',
+    'i03': 'Transerver Access - Area I',
+    'k04': 'Transerver Access - Area K',
+    'l04': 'Transerver Access - Area L',
+    'm03': 'Transerver Access - Area M',
+    'n01': 'Transerver Access - Area M',
+    'o02': 'Transerver Access - Area O',
+    'x01': 'Transerver Access - Area X',
+}
+TRANSERVER_UNLOCK_BITS = {
+    'c02': (0x02104627, 6),
+    'd02': (0x02104627, 7),
+    'e07': (0x02104628, 0),
+    'f05': (0x02104628, 1),
+    'i03': (0x02104628, 3),
+    'm03': (0x02104628, 6),
+    'o02': (0x02104628, 7),
+}
+START_TRANSERVER_AREA = 'A'
 # Destinos del menú de warp (badges del mapa; candidatos a item
 # 'Transerver Access - <área>') y pads save-only (salas DATA):
 WARP_DESTINATIONS = ['a02', 'b02', 'c02', 'd02', 'e07', 'f05', 'g05', 'i03', 'k04', 'l04', 'm03', 'o02']
@@ -596,4 +641,18 @@ DOORS = [
     {'name': 'e07 curated to e08', 'src': 'e07', 'dst': 'e08', 'kind': 'curated', 'key': None, 'pos': None, 'dst_pos': None},
     {'name': 'k01 fall to k02', 'src': 'k01', 'dst': 'k02', 'kind': 'curated', 'key': None, 'pos': None, 'dst_pos': None},
     {'name': 'k02 fall to k03', 'src': 'k02', 'dst': 'k03', 'kind': 'curated', 'key': None, 'pos': None, 'dst_pos': None},
+    {'name': 'b02 corridor to c01', 'src': 'b02', 'dst': 'c01', 'kind': 'curated', 'key': None, 'pos': None, 'dst_pos': None},
+    {'name': 'c01 corridor to b02', 'src': 'c01', 'dst': 'b02', 'kind': 'curated', 'key': None, 'pos': None, 'dst_pos': None},
+    {'name': 'c02 corridor to c03', 'src': 'c02', 'dst': 'c03', 'kind': 'curated', 'key': None, 'pos': None, 'dst_pos': None},
+    {'name': 'c02 corridor to d01', 'src': 'c02', 'dst': 'd01', 'kind': 'curated', 'key': None, 'pos': None, 'dst_pos': None},
+    {'name': 'c03 corridor to c02', 'src': 'c03', 'dst': 'c02', 'kind': 'curated', 'key': None, 'pos': None, 'dst_pos': None},
+    {'name': 'c03 corridor to d01', 'src': 'c03', 'dst': 'd01', 'kind': 'curated', 'key': None, 'pos': None, 'dst_pos': None},
+    {'name': 'd01 corridor to c02', 'src': 'd01', 'dst': 'c02', 'kind': 'curated', 'key': None, 'pos': None, 'dst_pos': None},
+    {'name': 'd01 corridor to c03', 'src': 'd01', 'dst': 'c03', 'kind': 'curated', 'key': None, 'pos': None, 'dst_pos': None},
+    {'name': 'd02 corridor to d03', 'src': 'd02', 'dst': 'd03', 'kind': 'curated', 'key': None, 'pos': None, 'dst_pos': None},
+    {'name': 'd03 corridor to d02', 'src': 'd03', 'dst': 'd02', 'kind': 'curated', 'key': None, 'pos': None, 'dst_pos': None},
+    {'name': 'e07 corridor to i01', 'src': 'e07', 'dst': 'i01', 'kind': 'curated', 'key': None, 'pos': None, 'dst_pos': None},
+    {'name': 'i01 corridor to e07', 'src': 'i01', 'dst': 'e07', 'kind': 'curated', 'key': None, 'pos': None, 'dst_pos': None},
+    {'name': 'm03 corridor to n01', 'src': 'm03', 'dst': 'n01', 'kind': 'curated', 'key': None, 'pos': None, 'dst_pos': None},
+    {'name': 'n01 corridor to m03', 'src': 'n01', 'dst': 'm03', 'kind': 'curated', 'key': None, 'pos': None, 'dst_pos': None},
 ]

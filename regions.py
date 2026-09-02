@@ -27,7 +27,7 @@ from .data import LOCATIONS
 from .locations import MMZXLocation, locations_for_options
 from .logic import (ALL_EDGES, NON_TRANSITION_KINDS, ROOM_NAMES, and_rules,
                     compile_rule, door_rule, internal_gate_rule, label_rule,
-                    starting_room)
+                    starting_room, transerver_rule)
 from .logic_rules import DOOR_RULES, LOCATION_RULES, ROOM_RULES, SUBREGIONS
 
 
@@ -75,7 +75,12 @@ def create_regions(world) -> None:
             continue
         pair = "%s->%s" % (d["src"], d["dst"])
         extra = DOOR_RULES.get(d["name"], DOOR_RULES.get(pair))
-        r = and_rules(door_rule(d, player), rule(ROOM_RULES.get(d["dst"])), rule(extra))
+        # Red de Transervers (modelo HÍBRIDO, decisión 2026-09-02): salir del
+        # hub hacia un destino exige su item "Transerver Access - Area X"
+        # (el acceso A PIE sigue existiendo por las puertas físicas y los
+        # pasillos de piso). Entrar a la red (sala -> hub) es libre.
+        r = and_rules(door_rule(d, player), rule(ROOM_RULES.get(d["dst"])), rule(extra),
+                      transerver_rule(d, player))
         src = rooms[door_out.get(d["name"], door_out.get(pair, d["src"]))]
         dst = rooms[door_in.get(d["name"], door_in.get(pair, d["dst"]))]
         src.connect(dst, d["name"], r)

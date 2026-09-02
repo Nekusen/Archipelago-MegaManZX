@@ -31,7 +31,8 @@ Capas de este módulo:
 
 import re
 
-from .data import DOORS, HUB_ROOM, ROOM_SUBAREA, STARTING_TRANSERVERS
+from .data import (DOORS, HUB_ROOM, ROOM_SUBAREA, STARTING_TRANSERVERS,
+                   TRANSERVER_ACCESS)
 
 ALL_EDGES = DOORS
 
@@ -71,6 +72,22 @@ def door_rule(edge: dict, player: int):
     if not key:
         return None
     return lambda state: state.has(key, player)
+
+
+def transerver_rule(edge: dict, player: int):
+    """Modelo HÍBRIDO de la red de Transervers (decisión del usuario,
+    2026-09-02): un warp que SALE del hub (sala genérica sub 70, todos los
+    pisos conflacionados) hacia una sala exige el item "Transerver Access -
+    Area X" del PISO destino (data.TRANSERVER_ACCESS: sala con pad -> item
+    del badge de su piso; p.ej. n01 -> Access M, i01 -> Access E). Entrar a
+    la red desde una sala (pad) es libre. El acceso a pie (puertas físicas +
+    pasillos de piso) no pasa por aquí."""
+    if edge.get("kind") != "warp" or edge["src"] != HUB_ROOM:
+        return None
+    item = TRANSERVER_ACCESS.get(edge["dst"])
+    if item is None:
+        return lambda state: False   # piso sin destino de Transport: no hay warp
+    return lambda state: state.has(item, player)
 
 
 def label_room_groups(label: str) -> list[list[str]]:

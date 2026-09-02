@@ -10,7 +10,7 @@ import settings
 from BaseClasses import ItemClassification, Tutorial
 from worlds.AutoWorld import WebWorld, World
 
-from .data import LOCATIONS, ITEMS, STARTING_MODEL_ITEM
+from .data import LOCATIONS, ITEMS, STARTING_MODEL_ITEM, START_TRANSERVER_AREA
 from .items import MMZXItem, item_name_to_id, get_classification, ITEM_GROUPS
 from .locations import location_name_to_id, locations_for_options, LOCATION_GROUPS
 from .options import MMZXOptions
@@ -97,6 +97,14 @@ class MMZXWorld(World):
         if start_item and start_item in fixed:
             fixed.remove(start_item)
             self.multiworld.push_precollected(self.create_item(start_item))
+
+        # Red de Transervers (modelo híbrido): el acceso del área donde
+        # arranca el skip (piso del hub = A-2) se pre-concede; el resto de
+        # "Transerver Access - Area X" van a la pool como progresión.
+        start_ts = "Transerver Access - Area %s" % START_TRANSERVER_AREA
+        if start_ts in fixed:
+            fixed.remove(start_ts)
+            self.multiworld.push_precollected(self.create_item(start_ts))
 
         for name in fixed:
             pool.append(self.create_item(name))

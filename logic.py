@@ -32,7 +32,7 @@ Capas de este módulo:
 import re
 
 from .data import (DOORS, HUB_ROOM, ROOM_SUBAREA, STARTING_TRANSERVERS,
-                   TRANSERVER_ACCESS)
+                   TRANSERVER_ACCESS, TRANSERVER_ALWAYS)
 
 ALL_EDGES = DOORS
 
@@ -84,9 +84,11 @@ def transerver_rule(edge: dict, player: int):
     pasillos de piso) no pasa por aquí."""
     if edge.get("kind") != "warp" or edge["src"] != HUB_ROOM:
         return None
+    if edge["dst"] in TRANSERVER_ALWAYS:
+        return None                  # X-1 Guardian HQ: siempre en la lista (exp271)
     item = TRANSERVER_ACCESS.get(edge["dst"])
     if item is None:
-        return lambda state: False   # piso sin destino de Transport: no hay warp
+        return lambda state: False   # piso DATA sin destino de Transport: no hay warp
     return lambda state: state.has(item, player)
 
 

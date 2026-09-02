@@ -103,6 +103,9 @@ MISSION_ACTIVE_BYTE = 0x0210462B
 # Bloque de estado de HISTORIA (agente exp350-359): id de mision activa +
 # objeto del handler por mision (tabla 0x020CF0F4). Sin instalarlo, el
 # force-accept no dispara cutscenes ni flags por rectangulo (verjas).
+STORY_BLOCK = 0x0214F6BC           # bloque de historia (0x11C B: +4 id, +8 objeto del handler)
+STORY_BLOCK_CANON = 0x02160554     # su copia de checkpoint (la restaura la muerte)
+CUTSCENE_FLAG = 0x0214F502         # bit0 = cutscene/guion de historia en curso
 STORY_HANDLER_ID = 0x0214F6C0
 STORY_HANDLER_OBJ = 0x0214F6C4     # 0x114 B; +9 = id de cutscene (0xFF = ninguna)
 
@@ -700,6 +703,7 @@ class MMZXClient(BizHawkClient):
         # cutscenes por rectangulo y los flags de la mision como en vanilla.
         obj = bytearray(0x114)
         obj[9] = 0xFF
+        obj[0xB] = int(rec.get("hstate", 0))   # estado inicial del handler (Troop: 3)
         writes.append((STORY_HANDLER_OBJ, bytes(obj), DOM))
         writes.append((STORY_HANDLER_ID, int(rec["id"]).to_bytes(4, "little"), DOM))
         # bits extra de la misión (p.ej. Troop: 0x021045E0.7 = "ya lanzada" para
@@ -711,6 +715,18 @@ class MMZXClient(BizHawkClient):
         ok = await bizhawk.guarded_write(ctx.bizhawk_ctx, writes, [guard])
         from CommonClient import logger
         if ok:
+            # COMMIT del checkpoint (lo que hace el juego en los pads,
+            # FUN_0201b384): bloque de progreso vivo -> canónica y bloque de
+            # historia (id + handler) -> su copia. Sin esto, una muerte antes
+            # del primer hito restaura el checkpoint y borra el handler y el
+            # estado de misión (agente exp410-416).
+            try:
+                cur = await bizhawk.read(ctx.bizhawk_ctx, [
+                    (LIVE_BLOCK, 0xE4, DOM), (STORY_BLOCK, 0x11C, DOM)])
+                await bizhawk.guarded_write(ctx.bizhawk_ctx, [
+                    (CANON_BLOCK, cur[0], DOM), (STORY_BLOCK_CANON, cur[1], DOM)], [guard])
+            except bizhawk.RequestFailedError:
+                pass
             self.last_accept_sub = key      # solo se marca si la escritura entró
             logger.info("[mmzx] open-world: misión auto-aceptada → %s" % rec["name"])
         else:
@@ -1080,7 +1096,13 @@ class MMZXClient(BizHawkClient):
         toca (se registra como 'último modelo legítimo')."""
         received = {net.item for net in ctx.items_received}
         try:
-            active = (await bizhawk.read(ctx.bizhawk_ctx, [(MODEL, 1, DOM)]))[0][0]
+            r = await bizhawk.read(ctx.bizhawk_ctx, [(MODEL, 1, DOM), (CUTSCENE_FLAG, 1, DOM)])
+        except bizhawk.RequestFailedError:
+            return
+        if r[1][0] & 1:
+            return   # cutscene de historia en curso (megamerge de Troop, etc.): no tocar el modelo
+        try:
+            active = r[0][0]
         except bizhawk.RequestFailedError:
             return
         rec = MODEL_POSSESSION.get(active)

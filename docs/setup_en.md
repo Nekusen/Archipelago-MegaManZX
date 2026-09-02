@@ -4,32 +4,63 @@
 
 - **Archipelago** 0.6.x (`ArchipelagoLauncher`).
 - **BizHawk 2.9+** with the NDS (melonDS) core.
-- Your own **Mega Man ZX (USA)** ROM (`ARZE`, MD5
-  `88b684b1b3eea885a07625da89f1e5b3`). It is never distributed.
+- Your own **Mega Man ZX (USA)** ROM (`ARZE`). It is never distributed.
+- Optional: **Universal Tracker** (the world ships an embedded map pack:
+  overall map with per-area counters, one map per area and one per room,
+  auto-tab and a player position icon).
 
 ## One-time setup
 
-1. Put the world in Archipelago: copy `mmzx.apworld` into
-   `custom_worlds/` (or double-click it).
+1. Copy `mmzx.apworld` into `custom_worlds/` (or double-click it).
 2. First run asks for your ROM (Settings → Mega Man ZX ROM File).
 3. In BizHawk: **Config → Customize → Advanced → turn AutoSaveRAM OFF**
-   (so NDS saves work), and make sure the NDS core is melonDS.
+   and make sure the NDS core is melonDS.
 
 ## Generating and playing
 
-1. Create a YAML (`ArchipelagoLauncher` → Generate Template Options →
-   Mega Man ZX) and set your options (character, goal, DeathLink…).
-2. Generate the multiworld. You get an `AP_*_P#_<name>.apmmzx` patch.
-3. Open the `.apmmzx` with the Archipelago launcher → it produces a
-   patched `.nds` and launches the **BizHawk Client**.
-4. Open the patched `.nds` in BizHawk. The client auto-connects to the
-   emulator; enter the server address and connect.
+1. Create a YAML (Launcher → Generate Template Options → Mega Man ZX).
+2. Generate. You get an `AP_*_P#_<name>.apmmzx` patch.
+3. Open the `.apmmzx` with the launcher: it builds the patched `.nds` and
+   opens the **BizHawk Client**. Load the `.nds` in BizHawk and connect.
+4. Start a **New Game**: the tutorial is skipped. You appear in the Guardian
+   Transerver hub with your starting model, on Normal difficulty.
 
-## Notes for v0.1
+## Options
 
-- **No logic**: every check is reachable in whatever order — use the
-  client's fast-travel if you get stuck.
-- The client detects checks and grants items by reading/writing RAM
-  directly (no in-ROM item placement). Received items (biometals, card
-  keys, life ups…) are re-applied each session automatically.
-- Goal: defeat Serpent.
+- `starting_model` (Model X / none / ZX / HX / FX / LX / PX / OX / Hu) and
+  `character` (Vent / Aile).
+- `mission_auto_accept` (default on): missions are accepted automatically
+  when you enter their area (or approach a boss floor door in the hub), so
+  they can be done in any order. Turning it off is not supported by the
+  logic.
+- `hu_in_pool`: human form becomes an item (experimental).
+- `submission_checks` (quests), `level4_victories`.
+- `pickup_checks_1up` / `_energy` / `_weapon` / `_crystals` (default off):
+  the 133 fixed refill pickups become checks (first pickup sends the check;
+  the pickup keeps respawning and healing).
+- `death_link`, `goal` (defeat Serpent).
+
+## How it works (what to expect)
+
+- **Transerver network**: each area has a "Transerver Access - Area X" item
+  that unlocks that destination in the in-game Transport list; you can
+  also reach areas on foot. With a single destination the console shows
+  no Transport option (that is vanilla behaviour).
+- **Biometals** come only from items; beating either Pseudoroid of a pair
+  is the "Obtain Biometal" check. Weapon Energy is initialised when you
+  receive a model.
+- **Life Ups / Sub Tanks / Data Disks** are checks; the items give the
+  capacity. Card Keys and Transerver Access are progression.
+- **Goal**: with all six models the Slither Inc. gate in D-2 opens (press
+  Up); defeat Serpent in D-5.
+- Some story gates are opened automatically (F-3, G-2, the M-1 seal, the
+  D-1 bridge). Troop Reinforcement runs from D-1/D-2/D-3 without the base
+  cutscene.
+
+## Client commands
+
+- `/mmzx_teleport` (to the hub), `/mmzx_teleport K` (hub floor of area K),
+  `/mmzx_teleport <subarea> <x> <y>`: anti-softlock fast travel.
+- `/mmzx_accept`: force-accept the mission of the current area / hub floor.
+- `/mmzx_where`: log your position and state (for bug reports).
+- `/mmzx_start`: re-apply the YAML starting state.

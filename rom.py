@@ -99,10 +99,16 @@ OAMLOOP_BR_NEW = bytes.fromhex("01d9")    # bls +2
 # (D1.x) la concede. Verificado exp240 (D0-solo -> pos=0; D1 -> pos=1).
 # cat -> (count_addr, list0_addr, flag_D1, orig_count, orig_list0_u32)
 BIOMETAL_CAT_PATCH = {
-    3: (0x020DE9AF, 0x020DE9CC, 41, 33),   # HX
-    4: (0x020DE9B0, 0x020DE9BC, 45, 37),   # FX
-    5: (0x020DE9B1, 0x020DE9E4, 43, 35),   # LX
-    6: (0x020DE9B2, 0x020DE9F4, 47, 39),   # PX
+    # cat -> (count_addr, list0_addr, flag_posesion_AP, flag_original_list0)
+    # Flags LIBRES 728-731 = 0x02104627 bits 0-3 (agente exp380-389: a 0 en
+    # 268 savestates, fuera de toda tabla, ignorados por el popcount de
+    # Transport; persisten en el save). ANTES se usaba D1 (41/45/43/47),
+    # pero el 2º Pseudoroid de cada par (Hurricaune/Leganchor/Flammole/
+    # Protectos) escribe precisamente D1.x -> concedía el modelo sin item.
+    3: (0x020DE9AF, 0x020DE9CC, 728, 33),   # H: D0.1 Hivolt / D1.1 Hurricaune -> 0x02104627.0
+    4: (0x020DE9B0, 0x020DE9BC, 729, 37),   # F: D0.5 Fistleo / D1.5 Flammole -> .1
+    5: (0x020DE9B1, 0x020DE9E4, 730, 35),   # L: D0.3 Lurerre / D1.3 Leganchor -> .2
+    6: (0x020DE9B2, 0x020DE9F4, 731, 39),   # P: D0.7 Purprill / D1.7 Protectos -> .3
 }
 
 
@@ -313,8 +319,8 @@ class MMZXPatchExtension(APPatchExtension):
         poke(OAMLOOP_BR_RAM, OAMLOOP_BR_NEW, OAMLOOP_BR_ORIG)
         # 1c) posesión de biometales "solo item AP" (siempre): la victoria del
         #     jefe deja de conceder el modelo; solo el item AP (D1.x) lo hace
-        for cnt_a, lst_a, flag_d1, orig_flag in BIOMETAL_CAT_PATCH.values():
-            poke(lst_a, flag_d1.to_bytes(4, "little"),
+        for cnt_a, lst_a, flag_ap, orig_flag in BIOMETAL_CAT_PATCH.values():
+            poke(lst_a, flag_ap.to_bytes(4, "little"),
                  orig_flag.to_bytes(4, "little"))
             poke(cnt_a, b"\x01", b"\x02")
         # 1d) Life Ups / Sub Tanks: "recogido" = nibble alto (siempre)

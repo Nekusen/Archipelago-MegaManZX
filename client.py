@@ -73,10 +73,12 @@ ZX_ACTIVE = 2
 # para revertir una forma que el jugador aún no ha recibido.
 MODEL_POSSESSION = {
     2: ("Model ZX", 0x021045D0, 0),
-    3: ("Biometal H", 0x021045D1, 1),
-    4: ("Biometal F", 0x021045D1, 5),
-    5: ("Biometal L", 0x021045D1, 3),
-    6: ("Biometal P", 0x021045D1, 7),
+    # H/F/L/P: flags LIBRES 0x02104627.0-3 (agente exp380-389); los bits
+    # D0/D1 los escriben los jefes del par y ya no conceden nada.
+    3: ("Biometal H", 0x02104627, 0),
+    4: ("Biometal F", 0x02104627, 1),
+    5: ("Biometal L", 0x02104627, 2),
+    6: ("Biometal P", 0x02104627, 3),
     7: ("Biometal O", 0x021045D2, 1),
 }
 
@@ -224,7 +226,7 @@ class MMZXClient(BizHawkClient):
                 continue
             if det[0] == "bit":
                 addrs.append(det[1])
-            elif det[0] == "all":
+            elif det[0] in ("all", "any"):
                 addrs += [a for a, _ in det[1]]
         near = [a for a in addrs if abs(a - LIVE_BLOCK) < 0x1000]
         self._extra_addrs = sorted({a for a in addrs if abs(a - LIVE_BLOCK) >= 0x1000})
@@ -341,6 +343,8 @@ class MMZXClient(BizHawkClient):
                 ok = bit_set(det[1], det[2])
             elif det[0] == "all":   # todos los bits (misión completada)
                 ok = all(bit_set(a, b) for a, b in det[1])
+            elif det[0] == "any":   # cualquiera (biometal: 1º o 2º jefe del par)
+                ok = any(bit_set(a, b) for a, b in det[1])
             else:
                 continue
             if ok:

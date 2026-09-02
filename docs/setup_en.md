@@ -46,9 +46,13 @@
   that unlocks that destination in the in-game Transport list; you can
   also reach areas on foot. With a single destination the console shows
   no Transport option (that is vanilla behaviour).
-- **Biometals** come only from items; beating either Pseudoroid of a pair
-  is the "Obtain Biometal" check. Weapon Energy is initialised when you
-  receive a model.
+- **Biometals** come only from items, named after the form they unlock
+  (`Model X`, `Model ZX`, `Model HX`, `Model FX`, `Model LX`, `Model PX`,
+  `Model OX`); beating either Pseudoroid of a pair is the "Obtain Biometal"
+  check. Weapon Energy is initialised when you receive a model. The client
+  enforces ownership: a form you have not received is reverted and removed
+  from the model menu, so if you ever see a model you do not own, it goes
+  away on the next client tick.
 - **Life Ups / Sub Tanks / Data Disks** are checks; the items give the
   capacity. Card Keys and Transerver Access are progression.
 - **Goal**: with all six models the Slither Inc. gate in D-2 opens (press

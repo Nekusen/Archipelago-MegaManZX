@@ -288,11 +288,11 @@ LOCATIONS = {
 # name -> {id, classification, grant}
 ITEMS = {
     'Model ZX': {'id': 13664256, 'classification': 'progression', 'grant': ['live_bit', 34620880, 0], 'pooled': True},
-    'Biometal H': {'id': 13664257, 'classification': 'progression', 'grant': ['live_bit', 34620967, 0], 'pooled': True},
-    'Biometal F': {'id': 13664258, 'classification': 'progression', 'grant': ['live_bit', 34620967, 1], 'pooled': True},
-    'Biometal L': {'id': 13664259, 'classification': 'progression', 'grant': ['live_bit', 34620967, 2], 'pooled': True},
-    'Biometal P': {'id': 13664260, 'classification': 'progression', 'grant': ['live_bit', 34620967, 3], 'pooled': True},
-    'Biometal O': {'id': 13664261, 'classification': 'progression', 'grant': ['live_bit', 34620882, 1], 'pooled': True},
+    'Model HX': {'id': 13664257, 'classification': 'progression', 'grant': ['live_bit', 34620967, 0], 'pooled': True},
+    'Model FX': {'id': 13664258, 'classification': 'progression', 'grant': ['live_bit', 34620967, 1], 'pooled': True},
+    'Model LX': {'id': 13664259, 'classification': 'progression', 'grant': ['live_bit', 34620967, 2], 'pooled': True},
+    'Model PX': {'id': 13664260, 'classification': 'progression', 'grant': ['live_bit', 34620967, 3], 'pooled': True},
+    'Model OX': {'id': 13664261, 'classification': 'progression', 'grant': ['live_bit', 34620882, 1], 'pooled': True},
     'Model X': {'id': 13664262, 'classification': 'progression', 'grant': ['live_bit', 34620879, 7], 'pooled': True},
     'Model Hu': {'id': 13664263, 'classification': 'progression', 'grant': ['live_bit', 34620893, 0], 'pooled': False},
     'Yellow Card Key': {'id': 13664512, 'classification': 'progression', 'grant': ['live_bit', 34620925, 1], 'pooled': True},
@@ -442,9 +442,9 @@ STARTING_MODELS = {
 # starting_model key -> item AP equivalente (para precollect)
 STARTING_MODEL_ITEM = {
     'model_x': 'Model X', 'model_zx': 'Model ZX',
-    'model_hx': 'Biometal H', 'model_fx': 'Biometal F',
-    'model_lx': 'Biometal L', 'model_px': 'Biometal P',
-    'model_ox': 'Biometal O', 'model_hu': 'Model Hu',
+    'model_hx': 'Model HX', 'model_fx': 'Model FX',
+    'model_lx': 'Model LX', 'model_px': 'Model PX',
+    'model_ox': 'Model OX', 'model_hu': 'Model Hu',
 }
 # Transervers de arranque: key -> (subárea, x_px, y_px). v0.2:
 # solo el hub (el save dorado ya deja ahí; sin teleport). Crecerá

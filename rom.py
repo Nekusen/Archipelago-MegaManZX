@@ -172,6 +172,38 @@ PICKUP_MAILBOX_CAVE = bytes.fromhex(
 PICKUP_MAILBOX_RAM = 0x020CB500          # = data.PICKUP_MAILBOX_ADDR (gen_ap_data)
 PICKUP_MAILBOX_SLOTS = 8
 
+# --- Iconos de biometal de la pantalla DATA SELECT (Continue) — exp429/430,
+# 2026-09-03 ---
+# El dibujador de los iconos de cada slot (FUN_02036104, un sprite por icono;
+# buffer de slots 0x0215D808 + 0x4F4*slot = copia del bloque 0x021045CC del
+# save) NO usa model_owned_count: testea bits CRUDOS del byte D0 del slot
+# (bit0 ZX, bit1 H, bit3 L, bit5 F, bit7 P) y D2.1 (OX), y el primer icono
+# enseña X siempre que no haya ZX. Con la posesión del randomizer en los
+# flags libres 0x02104627.0-3 el save solo mostraba [X]. Parche in-place
+# (mismo tamaño) por icono H/F/L/P:
+#   ldrb r1,[r5,#4]; movs r0,#m; ands r1,r0; cmp r1,#0        (8 B)
+#   -> ldr r1,[r5,#0x58]; lsrs r1,r1,#24; movs r0,#m'; ands r1,r0
+# (u32 +0x58 alineado; su byte alto = +0x5B = 0x02104627; el `bne` original
+# sigue valiendo porque `ands` fija Z). Icono X/ZX: la rama "sin ZX" pasa a
+# un cave que pone el frame de X y OCULTA el sprite (bit0 de +0xA, como
+# hacen los demás casos) si el slot no tiene X (+0x03 bit7 = 0x021045CF.7).
+DATASELECT_ICON_PATCH = [
+    # (RAM, bytes originales, bytes nuevos)
+    (0x020361FC, "2979022001400029", "a96d090e01200140"),   # H: D0.1 -> 0x02104627.0
+    (0x02036218, "2979202001400029", "a96d090e02200140"),   # F: D0.5 -> .1
+    (0x02036234, "2979082001400029", "a96d090e04200140"),   # L: D0.3 -> .2
+    (0x02036250, "2979802001400029", "a96d090e08200140"),   # P: D0.7 -> .3
+    # icono X/ZX (rama sin ZX): mov r0,r4; movs r1,#2; bl FUN_0200fe64
+    #   -> bl DATASELECT_CAVE; b fin_switch; nop
+    (0x020361E2, "201c0221d9f73dfe", "95f0cdfb64e0c046"),
+]
+DATASELECT_CAVE_RAM = 0x020CB980     # hueco de ceros del arm9 (0x020CB434-0x020CB9D4)
+# push{r4,r5,lr}; mov r0,r4; movs r1,#2; bl FUN_0200fe64; ldrb r0,[r5,#3];
+# lsls r0,r0,#24; bmi ret; ldrb r1,[r4,#0xA]; movs r0,#0xFE; ands r1,r0;
+# strb r1,[r4,#0xA]; ret: pop{r4,r5,pc}   (r4 = sprite, r5 = bloque del slot)
+DATASELECT_CAVE = bytes.fromhex(
+    "30b5201c022144f76dfae878000603d4a17afe200140a17230bd")
+
 
 # --- Compresor BLZ con parse ÓPTIMO (agente exp360-369, exp367) ---
 # El arm9 recomprimido debe caber en su slot de la ROM (0x8F400 B). El greedy
@@ -332,6 +364,11 @@ class MMZXPatchExtension(APPatchExtension):
         poke(PICKUP_MAILBOX_CAVE_RAM, PICKUP_MAILBOX_CAVE,
              bytes(len(PICKUP_MAILBOX_CAVE)))
         poke(PICKUP_MAILBOX_HOOK_RAM, PICKUP_MAILBOX_HOOK_NEW, PICKUP_MAILBOX_HOOK_ORIG)
+        # 1f) iconos de biometal del DATA SELECT = posesión del randomizer
+        #     (siempre): H/F/L/P por 0x02104627.0-3 y X oculto si no se posee
+        for ram, orig, new in DATASELECT_ICON_PATCH:
+            poke(ram, bytes.fromhex(new), bytes.fromhex(orig))
+        poke(DATASELECT_CAVE_RAM, DATASELECT_CAVE, bytes(len(DATASELECT_CAVE)))
         # 2) Hu-gate (opcional)
         if hu_in_pool:
             poke(HUGATE_ARRAY_RAM, HUGATE_FLAG_INDEX.to_bytes(4, "little"))

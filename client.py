@@ -74,25 +74,23 @@ HPMAX = 0x0214FC76
 
 CANON_OFF = CANON_BLOCK - LIVE_BLOCK  # 0x21602B4 - 0x21045CC
 
-# #5 Troop sin ZX (exp197-199): posesión de Model ZX = 0x021045D0 bit0;
-# modelo activo ZX = 2.
-ZX_POSSESSION_BYTE = 0x021045D0
-ZX_POSSESSION_BIT = 0
-ZX_ACTIVE = 2
-
-# #5 (exp240 + rom.py §1c): modelo activo (0x0214FC74) -> (item AP, bit de
-# posesión que SOLO pone ese item). Tras el parche de categorías, poseer
-# H/F/L/P depende del bit D1 (0x021045D1); ZX del D0.0; OX del D2.1. Sirve
-# para revertir una forma que el jugador aún no ha recibido.
+# #5 (exp240 + rom.py §1c) + posesión autoritativa (2026-09-03): modelo
+# activo (0x0214FC74) -> (item AP, bit de posesión que SOLO pone ese item).
+# Sirve para revertir una forma no recibida y para limpiar cualquier bit de
+# posesión que aparezca sin su item (ZX de Troop D0.0, X del LOAD, etc.).
 MODEL_POSSESSION = {
+    # X: flag 31 (0x021045CF.7; la imagen dorada lo trae puesto o quitado
+    # según el YAML). En el playtest 5 apareció X usable sin item -> se
+    # trata como cualquier otro modelo (revertir + limpiar el bit).
+    1: ("Model X", 0x021045CF, 7),
     2: ("Model ZX", 0x021045D0, 0),
     # H/F/L/P: flags LIBRES 0x02104627.0-3 (agente exp380-389); los bits
     # D0/D1 los escriben los jefes del par y ya no conceden nada.
-    3: ("Biometal H", 0x02104627, 0),
-    4: ("Biometal F", 0x02104627, 1),
-    5: ("Biometal L", 0x02104627, 2),
-    6: ("Biometal P", 0x02104627, 3),
-    7: ("Biometal O", 0x021045D2, 1),
+    3: ("Model HX", 0x02104627, 0),
+    4: ("Model FX", 0x02104627, 1),
+    5: ("Model LX", 0x02104627, 2),
+    6: ("Model PX", 0x02104627, 3),
+    7: ("Model OX", 0x021045D2, 1),
 }
 
 # Byte "misión en curso" del bloque de partida (0x0210460C+0x1F): bit1 lo
@@ -997,8 +995,8 @@ class MMZXClient(BizHawkClient):
         for fl in EVENT_GATES_OPEN:
             live_bits.add(tuple(EVENT_GATES[fl]))
         received = {id_to_item[net.item][0] for net in ctx.items_received if net.item in id_to_item}
-        if all(n in received for n in ("Model X", "Model ZX", "Biometal H",
-                                       "Biometal F", "Biometal L", "Biometal P")):
+        if all(n in received for n in ("Model X", "Model ZX", "Model HX",
+                                       "Model FX", "Model LX", "Model PX")):
             for fl in EVENT_GATES_ALL6:
                 live_bits.add(tuple(EVENT_GATES[fl]))
 
@@ -1080,20 +1078,38 @@ class MMZXClient(BizHawkClient):
             if ok and new_consumables:
                 self.applied_consumables = len(ctx.items_received)
 
+    def _fallback_model(self, ctx, owned: dict) -> int:
+        """Modelo activo al que revertir una forma no poseída: el último
+        legítimo visto si sigue poseído; si no, el modelo inicial del YAML;
+        si no, cualquier modelo poseído; si no, Hu (0)."""
+        if owned.get(self.last_legit_model, False):
+            return self.last_legit_model
+        key = str((ctx.slot_data or {}).get("starting_model", "model_x"))
+        rec = STARTING_MODELS.get(key)
+        if rec and owned.get(int(rec.get("active", 0)), False):
+            return int(rec["active"])
+        for m in sorted(owned):
+            if m and owned[m]:
+                return m
+        return 0
+
     async def _revert_unowned_models(self, ctx, guard) -> None:
-        """#5: la VICTORIA de un jefe (o la misión Troop) hace un megamerge que
-        cambia el modelo activo y, en vanilla, concede la posesión. En el
-        randomizer el modelo debe venir SOLO del item AP:
-          - H/F/L/P: el parche de ROM (rom.py §1c) hace que la posesión
-            dependa solo del bit D1 (item AP); la victoria pone el bit D0
-            (= detección del check "Obtain Biometal X"), que NO concede
-            posesión. Aquí solo hay que REVERTIR el modelo activo si el jugador
-            no ha recibido el item -> juega con su modelo hasta recibirlo.
-          - ZX: comparte el bit D0.0 entre posesión y grant de Troop, así que
-            además de revertir el modelo hay que LIMPIAR ese bit (vivo+canónica)
-            para que el menú no ofrezca ZX (validado exp198/199).
-        Idempotente. Si el item AP se ha recibido, la forma es legítima y no se
-        toca (se registra como 'último modelo legítimo')."""
+        """#5 + posesión AUTORITATIVA (2026-09-03): la forma activa y los bits
+        de posesión de TODOS los modelos deben venir SOLO del item AP (el
+        modelo inicial llega pre-concedido como item). La victoria de un jefe
+        o la misión Troop hacen un megamerge que cambia el modelo activo (y,
+        para ZX, pone el bit compartido D0.0); el LOAD puede forzar X activo;
+        y en el playtest 5 el menú ofrecía X y PX sin item. Cada tick:
+          1) modelo activo no poseído -> revertir (último legítimo / modelo
+             inicial / cualquiera poseído / Hu);
+          2) bit de posesión puesto sin item -> limpiarlo (vivo+canónica)
+             para que el menú no lo ofrezca y el save no lo muestre.
+        No toca nada durante una cutscene de historia (0x0214F502.0) ni
+        antes de recibir el primer ReceivedItems (siempre hay al menos el
+        Transerver Access pre-concedido: lista vacía = aún sin sincronizar).
+        Idempotente."""
+        if not ctx.items_received:
+            return
         received = {net.item for net in ctx.items_received}
         try:
             r = await bizhawk.read(ctx.bizhawk_ctx, [(MODEL, 1, DOM), (CUTSCENE_FLAG, 1, DOM)])
@@ -1101,37 +1117,47 @@ class MMZXClient(BizHawkClient):
             return
         if r[1][0] & 1:
             return   # cutscene de historia en curso (megamerge de Troop, etc.): no tocar el modelo
+        active = r[0][0]
+        owned = {m: ITEMS.get(item, {}).get("id") in received
+                 for m, (item, _a, _b) in MODEL_POSSESSION.items()}
+        owned[0] = True   # Hu: hardcoded (o gateada por su propio parche Hu-gate)
+        writes: list[tuple[int, bytes, str]] = []
+        notes: list[str] = []
+        if owned.get(active, False):
+            self.last_legit_model = active   # Hu, o forma poseída por AP: legítima
+        else:
+            fallback = self._fallback_model(ctx, owned)
+            writes.append((MODEL, bytes([fallback]), DOM))
+            notes.append("modelo %d no poseído -> revierto a %d" % (active, fallback))
+        # bits de posesión sin item -> limpiar (vivo + canónica)
+        addrs = sorted({a for _i, a, _b in MODEL_POSSESSION.values()})
         try:
-            active = r[0][0]
+            cur = await bizhawk.read(
+                ctx.bizhawk_ctx,
+                [(a, 1, DOM) for a in addrs] + [(a + CANON_OFF, 1, DOM) for a in addrs])
         except bizhawk.RequestFailedError:
             return
-        rec = MODEL_POSSESSION.get(active)
-        if rec is None:
-            self.last_legit_model = active   # 0 Hu / 1 X: siempre legítimos
+        vals = {a: [cur[i][0], cur[len(addrs) + i][0]] for i, a in enumerate(addrs)}
+        for m, (item, a, bit) in MODEL_POSSESSION.items():
+            if owned[m]:
+                continue
+            for k in (0, 1):
+                if vals[a][k] & (1 << bit):
+                    vals[a][k] &= ~(1 << bit) & 0xFF
+                    notes.append("posesión de %s sin item -> limpio 0x%08X.%d%s"
+                                 % (item, a, bit, "" if k == 0 else " (canónica)"))
+        for i, a in enumerate(addrs):
+            if vals[a][0] != cur[i][0]:
+                writes.append((a, bytes([vals[a][0]]), DOM))
+            if vals[a][1] != cur[len(addrs) + i][0]:
+                writes.append((a + CANON_OFF, bytes([vals[a][1]]), DOM))
+        if not writes:
             return
-        item_name, pos_addr, pos_bit = rec
-        owns = ITEMS.get(item_name, {}).get("id") in received
-        if owns:
-            self.last_legit_model = active   # forma poseída por AP: legítima
-            return
-        # forma NO poseída: revertir el modelo activo al último legítimo
-        writes = [(MODEL, bytes([self.last_legit_model]), DOM)]
-        note = "modelo %d no poseído -> revierto a %d" % (active, self.last_legit_model)
-        # ZX: además limpiar el bit compartido D0.0 (menú)
-        if active == ZX_ACTIVE:
-            canon = ZX_POSSESSION_BYTE + CANON_OFF
-            cur = await bizhawk.read(ctx.bizhawk_ctx,
-                                     [(ZX_POSSESSION_BYTE, 1, DOM), (canon, 1, DOM)])
-            mask = ~(1 << ZX_POSSESSION_BIT) & 0xFF
-            if cur[0][0] & (1 << ZX_POSSESSION_BIT):
-                writes.append((ZX_POSSESSION_BYTE, bytes([cur[0][0] & mask]), DOM))
-            if cur[1][0] & (1 << ZX_POSSESSION_BIT):
-                writes.append((canon, bytes([cur[1][0] & mask]), DOM))
-            note = "Troop: ZX no concedido (mantengo el modelo %d)" % self.last_legit_model
         ok = await bizhawk.guarded_write(ctx.bizhawk_ctx, writes, [guard])
         if ok:
             from CommonClient import logger
-            logger.info("[mmzx] %s" % note)
+            for n in notes:
+                logger.info("[mmzx] %s" % n)
 
     async def _handle_death_link(self, ctx, guard) -> None:
         """SEND: observa la muerte del juego (HP >0 → 0) y la envía.

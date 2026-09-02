@@ -174,8 +174,8 @@ def starting_room(world) -> str:
 import re as _re
 
 ABILITY_ITEM = {
-    "X": "Model X", "ZX": "Model ZX", "HX": "Biometal H", "FX": "Biometal F",
-    "LX": "Biometal L", "PX": "Biometal P", "OX": "Biometal O", "HU": "Model Hu",
+    "X": "Model X", "ZX": "Model ZX", "HX": "Model HX", "FX": "Model FX",
+    "LX": "Model LX", "PX": "Model PX", "OX": "Model OX", "HU": "Model Hu",
     "YELLOW": "Yellow Card Key", "GREEN": "Green Card Key", "RED": "Red Card Key",
     "BLUE": "Blue Card Key", "WHITE": "White Card Key", "PURPLE": "Purple Card Key",
 }

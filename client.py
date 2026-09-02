@@ -33,6 +33,18 @@ PLAYER_POS = 0x0214FB65      # u32 x<<8 y u32 y<<8 (8 bytes; px = >>8)
 POS_KEY = "mmzx_pos_%d"     # almacén de datos: [subárea, x, y] para UT (auto-tab/icono)
 POS_INTERVAL = 1.0           # s entre envíos si no cambia la subárea
 POS_MIN_DELTA = 48           # px de movimiento mínimo para reenviar
+# Weapon Energy (agente exp390-399): tope de WE de un modelo = 4 x (nivel de
+# victoria del 1er jefe + del 2o jefe del par); los niveles (1-4) son 8 bytes
+# del bloque de partida 0x02104634..3B (orden Hivolt, Lurerre, Fistleo,
+# Purprill, Hurricaune, Leganchor, Flammole, Protectos) que solo escribe la
+# victoria real (FUN_02009438). Con el biometal concedido por flag quedan a 0
+# -> tope 0 -> barra vacia y los pickups no rellenan. Receta: al poseer el
+# modelo, si lv0+lv1 < 4 poner lv0 = 4 - lv1 (vivo+canonica; tope 16 como
+# tras el 1er jefe) y llenar la barra (u8[0x0214FC92 + modelo] = 16) UNA vez.
+BOSS_LEVELS = 0x02104634
+MODEL_LEVEL_IDX = {3: (0, 4), 4: (2, 6), 5: (1, 5), 6: (3, 7)}   # HX, FX, LX, PX
+WE_BASE = 0x0214FC92          # + modelo activo (3..6) = WE actual del modelo
+WE_FULL = 16
 MSG_BANK = 0x02104588         # u32 índice del último banco de texto (0xFFFFFFFF = boot)
 LIFEUP_BYTE = 0x0214FC77
 SUBTANK_BYTE = 0x0214FC78
@@ -891,6 +903,22 @@ class MMZXClient(BizHawkClient):
                 live_bits.add(tuple(EVENT_GATES[fl]))
 
         writes: list[tuple[int, bytes, str]] = []
+
+        # Weapon Energy de los biometales poseidos por item (ver BOSS_LEVELS):
+        # nivel del 1er jefe del par >= 4 - nivel del 2o (tope >= 16) y barra
+        # llena una vez. Idempotente: no toca nada si lv0+lv1 >= 4.
+        owned_models = [m for m, (item, _a, _b) in MODEL_POSSESSION.items()
+                        if m in MODEL_LEVEL_IDX and item in received]
+        if owned_models:
+            lv = await bizhawk.read(ctx.bizhawk_ctx, [(BOSS_LEVELS, 8, DOM)])
+            lv = lv[0]
+            for m in owned_models:
+                i0, i1 = MODEL_LEVEL_IDX[m]
+                if lv[i0] + lv[i1] < 4:
+                    v = bytes([4 - lv[i1]])
+                    writes.append((BOSS_LEVELS + i0, v, DOM))
+                    writes.append((BOSS_LEVELS + i0 + CANON_OFF, v, DOM))
+                    writes.append((WE_BASE + m, bytes([WE_FULL]), DOM))
 
         # Bits idempotentes (biometales 0x021045D0, card keys 0x021045FC/FD):
         # set en VIVO (efecto inmediato) y en CANÓNICA (persistencia)

@@ -48,6 +48,12 @@ ROOM_RULES = {
 # Requisito extra de una transicion concreta. Clave "src->dst" (todas las
 # aristas entre esas salas) o el nombre exacto de la arista en data.DOORS.
 DOOR_RULES = {
+    # --- Area E ---
+    # E-7 -> E-8: la "Fade door" (1784,712) del corredor del Transerver de
+    # E-7 solo abre con Search The Plant COMPLETADA (Hivolt vencido +
+    # Report: bits 0x021045E1.4 && 0x021045FD.4). VALIDADO exp285-287
+    # (agente seams, 2026-09-02). E-8 solo contiene Disk B-8.
+    "e07->e08": "SEARCH_THE_PLANT",
     # --- Area A ---
     "a01->a03": "MODEL",   # ? puerta Amarilla en lo alto del muro derecho
                            # (tile y=47 vs suelo 69): hay que escalar

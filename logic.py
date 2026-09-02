@@ -154,6 +154,29 @@ MACROS = {
     "ALL6": "(X&ZX&HX&FX&LX&PX)",
     "ANY": "TRUE",
 }
+# Átomos de EVENTO de misión: "misión X completada" (jefe vencido + Report).
+# regions.py crea para cada misión un evento "Cleared: <misión>" en la
+# región Field con la misma regla de acceso que la location de la misión;
+# estos átomos lo exigen (p.ej. la puerta E-7 -> E-8 exige SEARCH_THE_PLANT:
+# bits 0x021045E1.4 && 0x021045FD.4, exp285-287 agente seams).
+MISSION_EVENT = {
+    "CATCH_THE_MAVERICK": "Cleared: Catch The Maverick",
+    "LOCATE_GIRO": "Cleared: Locate Giro",
+    "PASS_THE_TEST": "Cleared: Pass The Test",
+    "TROOP_REINFORCEMENT": "Cleared: Troop Reinforcement",
+    "SEARCH_THE_PLANT": "Cleared: Search The Plant",
+    "FIND_THE_SURVIVORS": "Cleared: Find The Survivors",
+    "FIGHT_THE_MAVERICKS": "Cleared: Fight The Mavericks",
+    "SECURE_THE_BIOMETAL": "Cleared: Secure The Biometal",
+    "SAVE_THE_PEOPLE": "Cleared: Save The People",
+    "RECOVER_THE_DISK": "Cleared: Recover The Disk",
+    "ATTACK_THE_EXCAVATORS": "Cleared: Attack The Excavators",
+    "PROTECT_THE_LAB": "Cleared: Protect The Lab",
+    "PROTECT_HQ": "Cleared: Protect Hq",
+    "STOP_THE_DIG": "Cleared: Stop The Dig",
+    "REPEL_THE_ARMY": "Cleared: Repel The Army",
+    "DESTROY_MODEL_W": "Cleared: Destroy Model W",
+}
 _TOK = _re.compile(r"\s*([A-Za-z_][A-Za-z0-9_]*|[&|()])")
 
 
@@ -202,7 +225,10 @@ def _parse_atom(tokens, i):
         return ("false",), i + 1
     if up in ABILITY_ITEM:
         return ("item", ABILITY_ITEM[up]), i + 1
-    raise ValueError("átomo desconocido %r (HU/X/ZX/HX/FX/LX/PX/OX, llaves, MODEL, ALL6, ANY)" % t)
+    if up in MISSION_EVENT:
+        return ("item", MISSION_EVENT[up]), i + 1     # evento "Cleared: <misión>"
+    raise ValueError("átomo desconocido %r (HU/X/ZX/HX/FX/LX/PX/OX, llaves, MODEL, ALL6, ANY, "
+                     "eventos de misión SEARCH_THE_PLANT...)" % t)
 
 
 def compile_rule(expr, player: int, hu_in_pool: bool):

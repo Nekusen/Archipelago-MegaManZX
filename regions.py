@@ -103,6 +103,21 @@ def create_regions(world) -> None:
             loc.access_rule = r
         parent.locations.append(loc)
 
+    # eventos "Cleared: <misión>" (una por misión, esté o no activa como
+    # check): misma regla de acceso que la location de la misión (etiqueta
+    # de área + regla curada). Los exigen los átomos de logic.MISSION_EVENT
+    # (p.ej. la puerta E-7 -> E-8 exige SEARCH_THE_PLANT).
+    for name, v in LOCATIONS.items():
+        if v.get("category") != "mission":
+            continue
+        ev_name = "Cleared: " + name[len("Mission - "):]
+        ev = MMZXLocation(player, ev_name, None, field)
+        ev.place_locked_item(world.create_event(ev_name))
+        r = and_rules(label_rule(v.get("room"), player), rule(LOCATION_RULES.get(name)))
+        if r:
+            ev.access_rule = r
+        field.locations.append(ev)
+
     # objetivo: evento Victory anclado a las salas de la misión final
     victory = MMZXLocation(player, "Defeat Serpent", None, field)
     victory.place_locked_item(world.create_event("Victory"))

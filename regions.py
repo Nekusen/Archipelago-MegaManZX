@@ -122,7 +122,11 @@ def create_regions(world) -> None:
     victory = MMZXLocation(player, "Defeat Serpent", None, field)
     victory.place_locked_item(world.create_event("Victory"))
     goal_label = LOCATIONS.get("Mission - Destroy Model W", {}).get("room", "D-4D-5")
-    goal_rule = label_rule(goal_label, player)
+    # Serpent aparece en D-5 SIN misión ni checks de biometal (agente
+    # exp290-299): físicamente basta d02 --Green Key--> d04 -> d05. Como
+    # requisito de DISEÑO del goal (equivalente al sello de M-1 / "los 6
+    # biometales" de vanilla) se exige además ALL6.
+    goal_rule = and_rules(label_rule(goal_label, player), rule("ALL6"))
     if goal_rule:
         victory.access_rule = goal_rule
     field.locations.append(victory)

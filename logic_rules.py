@@ -59,7 +59,9 @@ DOOR_RULES = {
                            # (tile y=47 vs suelo 69): hay que escalar
     "a03->h04": "FX",      # ? Fire thorns (118,55) en el pasillo a la
                            # puerta Purpura (131,55): quemarlas
-    "a04->m01": "MODEL&RED",   # ? puerta en la estructura alta (54,20): se
+    # a04->m01: + ALL6 por el SELLO de M-1 (ovl104 FUN_02194350: capas por
+    # modelo, 6/6 -> capa extra; agente exp290-299; hipotesis conservadora)
+    "a04->m01": "MODEL&RED&ALL6",   # ? puerta en la estructura alta (54,20): se
                                # sube por escalera y columna; y nada mas
                                # entrar en M-1 esta la puerta Roja interna
                                # (56,46) + el Orehawk (miniboss)
@@ -100,8 +102,9 @@ DOOR_RULES = {
     "c01->c02": "HU|HX",   # bloque derecho de C-1: hueco de 1 tile (Hu) o
                            # saltarlo por encima + gap grande (Hx) [usuario]
     # --- Area D ---
-    "d02->d04": "ALL6",    # ? puerta de Slither Inc. HQ (passwords / 6
-                           # biometales en vanilla; RE pendiente del check)
+    # d02->d04: solo la Green Key de la tabla. D-4/D-5 NO consultan misiones
+    # ni biometales (agente exp290-299): el requisito "6 biometales" del final
+    # va en la VICTORIA (regions.py) y en la entrada de M (sello de M-1).
 }
 
 # Sub-regiones dentro de una sala. {"parent": sala, "req": requisito para

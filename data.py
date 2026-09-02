@@ -193,7 +193,14 @@ ITEM_NAME_TO_ID = {n: v['id'] for n, v in ITEMS.items()}
 # Objetivo (defeat Serpent): al completarse la misión final
 # (estado 0xF8, id 19) mission_complete_on_report (0x02031028)
 # pone AMBOS bits (derivado estático; validar en E2E):
-GOAL_BITS = [(0x021045EB, 7), (0x021045EC, 0)]
+# CORREGIDO 2026-09-02 (agente exp290-299 + exp275): los ids 17-19 de la
+# tabla son QUESTS (17=Find the Flower, 18=Trim the Weeds, 19=Find the
+# Boy) y EB.7/EC.0 era completar 'Find the Boy'. La mision 16 (Destroy
+# Model W) nunca se reporta. Fin real: Serpent forma 2 muerta ->
+# 0x02104602.3 (guion de D-5; .2 = forma 1) y, tras la explosion, el
+# evento de la VM del epilogo 0x021045CA.5 (VERIFICADO 298f/275).
+GOAL_BITS = [(0x021045CA, 5)]
+GOAL_BITS_ALT = [(0x02104602, 2), (0x02104602, 3)]
 
 # --- Modo AUTO force-accept de misiones (v0.2) ---
 # Al entrar en la subárea destino de una misión, el cliente la

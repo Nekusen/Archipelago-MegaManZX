@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Any
 import worlds._bizhawk as bizhawk
 from worlds._bizhawk.client import BizHawkClient
 
-from .data import (LOCATIONS, ITEMS, GOAL_BITS, MISSION_ACCEPT,
+from .data import (LOCATIONS, ITEMS, GOAL_BITS, GOAL_BITS_ALT, MISSION_ACCEPT,
                    MISSION_STATE_ADDR, MISSION_ACTIVE_FLAG,
                    STARTING_MODELS, STARTING_MODEL_ITEM, STARTING_TRANSERVERS,
                    MODEL_X_POSSESSION, ACTIVE_MODEL_ADDR)
@@ -184,7 +184,7 @@ class MMZXClient(BizHawkClient):
         fuera del bloque 0x021045CC (p.ej. el flag del Sub Tank A-2)."""
         if self._win is not None:
             return self._win
-        addrs: list[int] = [a for a, _ in GOAL_BITS]
+        addrs: list[int] = [a for a, _ in GOAL_BITS] + [a for a, _ in GOAL_BITS_ALT]
         for v in LOCATIONS.values():
             det = v.get("detect")
             if not det:
@@ -329,7 +329,10 @@ class MMZXClient(BizHawkClient):
 
         # ---- objetivo: Serpent derrotado (misión final completada) ----
         if not ctx.finished_game:
-            done = all(bit_set(a, b) for (a, b) in GOAL_BITS)
+            # Serpent (forma 2) vencido: evento del epílogo 0x021045CA.5 o, de
+            # respaldo, ambos bits del guion de D-5 (formas 1 y 2). exp298f/275.
+            done = (all(bit_set(a, b) for (a, b) in GOAL_BITS)
+                    or all(bit_set(a, b) for (a, b) in GOAL_BITS_ALT))
             if done:
                 from NetUtils import ClientStatus
                 ctx.finished_game = True

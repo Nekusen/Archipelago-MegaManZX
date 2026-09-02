@@ -121,6 +121,18 @@ ROM_GAME_CODE = b"ARZE"       # MMZX USA
 # de abajo.
 HUB_SUBAREA, HUB_X, HUB_Y = 70, 384, 335
 
+# Vuelta rápida al Transerver DESDE EL JUEGO (2026-09-03, exp432/433): el
+# juego guarda la máscara NitroSDK de botones MANTENIDOS en u16 0x020F2768
+# (A 1, B 2, SELECT 4, START 8, →/←/↑/↓ 0x10..0x80, R 0x100, L 0x200,
+# X 0x400, Y 0x800; copia en 0x020F276A). SELECT no hace nada durante el
+# juego y no es reasignable en Options, así que es el botón de warp:
+# mantenerlo WARP_HOLD_TICKS ticks seguidos en gameplay (≈0.4 s con
+# watcher_timeout 0.125) encola el mismo teleport al hub que /mmzx_teleport.
+# Hay que soltarlo para volver a armarlo; no dispara en cutscenes.
+PAD_HELD = 0x020F2768
+KEY_SELECT = 0x0004
+WARP_HOLD_TICKS = 3
+
 # Diagnóstico de flags: ventana ancha del bloque de progreso (cubre
 # misiones/quests/historia/HQ) para trazar qué bits cambian al completar
 # una misión en vivo.
@@ -155,6 +167,8 @@ class MMZXClient(BizHawkClient):
         self.prev_death_link = None
         self.pending_death = False
         self.pending_teleport = None   # (subárea, x, y) o None
+        self.warp_hold = 0             # ticks seguidos con SELECT mantenido
+        self.warp_armed = True         # se rearma al soltar SELECT
         self.added_commands = False
         self._win: tuple[int, int] | None = None   # ventana de detección (cache)
         # diagnóstico de flags (para mapear "misión completada" en vivo)
@@ -427,6 +441,9 @@ class MMZXClient(BizHawkClient):
         # ---- DeathLink ----
         if self.death_link_enabled:
             await self._stage("deathlink", self._handle_death_link(ctx, guard))
+
+        # ---- anti-softlock: SELECT mantenido en juego = vuelta al hub ----
+        await self._stage("warp", self._warp_button_tick(ctx))
 
         # ---- anti-softlock: teleport pedido por comando ----
         if self.pending_teleport is not None:
@@ -932,6 +949,28 @@ class MMZXClient(BizHawkClient):
             logger.info("[mmzx] estado inicial aplicado: modelo=%s, transerver=%s"
                         % (key, ts_key))
         return rec["active"]
+
+    async def _warp_button_tick(self, ctx) -> None:
+        """SELECT mantenido WARP_HOLD_TICKS ticks seguidos en juego → encola
+        el teleport al hub (una vez por pulsación: hay que soltar para volver
+        a armarlo). No dispara durante una cutscene de historia."""
+        try:
+            r = await bizhawk.read(ctx.bizhawk_ctx, [(PAD_HELD, 2, DOM), (CUTSCENE_FLAG, 1, DOM)])
+        except bizhawk.RequestFailedError:
+            return
+        held = int.from_bytes(r[0], "little")
+        if not (held & KEY_SELECT):
+            self.warp_hold = 0
+            self.warp_armed = True
+            return
+        if r[1][0] & 1:
+            return
+        self.warp_hold += 1
+        if self.warp_armed and self.warp_hold >= WARP_HOLD_TICKS:
+            self.warp_armed = False
+            self.pending_teleport = (HUB_SUBAREA, HUB_X, HUB_Y)
+            from CommonClient import logger
+            logger.info("[mmzx] SELECT mantenido → vuelta al Transerver (hub)")
 
     async def _teleport(self, ctx, sub, x, y, guard) -> None:
         """Teleport limpio (7 escrituras; docs/client_integration.md §6).

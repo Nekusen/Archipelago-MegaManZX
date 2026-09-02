@@ -55,6 +55,10 @@
   away on the next client tick.
 - **Life Ups / Sub Tanks / Data Disks** are checks; the items give the
   capacity. Card Keys and Transerver Access are progression.
+- **Quick return to the Transerver**: hold **SELECT** for about half a
+  second during gameplay (SELECT does nothing in the vanilla game) and the
+  client warps you to the Guardian hub console. Release and hold again for
+  another warp. The `/mmzx_teleport` command still works from the client.
 - **Goal**: with all six models the Slither Inc. gate in D-2 opens (press
   Up); defeat Serpent in D-5.
 - Some story gates are opened automatically (F-3, G-2, the M-1 seal, the

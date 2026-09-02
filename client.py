@@ -18,7 +18,7 @@ from .data import (LOCATIONS, ITEMS, GOAL_BITS, GOAL_BITS_ALT, MISSION_ACCEPT,
 from .data import EVENT_GATES, EVENT_GATES_OPEN, EVENT_GATES_ALL6
 from .data import HUB_FLOOR_BOSS, HUB_FLOOR_DOOR_X, HUB_FLOOR_Y
 from .data import PICKUP_MAILBOX_ADDR, PICKUP_MAILBOX_SLOTS
-from .golden import GOLDEN_IMAGE, GOLDEN_IMAGE_ADDR
+from .golden import GOLDEN_IMAGE, GOLDEN_IMAGE_ADDR, build_image
 
 if TYPE_CHECKING:
     from worlds._bizhawk.context import BizHawkClientContext
@@ -791,8 +791,12 @@ class MMZXClient(BizHawkClient):
             # La imagen dorada lleva dificultad/personaje en +0x70/+0x71
             # (exp273d: +0x70 = 1 Easy / 0 Normal; +0x71 = 0 Vent / 1 Aile).
             # El dorado es Normal/Vent; se aplica el personaje del YAML.
-            img = bytearray(GOLDEN_IMAGE)
-            img[0x71] = 1 if int(ctx.slot_data.get("character", 0) or 0) == 1 else 0
+            # Imagen v2 parcheada por YAML (golden.build_image): modelo activo y
+            # posesión desde el primer frame (el LOAD no fuerza X), personaje
+            # (0x0214FC75), dificultad Normal, WE del modelo inicial, sin
+            # briefing, spawn (384,335). _start_state_tick queda de respaldo.
+            img = build_image(str(ctx.slot_data.get("starting_model", "model_x")),
+                              int(ctx.slot_data.get("character", 0) or 0), STARTING_MODELS)
             await bizhawk.guarded_write(
                 ctx.bizhawk_ctx,
                 [(GOLDEN_IMAGE_ADDR, bytes(img), DOM)],

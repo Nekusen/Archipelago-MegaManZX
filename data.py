@@ -361,9 +361,9 @@ MISSION_ACCEPT = {
     6: {'id': 2, 'state': 149, 'flag': [34620894, 5], 'name': 'Locate Giro'},
     9: {'id': 3, 'state': 153, 'flag': [34620895, 1], 'name': 'Pass The Test'},
     10: {'id': 3, 'state': 153, 'flag': [34620895, 1], 'name': 'Pass The Test'},
-    15: {'id': 4, 'state': 162, 'flag': [34620896, 2], 'name': 'Troop Reinforcement', 'extra': [[34620896, 7], [34620897, 0]], 'hstate': 3},
-    16: {'id': 4, 'state': 162, 'flag': [34620896, 2], 'name': 'Troop Reinforcement', 'extra': [[34620896, 7], [34620897, 0]], 'hstate': 3},
-    17: {'id': 4, 'state': 162, 'flag': [34620896, 2], 'name': 'Troop Reinforcement', 'extra': [[34620896, 7], [34620897, 0]], 'hstate': 3},
+    15: {'id': 4, 'state': 162, 'flag': [34620896, 2], 'name': 'Troop Reinforcement', 'extra': [[34620896, 7], [34620897, 0]], 'hstate': 6},
+    16: {'id': 4, 'state': 162, 'flag': [34620896, 2], 'name': 'Troop Reinforcement', 'extra': [[34620896, 7], [34620897, 0]], 'hstate': 6},
+    17: {'id': 4, 'state': 162, 'flag': [34620896, 2], 'name': 'Troop Reinforcement', 'extra': [[34620896, 7], [34620897, 0]], 'hstate': 6},
     18: {'id': 16, 'state': 225, 'flag': [34620904, 1], 'name': 'Destroy Model W'},
     19: {'id': 16, 'state': 225, 'flag': [34620904, 1], 'name': 'Destroy Model W'},
     20: {'id': 5, 'state': 171, 'flag': [34620897, 3], 'name': 'Search The Plant'},
@@ -561,13 +561,14 @@ EVENT_GATES = {
     191: [0x021045E3, 7],
     225: [0x021045E8, 1],
     378: [0x021045FB, 2],
+    379: [0x021045FB, 3],
     381: [0x021045FB, 5],
     382: [0x021045FB, 6],
     395: [0x021045FD, 3],
     768: [0x0210462C, 0],
     769: [0x0210462C, 1],
 }
-EVENT_GATES_OPEN = [381, 382, 395]
+EVENT_GATES_OPEN = [379, 381, 382, 395]
 EVENT_GATES_ALL6 = [225, 378]
 TRANSERVER_UNLOCK_BITS = {
     'a02': (0x02104627, 4),

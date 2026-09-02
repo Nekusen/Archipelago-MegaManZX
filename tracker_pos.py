@@ -12,9 +12,21 @@ Las transformaciones vienen de tracker_meta.py (generado por
 tools/gen_tracker_pack.py).
 """
 
-from .tracker_meta import ROOMS, SUB_TO_ROOM
+from .tracker_meta import ROOMS, SUB_TO_ROOM, OVERALL_MAP, OVERALL_POINTS
+from .data import HUB_FLOOR_Y
 
 PLAYER_ICON = "images/player.png"
+HUB_SUB = 70
+
+
+def _hub_area(y: int):
+    """Piso del hub (y del jugador) -> letra del área (M antes que N)."""
+    best = None
+    for letter, fy in HUB_FLOOR_Y.items():
+        d = abs(y - (fy - 17))
+        if d <= 96 and (best is None or d < best[0] or (d == best[0] and letter < best[1])):
+            best = (d, letter)
+    return best[1] if best else None
 
 
 def _parse(data):
@@ -29,6 +41,8 @@ def map_page_index(data) -> int:
     p = _parse(data)
     if p is None:
         return 0
+    if p[0] == HUB_SUB and OVERALL_MAP is not None:
+        return int(OVERALL_MAP)          # en el hub: mapa general
     info = ROOMS.get(SUB_TO_ROOM.get(p[0], ""))
     if info and info.get("room_map") is not None:
         return int(info["room_map"])
@@ -39,6 +53,15 @@ def location_icon_coords(index: int, data):
     p = _parse(data)
     if p is None:
         return None
+    if index == OVERALL_MAP and OVERALL_MAP is not None:
+        # mapa general: icono sobre el badge del área (en el hub, la del piso)
+        if p[0] == HUB_SUB:
+            letter = _hub_area(p[2])
+        else:
+            room = SUB_TO_ROOM.get(p[0], "")
+            letter = room[:1].upper() if room else None
+        pt = OVERALL_POINTS.get(letter or "")
+        return (int(pt[0]), int(pt[1]), PLAYER_ICON) if pt else None
     info = ROOMS.get(SUB_TO_ROOM.get(p[0], ""))
     if not info:
         return None

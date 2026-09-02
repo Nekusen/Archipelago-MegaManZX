@@ -807,6 +807,29 @@ class MMZXClient(BizHawkClient):
         en el hub (subárea 70) y con acceso al Transerver (0x02104627 bit4) —
         la firma del estado post-tutorial. Marca el datastore al terminar.
         (Los estados 0/1/3 los gestiona _start_state_resolve.)"""
+        if self.start_state == 3:
+            # Partida NUEVA tras una ya aplicada (playtest 4: "new save" dejaba
+            # Model X disponible y no forzaba el modelo del YAML). Firma del
+            # estado dorado crudo: X poseído (0x021045CF.7 lo trae la imagen)
+            # sin haber recibido el item "Model X" y modelo inicial != model_x
+            # -> re-armar la aplicación (idempotente: al aplicar se revoca X).
+            key = str(ctx.slot_data.get("starting_model", "model_x"))
+            rec = STARTING_MODELS.get(key)
+            if rec and rec.get("revoke_x"):
+                id_to_name = {v["id"]: n for n, v in ITEMS.items()}
+                got_x = any(id_to_name.get(net.item) == "Model X" for net in ctx.items_received)
+                if not got_x:
+                    try:
+                        xa, xb = MODEL_X_POSSESSION
+                        cf = (await bizhawk.read(ctx.bizhawk_ctx, [(xa, 1, DOM), (SUBAREA_STABLE, 1, DOM)]))
+                    except bizhawk.RequestFailedError:
+                        return
+                    if (cf[0][0] & (1 << xb)) and cf[1][0] == HUB_SUBAREA:
+                        from CommonClient import logger
+                        logger.info("[mmzx] partida nueva detectada (Model X del estado dorado): re-aplicando el estado inicial")
+                        self.start_state = 2
+                        self.start_confirm = 0
+                        self.start_retries = 0
         if self.start_state != 2:
             return
         # aplicar cuando el juego esté en el estado elegible

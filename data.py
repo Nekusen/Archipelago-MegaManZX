@@ -206,8 +206,9 @@ GOAL_BITS_ALT = [(0x02104602, 2), (0x02104602, 3)]
 # Al entrar en la subárea destino de una misión, el cliente la
 # fuerza como aceptada (replica FUN_02031f10, validado exp067):
 # start flag (vivo+canónica) + estado en MISSION_STATE_ADDR +
-# MISSION_ACTIVE_FLAG=1. Excluye Troop(4)/Protect HQ(13) (auto
-# por hito). subárea -> {id, state, flag:[addr,bit], name}.
+# MISSION_ACTIVE_FLAG=1 + 0x0210462B|=2 + bits 'extra' (Troop: E0.7 para
+# que X-2 no la relance). Excluye Protect HQ(13) (auto por hito).
+# subárea -> {id, state, flag:[addr,bit], name[, extra:[[addr,bit]..]]}.
 MISSION_STATE_ADDR = 0x021046AC
 MISSION_ACTIVE_FLAG = 0x02160FA8
 MISSION_ACCEPT = {
@@ -216,6 +217,9 @@ MISSION_ACCEPT = {
     6: {'id': 2, 'state': 149, 'flag': [34620894, 5], 'name': 'Locate Giro'},
     9: {'id': 3, 'state': 153, 'flag': [34620895, 1], 'name': 'Pass The Test'},
     10: {'id': 3, 'state': 153, 'flag': [34620895, 1], 'name': 'Pass The Test'},
+    15: {'id': 4, 'state': 162, 'flag': [34620896, 2], 'name': 'Troop Reinforcement', 'extra': [[34620896, 7]]},
+    16: {'id': 4, 'state': 162, 'flag': [34620896, 2], 'name': 'Troop Reinforcement', 'extra': [[34620896, 7]]},
+    17: {'id': 4, 'state': 162, 'flag': [34620896, 2], 'name': 'Troop Reinforcement', 'extra': [[34620896, 7]]},
     18: {'id': 16, 'state': 225, 'flag': [34620904, 1], 'name': 'Destroy Model W'},
     19: {'id': 16, 'state': 225, 'flag': [34620904, 1], 'name': 'Destroy Model W'},
     26: {'id': 5, 'state': 171, 'flag': [34620897, 3], 'name': 'Search The Plant'},

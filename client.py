@@ -447,6 +447,12 @@ class MMZXClient(BizHawkClient):
             (act, bytes([cur[2][0] | 0x02]), DOM),
             (act_c, bytes([cur[3][0] | 0x02]), DOM),
         ]
+        # bits extra de la misión (p.ej. Troop: 0x021045E0.7 = "ya lanzada" para
+        # que la sala de mando X-2 no la relance por historia), vivo+canónica
+        for ea, eb in rec.get("extra", []):
+            ecur = await bizhawk.read(ctx.bizhawk_ctx, [(ea, 1, DOM), (ea + CANON_OFF, 1, DOM)])
+            writes.append((ea, bytes([ecur[0][0] | (1 << eb)]), DOM))
+            writes.append((ea + CANON_OFF, bytes([ecur[1][0] | (1 << eb)]), DOM))
         ok = await bizhawk.guarded_write(ctx.bizhawk_ctx, writes, [guard])
         if ok:
             from CommonClient import logger

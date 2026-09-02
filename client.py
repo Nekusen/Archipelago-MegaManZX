@@ -35,6 +35,18 @@ SUBAREA_STABLE = 0x02108228
 GAME_STATE = 0x0215E6D8       # 0x500 = en juego
 STATE_INGAME = 0x500
 STATE_LOAD = 0x400            # el juego carga la escena (teleport)
+# Carrusel del título (objeto estático 0x0214CD6C, literal DAT_020160C4 de
+# FUN_02015f98 / DAT_02017F54 de FUN_02017e68). Byte +4 = PASO (exp269n/q):
+#   0..2 = logos/boot, 3 = título "Press START", 5 = menús del título (New
+#   Game/Continue, Easy/Normal, Vent/Aile, y también el menú "Exit Game" de la
+#   pantalla de Game Over, que re-entra en este carrusel), 4 = título/attract,
+#   6 = partida lanzada (se pone en el MISMO frame en que se pide New Game
+#   (modo 0x10000) o Continue (modo 3) y ya no vuelve a <6 hasta el próximo
+#   Game Over/título). Mientras el paso es 3 o 5 nada escribe el bloque de
+#   escena 0x021602A8 (exp262/269c: sin writers), así que es el momento
+#   seguro para sembrar la imagen dorada.
+TITLE_CAROUSEL_STEP = 0x0214CD70
+TITLE_STEPS_SEEDABLE = (3, 5)
 SCENE_DESC = 0x0216047C       # descriptor de escena (spawn X/Y + subárea)
 LIVES = 0x0214FC6C
 HPMAX = 0x0214FC76
@@ -66,10 +78,19 @@ MODEL_POSSESSION = {
 # Canónica en +0x5BCE8. Sin él, la arena del jefe no se armaba (exp229/231).
 MISSION_ACTIVE_BYTE = 0x0210462B
 
+# Subáreas de JEFE (y de fin de misión) donde NO se auto-acepta al entrar
+# (exp212/213): e07 26, f05 32, g05 37, i03 44, k04 55, l04 60, m03 63,
+# o02 66; h04 41, j05 51, d05 19.
+BOSS_SUBAREAS = {26, 32, 37, 44, 55, 60, 63, 66, 41, 51, 19}
+
 ROM_GAME_CODE = b"ARZE"       # MMZX USA
 
-# Hub por defecto del anti-softlock (z01 = subárea 70)
-HUB_SUBAREA, HUB_X, HUB_Y = 70, 288, 351
+# Hub por defecto del anti-softlock (z01 = subárea 70): ENCIMA del pad de la
+# consola del Transerver (plataforma elevada en x=384, y=335; el spawn del
+# skip (288,351) queda fuera de su hitbox y UP no hace nada — exp251-259/272).
+# (384,351) NO vale: queda dentro de la plataforma y el jugador cae al piso
+# de abajo.
+HUB_SUBAREA, HUB_X, HUB_Y = 70, 384, 335
 
 # Diagnóstico de flags: ventana ancha del bloque de progreso (cubre
 # misiones/quests/historia/HQ) para trazar qué bits cambian al completar
@@ -182,14 +203,19 @@ class MMZXClient(BizHawkClient):
         (no en menú/transición) — evita corromper una carga de escena."""
         try:
             reads = await bizhawk.read(ctx.bizhawk_ctx, [
-                (SUBAREA_STABLE, 1, DOM), (HP, 1, DOM), (GAME_STATE, 4, DOM)])
+                (SUBAREA_STABLE, 1, DOM), (HP, 1, DOM), (GAME_STATE, 4, DOM),
+                (TITLE_CAROUSEL_STEP, 1, DOM)])
         except bizhawk.RequestFailedError:
             return False, None
         sub = reads[0][0]
         hp = reads[1][0]
         state_bytes = reads[2]
         state = int.from_bytes(state_bytes, "little")
-        return (sub != 0 and hp > 0 and state == STATE_INGAME), state_bytes
+        # El TÍTULO y sus menús también tienen gs=0x500, sub=1 y hp=16
+        # (exp260-269): solo es gameplay real si el carrusel del título está
+        # en "partida lanzada" (paso 6).
+        launched = reads[3][0] == 6
+        return (launched and sub != 0 and hp > 0 and state == STATE_INGAME), state_bytes
 
     async def game_watcher(self, ctx: "BizHawkClientContext") -> None:
         if ctx.server is None or ctx.slot_data is None:
@@ -216,15 +242,14 @@ class MMZXClient(BizHawkClient):
             ctx.command_processor.commands["mmzx_start"] = _cmd_start
 
         # ---- tutorial-skip: estado one-shot (datastore) + imagen dorada ----
-        # Resolver PRONTO (también en menús) si el skip ya se aplicó en una
-        # sesión previa de la seed, para NO sembrar la imagen dorada (y no
-        # pisar un "Continue" real). Solo la fase de APLICAR requiere gameplay.
+        # Resolver PRONTO (también en menús) la máquina one-shot del modelo
+        # YAML (0→1→2/3); solo la fase de APLICAR (2) requiere gameplay.
         await self._start_state_resolve(ctx)
-        # Sembrar la imagen dorada en 0x021602A8 fuera de gameplay mientras el
-        # skip esté pendiente: cuando el jugador pulse "New Game" (redirigido
-        # por el parche al handler de LOAD) el juego entra a la escena con este
-        # bloque -> hub post-tutorial. En la 1ª sesión NO hay save, así que
-        # "Continue" no se ofrece y no hay riesgo de pisar una partida real.
+        # Sembrar la imagen dorada en 0x021602A8 SIEMPRE que el título/menús
+        # estén activos (independiente de start_state): "New Game" (redirigido
+        # por el parche al handler de LOAD) entra a la escena con este bloque
+        # -> hub post-tutorial, también tras un Game Over. Nunca durante una
+        # carga ni en gameplay (ver _seed_golden_image).
         await self._seed_golden_image(ctx)
 
         in_game, state_bytes = await self._in_game(ctx)
@@ -388,6 +413,13 @@ class MMZXClient(BizHawkClient):
         if sub == self.last_accept_sub:
             return
         self.last_accept_sub = sub
+        if sub in BOSS_SUBAREAS:
+            # Llegar por warp/teleport al pad de una sala de JEFE y forzar la
+            # misión ahí spawnea al jefe encima del jugador (exp212/213:
+            # G-5/K-4/L-4 se corrompían; la guarda OAM lo mitiga pero no está
+            # re-validado). Se acepta al entrar en cualquier OTRA subárea del
+            # área (todas tienen >= 2): sal del pad y vuelve.
+            return
         rec = MISSION_ACCEPT.get(sub)
         if not rec:
             return
@@ -438,21 +470,68 @@ class MMZXClient(BizHawkClient):
             self.start_state = 3 if ctx.stored_data[self.start_key] else 2
 
     async def _seed_golden_image(self, ctx) -> None:
-        """Escribe la imagen dorada en 0x021602A8 SOLO fuera de gameplay y
-        SOLO mientras el skip no se ha aplicado (start_state<3). Durante
-        gameplay 0x021602A8 es el buffer de escena vivo -> NUNCA escribir ahí
-        en juego."""
-        if self.start_state >= 3:
-            return
+        """Escribe la imagen dorada en 0x021602A8 mientras el TÍTULO/MENÚS
+        estén activos, en cada tick e independientemente de start_state, para
+        que cualquier "New Game" (modo 0x10000, redirigido por el parche al
+        handler de LOAD) entre SIEMPRE al hub post-tutorial — también tras un
+        Game Over, cuyo "Exit Game" re-entra en el mismo carrusel del título
+        (exp260-269, work/nav/exp260/NOTES.md).
+
+        Estados medidos (game_state 0x0215E6D8 / paso del carrusel 0x0214CD70):
+          logos/boot ............ gs=0x000000, paso 0-2 (no se siembra; el
+                                  título re-inicializa el bloque al cargar)
+          carga del título ...... 0xB00 (1 frame) → 0x200 → 0x400, paso 3
+                                  (init del bloque por DMA: no sembrar)
+          título "Press START" .. gs=0x500, paso 3, sub estable=1  ← SEMBRAR
+          menús del título ...... gs=0x500, paso 5                 ← SEMBRAR
+          New Game pedido ....... gs=0x010000 (1 frame; Aile: 0x000000) y
+                                  paso=6 en ese mismo frame → 0x200 → 0x400
+                                  (LOAD lee el bloque) → 0x500
+          Continue pedido ....... gs=0x000003 → 0x000103 → 0x0203xx (data
+                                  select), paso=6 desde 0x000003; DMA de
+                                  restauración SRAM→0x021602A8 en 0x140203/
+                                  0x150203 → 0x820203 → 0x840203 → 0x840303
+                                  → 0x100 → 0x200 → 0x400 → 0x500
+          gameplay .............. gs=0x500, paso 6 (0x021602A8 = buffer de
+                                  escena vivo → NUNCA escribir)
+          pausa ................. 0x1000700 → 0x1 → 0x10001 → 0x1010001 →
+                                  0x101; despausa 0x800 → 0x1000800 → 0x500
+          muerte → Game Over .... 0x900 → 0x000007 → 0x000107 → 0x010107
+                                  (paso 6); al pulsar: 0x0x0107 → 0x0x0207 y
+                                  paso 6 → 1 → 5 (menú Exit Game/Continue =
+                                  carrusel del título)             ← SEMBRAR
+          Exit Game ............. = New Game (0x10000 → LOAD del bloque)
+          Continue desde GO ..... 0x010003 → data select (paso 6) → DMA → LOAD
+        Regla: paso ∈ {3,5} Y (gs == 0x500 o gs&0xFF == 0x07). Excluye por
+        construcción 0x100/0x200/0x400 y los estados 0x..03 del data select
+        (el DMA del Continue precede al LOAD: sembrar ahí pisaría el save),
+        y el gameplay (paso 6). El paso 4 (título/attract con demo,
+        gs 0x090700) se excluye: todo New Game pasa por el paso 5 antes.
+        Escritura GUARDADA por (paso, gs) para que no entre si el carrusel
+        avanzó a 6 entre la lectura y la escritura."""
         try:
-            gs = int.from_bytes((await bizhawk.read(
-                ctx.bizhawk_ctx, [(GAME_STATE, 4, DOM)]))[0], "little")
+            r = await bizhawk.read(ctx.bizhawk_ctx, [
+                (GAME_STATE, 4, DOM), (TITLE_CAROUSEL_STEP, 1, DOM)])
         except bizhawk.RequestFailedError:
             return
-        if gs == STATE_INGAME:      # en juego: no tocar el buffer de escena
+        gs = int.from_bytes(r[0], "little")
+        step = r[1][0]
+        if step not in TITLE_STEPS_SEEDABLE:
             return
-        await bizhawk.write(ctx.bizhawk_ctx,
-                            [(GOLDEN_IMAGE_ADDR, GOLDEN_IMAGE, DOM)])
+        if not (gs == STATE_INGAME or (gs & 0xFF) == 0x07):
+            return
+        try:
+            # La imagen dorada lleva dificultad/personaje en +0x70/+0x71
+            # (exp273d: +0x70 = 1 Easy / 0 Normal; +0x71 = 0 Vent / 1 Aile).
+            # El dorado es Normal/Vent; se aplica el personaje del YAML.
+            img = bytearray(GOLDEN_IMAGE)
+            img[0x71] = 1 if int(ctx.slot_data.get("character", 0) or 0) == 1 else 0
+            await bizhawk.guarded_write(
+                ctx.bizhawk_ctx,
+                [(GOLDEN_IMAGE_ADDR, bytes(img), DOM)],
+                [(TITLE_CAROUSEL_STEP, r[1], DOM), (GAME_STATE, r[0], DOM)])
+        except bizhawk.RequestFailedError:
+            return
 
     async def _start_state_tick(self, ctx, guard) -> None:
         """Tutorial-skip (v0.2): fase de APLICAR (start_state==2). Aplica UNA

@@ -40,9 +40,22 @@ SKIP_ENTRY_RAM = 0x02022544
 SKIP_ENTRY = bytes.fromhex("004b184761b40c02")        # -> BX 0x020CB460
 SKIP_ENTRY_ORIG = bytes.fromhex("10b5041c00f020fa")   # push;mov r4,r0;bl
 SKIP_CAVE_RAM = 0x020CB460                            # hueco de ceros arm9
+# v2 (2026-09-02, agente exp269p + keystone): el modo de New Game codifica
+# personaje/dificultad (FUN_02017e68: tbl[personaje]<<16 | tbl[dificultad]
+# <<24; Vent/Easy = 0x10000, AILE/Easy = 0x00000000, Normal suma 0x1000000) —
+# el cave v1 comparaba con 0x10000 exacto y con Aile NO redirigía (escena
+# del título como gameplay). v2: redirige si los 16 bits bajos del modo son
+# 0 (cualquier personaje/dificultad; el attract 0xB00/0xC00 no cumple) Y el
+# carrusel del título está en "partida lanzada" (u8 0x0214CD70 == 6; en los
+# logos gs=0 pero paso<3). Ensamblado con keystone (Thumb @0x020CB460):
+#   ldr r1,[pc,#0x1C]; ldr r1,[r1]; lsls r1,r1,#16; bne orig
+#   ldr r2,[pc,#0x18]; ldrb r2,[r2]; cmp r2,#6; beq skip
+#   orig: push{r4,lr}; mov r4,r0; bl FUN_0202298c; ldr r3,=0x0202254D; bx r3
+#   skip: ldr r3,=0x0202252D; bx r3
+#   pool: 0x0215E6D8, 0x0214CD70, 0x0202254D, 0x0202252D
 SKIP_CAVE = bytes.fromhex(
-    "06490968064a914205d010b5044657f78dfa044b1847044b1847"
-    "00bfd8e61502000001004d2502022d250202")
+    "07490968090403d1064a1278062a05d010b5044657f78afa034b1847034b1847"
+    "d8e6150270cd14024d2502022d250202")
 
 # --- Hu-gate (v0.2 EXPERIMENTAL; RE en docs/v02_notes.md §2f) ---
 # Hu está hardcoded: la categoría 0 del chequeo de posesión FUN_0203e414

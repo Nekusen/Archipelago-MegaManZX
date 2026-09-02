@@ -16,7 +16,7 @@ from .data import (LOCATIONS, ITEMS, GOAL_BITS, GOAL_BITS_ALT, MISSION_ACCEPT,
                    STARTING_MODELS, STARTING_MODEL_ITEM, STARTING_TRANSERVERS,
                    MODEL_X_POSSESSION, ACTIVE_MODEL_ADDR)
 from .data import EVENT_GATES, EVENT_GATES_OPEN, EVENT_GATES_ALL6
-from .data import HUB_FLOOR_BOSS, HUB_FLOOR_DOOR_X, HUB_FLOOR_Y
+from .data import HUB_FLOOR_BOSS, HUB_FLOOR_DOOR_X, HUB_FLOOR_Y, DOORS, ROOM_SUBAREA
 from .data import PICKUP_MAILBOX_ADDR, PICKUP_MAILBOX_SLOTS
 from .golden import GOLDEN_IMAGE, GOLDEN_IMAGE_ADDR, build_image
 
@@ -121,17 +121,35 @@ ROM_GAME_CODE = b"ARZE"       # MMZX USA
 # de abajo.
 HUB_SUBAREA, HUB_X, HUB_Y = 70, 384, 335
 
-# Vuelta rápida al Transerver DESDE EL JUEGO (2026-09-03, exp432/433): el
-# juego guarda la máscara NitroSDK de botones MANTENIDOS en u16 0x020F2768
-# (A 1, B 2, SELECT 4, START 8, →/←/↑/↓ 0x10..0x80, R 0x100, L 0x200,
-# X 0x400, Y 0x800; copia en 0x020F276A). SELECT no hace nada durante el
-# juego y no es reasignable en Options, así que es el botón de warp:
-# mantenerlo WARP_HOLD_TICKS ticks seguidos en gameplay (≈0.4 s con
-# watcher_timeout 0.125) encola el mismo teleport al hub que /mmzx_teleport.
-# Hay que soltarlo para volver a armarlo; no dispara en cutscenes.
+# Vuelta al Transerver DESDE EL MENÚ (2026-09-03, exp432-436): en la pestaña
+# MISSION (mapa) del menú de pausa, Y ("Y Button:Go to Transerver", texto
+# parcheado) hace que el parche de ROM (rom.py §1g) ponga WARP_REQ = 1 y
+# cierre el menú. El cliente, ya en juego, consume la petición y
+# teletransporta al ÚLTIMO Transerver en el que estuvo el jugador (pad de la
+# consola más cercano de esa sala; en el hub, el piso en el que estaba) o, si
+# no ha pisado ninguno en esta sesión, al hub. Estado de botones (exp432/433):
+# u16 0x020F2768 = mantenidos este frame (máscara NitroSDK: A 1, B 2,
+# SELECT 4, START 8, →/←/↑/↓ 0x10..0x80, R 0x100, L 0x200, X 0x400,
+# Y 0x800), 0x020F276A = frame anterior.
+WARP_REQ = 0x020CB9D0          # u8: 1 = petición pendiente (la pone el cave A, la borra el cliente)
 PAD_HELD = 0x020F2768
-KEY_SELECT = 0x0004
-WARP_HOLD_TICKS = 3
+
+
+def _build_ts_pads() -> dict[int, list[tuple[int, int]]]:
+    """Subárea -> pads de consola de Transerver (x, y del jugador de pie)."""
+    pads: dict[int, list[tuple[int, int]]] = {}
+    for e in DOORS:
+        if e.get("kind") == "warp" and e.get("pos") and e.get("src") in ROOM_SUBAREA:
+            sub = ROOM_SUBAREA[e["src"]]
+            if sub == HUB_SUBAREA:
+                continue
+            pads.setdefault(sub, []).append((int(e["pos"][0]), int(e["pos"][1]) - 1))
+    # hub: la consola de cada piso está en x=384, 17 px por encima del piso
+    pads[HUB_SUBAREA] = [(HUB_X, y - 17) for y in sorted(set(HUB_FLOOR_Y.values()))]
+    return pads
+
+
+TS_PADS = _build_ts_pads()
 
 # Diagnóstico de flags: ventana ancha del bloque de progreso (cubre
 # misiones/quests/historia/HQ) para trazar qué bits cambian al completar
@@ -167,8 +185,7 @@ class MMZXClient(BizHawkClient):
         self.prev_death_link = None
         self.pending_death = False
         self.pending_teleport = None   # (subárea, x, y) o None
-        self.warp_hold = 0             # ticks seguidos con SELECT mantenido
-        self.warp_armed = True         # se rearma al soltar SELECT
+        self.last_transerver: tuple[int, int, int] | None = None   # (sub, x, y) último pad de Transerver pisado
         self.added_commands = False
         self._win: tuple[int, int] | None = None   # ventana de detección (cache)
         # diagnóstico de flags (para mapear "misión completada" en vivo)
@@ -442,8 +459,8 @@ class MMZXClient(BizHawkClient):
         if self.death_link_enabled:
             await self._stage("deathlink", self._handle_death_link(ctx, guard))
 
-        # ---- anti-softlock: SELECT mantenido en juego = vuelta al hub ----
-        await self._stage("warp", self._warp_button_tick(ctx))
+        # ---- "Go to Transerver" (pestaña MISSION del menú) + último Transerver ----
+        await self._stage("warp", self._warp_request_tick(ctx))
 
         # ---- anti-softlock: teleport pedido por comando ----
         if self.pending_teleport is not None:
@@ -950,27 +967,33 @@ class MMZXClient(BizHawkClient):
                         % (key, ts_key))
         return rec["active"]
 
-    async def _warp_button_tick(self, ctx) -> None:
-        """SELECT mantenido WARP_HOLD_TICKS ticks seguidos en juego → encola
-        el teleport al hub (una vez por pulsación: hay que soltar para volver
-        a armarlo). No dispara durante una cutscene de historia."""
+    async def _warp_request_tick(self, ctx) -> None:
+        """Rastrea el último Transerver pisado y atiende la petición "Go to
+        Transerver" de la pestaña MISSION (WARP_REQ = 1, puesta por el cave
+        del parche al pulsar Y; cuando se ve aquí el menú ya se ha cerrado):
+        la consume y encola el teleport al último Transerver (o al hub)."""
         try:
-            r = await bizhawk.read(ctx.bizhawk_ctx, [(PAD_HELD, 2, DOM), (CUTSCENE_FLAG, 1, DOM)])
+            r = await bizhawk.read(ctx.bizhawk_ctx, [
+                (WARP_REQ, 1, DOM), (SUBAREA_STABLE, 1, DOM), (PLAYER_POS, 8, DOM)])
         except bizhawk.RequestFailedError:
             return
-        held = int.from_bytes(r[0], "little")
-        if not (held & KEY_SELECT):
-            self.warp_hold = 0
-            self.warp_armed = True
+        req, sub = r[0][0], r[1][0]
+        x = int.from_bytes(r[2][0:4], "little") >> 8
+        y = int.from_bytes(r[2][4:8], "little") >> 8
+        pads = TS_PADS.get(sub)
+        if pads:
+            px, py = min(pads, key=lambda p: (p[0] - x) ** 2 + (p[1] - y) ** 2)
+            self.last_transerver = (sub, px, py)
+        if req != 1:
             return
-        if r[1][0] & 1:
+        try:
+            await bizhawk.write(ctx.bizhawk_ctx, [(WARP_REQ, b"\x00", DOM)])
+        except bizhawk.RequestFailedError:
             return
-        self.warp_hold += 1
-        if self.warp_armed and self.warp_hold >= WARP_HOLD_TICKS:
-            self.warp_armed = False
-            self.pending_teleport = (HUB_SUBAREA, HUB_X, HUB_Y)
-            from CommonClient import logger
-            logger.info("[mmzx] SELECT mantenido → vuelta al Transerver (hub)")
+        dest = self.last_transerver or (HUB_SUBAREA, HUB_X, HUB_Y)
+        self.pending_teleport = dest
+        from CommonClient import logger
+        logger.info("[mmzx] Go to Transerver (menú) → subárea %d (%d,%d)" % dest)
 
     async def _teleport(self, ctx, sub, x, y, guard) -> None:
         """Teleport limpio (7 escrituras; docs/client_integration.md §6).

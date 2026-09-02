@@ -204,6 +204,46 @@ DATASELECT_CAVE_RAM = 0x020CB980     # hueco de ceros del arm9 (0x020CB434-0x020
 DATASELECT_CAVE = bytes.fromhex(
     "30b5201c022144f76dfae878000603d4a17afe200140a17230bd")
 
+# --- "Go to Transerver" desde el menú de pausa (pestaña MISSION/mapa) —
+# exp434-436, 2026-09-03 ---
+# Petición del usuario: una opción de UI para volver al Transerver. El menú
+# de pausa (game_state 0x101; struct 0x0215D7F8, página u8 +0x1825 =
+# 0x0215F01D: 0 STATUS, 1 ITEM, 2 OPTIONS, 3 MISSION/mapa) despacha por
+# tablas de punteros. En la pestaña del mapa el handler de scroll
+# FUN_020272ac lee los botones MANTENIDOS (u16 0x020F2768): D-pad = scroll,
+# A = scroll rápido, X = salir del scan; Y no se usa. START/B cierran el
+# menú vía FUN_02022b0c (llamada desde FUN_0202323c @0x02023240).
+# Parche: (A) el `ldr r1,=pad; ldrh r1,[r1]` de FUN_020272ac pasa a
+# `bl CAVE_A`, que devuelve r1 = pad mantenido y, si Y acaba de PULSARSE
+# (mantenido & ~anterior 0x020F276A, bit 11), pone WARP_FLAGS+0 = 1
+# (petición para el CLIENTE, que la consume y teletransporta al último
+# Transerver visitado) y WARP_FLAGS+1 = 1 (cerrar menú). (B) la llamada a
+# FUN_02022b0c pasa a `bl CAVE_B`: si WARP_FLAGS+1 está puesto lo borra y
+# devuelve 1 (= "cerrar", como START); si no, salta a FUN_02022b0c. Los
+# textos de ayuda de la pestaña (m_sub_en.bin, NitroFS en 0xDFB200, tres
+# variantes) cambian "<pad>Control Pad:Scan Area Map" por
+# "Y Button:Go to Transerver" (misma longitud, in-place).
+MENU_WARP_FLAGS_RAM = 0x020CB9D0    # u8 petición (cliente) + u8 cerrar (cave B); hueco de ceros
+MENU_WARP_CAVE_A_RAM = 0x020CB99C   # tras DATASELECT_CAVE (0x020CB980+26)
+# ldr r2,=0x020F2768; ldrh r1,[r2]; ldrh r3,[r2,#2]; mvns r3,r3; ands r3,r1;
+# lsls r3,r3,#20; bpl ret; ldr r2,=FLAGS; movs r3,#1; strb r3,[r2]; strb r3,[r2,#1]; ret: bx lr
+MENU_WARP_CAVE_A = bytes.fromhex(
+    "054a11885388db430b401b0503d5034a012313705370704768270f02d0b90c02")
+MENU_WARP_CAVE_B_RAM = 0x020CB438   # hueco entre HUGATE_ARRAY (4 B) y SKIP_CAVE
+# ldr r1,=FLAGS; ldrb r2,[r1,#1]; cmp r2,#0; beq orig; movs r2,#0; strb r2,[r1,#1];
+# movs r0,#1; bx lr; orig: ldr r3,=FUN_02022b0c|1; bx r3
+MENU_WARP_CAVE_B = bytes.fromhex(
+    "04494a78002a03d000224a7001207047014b1847d0b90c020d2b0202")
+MENU_WARP_HOOKS = [
+    # (RAM, bytes originales, bytes nuevos)
+    (0x020272B6, "1d490988", "a4f071fb"),   # FUN_020272ac: ldr r1,=pad; ldrh r1,[r1] -> bl CAVE_A
+    (0x02023240, "fff764fc", "a8f0faf8"),   # FUN_0202323c: bl FUN_02022b0c -> bl CAVE_B
+]
+MENU_WARP_TEXT_ROM = 0xDFB200        # m_sub_en.bin (NitroFS, sin comprimir; verificado byte a byte)
+MENU_WARP_TEXT_OLD = bytes.fromhex("e0e1234f4e54524f4c003041441a3343414e0021524541002d4150")  # <pad>Control Pad:Scan Area Map
+MENU_WARP_TEXT_NEW = bytes.fromhex("3900225554544f4e1a274f00544f003452414e5345525645520000")  # Y Button:Go to Transerver
+MENU_WARP_TEXT_OFFS = (0xB14, 0xB4B, 0xB85)   # 3 variantes (sin/1/varios servers en el área)
+
 
 # --- Compresor BLZ con parse ÓPTIMO (agente exp360-369, exp367) ---
 # El arm9 recomprimido debe caber en su slot de la ROM (0x8F400 B). El greedy
@@ -369,6 +409,13 @@ class MMZXPatchExtension(APPatchExtension):
         for ram, orig, new in DATASELECT_ICON_PATCH:
             poke(ram, bytes.fromhex(new), bytes.fromhex(orig))
         poke(DATASELECT_CAVE_RAM, DATASELECT_CAVE, bytes(len(DATASELECT_CAVE)))
+        # 1g) "Go to Transerver" en la pestaña MISSION del menú de pausa (siempre)
+        assert len(MENU_WARP_CAVE_A) <= MENU_WARP_FLAGS_RAM - MENU_WARP_CAVE_A_RAM
+        assert len(MENU_WARP_CAVE_B) <= SKIP_CAVE_RAM - MENU_WARP_CAVE_B_RAM
+        poke(MENU_WARP_CAVE_A_RAM, MENU_WARP_CAVE_A, bytes(len(MENU_WARP_CAVE_A)))
+        poke(MENU_WARP_CAVE_B_RAM, MENU_WARP_CAVE_B, bytes(len(MENU_WARP_CAVE_B)))
+        for ram, orig, new in MENU_WARP_HOOKS:
+            poke(ram, bytes.fromhex(new), bytes.fromhex(orig))
         # 2) Hu-gate (opcional)
         if hu_in_pool:
             poke(HUGATE_ARRAY_RAM, HUGATE_FLAG_INDEX.to_bytes(4, "little"))
@@ -392,6 +439,16 @@ class MMZXPatchExtension(APPatchExtension):
         d[end:end + len(post)] = post
         d[end + len(post):slot_end] = b"\x00" * (slot_end - end - len(post))
         struct.pack_into("<I", d, 0x2C, len(blob))
+
+        # textos de ayuda de la pestaña MISSION (NitroFS in-place, misma longitud)
+        for off in MENU_WARP_TEXT_OFFS:
+            o = MENU_WARP_TEXT_ROM + off
+            cur = bytes(d[o:o + len(MENU_WARP_TEXT_NEW)])
+            if cur == MENU_WARP_TEXT_NEW:
+                continue
+            if cur != MENU_WARP_TEXT_OLD:
+                raise ValueError("MMZX: texto inesperado en m_sub_en.bin+0x%X (%s)" % (off, cur.hex()))
+            d[o:o + len(MENU_WARP_TEXT_NEW)] = MENU_WARP_TEXT_NEW
 
         # CRC16 de cabecera (CRC-16/MODBUS sobre [0:0x15E])
         crc = 0xFFFF

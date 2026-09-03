@@ -113,6 +113,17 @@ MISSION_ACTIVE_BYTE = 0x0210462B
 # force-accept no dispara cutscenes ni flags por rectangulo (verjas).
 STORY_BLOCK = 0x0214F6BC           # bloque de historia (0x11C B: +4 id, +8 objeto del handler)
 STORY_BLOCK_CANON = 0x02160554     # su copia de checkpoint (la restaura la muerte)
+# INSTANTÁNEA DE INICIO DE MISIÓN (exp452, 2026-09-03): al aceptar una misión en la
+# consola, FUN_02022744 copia canónica A → espejo B, descriptor 1 → descriptor 2 y
+# cola 1 → cola 2. "Abort Mission" (FUN_020946f0 → FUN_02022630 → estado 0x300)
+# restaura ESOS espejos (bloque de progreso, posición/escena y guion de historia).
+# Con la aceptación forzada del cliente nunca se refrescaban y el Abort volvía al
+# contenido de la imagen dorada / del tutorial (A-1, modelo humano, bloque en
+# blanco). El cliente los replica al auto-aceptar (antes de escribir la misión).
+BLOCK_MIRROR = 0x02160398          # espejo B del bloque de progreso (0xE4 B; = canónica + 0xE4)
+SCENE_DESC_MIRROR = 0x021604E8     # descriptor 2 (0x6C B; = descriptor 1 + 0x6C)
+STORY_BLOCK_MIRROR = 0x02160670    # cola 2 (0x11C B; = cola 1 + 0x11C)
+SCENE_DESC_LEN, STORY_BLOCK_LEN, LIVE_BLOCK_LEN = 0x6C, 0x11C, 0xE4
 CUTSCENE_FLAG = 0x0214F502         # bit0 = cutscene/guion de historia en curso
 STORY_HANDLER_ID = 0x0214F6C0
 STORY_HANDLER_OBJ = 0x0214F6C4     # 0x114 B; +9 = id de cutscene (0xFF = ninguna)
@@ -660,7 +671,10 @@ class MMZXClient(BizHawkClient):
         flag (vivo+canónica) + estado en MISSION_STATE_ADDR + MISSION_ACTIVE_
         FLAG=1. Solo al CAMBIAR de zona (no cada frame) y si no es ya la
         misión activa. Excluye Troop/Protect HQ (no están en MISSION_ACCEPT;
-        se auto-lanzan por historia)."""
+        se auto-lanzan por historia). Antes de escribir la misión toma la
+        instantánea de inicio de misión (espejos B/descriptor 2/cola 2) para
+        que "Abort Mission" devuelva al jugador a este punto sin misión y con
+        el progreso intacto (exp452); después, commit del checkpoint."""
         try:
             sub = (await bizhawk.read(ctx.bizhawk_ctx, [(SUBAREA_STABLE, 1, DOM)]))[0][0]
         except bizhawk.RequestFailedError:
@@ -724,8 +738,17 @@ class MMZXClient(BizHawkClient):
         canon = addr + (CANON_BLOCK - LIVE_BLOCK)
         act, act_c = MISSION_ACTIVE_BYTE, MISSION_ACTIVE_BYTE + (CANON_BLOCK - LIVE_BLOCK)
         cur = await bizhawk.read(ctx.bizhawk_ctx, [
-            (addr, 1, DOM), (canon, 1, DOM), (act, 1, DOM), (act_c, 1, DOM)])
+            (addr, 1, DOM), (canon, 1, DOM), (act, 1, DOM), (act_c, 1, DOM),
+            (LIVE_BLOCK, LIVE_BLOCK_LEN, DOM), (SCENE_DESC, SCENE_DESC_LEN, DOM),
+            (STORY_BLOCK, STORY_BLOCK_LEN, DOM)])
         writes = [
+            # Instantánea de inicio de misión (FUN_02022744) con el estado PREVIO a la
+            # misión: es lo que restaura "Abort Mission" (exp452k/452l): bloque vivo →
+            # espejo B, descriptor 1 (spawn de la sala/piso actual) → descriptor 2,
+            # bloque de historia vivo → cola 2.
+            (BLOCK_MIRROR, cur[4], DOM),
+            (SCENE_DESC_MIRROR, cur[5], DOM),
+            (STORY_BLOCK_MIRROR, cur[6], DOM),
             (addr, bytes([cur[0][0] | (1 << bit)]), DOM),
             (canon, bytes([cur[1][0] | (1 << bit)]), DOM),
             (MISSION_STATE_ADDR, rec["state"].to_bytes(4, "little"), DOM),
@@ -1314,8 +1337,12 @@ def _cmd_teleport(self, *args) -> None:
     if len(args) >= 1 and str(args[0]).strip().upper() in HUB_FLOOR_Y:
         # letra de área -> piso del hub (sub 70) de esa área, junto a la consola
         letter = str(args[0]).strip().upper()
-        handler.pending_teleport = (HUB_SUBAREA, HUB_X, HUB_FLOOR_Y[letter] - 1)
-        logger.info(f"Teleport encolado → hub, piso {letter} ({HUB_X},{HUB_FLOOR_Y[letter] - 1}).")
+        # (384, y_piso-17) = encima de la consola del piso, como el Transport
+        # vanilla y "Go to Transerver"; con y_piso-1 el jugador aterrizaba dentro
+        # del piso y caía al de abajo (exp451: piso M → piso O).
+        y = HUB_FLOOR_Y[letter] - HUB_PAD_DY
+        handler.pending_teleport = (HUB_SUBAREA, HUB_X, y)
+        logger.info(f"Teleport encolado → hub, piso {letter} ({HUB_X},{y}).")
         return
     try:
         sub = int(args[0]) if len(args) >= 1 else HUB_SUBAREA

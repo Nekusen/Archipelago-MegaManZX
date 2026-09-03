@@ -47,14 +47,21 @@
   also reach areas on foot. With a single destination the console shows
   no Transport option (that is vanilla behaviour).
 - **Biometals** come only from items, named after the form they unlock
-  (`Model X`, `Model ZX`, `Model HX`, `Model FX`, `Model LX`, `Model PX`,
-  `Model OX`); beating either Pseudoroid of a pair is the "Obtain Biometal"
-  check. Weapon Energy is initialised when you receive a model. The client
+  (`Model X`, `Model ZX`, `Model OX`, and the progressive `Progressive
+  Model HX/FX/LX/PX`: the first copy gives you the form, the second copy
+  is the biometal's other half and unlocks the level-2 charged attack, e.g.
+  HX's hurricane, plus the full Weapon Energy bar); beating either
+  Pseudoroid of a pair is the "Obtain Biometal" check. Weapon Energy is
+  initialised when you receive a model. The client
   enforces ownership: a form you have not received is reverted and removed
   from the model menu, so if you ever see a model you do not own, it goes
   away on the next client tick.
 - **Life Ups / Sub Tanks / Data Disks** are checks; the items give the
   capacity. Card Keys and Transerver Access are progression.
+- **ITEM B chips** (Absorber, Featherweight, Extender, Quick Charger, Ice
+  Boots, Wind Boots, Frog, Eraser) are useful items: when received they
+  appear in the ITEM B tab of the pause menu, where you activate them.
+  The NPCs and quests that give them in vanilla still do.
 - **Go to Transerver (in-game option)**: open the pause menu (START), go
   to the **MISSION** tab (the area map, L/R to switch tabs) and press **Y**
   ("Y Button: Go to Transerver" is shown under the map). The menu closes
@@ -65,8 +72,10 @@
 - **Goal**: with all six models the Slither Inc. gate in D-2 opens (press
   Up); defeat Serpent in D-5.
 - Some story gates are opened automatically (F-3, G-2, the M-1 seal, the
-  D-1 bridge). Troop Reinforcement runs from D-1/D-2/D-3 without the base
-  cutscene.
+  D-1 bridge, and the sand fall that hides the pit from K-1 to K-2). Troop
+  Reinforcement runs from D-1/D-2/D-3 without the base cutscene. Protect HQ
+  starts by itself when you report a mission with at least four of the
+  eight area missions (E-7 … L-4) completed.
 
 ## Client commands
 

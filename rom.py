@@ -333,9 +333,8 @@ MENU_WARP_TEXT_OFFS = (0xB14, 0xB4B, 0xB85)   # 3 variantes (sin/1/varios server
 # (atlas de items: refills, 1-Up, disco, destellos), paleta OBJ slot 1. Las
 # 4 series (B/M/E/O) comparten el frame. El set 58 se carga a VRAM una vez
 # al arrancar. Parche in-place, mismo tamaño, sin recomprimir (fuera de la
-# CRC de cabecera). Logo: círculo naranja/amarillo con borde y "A" blanca
-# con los índices de la paleta 1 (work/experiments/465_ap_logo_patch.py
-# genera el PNG y el tile; editar build_logo() para retocar el arte).
+# CRC de cabecera). Logo v1 (círculo con "A", exp465) sustituido por el
+# logo oficial adaptado (exp495; ver DISK_LOGO_NEW).
 # Verificado en frío: VRAM = logo, el disco de A-2/E-1 se ve y se recoge.
 DISK_LOGO_ROM = 0x00F5F20C   # obj_fnt.bin + 0x5620C
 DISK_LOGO_OLD = bytes.fromhex(
@@ -343,11 +342,15 @@ DISK_LOGO_OLD = bytes.fromhex(
     "ff0f000088f8000088880f008888f8008888880f44848848884844cd00878844"
     "dc88780084ff8f88dc88f8ff4088888800848888004088880000847700004047"
     "008788cd88f8ff48ff8f88cd8888880488884800888804007748000074040000")
-DISK_LOGO_NEW = bytes.fromhex(
-    "000070770070d7dd00d7dddd70ddddff70ddfdffd7ddffccd7ddffccc7ccffff"
-    "77070000dd7d0700dddd7d00ffdddd07ffdfdd07ccffcc7cccffcc7cffffcc7c"
-    "c7ccffffc7ccffccc7ccffcc70ccffcc70ccffcc00a7aaaa0070a7aa00007077"
-    "ffffcc7cccffcc7cccffcc7cccffcc07ccffcc07aaaa7a00aa7a070077070000")
+DISK_LOGO_NEW = bytes.fromhex(   # logo OFICIAL de Archipelago (sprite 16x16 del apworld de
+    # Metroid Zero Mission, mzm/patcher/data/item_sprites/ap_logo.gfx frame 0) con sus 6
+    # "islas" remapeadas a la paleta 1 del disco: granate 9, naranja C, verdes 1-3, azul 5,
+    # azul-violeta 4 (el morado no existe), rojo A (el rosa no existe), contorno blanco F;
+    # centro transparente. Conversión reproducible: work/experiments/495_ap_logo_official.py
+    "000000f00000009f00f0ff9900cfcc9ff0ccccfcf0ccccfcf0fcfffc005f550f"
+    "ff000000990f000099f9ff00991f110ff91111f1f91111f1fff1fff1004f440f"
+    "f05555f5f05555f5f05555af005ff5aa00f0ffaa0000f0aa000000af000000f0"
+    "f04444f4ff4444f4aa4f44f4aafa440faafaff00aafa0000aa0f0000ff000000")
 
 
 # --- Compresor BLZ con parse ÓPTIMO (agente exp360-369, exp367) ---

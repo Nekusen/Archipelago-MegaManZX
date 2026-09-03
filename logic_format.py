@@ -64,6 +64,15 @@ MISSION_EVENT = {
 }
 # átomos con conteo: NAME>=n  -> (item, máximo razonable)
 COUNT_ATOMS = {"LIFEUP": ("Life Up", 4), "SUBTANK": ("Sub Tank", 4)}
+# átomos de conteo sobre una LISTA de eventos: NAME>=n -> (eventos, máximo).
+# MISSIONS = misiones de ÁREA completadas (ids 5-12: las 8 que cuenta el juego
+# en FUN_02032458; exp449, 2026-09-03). "Protect HQ" se auto-lanza en el
+# Report (consola) que deja ese conteo en >= 4 (la misión reportada cuenta).
+AREA_MISSION_EVENTS = ["Cleared: Search The Plant", "Cleared: Find The Survivors",
+                       "Cleared: Fight The Mavericks", "Cleared: Secure The Biometal",
+                       "Cleared: Save The People", "Cleared: Recover The Disk",
+                       "Cleared: Attack The Excavators", "Cleared: Protect The Lab"]
+LIST_COUNT_ATOMS = {"MISSIONS": (AREA_MISSION_EVENTS, 8)}
 MACRO_ATOMS = ("MODEL", "ALL6")
 CONST_TRUE = ("TRUE", "ANY", "FREE")
 CONST_FALSE = ("FALSE", "NEVER", "IMPOSSIBLE")
@@ -91,6 +100,9 @@ def atom_catalog():
         out.append({"id": "SUBTANK>=%d" % n, "group": "vida", "label": "Sub Tank x%d" % n})
     for k, v in MISSION_EVENT.items():
         out.append({"id": k, "group": "misión", "label": v[len("Cleared: "):] + " (completada)"})
+    for n in range(1, 9):
+        out.append({"id": "MISSIONS>=%d" % n, "group": "misión",
+                    "label": "Misiones de área completadas x%d (de las 8: E-7…L-4)" % n})
     for a in ACCESS_AREAS:
         out.append({"id": "ACCESS_" + a, "group": "transerver", "label": "Transerver Access - Area " + a})
     return out
@@ -102,7 +114,7 @@ def canonical_atom(tok: str):
     if t in ATOM_ITEM or t in MISSION_EVENT or t in MACRO_ATOMS or t in FULL_MODEL_ATOMS:
         return t
     m = _COUNT_RE.match(t)
-    if m and m.group(1) in COUNT_ATOMS:
+    if m and (m.group(1) in COUNT_ATOMS or m.group(1) in LIST_COUNT_ATOMS):
         n = int(m.group(2))
         if n < 1:
             return None
@@ -391,6 +403,9 @@ def atom_predicate(atom, player, hu_in_pool=False, extra_atoms=None):
     if m and m.group(1) in COUNT_ATOMS:
         name, n = COUNT_ATOMS[m.group(1)][0], int(m.group(2))
         return lambda state: state.has(name, player, n)
+    if m and m.group(1) in LIST_COUNT_ATOMS:
+        names, n = list(LIST_COUNT_ATOMS[m.group(1)][0]), int(m.group(2))
+        return lambda state: state.has_from_list(names, player, n)
     raise ValueError("átomo desconocido %r" % atom)
 
 

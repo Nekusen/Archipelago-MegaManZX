@@ -47,7 +47,7 @@ LOCATIONS = {
     'Mission - Recover The Disk': {'id': 13632266, 'category': 'mission', 'detect': ['all', [[34620901, 2]]], 'room': 'J-5', 'pos': None, 'status': 'verified'},
     'Mission - Attack The Excavators': {'id': 13632267, 'category': 'mission', 'detect': ['all', [[34620901, 6]]], 'room': 'K-4', 'pos': None, 'status': 'verified'},
     'Mission - Protect The Lab': {'id': 13632268, 'category': 'mission', 'detect': ['all', [[34620902, 1]]], 'room': 'L-4', 'pos': None, 'status': 'verified'},
-    'Mission - Protect Hq': {'id': 13632269, 'category': 'mission', 'detect': None, 'room': 'X HQ', 'pos': None, 'status': 'detect_pending'},
+    'Mission - Protect Hq': {'id': 13632269, 'category': 'mission', 'detect': ['all', [[34620903, 0]]], 'room': 'X HQ', 'pos': None, 'status': 'verified'},
     'Mission - Stop The Dig': {'id': 13632270, 'category': 'mission', 'detect': ['all', [[34620903, 3], [34620903, 4]]], 'room': 'M', 'pos': None, 'status': 'verified'},
     'Mission - Repel The Army': {'id': 13632271, 'category': 'mission', 'detect': ['all', [[34620903, 7], [34620904, 0]]], 'room': 'O', 'pos': None, 'status': 'verified'},
     'Mission - Destroy Model W': {'id': 13632272, 'category': 'mission', 'detect': None, 'room': 'D-4D-5', 'pos': None, 'status': 'detect_pending'},

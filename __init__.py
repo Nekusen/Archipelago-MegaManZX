@@ -101,10 +101,13 @@ class MMZXWorld(World):
         )
         n_locations = len(active_locs)  # sin contar el evento Victory
 
-        # progresión + useful fijos (solo los "pooled"); resto filler
+        # progresión + useful fijos (solo los "pooled", tantas copias como
+        # `count`: los biometales H/F/L/P son progresivos x2); resto filler
         pool: list[MMZXItem] = []
-        fixed = [n for n, v in ITEMS.items()
-                 if v["classification"] != "filler" and v.get("pooled", True)]
+        fixed: list[str] = []
+        for n, v in ITEMS.items():
+            if v["classification"] != "filler" and v.get("pooled", True):
+                fixed += [n] * int(v.get("count", 1))
 
         # Model Hu: solo entra al pool si hu_in_pool (el parche Hu-gate lo
         # convierte en item). Sin la opción, Hu es hardcoded (no es item).
@@ -119,7 +122,7 @@ class MMZXWorld(World):
             start_key = "none"   # Hu no gateada: 'model_hu' == 'none'
         start_item = STARTING_MODEL_ITEM.get(start_key)
         if start_item and start_item in fixed:
-            fixed.remove(start_item)
+            fixed.remove(start_item)   # una copia (la 1ª mitad de un progresivo)
             self.multiworld.push_precollected(self.create_item(start_item))
 
         # Red de Transervers (modelo híbrido): el acceso del área donde

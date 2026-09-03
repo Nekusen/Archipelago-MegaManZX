@@ -285,13 +285,13 @@ LOCATIONS = {
     'O-2: Energy Capsule L': {'id': 13644058, 'category': 'pickup_energy', 'detect': ['mailbox', 66, 26], 'room': 'o02', 'pos': [3504, 536], 'status': 'provisional'},
 }
 
-# name -> {id, classification, grant}
+# name -> {id, classification, grant[, pooled][, count]}
 ITEMS = {
     'Model ZX': {'id': 13664256, 'classification': 'progression', 'grant': ['live_bit', 34620880, 0], 'pooled': True},
-    'Model HX': {'id': 13664257, 'classification': 'progression', 'grant': ['live_bit', 34620967, 0], 'pooled': True},
-    'Model FX': {'id': 13664258, 'classification': 'progression', 'grant': ['live_bit', 34620967, 1], 'pooled': True},
-    'Model LX': {'id': 13664259, 'classification': 'progression', 'grant': ['live_bit', 34620967, 2], 'pooled': True},
-    'Model PX': {'id': 13664260, 'classification': 'progression', 'grant': ['live_bit', 34620967, 3], 'pooled': True},
+    'Progressive Model HX': {'id': 13664257, 'classification': 'progression', 'grant': ['progressive', [[34620967, 0], [34620966, 0]]], 'pooled': True, 'count': 2},
+    'Progressive Model FX': {'id': 13664258, 'classification': 'progression', 'grant': ['progressive', [[34620967, 1], [34620966, 1]]], 'pooled': True, 'count': 2},
+    'Progressive Model LX': {'id': 13664259, 'classification': 'progression', 'grant': ['progressive', [[34620967, 2], [34620966, 2]]], 'pooled': True, 'count': 2},
+    'Progressive Model PX': {'id': 13664260, 'classification': 'progression', 'grant': ['progressive', [[34620967, 3], [34620966, 3]]], 'pooled': True, 'count': 2},
     'Model OX': {'id': 13664261, 'classification': 'progression', 'grant': ['live_bit', 34620882, 1], 'pooled': True},
     'Model X': {'id': 13664262, 'classification': 'progression', 'grant': ['live_bit', 34620879, 7], 'pooled': True},
     'Model Hu': {'id': 13664263, 'classification': 'progression', 'grant': ['live_bit', 34620893, 0], 'pooled': False},
@@ -316,6 +316,14 @@ ITEMS = {
     'Transerver Access - Area M': {'id': 13664554, 'classification': 'progression', 'grant': ['transerver', 34620968, 6], 'pooled': True},
     'Transerver Access - Area O': {'id': 13664555, 'classification': 'progression', 'grant': ['transerver', 34620968, 7], 'pooled': True},
     'Transerver Access - Area X': {'id': 13664556, 'classification': 'progression', 'grant': ['transerver', 34620969, 0], 'pooled': True},
+    'Absorber Chip': {'id': 13664576, 'classification': 'useful', 'grant': ['live_bit', 34620957, 5], 'pooled': True},
+    'Featherweight Chip': {'id': 13664577, 'classification': 'useful', 'grant': ['live_bit', 34620957, 7], 'pooled': True},
+    'Extender Chip': {'id': 13664578, 'classification': 'useful', 'grant': ['live_bit', 34620958, 0], 'pooled': True},
+    'Quick Charger Chip': {'id': 13664579, 'classification': 'useful', 'grant': ['live_bit', 34620958, 1], 'pooled': True},
+    'Ice Boots Chip': {'id': 13664580, 'classification': 'useful', 'grant': ['live_bit', 34620958, 2], 'pooled': True},
+    'Wind Boots Chip': {'id': 13664581, 'classification': 'useful', 'grant': ['live_bit', 34620958, 3], 'pooled': True},
+    'Frog Chip': {'id': 13664582, 'classification': 'useful', 'grant': ['live_bit', 34620958, 4], 'pooled': True},
+    'Eraser Chip': {'id': 13664583, 'classification': 'useful', 'grant': ['live_bit', 34620957, 6], 'pooled': True},
     'E-Crystals': {'id': 13664768, 'classification': 'filler', 'grant': ['ecrystals'], 'pooled': True},
     '1-Up': {'id': 13664769, 'classification': 'filler', 'grant': ['oneup'], 'pooled': True},
 }
@@ -442,8 +450,8 @@ STARTING_MODELS = {
 # starting_model key -> item AP equivalente (para precollect)
 STARTING_MODEL_ITEM = {
     'model_x': 'Model X', 'model_zx': 'Model ZX',
-    'model_hx': 'Model HX', 'model_fx': 'Model FX',
-    'model_lx': 'Model LX', 'model_px': 'Model PX',
+    'model_hx': 'Progressive Model HX', 'model_fx': 'Progressive Model FX',
+    'model_lx': 'Progressive Model LX', 'model_px': 'Progressive Model PX',
     'model_ox': 'Model OX', 'model_hu': 'Model Hu',
 }
 # Transervers de arranque: key -> (subárea, x_px, y_px). v0.2:

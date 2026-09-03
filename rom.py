@@ -87,29 +87,36 @@ OAMLOOP_BR_RAM = 0x02009C30
 OAMLOOP_BR_ORIG = bytes.fromhex("01d0")   # beq +2
 OAMLOOP_BR_NEW = bytes.fromhex("01d9")    # bls +2
 
-# --- Posesión de biometales "solo item AP" (H/F/L/P) — exp240, 2026-09-02 ---
+# --- Posesión de biometales "solo item AP" (H/F/L/P) — exp240 (2026-09-02),
+# agente exp380-389, PROGRESIVOS exp444-447c (2026-09-03) ---
 # La posesión de un modelo la resuelve FUN_0203e414 sobre tablas de categoría
-# (counts @0x020DE9AC, listas @0x020DEB78). Para HX/FX/LX/PX cada lista tiene
-# DOS flags: el bit "D0" (0x021045D0.x, que pone la VICTORIA del jefe y que es
-# el flag de DETECCIÓN de la location "Obtain Biometal X") y el bit "D1"
-# (0x021045D1.x, que concede el ITEM AP). Con count=2 basta CUALQUIERA -> el
-# jefe te da el modelo (doble-grant del playtest #2). Parche: dejar la lista
-# apuntando SOLO al flag D1 (list[0]=flag D1, count=1) -> la victoria del jefe
-# enciende D0.x (dispara el check) pero NO concede posesión; solo el item AP
-# (D1.x) la concede. Verificado exp240 (D0-solo -> pos=0; D1 -> pos=1).
-# cat -> (count_addr, list0_addr, flag_D1, orig_count, orig_list0_u32)
+# (counts @0x020DE9AC, listas @0x020DEB78): devuelve CUÁNTOS flags de la lista
+# están puestos. En vanilla HX/FX/LX/PX tienen count=2 y lista [D0.x, D1.x]:
+# el bit que escribe la victoria del 1er Pseudoroid del par (D0, = detección
+# de la location "Obtain Biometal X") y el del 2º (D1). Un flag = una MITAD
+# del biometal: con 1 el modelo se usa; con 2 (model_owned_count >= 2) los
+# overlays de modelo suben el tope del contador de carga de 0x28 a 0x78
+# (ataque cargado de nivel 2: HX 0x0218A3F8, FX 0x02187854, LX 0x02187D60,
+# PX 0x02188E48) y el tope de WE es 4 x (lv jefe1 + lv jefe2).
+# Parche: la lista pasa a ser [mitad 1, mitad 2] con flags LIBRES que solo
+# pone el item AP (progresivo, 2 copias): la victoria del jefe enciende D0/D1
+# (dispara el check) pero NO concede nada; count se deja en 2 (vanilla).
+#   mitad 1 = 728-731 = 0x02104627.0-3 (agente exp380-389: a 0 en 268
+#            savestates, fuera de toda tabla, ignorados por el popcount de
+#            Transport; persisten en el save)
+#   mitad 2 = 720-723 = 0x02104626.0-3 (exp447: solo los toca la copia
+#            canónica<->vivo; exp447c: sobreviven a save + reset + Continue)
+# Verificado exp446: con [728,720] y solo 728 -> count=1 (tope 0x28); con los
+# dos -> count=2 y la rama de carga completa (tope 0x78). ANTES (v0.2) la
+# lista era [flag libre] con count=1: ningún modelo podía estar "completo".
+# cat -> (count_addr, list0_addr, flag_mitad1, orig_list0 (D0), flag_mitad2, orig_list1 (D1))
 BIOMETAL_CAT_PATCH = {
-    # cat -> (count_addr, list0_addr, flag_posesion_AP, flag_original_list0)
-    # Flags LIBRES 728-731 = 0x02104627 bits 0-3 (agente exp380-389: a 0 en
-    # 268 savestates, fuera de toda tabla, ignorados por el popcount de
-    # Transport; persisten en el save). ANTES se usaba D1 (41/45/43/47),
-    # pero el 2º Pseudoroid de cada par (Hurricaune/Leganchor/Flammole/
-    # Protectos) escribe precisamente D1.x -> concedía el modelo sin item.
-    3: (0x020DE9AF, 0x020DE9CC, 728, 33),   # H: D0.1 Hivolt / D1.1 Hurricaune -> 0x02104627.0
-    4: (0x020DE9B0, 0x020DE9BC, 729, 37),   # F: D0.5 Fistleo / D1.5 Flammole -> .1
-    5: (0x020DE9B1, 0x020DE9E4, 730, 35),   # L: D0.3 Lurerre / D1.3 Leganchor -> .2
-    6: (0x020DE9B2, 0x020DE9F4, 731, 39),   # P: D0.7 Purprill / D1.7 Protectos -> .3
+    3: (0x020DE9AF, 0x020DE9CC, 728, 33, 720, 41),   # H: Hivolt D0.1 / Hurricaune D1.1 -> 0x02104627.0 / 0x02104626.0
+    4: (0x020DE9B0, 0x020DE9BC, 729, 37, 721, 45),   # F: Fistleo D0.5 / Flammole D1.5   -> .1 / .1
+    5: (0x020DE9B1, 0x020DE9E4, 730, 35, 722, 43),   # L: Lurerre D0.3 / Leganchor D1.3  -> .2 / .2
+    6: (0x020DE9B2, 0x020DE9F4, 731, 39, 723, 47),   # P: Purprill D0.7 / Protectos D1.7 -> .3 / .3
 }
+BIOMETAL_CAT_COUNT = 2   # vanilla; se comprueba, no se cambia
 
 
 # --- Life Ups / Sub Tanks: "recogido" != "capacidad" (agente exp300-309,
@@ -390,11 +397,12 @@ class MMZXPatchExtension(APPatchExtension):
         #     `beq` -> `bls` al final del bucle de sprites de FUN_02009b74
         poke(OAMLOOP_BR_RAM, OAMLOOP_BR_NEW, OAMLOOP_BR_ORIG)
         # 1c) posesión de biometales "solo item AP" (siempre): la victoria del
-        #     jefe deja de conceder el modelo; solo el item AP (D1.x) lo hace
-        for cnt_a, lst_a, flag_ap, orig_flag in BIOMETAL_CAT_PATCH.values():
-            poke(lst_a, flag_ap.to_bytes(4, "little"),
-                 orig_flag.to_bytes(4, "little"))
-            poke(cnt_a, b"\x01", b"\x02")
+        #     jefe deja de conceder el modelo; cada copia del item progresivo
+        #     pone una mitad (lista [mitad 1, mitad 2]; count vanilla = 2)
+        for cnt_a, lst_a, flag1, orig1, flag2, orig2 in BIOMETAL_CAT_PATCH.values():
+            poke(lst_a, flag1.to_bytes(4, "little"), orig1.to_bytes(4, "little"))
+            poke(lst_a + 4, flag2.to_bytes(4, "little"), orig2.to_bytes(4, "little"))
+            poke(cnt_a, bytes([BIOMETAL_CAT_COUNT]), bytes([BIOMETAL_CAT_COUNT]))
         # 1d) Life Ups / Sub Tanks: "recogido" = nibble alto (siempre)
         for ram, orig, new in PICKUP_FLAG_PATCH:
             poke(ram, bytes.fromhex(new), bytes.fromhex(orig))

@@ -86,11 +86,21 @@ MODEL_POSSESSION = {
     2: ("Model ZX", 0x021045D0, 0),
     # H/F/L/P: flags LIBRES 0x02104627.0-3 (agente exp380-389); los bits
     # D0/D1 los escriben los jefes del par y ya no conceden nada.
-    3: ("Model HX", 0x02104627, 0),
-    4: ("Model FX", 0x02104627, 1),
-    5: ("Model LX", 0x02104627, 2),
-    6: ("Model PX", 0x02104627, 3),
+    3: ("Progressive Model HX", 0x02104627, 0),
+    4: ("Progressive Model FX", 0x02104627, 1),
+    5: ("Progressive Model LX", 0x02104627, 2),
+    6: ("Progressive Model PX", 0x02104627, 3),
     7: ("Model OX", 0x021045D2, 1),
+}
+# 2ª MITAD de H/F/L/P = 2ª copia del item progresivo (exp444-447c, 2026-09-03):
+# flags LIBRES 0x02104626.0-3 (720-723) = list[1] de la categoría del modelo
+# (rom.py BIOMETAL_CAT_PATCH, count vanilla 2). Con las dos mitades
+# model_owned_count == 2 -> ataque cargado de nivel 2 (tope del contador de
+# carga 0x78; HX: huracán soltando la carga en el aire con salto+ARRIBA,
+# exp446k) y tope de WE 32 (niveles 4+4). Sin la 2ª copia el cliente limpia
+# este bit (la tienda de niveles FUN_02045084 lo re-deriva de los niveles).
+MODEL_PART2 = {
+    3: (0x02104626, 0), 4: (0x02104626, 1), 5: (0x02104626, 2), 6: (0x02104626, 3),
 }
 
 # Byte "misión en curso" del bloque de partida (0x0210460C+0x1F): bit1 lo
@@ -1027,6 +1037,12 @@ class MMZXClient(BizHawkClient):
             nuevo (high-water `applied_consumables`), nunca re-sumar.
         """
         id_to_item = {v["id"]: (name, v["grant"]) for name, v in ITEMS.items()}
+        # copias recibidas por nombre (progresivos: 1 = 1ª mitad, 2 = las dos)
+        name_count: dict[str, int] = {}
+        for net in ctx.items_received:
+            entry = id_to_item.get(net.item)
+            if entry:
+                name_count[entry[0]] = name_count.get(entry[0], 0) + 1
 
         # contar recibidos por tipo de concesión
         n_lifeup = n_subtank = 0
@@ -1044,6 +1060,11 @@ class MMZXClient(BizHawkClient):
                 n_subtank += 1
             elif kind == "live_bit":
                 live_bits.add((grant[1], grant[2]))
+            elif kind == "progressive":
+                # la copia k pone el bit k (mitad 1, mitad 2...)
+                for k, (addr, bit) in enumerate(grant[1]):
+                    if name_count.get(name, 0) > k:
+                        live_bits.add((addr, bit))
             elif kind == "transerver":
                 # acceso a la red de Transervers: si el bit del destino es
                 # conocido (exp230) se enciende en el bitfield 0x02104627/28
@@ -1064,16 +1085,18 @@ class MMZXClient(BizHawkClient):
         for fl in EVENT_GATES_OPEN:
             live_bits.add(tuple(EVENT_GATES[fl]))
         received = {id_to_item[net.item][0] for net in ctx.items_received if net.item in id_to_item}
-        if all(n in received for n in ("Model X", "Model ZX", "Model HX",
-                                       "Model FX", "Model LX", "Model PX")):
+        if all(n in received for n in ("Model X", "Model ZX", "Progressive Model HX",
+                                       "Progressive Model FX", "Progressive Model LX",
+                                       "Progressive Model PX")):
             for fl in EVENT_GATES_ALL6:
                 live_bits.add(tuple(EVENT_GATES[fl]))
 
         writes: list[tuple[int, bytes, str]] = []
 
         # Weapon Energy de los biometales poseidos por item (ver BOSS_LEVELS):
-        # nivel del 1er jefe del par >= 4 - nivel del 2o (tope >= 16) y barra
-        # llena una vez. Idempotente: no toca nada si lv0+lv1 >= 4.
+        # 1 mitad: nivel del 1er jefe del par >= 4 - nivel del 2o (tope >= 16);
+        # 2 mitades: niveles 4+4 (tope 32, como dos victorias perfectas). Barra
+        # llena una vez. Idempotente: no toca nada si la suma ya alcanza el tope.
         owned_models = [m for m, (item, _a, _b) in MODEL_POSSESSION.items()
                         if m in MODEL_LEVEL_IDX and item in received]
         if owned_models:
@@ -1081,7 +1104,13 @@ class MMZXClient(BizHawkClient):
             lv = lv[0]
             for m in owned_models:
                 i0, i1 = MODEL_LEVEL_IDX[m]
-                if lv[i0] + lv[i1] < 4:
+                full = name_count.get(MODEL_POSSESSION[m][0], 0) >= 2
+                if full and lv[i0] + lv[i1] < 8:
+                    for i in (i0, i1):
+                        writes.append((BOSS_LEVELS + i, b"\x04", DOM))
+                        writes.append((BOSS_LEVELS + i + CANON_OFF, b"\x04", DOM))
+                    writes.append((WE_BASE + m, bytes([WE_FULL * 2]), DOM))
+                elif not full and lv[i0] + lv[i1] < 4:
                     v = bytes([4 - lv[i1]])
                     writes.append((BOSS_LEVELS + i0, v, DOM))
                     writes.append((BOSS_LEVELS + i0 + CANON_OFF, v, DOM))
@@ -1179,7 +1208,9 @@ class MMZXClient(BizHawkClient):
         Idempotente."""
         if not ctx.items_received:
             return
-        received = {net.item for net in ctx.items_received}
+        counts: dict[int, int] = {}
+        for net in ctx.items_received:
+            counts[net.item] = counts.get(net.item, 0) + 1
         try:
             r = await bizhawk.read(ctx.bizhawk_ctx, [(MODEL, 1, DOM), (CUTSCENE_FLAG, 1, DOM)])
         except bizhawk.RequestFailedError:
@@ -1187,8 +1218,11 @@ class MMZXClient(BizHawkClient):
         if r[1][0] & 1:
             return   # cutscene de historia en curso (megamerge de Troop, etc.): no tocar el modelo
         active = r[0][0]
-        owned = {m: ITEMS.get(item, {}).get("id") in received
+        owned = {m: counts.get(ITEMS.get(item, {}).get("id"), 0) >= 1
                  for m, (item, _a, _b) in MODEL_POSSESSION.items()}
+        # 2ª mitad (progresivos): solo con 2 copias recibidas
+        full = {m: counts.get(ITEMS.get(MODEL_POSSESSION[m][0], {}).get("id"), 0) >= 2
+                for m in MODEL_PART2}
         owned[0] = True   # Hu: hardcoded (o gateada por su propio parche Hu-gate)
         writes: list[tuple[int, bytes, str]] = []
         notes: list[str] = []
@@ -1198,8 +1232,10 @@ class MMZXClient(BizHawkClient):
             fallback = self._fallback_model(ctx, owned)
             writes.append((MODEL, bytes([fallback]), DOM))
             notes.append("modelo %d no poseído -> revierto a %d" % (active, fallback))
-        # bits de posesión sin item -> limpiar (vivo + canónica)
-        addrs = sorted({a for _i, a, _b in MODEL_POSSESSION.values()})
+        # bits de posesión sin item -> limpiar (vivo + canónica); ídem la 2ª
+        # mitad sin la 2ª copia (p.ej. re-derivada por la tienda de niveles)
+        addrs = sorted({a for _i, a, _b in MODEL_POSSESSION.values()}
+                       | {a for a, _b in MODEL_PART2.values()})
         try:
             cur = await bizhawk.read(
                 ctx.bizhawk_ctx,
@@ -1215,6 +1251,14 @@ class MMZXClient(BizHawkClient):
                     vals[a][k] &= ~(1 << bit) & 0xFF
                     notes.append("posesión de %s sin item -> limpio 0x%08X.%d%s"
                                  % (item, a, bit, "" if k == 0 else " (canónica)"))
+        for m, (a, bit) in MODEL_PART2.items():
+            if full.get(m, False):
+                continue
+            for k in (0, 1):
+                if vals[a][k] & (1 << bit):
+                    vals[a][k] &= ~(1 << bit) & 0xFF
+                    notes.append("2ª mitad de %s sin 2ª copia -> limpio 0x%08X.%d%s"
+                                 % (MODEL_POSSESSION[m][0], a, bit, "" if k == 0 else " (canónica)"))
         for i, a in enumerate(addrs):
             if vals[a][0] != cur[i][0]:
                 writes.append((a, bytes([vals[a][0]]), DOM))

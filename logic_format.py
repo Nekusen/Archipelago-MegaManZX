@@ -29,8 +29,8 @@ TIERS = ["normal", "expert"]
 # --------------------------------------------------------------------------
 
 ATOM_ITEM = {
-    "X": "Model X", "ZX": "Model ZX", "HX": "Model HX", "FX": "Model FX",
-    "LX": "Model LX", "PX": "Model PX", "OX": "Model OX", "HU": "Model Hu",
+    "X": "Model X", "ZX": "Model ZX", "HX": "Progressive Model HX", "FX": "Progressive Model FX",
+    "LX": "Progressive Model LX", "PX": "Progressive Model PX", "OX": "Model OX", "HU": "Model Hu",
     "YELLOW": "Yellow Card Key", "GREEN": "Green Card Key", "RED": "Red Card Key",
     "BLUE": "Blue Card Key", "WHITE": "White Card Key", "PURPLE": "Purple Card Key",
 }
@@ -39,6 +39,11 @@ for _a in ACCESS_AREAS:
     ATOM_ITEM["ACCESS_" + _a] = "Transerver Access - Area " + _a
 MODELS_NONHU = ["X", "ZX", "HX", "FX", "LX", "PX", "OX"]
 ALL6 = ["X", "ZX", "HX", "FX", "LX", "PX"]
+# Biometal COMPLETO (las dos mitades = 2 copias del item progresivo): ataque
+# cargado de nivel 2 (p.ej. el huracán de HX que eleva la plataforma del Life
+# Up de I-5). `HX` a secas = al menos una mitad.
+FULL_MODEL_ATOMS = {"HX2": "Progressive Model HX", "FX2": "Progressive Model FX",
+                    "LX2": "Progressive Model LX", "PX2": "Progressive Model PX"}
 
 MISSION_EVENT = {
     "LOCATE_GIRO": "Cleared: Locate Giro",
@@ -73,6 +78,9 @@ def atom_catalog():
               "FX": "Model FX", "LX": "Model LX", "PX": "Model PX", "OX": "Model OX"}
     for m in ["HU"] + MODELS_NONHU:
         out.append({"id": m, "group": "modelo", "label": labels[m]})
+    for m in FULL_MODEL_ATOMS:
+        out.append({"id": m, "group": "modelo",
+                    "label": "Model %s completo (2 mitades: carga nivel 2)" % m[:2]})
     out.append({"id": "MODEL", "group": "modelo", "label": "MODEL (cualquier modelo no-Hu)"})
     out.append({"id": "ALL6", "group": "modelo", "label": "ALL6 (los seis biometales)"})
     for k in ["YELLOW", "GREEN", "RED", "BLUE", "WHITE", "PURPLE"]:
@@ -91,7 +99,7 @@ def atom_catalog():
 def canonical_atom(tok: str):
     """Normaliza un átomo; devuelve None si no existe."""
     t = tok.strip().upper().replace(" ", "")
-    if t in ATOM_ITEM or t in MISSION_EVENT or t in MACRO_ATOMS:
+    if t in ATOM_ITEM or t in MISSION_EVENT or t in MACRO_ATOMS or t in FULL_MODEL_ATOMS:
         return t
     m = _COUNT_RE.match(t)
     if m and m.group(1) in COUNT_ATOMS:
@@ -373,6 +381,9 @@ def atom_predicate(atom, player, hu_in_pool=False, extra_atoms=None):
     if atom in ATOM_ITEM:
         name = ATOM_ITEM[atom]
         return lambda state: state.has(name, player)
+    if atom in FULL_MODEL_ATOMS:
+        name = FULL_MODEL_ATOMS[atom]
+        return lambda state: state.has(name, player, 2)
     if atom in MISSION_EVENT:
         name = MISSION_EVENT[atom]
         return lambda state: state.has(name, player)

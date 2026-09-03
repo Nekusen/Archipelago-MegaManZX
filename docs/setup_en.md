@@ -58,9 +58,10 @@
 - **Go to Transerver (in-game option)**: open the pause menu (START), go
   to the **MISSION** tab (the area map, L/R to switch tabs) and press **Y**
   ("Y Button: Go to Transerver" is shown under the map). The menu closes
-  and the client warps you to the last Transerver you stood on (in the hub,
-  the floor you were on); if you have not touched one yet in this session,
-  to the hub. The `/mmzx_teleport` command still works from the client.
+  and the game's own **Target Area** list opens, with every Transerver you
+  have unlocked (by item or by having reached it); pick one and you arrive
+  on that area's floor of the Guardian hub, exactly like the console's
+  Transport. B cancels. The `/mmzx_teleport` command still works from the client.
 - **Goal**: with all six models the Slither Inc. gate in D-2 opens (press
   Up); defeat Serpent in D-5.
 - Some story gates are opened automatically (F-3, G-2, the M-1 seal, the

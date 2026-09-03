@@ -16,7 +16,7 @@ from .data import (LOCATIONS, ITEMS, GOAL_BITS, GOAL_BITS_ALT, MISSION_ACCEPT,
                    STARTING_MODELS, STARTING_MODEL_ITEM, STARTING_TRANSERVERS,
                    MODEL_X_POSSESSION, ACTIVE_MODEL_ADDR)
 from .data import EVENT_GATES, EVENT_GATES_OPEN, EVENT_GATES_ALL6
-from .data import HUB_FLOOR_BOSS, HUB_FLOOR_DOOR_X, HUB_FLOOR_Y, DOORS, ROOM_SUBAREA
+from .data import HUB_FLOOR_BOSS, HUB_FLOOR_DOOR_X, HUB_FLOOR_Y, WARP_DESTINATIONS
 from .data import PICKUP_MAILBOX_ADDR, PICKUP_MAILBOX_SLOTS
 from .golden import GOLDEN_IMAGE, GOLDEN_IMAGE_ADDR, build_image
 
@@ -121,35 +121,30 @@ ROM_GAME_CODE = b"ARZE"       # MMZX USA
 # de abajo.
 HUB_SUBAREA, HUB_X, HUB_Y = 70, 384, 335
 
-# Vuelta al Transerver DESDE EL MENÚ (2026-09-03, exp432-436): en la pestaña
+# "Go to Transerver" DESDE EL MENÚ (2026-09-03, exp432-442): en la pestaña
 # MISSION (mapa) del menú de pausa, Y ("Y Button:Go to Transerver", texto
 # parcheado) hace que el parche de ROM (rom.py §1g) ponga WARP_REQ = 1 y
-# cierre el menú. El cliente, ya en juego, consume la petición y
-# teletransporta al ÚLTIMO Transerver en el que estuvo el jugador (pad de la
-# consola más cercano de esa sala; en el hub, el piso en el que estaba) o, si
-# no ha pisado ninguno en esta sesión, al hub. Estado de botones (exp432/433):
-# u16 0x020F2768 = mantenidos este frame (máscara NitroSDK: A 1, B 2,
-# SELECT 4, START 8, →/←/↑/↓ 0x10..0x80, R 0x100, L 0x200, X 0x400,
-# Y 0x800), 0x020F276A = frame anterior.
+# cierre el menú. El cliente, ya en juego, consume la petición y abre la
+# lista "Target Area" DEL JUEGO (la misma que ofrece la consola del
+# Transerver: solo destinos con su bit de acceso, sea por item o por haber
+# pisado el piso), pidiendo el estado 0x50700 como hace la consola
+# (FUN_02021070(0x0215D7F8, 0x50700)) con la "estación actual" a -1 para que
+# no excluya ninguna. Al cerrarse la lista el juego deja en TRANSPORT_SEL el
+# índice elegido (0..12; -1 = cancelada con B) y vuelve a gameplay sin
+# moverse (en la consola es el guion del Operator quien recoloca al
+# jugador y pide el estado 0x600): el cliente teletransporta entonces al
+# piso del hub de ese destino, (384, y_piso-17), exactamente donde deja el
+# Transport vanilla. Índices: 0 A-2, 1 B-2, 2 C-2, 3 D-2, 4 E-7, 5 F-5,
+# 6 G-5, 7 I-3, 8 K-4, 9 L-4, 10 M-3, 11 O-2, 12 X-1 (tabla 0x020DB0A4).
+# Estado de botones (exp432/433): u16 0x020F2768 = mantenidos este frame
+# (máscara NitroSDK: A 1, B 2, SELECT 4, START 8, →/←/↑/↓ 0x10..0x80,
+# R 0x100, L 0x200, X 0x400, Y 0x800), 0x020F276A = frame anterior.
 WARP_REQ = 0x020CB9D0          # u8: 1 = petición pendiente (la pone el cave A, la borra el cliente)
 PAD_HELD = 0x020F2768
-
-
-def _build_ts_pads() -> dict[int, list[tuple[int, int]]]:
-    """Subárea -> pads de consola de Transerver (x, y del jugador de pie)."""
-    pads: dict[int, list[tuple[int, int]]] = {}
-    for e in DOORS:
-        if e.get("kind") == "warp" and e.get("pos") and e.get("src") in ROOM_SUBAREA:
-            sub = ROOM_SUBAREA[e["src"]]
-            if sub == HUB_SUBAREA:
-                continue
-            pads.setdefault(sub, []).append((int(e["pos"][0]), int(e["pos"][1]) - 1))
-    # hub: la consola de cada piso está en x=384, 17 px por encima del piso
-    pads[HUB_SUBAREA] = [(HUB_X, y - 17) for y in sorted(set(HUB_FLOOR_Y.values()))]
-    return pads
-
-
-TS_PADS = _build_ts_pads()
+TRANSPORT_SEL = 0x021046A8     # u32: selección de la lista "Target Area" (0x0210464C+0x5C); -1 = ninguna
+STATE_TARGET_AREA = 0x00050700 # petición de estado que abre la lista (la consola: DAT_02093E64)
+STATION_ROOMS = list(WARP_DESTINATIONS) + ["x01"]   # índice de estación -> sala del Transerver
+HUB_PAD_DY = 17                # la consola de cada piso está 17 px por encima del piso
 
 # Diagnóstico de flags: ventana ancha del bloque de progreso (cubre
 # misiones/quests/historia/HQ) para trazar qué bits cambian al completar
@@ -185,7 +180,7 @@ class MMZXClient(BizHawkClient):
         self.prev_death_link = None
         self.pending_death = False
         self.pending_teleport = None   # (subárea, x, y) o None
-        self.last_transerver: tuple[int, int, int] | None = None   # (sub, x, y) último pad de Transerver pisado
+        self.transport_wait = False    # lista "Target Area" abierta por el cliente: leer la selección al volver
         self.added_commands = False
         self._win: tuple[int, int] | None = None   # ventana de detección (cache)
         # diagnóstico de flags (para mapear "misión completada" en vivo)
@@ -460,7 +455,7 @@ class MMZXClient(BizHawkClient):
             await self._stage("deathlink", self._handle_death_link(ctx, guard))
 
         # ---- "Go to Transerver" (pestaña MISSION del menú) + último Transerver ----
-        await self._stage("warp", self._warp_request_tick(ctx))
+        await self._stage("warp", self._warp_request_tick(ctx, guard))
 
         # ---- anti-softlock: teleport pedido por comando ----
         if self.pending_teleport is not None:
@@ -967,33 +962,45 @@ class MMZXClient(BizHawkClient):
                         % (key, ts_key))
         return rec["active"]
 
-    async def _warp_request_tick(self, ctx) -> None:
-        """Rastrea el último Transerver pisado y atiende la petición "Go to
-        Transerver" de la pestaña MISSION (WARP_REQ = 1, puesta por el cave
-        del parche al pulsar Y; cuando se ve aquí el menú ya se ha cerrado):
-        la consume y encola el teleport al último Transerver (o al hub)."""
+    async def _warp_request_tick(self, ctx, guard) -> None:
+        """Atiende "Go to Transerver" (pestaña MISSION + Y): (1) WARP_REQ = 1
+        (puesta por el cave del parche; el menú ya se ha cerrado) → la
+        consume y abre la lista "Target Area" del juego; (2) al volver a
+        gameplay tras la lista, lee la selección y teletransporta al piso
+        del hub de ese destino (−1 = cancelada: nada)."""
+        from CommonClient import logger
         try:
-            r = await bizhawk.read(ctx.bizhawk_ctx, [
-                (WARP_REQ, 1, DOM), (SUBAREA_STABLE, 1, DOM), (PLAYER_POS, 8, DOM)])
+            r = await bizhawk.read(ctx.bizhawk_ctx, [(WARP_REQ, 1, DOM), (TRANSPORT_SEL, 4, DOM)])
         except bizhawk.RequestFailedError:
             return
-        req, sub = r[0][0], r[1][0]
-        x = int.from_bytes(r[2][0:4], "little") >> 8
-        y = int.from_bytes(r[2][4:8], "little") >> 8
-        pads = TS_PADS.get(sub)
-        if pads:
-            px, py = min(pads, key=lambda p: (p[0] - x) ** 2 + (p[1] - y) ** 2)
-            self.last_transerver = (sub, px, py)
+        req = r[0][0]
+        sel = int.from_bytes(r[1], "little", signed=True)
+        if self.transport_wait:
+            self.transport_wait = False
+            if 0 <= sel < len(STATION_ROOMS):
+                letter = STATION_ROOMS[sel][0].upper()
+                y = HUB_FLOOR_Y.get(letter)
+                if y is not None:
+                    self.pending_teleport = (HUB_SUBAREA, HUB_X, y - HUB_PAD_DY)
+                    logger.info("[mmzx] Go to Transerver → Area %s (piso %s del hub)"
+                                % (STATION_ROOMS[sel][0].upper() + "-" + STATION_ROOMS[sel][1:].lstrip("0"), letter))
+            else:
+                logger.info("[mmzx] Go to Transerver: lista cancelada")
+            return
         if req != 1:
             return
-        try:
-            await bizhawk.write(ctx.bizhawk_ctx, [(WARP_REQ, b"\x00", DOM)])
-        except bizhawk.RequestFailedError:
-            return
-        dest = self.last_transerver or (HUB_SUBAREA, HUB_X, HUB_Y)
-        self.pending_teleport = dest
-        from CommonClient import logger
-        logger.info("[mmzx] Go to Transerver (menú) → subárea %d (%d,%d)" % dest)
+        # abrir la lista del juego: sin estación actual (-1) y petición de estado,
+        # todo bajo la guarda de gameplay (si no entra, se reintenta el próximo tick)
+        ok = await bizhawk.guarded_write(ctx.bizhawk_ctx, [
+            (WARP_REQ, b"\x00", DOM),
+            (TRANSPORT_SEL, (0xFFFFFFFF).to_bytes(4, "little"), DOM),
+            (GAME_STATE, STATE_TARGET_AREA.to_bytes(4, "little"), DOM),
+            (GAME_STATE + 4, b"\x00\x00\x00\x00", DOM),
+            (GAME_STATE + 8, b"\x00\x00\x00\x00", DOM),
+        ], [guard])
+        if ok:
+            self.transport_wait = True
+            logger.info("[mmzx] Go to Transerver: abriendo la lista Target Area")
 
     async def _teleport(self, ctx, sub, x, y, guard) -> None:
         """Teleport limpio (7 escrituras; docs/client_integration.md §6).

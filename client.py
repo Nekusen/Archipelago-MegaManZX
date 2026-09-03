@@ -36,6 +36,18 @@ PLAYER_POS = 0x0214FB64      # u32 x<<8 (0x0214FB64) y u32 y<<8 (0x0214FB68); px
 POS_KEY = "mmzx_pos_%d"     # almacén de datos: [subárea, x, y] para UT (auto-tab/icono)
 POS_INTERVAL = 1.0           # s entre envíos si no cambia la subárea
 POS_MIN_DELTA = 48           # px de movimiento mínimo para reenviar
+PLAYTIME = 0x021602A8        # u32 tiempo de juego en frames (cabecera de la imagen del save;
+                             # exp497: +1/frame en juego, no retrocede al morir, vuelve al valor
+                             # del save con Game Over→Continue/LOAD, 0 en partida nueva)
+CONS_KEY = "mmzx_consumables_%s_%s"  # almacén de datos por (team, slot): [[aplicados, playtime], ...]
+
+
+def _consumables_present(log, playtime: int) -> int:
+    """Cuántos consumibles (en orden del servidor) están YA en el estado actual
+    de la partida: el mayor acumulado de los lotes aplicados con playtime <=
+    el actual (los posteriores se rebobinaron con Continue/LOAD/partida nueva)."""
+    return max([int(e[0]) for e in log if int(e[1]) <= playtime], default=0)
+
 # Weapon Energy (agente exp390-399): tope de WE de un modelo = 4 x (nivel de
 # victoria del 1er jefe + del 2o jefe del par); los niveles (1-4) son 8 bytes
 # del bloque de partida 0x02104634..3B (orden Hivolt, Lurerre, Fistleo,
@@ -252,7 +264,9 @@ class MMZXClient(BizHawkClient):
     def __init__(self) -> None:
         super().__init__()
         self.local_checked: set[int] = set()
-        self.applied_consumables = 0  # high-water de items consumibles aplicados
+        self.cons_log = None          # consumibles aplicados: [[n acumulado, playtime]] (datastore); None = sin resolver
+        self.cons_key = None
+        self.cons_requested = False
         self.death_link_enabled = False
         self.death_link_setup = False
         self.mission_auto_accept = False   # modo open-world (slot_data)
@@ -336,7 +350,9 @@ class MMZXClient(BizHawkClient):
         ctx.want_slot_data = True
         ctx.watcher_timeout = 0.125
         self.local_checked = set()
-        self.applied_consumables = 0
+        self.cons_log = None
+        self.cons_key = None
+        self.cons_requested = False
         self.death_link_setup = False
         self.prev_hp = None
         self.prev_death_link = None
@@ -1255,8 +1271,9 @@ class MMZXClient(BizHawkClient):
           - IDEMPOTENTES (bits que persisten o se reconstruyen): se
             recalcula el estado deseado desde el conteo total y se
             escribe (OR / set de máximo). Barato y seguro re-aplicar.
-          - CONSUMIBLES (E-Crystals, 1-Up): se aplican UNA vez por item
-            nuevo (high-water `applied_consumables`), nunca re-sumar.
+          - CONSUMIBLES (E-Crystals, 1-Up): se aplican UNA vez por partida
+            (registro en el almacén de datos fechado con el tiempo de juego,
+            ver `_consumables_resolve`), nunca re-sumar al reconectar.
         """
         id_to_item = {v["id"]: (name, v["grant"]) for name, v in ITEMS.items()}
         # copias recibidas por nombre (progresivos: 1 = 1ª mitad, 2 = las dos)
@@ -1269,8 +1286,8 @@ class MMZXClient(BizHawkClient):
         # contar recibidos por tipo de concesión
         n_lifeup = n_subtank = 0
         live_bits: set[tuple[int, int]] = set()    # (live_addr, bit) idempotentes
-        new_consumables: list[str] = []
-        for i, net in enumerate(ctx.items_received):
+        consumables: list[str] = []    # E-Crystals / 1-Up recibidos, en orden del servidor
+        for net in ctx.items_received:
             entry = id_to_item.get(net.item)
             if not entry:
                 continue
@@ -1296,8 +1313,7 @@ class MMZXClient(BizHawkClient):
                 if len(grant) >= 3:
                     live_bits.add((grant[1], grant[2]))
             elif kind in ("ecrystals", "oneup"):
-                if i >= self.applied_consumables:
-                    new_consumables.append(kind)
+                consumables.append(kind)
             # kind == "todo": item sin receta aún (no en pool v0.1)
 
         # Verjas de EVENTO (puertas con bit 1 del rol; exp341): las de
@@ -1378,7 +1394,22 @@ class MMZXClient(BizHawkClient):
         if (cur_st & 0x0F) != st_mask:
             writes.append((SUBTANK_BYTE, bytes([(cur_st & 0xF0) | st_mask]), DOM))
 
-        # Consumibles (una vez)
+        # Consumibles (UNA vez por partida): el registro de aplicados vive en el
+        # almacén de datos del servidor, cada lote fechado con el tiempo de juego
+        # (PLAYTIME) en que se aplicó. Ese contador es el reloj de la partida:
+        # crece 1/frame, no retrocede al morir y vuelve al valor del save con
+        # Game Over→Continue o LOAD (exp497), y es 0 en partida nueva. Lotes con
+        # playtime > actual = el estado se rebobinó a antes de aplicarlos → se
+        # vuelven a conceder; reconectar el cliente no rebobina nada → no re-suma.
+        new_consumables: list[str] = []
+        pt = 0
+        if consumables:
+            if self.cons_log is None:
+                await self._consumables_resolve(ctx)
+            if self.cons_log is not None:
+                pt = int.from_bytes((await bizhawk.read(ctx.bizhawk_ctx, [(PLAYTIME, 4, DOM)]))[0], "little")
+                if pt > 0:
+                    new_consumables = consumables[_consumables_present(self.cons_log, pt):]
         if new_consumables:
             raw = int.from_bytes((await bizhawk.read(ctx.bizhawk_ctx, [(ECRYSTALS, 4, DOM)]))[0], "little")
             ec = raw & 0xFFFFFF
@@ -1394,9 +1425,40 @@ class MMZXClient(BizHawkClient):
         if writes:
             # guarda de estado: solo si el juego sigue en gameplay
             ok = await bizhawk.guarded_write(ctx.bizhawk_ctx, writes, [guard])
-            # los consumibles solo se marcan como aplicados si la escritura entró
+            # los consumibles solo se marcan como aplicados si la escritura entró:
+            # fuera los lotes rebobinados, dentro el nuevo con su playtime; persistir
             if ok and new_consumables:
-                self.applied_consumables = len(ctx.items_received)
+                self.cons_log = [e for e in self.cons_log if e[1] <= pt] + [[len(consumables), pt]]
+                await ctx.send_msgs([{
+                    "cmd": "Set", "key": self.cons_key, "default": [],
+                    "want_reply": False,
+                    "operations": [{"operation": "replace", "value": self.cons_log}],
+                }])
+
+    async def _consumables_resolve(self, ctx) -> None:
+        """Carga del almacén de datos el registro de consumibles aplicados de
+        este slot (clave mmzx_consumables_<team>_<slot>): la 1ª llamada pide
+        SetNotify+Get; las siguientes esperan la respuesta. Hasta entonces
+        cons_log es None y no se concede ningún consumible (evita duplicar
+        en la ventana de la reconexión)."""
+        if self.cons_key is None:
+            self.cons_key = CONS_KEY % (ctx.team, ctx.slot)
+        if not self.cons_requested:
+            await ctx.send_msgs([
+                {"cmd": "SetNotify", "keys": [self.cons_key]},
+                {"cmd": "Get", "keys": [self.cons_key]},
+            ])
+            self.cons_requested = True
+            return
+        if self.cons_key not in ctx.stored_data:
+            return
+        val = ctx.stored_data[self.cons_key]
+        log = []
+        if isinstance(val, list):
+            for e in val:
+                if isinstance(e, list) and len(e) == 2 and all(isinstance(x, int) for x in e):
+                    log.append([e[0], e[1]])
+        self.cons_log = log
 
     def _fallback_model(self, ctx, owned: dict) -> int:
         """Modelo activo al que revertir una forma no poseída: el último

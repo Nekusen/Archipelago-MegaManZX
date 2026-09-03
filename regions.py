@@ -103,9 +103,16 @@ def create_regions(world) -> None:
     checks = doc.get("checks", {})
 
     def place(name, v):
-        room, _ = F.check_position(WORLD, doc, name)
-        if room:
+        """(región padre, regla base). Una colocación: la región de su punto.
+        Varias (biometales: dos jefes): región Field + OR de alcanzar
+        cualquiera de sus regiones. Ninguna: Field + regla de etiqueta."""
+        pl = F.check_placements(WORLD, doc, name)
+        if len(pl) == 1:
+            room = pl[0][0]
             return regions[F.region_name(room, members[room].get(name, "main"))], None
+        if len(pl) > 1:
+            names = tuple(F.region_name(room, members[room].get(name, "main")) for room, _ in pl)
+            return field, (lambda state, _n=names: any(state.can_reach_region(x, player) for x in _n))
         return field, label_rule(v.get("room"), player)
 
     active = locations_for_options(

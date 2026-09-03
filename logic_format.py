@@ -561,17 +561,25 @@ def edge_endpoints(world, doc, edge):
     return pos, dst_pos
 
 
-def check_position(world, doc, name):
-    """(sala, pos) de una location: data.pos o colocada; (None, None) si no."""
+def check_placements(world, doc, name):
+    """[(sala, pos)] de una location: su data.pos, o las colocadas a mano en
+    `placed` (un objeto {room, pos} o una LISTA de ellos: los biometales se
+    obtienen en cualquiera de dos jefes -> dos salas, regla OR)."""
     v = world["locations"].get(name)
     if v is None:
-        return None, None
+        return []
     if v.get("pos") and v.get("room") in doc["rooms"]:
-        return v["room"], v["pos"]
+        return [(v["room"], v["pos"])]
     p = doc.get("placed", {}).get(name)
-    if p and p.get("room") in doc["rooms"]:
-        return p["room"], p.get("pos")
-    return None, None
+    items = p if isinstance(p, list) else ([p] if p else [])
+    return [(q["room"], q.get("pos")) for q in items
+            if isinstance(q, dict) and q.get("room") in doc["rooms"] and q.get("pos")]
+
+
+def check_position(world, doc, name):
+    """(sala, pos) de la PRIMERA colocación de una location; (None, None) si no."""
+    pl = check_placements(world, doc, name)
+    return pl[0] if pl else (None, None)
 
 
 def resolve_members(world, doc):
@@ -591,8 +599,7 @@ def resolve_members(world, doc):
             out[room][node] = "main"
 
     for name in world["locations"]:
-        room, pos = check_position(world, doc, name)
-        if room:
+        for room, pos in check_placements(world, doc, name):
             put(room, name, pos)
     for e in world["edges"]:
         pos, dst_pos = edge_endpoints(world, doc, e)
@@ -687,8 +694,10 @@ def validate(world, doc, start_room=None):
     for name, p in doc.get("placed", {}).items():
         if name not in world["locations"]:
             errors.append("placed: location desconocida %r" % name)
-        elif p.get("room") not in rooms:
-            errors.append("placed: %r en sala desconocida %r" % (name, p.get("room")))
+            continue
+        for q in (p if isinstance(p, list) else [p]):
+            if not isinstance(q, dict) or q.get("room") not in rooms:
+                errors.append("placed: %r en sala desconocida %r" % (name, q.get("room") if isinstance(q, dict) else q))
     edge_names = {e["name"] for e in world["edges"]}
     for name, ov in doc.get("edges", {}).items():
         if name not in edge_names:
@@ -846,9 +855,11 @@ def export_txt(world, doc, start_room=None):
             L.append(line)
         L.append("")
     by_room_checks = {}
+    n_places = {}
     for name in world["locations"]:
-        room, _ = check_position(world, doc, name)
-        if room:
+        pl = check_placements(world, doc, name)
+        n_places[name] = [r for r, _ in pl]
+        for room, _ in pl:
             by_room_checks.setdefault(room, []).append(name)
 
     def reg_title(room, rid):
@@ -918,7 +929,8 @@ def export_txt(world, doc, start_room=None):
                     continue
                 ch = doc.get("checks", {}).get(name, {})
                 req = ch.get("req")
-                L.append("    check %s" % name)
+                others = [world["room_label"].get(r, r) for r in n_places.get(name, []) if r != room]
+                L.append("    check %s%s" % (name, ("   (también en %s: vale cualquiera)" % ", ".join(others)) if others else ""))
                 if req is not None and not (req_is_free(req) and len(req_alternatives(req)) == 1):
                     _req_block(L, req, ch.get("unsure"), ch.get("note"))
                 elif ch.get("note"):

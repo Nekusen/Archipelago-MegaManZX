@@ -842,6 +842,17 @@ def _region_flow_warnings(world, doc, room, members):
         if has_in and not has_out:
             out.append("%s/%s: región SIN SALIDA (se entra por %s pero no hay puerta ni conexión de vuelta)" % (
                 room, rid, ", ".join(label(n) for n in ins[:3]) or "una conexión"))
+        # vestíbulo aislado: solo puertas a OTRAS salas, sin conexiones ni puertas
+        # internas hacia el resto de la sala (se entra y se sale por la misma
+        # puerta; el resto de la sala queda inalcanzable desde ahí)
+        if rid != "main" and len(regs) > 1 and nodes and not conn_in[rid] and not conn_out[rid]:
+            internal_link = any(
+                (n in edges and edges[n]["src"] == edges[n]["dst"] and members[room].get(n + "@in", "main") != rid)
+                or (n.endswith("@in") and edges[n[:-3]]["src"] == room and members[room].get(n[:-3], "main") != rid)
+                for n in nodes)
+            if not internal_link and (ins or outs):
+                out.append("%s/%s: región AISLADA del resto de la sala (solo %s; sin conexiones ni puertas internas)" % (
+                    room, rid, ", ".join(label(n) for n in (ins + outs)[:3])))
         if rid == "main" and len(regs) > 1 and nodes and not conn_in[rid] and not conn_out[rid] \
                 and not any(n in edges and edges[n]["src"] == edges[n]["dst"]
                             and members[room].get(n + "@in", "main") != "main" for n in nodes) \

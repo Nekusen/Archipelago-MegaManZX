@@ -177,7 +177,7 @@
      ]
     ]
    },
-   "unsure": true
+   "unsure": false
   },
   "B-1: E-Crystal L": {
    "note": "",
@@ -185,6 +185,9 @@
     "normal": [
      [
       "HX"
+     ],
+     [
+      "PX"
      ]
     ]
    },
@@ -199,7 +202,7 @@
      ]
     ]
    },
-   "unsure": true
+   "unsure": false
   },
   "B-2: Disk E-17": {
    "note": "B-2: en lo alto de un pilar (tile y=29)",
@@ -287,7 +290,18 @@
      ]
     ]
    },
-   "unsure": true
+   "unsure": false
+  },
+  "C-1: 1-Up": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU"
+     ]
+    ]
+   },
+   "unsure": false
   },
   "C-1: E-Crystal L": {
    "note": "",
@@ -295,17 +309,9 @@
     "normal": [
      [
       "HX"
-     ]
-    ]
-   },
-   "unsure": false
-  },
-  "C-1: E-Crystal L (2)": {
-   "note": "",
-   "req": {
-    "normal": [
+     ],
      [
-      "HX"
+      "PX"
      ]
     ]
    },
@@ -322,12 +328,123 @@
    },
    "unsure": false
   },
+  "C-1: E-Crystal L (6)": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "C-1: E-Crystal L (7)": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "C-1: E-Crystal L (8)": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "C-1: E-Crystal L (9)": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU"
+     ]
+    ]
+   },
+   "unsure": false
+  },
   "C-1: Weapon Energy L": {
    "note": "",
    "req": {
     "normal": [
      [
       "HX"
+     ],
+     [
+      "PX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "C-1: Weapon Energy L (4)": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "C-2: Disk O-17": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "C-2: E-Crystal L (2)": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "C-2: E-Crystal L (4)": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "C-2: Energy Capsule L": {
+   "note": "",
+   "req": {
+    "normal": [
+     []
+    ]
+   },
+   "unsure": false
+  },
+  "C-2: Energy Capsule XL": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
      ]
     ]
    },
@@ -344,8 +461,113 @@
    },
    "unsure": true
   },
+  "C-3: Energy Capsule XL": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
   "D-1: Life Up": {
    "note": "\"any transformation\"",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "D-4: 1-Up": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "D-4: Disk B-5": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HX"
+     ],
+     [
+      "PX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "D-4: E-Crystal L": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HX"
+     ],
+     [
+      "PX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "D-4: E-Crystal L (2)": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "D-4: Energy Capsule L": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "D-4: Energy Capsule L (2)": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "D-4: Weapon Energy L": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "E-2: Weapon Energy L": {
+   "note": "",
    "req": {
     "normal": [
      [
@@ -364,7 +586,18 @@
      ]
     ]
    },
-   "unsure": true
+   "unsure": false
+  },
+  "E-4: Energy Capsule L": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
   },
   "E-4: Sub Tank": {
    "note": "\"any transformation\"",
@@ -382,33 +615,43 @@
    "req": {
     "normal": [
      [
+      "FX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "E-8: Disk B-8": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
       "MODEL"
      ]
     ]
    },
-   "unsure": true
+   "unsure": false
+  },
+  "E-8: Weapon Energy L": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
   },
   "F-1: Disk E-39": {
    "note": "F-1: repisa en la cueva izquierda (y=34)",
-   "req": {
-    "normal": [
-     [
-      "MODEL"
-     ]
-    ]
-   },
-   "unsure": true
+   "req": null,
+   "unsure": false
   },
   "F-2: Disk E-15": {
    "note": "F-2: laberinto inferior (cubos (75,54-62))",
-   "req": {
-    "normal": [
-     [
-      "MODEL"
-     ]
-    ]
-   },
-   "unsure": true
+   "req": null,
+   "unsure": false
   },
   "F-2: Disk E-44": {
    "note": "F-2: zona baja entre filas de pinchos bajo el agua (Steam: pinchos \"barely underwater\" en F-2)",
@@ -426,8 +669,10 @@
    "req": {
     "normal": [
      [
-      "HX",
-      "FX"
+      "LX"
+     ],
+     [
+      "HX"
      ]
     ]
    },
@@ -438,7 +683,7 @@
    "req": {
     "normal": [
      [
-      "MODEL"
+      "FX"
      ]
     ]
    },
@@ -449,14 +694,28 @@
    "req": {
     "normal": [
      [
+      "FX"
+     ],
+     [
+      "HX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "F-3: Weapon Energy L": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
       "MODEL"
      ]
     ]
    },
-   "unsure": true
+   "unsure": false
   },
   "F-4: Disk B-15": {
-   "note": "F-4: \"Use Model Lx's charged attack to make a platform and get this disk\" (interordi)",
+   "note": "",
    "req": {
     "normal": [
      [
@@ -467,7 +726,7 @@
    "unsure": false
   },
   "F-4: Disk E-45": {
-   "note": "F-4: cubos pegados (92-94,32)",
+   "note": "",
    "req": {
     "normal": [
      [
@@ -475,10 +734,10 @@
      ]
     ]
    },
-   "unsure": true
+   "unsure": false
   },
-  "G-5: Disk B-11": {
-   "note": "G-5: sub-sala (puerta (112,43)) tapada por fuego; interordi apunta con flecha",
+  "G-1: Disk E-38": {
+   "note": "",
    "req": {
     "normal": [
      [
@@ -486,7 +745,214 @@
      ]
     ]
    },
+   "unsure": false
+  },
+  "G-1: Energy Capsule L": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "G-1: Weapon Energy L": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "G-2: Disk E-16": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "G-5: Disk B-11": {
+   "note": "G-5: sub-sala (puerta (112,43)) tapada por fuego; interordi apunta con flecha",
+   "req": {
+    "normal": [
+     [
+      "FX"
+     ]
+    ]
+   },
    "unsure": true
+  },
+  "H-1: E-Crystal L": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "H-1: E-Crystal L (2)": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "H-1: E-Crystal L (3)": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "H-1: E-Crystal L (4)": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "H-1: E-Crystal L (6)": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "H-1: Energy Capsule L": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "H-1: Energy Capsule L (2)": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "H-1: Energy Capsule XL": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "H-1: Weapon Energy L": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "H-3: E-Crystal L (2)": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "H-3: E-Crystal L (3)": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "I-1: E-Crystal L": {
+   "note": "",
+   "req": {
+    "normal": [
+     []
+    ]
+   },
+   "unsure": false
+  },
+  "I-1: E-Crystal L (2)": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "I-1: Energy Capsule L": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "I-1: Weapon Energy L (2)": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
   },
   "I-2: Disk E-33": {
    "note": "I-2: \"Use Model Hx hover ability to get across the spikes and get the disk\"",
@@ -494,6 +960,17 @@
     "normal": [
      [
       "HX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "I-2: Disk E-34": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
      ]
     ]
    },
@@ -521,17 +998,6 @@
    },
    "unsure": false
   },
-  "I-5: Disk E-13": {
-   "note": "I-5: estructura derecha (y=32), escalera E-3 (I-1) en sub-sala por puerta del pasillo inferior; E-34 (I-2), B-9 (I-3), E-23 (I-5) a pie de suelo -> sin requisito.",
-   "req": {
-    "normal": [
-     [
-      "MODEL"
-     ]
-    ]
-   },
-   "unsure": true
-  },
   "I-5: Disk M-6": {
    "note": "I-5: en lo alto del tronco de un arbol",
    "req": {
@@ -544,11 +1010,11 @@
    "unsure": true
   },
   "I-5: Life Up": {
-   "note": "tornados (ambas mitades)",
+   "note": "Requiere HX mejorado",
    "req": {
     "normal": [
      [
-      "HX"
+      "HX2"
      ]
     ]
    },
@@ -557,6 +1023,11 @@
   "J-1: Life Up": {
    "note": "nadar entre pinchos",
    "req": {
+    "expert": [
+     [
+      "MODEL"
+     ]
+    ],
     "normal": [
      [
       "LX"
@@ -568,9 +1039,14 @@
   "J-2: Disk E-7": {
    "note": "J-2: hueco alto con fila de pinchos bajo el agua (1360-1450,85)",
    "req": {
+    "expert": [
+     [
+      "MODEL"
+     ]
+    ],
     "normal": [
      [
-      "LX"
+      "HX"
      ]
     ]
    },
@@ -581,11 +1057,11 @@
    "req": {
     "normal": [
      [
-      "MODEL"
+      "LX"
      ]
     ]
    },
-   "unsure": true
+   "unsure": false
   },
   "K-1: Disk E-22": {
    "note": "K-1: estructura alta a la derecha (y=38)",
@@ -596,7 +1072,7 @@
      ]
     ]
    },
-   "unsure": true
+   "unsure": false
   },
   "K-1: Sub Tank": {
    "note": "el mas largo (techos, bloques, boton oculto, nado)",
@@ -625,10 +1101,36 @@
   },
   "K-4: Disk B-12": {
    "note": "K-4: tras la puerta interna Blanca (169,71) -> aterriza en (78,117), junto a B-12 E-26 (K-4, pasillo central) y E-25 (K-5, escalera) sin requisito.",
+   "req": null,
+   "unsure": false
+  },
+  "K-5: E-Crystal L (2)": {
+   "note": "",
    "req": {
+    "expert": [
+     [
+      "MODEL"
+     ]
+    ],
     "normal": [
      [
-      "WHITE"
+      "HX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "K-5: E-Crystal L (3)": {
+   "note": "",
+   "req": {
+    "expert": [
+     [
+      "MODEL"
+     ]
+    ],
+    "normal": [
+     [
+      "HX"
      ]
     ]
    },
@@ -636,24 +1138,12 @@
   },
   "L-1: Disk E-18": {
    "note": "L-1: plataforma flotante muy alta (y=33 con suelo en 47); nada que escalar",
-   "req": {
-    "normal": [
-     [
-      "HX"
-     ]
-    ]
-   },
-   "unsure": true
+   "req": null,
+   "unsure": false
   },
   "L-2: Disk E-41": {
    "note": "L-2: idem (y=29) E-5 (L-3) y B-13 (L-4) a pie de suelo -> sin requisito propio.",
-   "req": {
-    "normal": [
-     [
-      "HX"
-     ]
-    ]
-   },
+   "req": null,
    "unsure": true
   },
   "M-1: Disk E-50": {
@@ -676,7 +1166,7 @@
      ]
     ]
    },
-   "unsure": true
+   "unsure": false
   },
   "Mission - Attack The Excavators": {
    "note": "",
@@ -705,7 +1195,6 @@
    "req": {
     "normal": [
      [
-      "HU",
       "MODEL"
      ]
     ]
@@ -739,19 +1228,19 @@
    "req": {
     "normal": [
      [
-      "HU",
-      "MODEL"
+      "HU"
      ]
     ]
    },
-   "unsure": true
+   "unsure": false
   },
   "Mission - Protect Hq": {
    "note": "",
    "req": {
     "normal": [
      [
-      "MODEL"
+      "MODEL",
+      "MISSIONS>=4"
      ]
     ]
    },
@@ -974,7 +1463,6 @@
    "req": {
     "normal": [
      [
-      "MODEL",
       "RED"
      ]
     ]
@@ -998,13 +1486,7 @@
    "dst_pos": null,
    "note": "caverna ascendente con pinchos hasta F-1",
    "pos": null,
-   "req": {
-    "normal": [
-     [
-      "MODEL"
-     ]
-    ]
-   },
+   "req": null,
    "unsure": true
   },
   "c01 door (4832,896)": {
@@ -1035,6 +1517,19 @@
     ]
    },
    "unsure": true
+  },
+  "d04 door (1664,543)": {
+   "dst_pos": null,
+   "note": "",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
   },
   "e02 door (1248,1088)": {
    "dst_pos": null,
@@ -1127,35 +1622,43 @@
    },
    "unsure": true
   },
+  "f03 door (672,576)": {
+   "dst_pos": null,
+   "note": "",
+   "pos": null,
+   "req": {
+    "expert": [
+     [
+      "MODEL"
+     ]
+    ],
+    "normal": [
+     [
+      "X"
+     ],
+     [
+      "ZX"
+     ],
+     [
+      "FX"
+     ],
+     [
+      "OX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
   "f04 door (1760,528)": {
    "dst_pos": null,
    "note": "filas de cubos/cajas a lo largo de F-4",
    "pos": null,
-   "req": {
-    "normal": [
-     [
-      "MODEL"
-     ]
-    ]
-   },
+   "req": null,
    "unsure": true
   },
   "h02 door (1440,704)": {
    "dst_pos": null,
    "note": "de H-2; ambas salidas quedan detras",
-   "pos": null,
-   "req": {
-    "normal": [
-     [
-      "MODEL"
-     ]
-    ]
-   },
-   "unsure": true
-  },
-  "h02 door (1504,704)": {
-   "dst_pos": null,
-   "note": "Powmettaur (miniboss) en el foso central",
    "pos": null,
    "req": {
     "normal": [
@@ -1183,13 +1686,7 @@
    "dst_pos": null,
    "note": "Steephinx (miniboss) nada mas entrar en I-5",
    "pos": null,
-   "req": {
-    "normal": [
-     [
-      "MODEL"
-     ]
-    ]
-   },
+   "req": null,
    "unsure": true
   },
   "j01 door (448,352)": {
@@ -1218,10 +1715,35 @@
    },
    "unsure": true
   },
+  "k01 fall to k02": {
+   "dst_pos": [
+    310,
+    841
+   ],
+   "note": "",
+   "pos": [
+    4275,
+    943
+   ],
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
   "k02 fall to k03": {
-   "dst_pos": null,
-   "note": "Lava Demon (miniboss) en K-2: hay que matarlo para caer al subterraneo",
-   "pos": null,
+   "dst_pos": [
+    653,
+    1079
+   ],
+   "note": "",
+   "pos": [
+    440,
+    830
+   ],
    "req": {
     "normal": [
      [
@@ -1235,14 +1757,36 @@
    "dst_pos": null,
    "note": "subir por el pozo de K-3 hasta la salida alta",
    "pos": null,
+   "req": null,
+   "unsure": false
+  },
+  "n01 door (3520,512)": {
+   "dst_pos": null,
+   "note": "",
+   "pos": null,
    "req": {
-    "normal": [
+    "expert": [
      [
       "MODEL"
      ]
+    ],
+    "normal": [
+     [
+      "MODEL",
+      "SUBTANK>=1",
+      "LIFEUP>=2"
+     ],
+     [
+      "MODEL",
+      "SUBTANK>=2"
+     ],
+     [
+      "MODEL",
+      "LIFEUP>=4"
+     ]
     ]
    },
-   "unsure": true
+   "unsure": false
   }
  },
  "format": 1,
@@ -1288,12 +1832,182 @@
    "req": null
   }
  },
- "placed": {},
+ "placed": {
+  "Mission - Attack The Excavators": {
+   "pos": [
+    4030,
+    1033
+   ],
+   "room": "k04"
+  },
+  "Mission - Destroy Model W": {
+   "pos": [
+    4372,
+    470
+   ],
+   "room": "d05"
+  },
+  "Mission - Fight The Mavericks": {
+   "pos": [
+    2966,
+    462
+   ],
+   "room": "g05"
+  },
+  "Mission - Find The Survivors": {
+   "pos": [
+    771,
+    545
+   ],
+   "room": "f05"
+  },
+  "Mission - Locate Giro": {
+   "pos": [
+    3823,
+    612
+   ],
+   "room": "b02"
+  },
+  "Mission - Pass The Test": {
+   "pos": [
+    4030,
+    903
+   ],
+   "room": "c02"
+  },
+  "Mission - Protect Hq": {
+   "pos": [
+    1672,
+    437
+   ],
+   "room": "x03"
+  },
+  "Mission - Protect The Lab": {
+   "pos": [
+    2857,
+    488
+   ],
+   "room": "l04"
+  },
+  "Mission - Recover The Disk": {
+   "pos": [
+    636,
+    615
+   ],
+   "room": "j05"
+  },
+  "Mission - Repel The Army": {
+   "pos": [
+    6224,
+    459
+   ],
+   "room": "o02"
+  },
+  "Mission - Save The People": {
+   "pos": [
+    1419,
+    899
+   ],
+   "room": "i03"
+  },
+  "Mission - Search The Plant": {
+   "pos": [
+    927,
+    711
+   ],
+   "room": "e07"
+  },
+  "Mission - Secure The Biometal": {
+   "pos": [
+    624,
+    895
+   ],
+   "room": "h04"
+  },
+  "Mission - Stop The Dig": {
+   "pos": [
+    1430,
+    612
+   ],
+   "room": "m03"
+  },
+  "Mission - Troop Reinforcement": {
+   "pos": [
+    7879,
+    483
+   ],
+   "room": "d02"
+  },
+  "Obtain Biometal F": [
+   {
+    "pos": [
+     2997,
+     518
+    ],
+    "room": "g05"
+   },
+   {
+    "pos": [
+     4037,
+     1103
+    ],
+    "room": "k04"
+   }
+  ],
+  "Obtain Biometal H": [
+   {
+    "pos": [
+     976,
+     705
+    ],
+    "room": "e07"
+   },
+   {
+    "pos": [
+     1428,
+     832
+    ],
+    "room": "i03"
+   }
+  ],
+  "Obtain Biometal L": [
+   {
+    "pos": [
+     777,
+     620
+    ],
+    "room": "f05"
+   },
+   {
+    "pos": [
+     623,
+     518
+    ],
+    "room": "j05"
+   }
+  ],
+  "Obtain Biometal P": [
+   {
+    "pos": [
+     652,
+     859
+    ],
+    "room": "h04"
+   },
+   {
+    "pos": [
+     2962,
+     501
+    ],
+    "room": "l04"
+   }
+  ]
+ },
  "rooms": {
   "a01": {
    "conns": [
     {
-     "from": "left-side",
+     "from": "left-area",
      "note": "",
      "req": {
       "normal": [
@@ -1315,35 +2029,38 @@
        ]
       ]
      },
-     "to": "left-side",
+     "to": "left-area",
      "unsure": false
     },
     {
-     "from": "upper-side",
+     "from": "upper-area",
      "note": "",
      "req": {
       "normal": [
        []
       ]
      },
-     "to": "left-side",
+     "to": "left-area",
      "unsure": false
     },
     {
-     "from": "left-side",
+     "from": "left-area",
      "note": "",
      "req": {
       "normal": [
        [
         "HX"
+       ],
+       [
+        "PX"
        ]
       ]
      },
-     "to": "upper-side",
+     "to": "upper-area",
      "unsure": false
     },
     {
-     "from": "upper-side",
+     "from": "upper-area",
      "note": "",
      "req": {
       "normal": [
@@ -1360,19 +2077,22 @@
       "normal": [
        [
         "HX"
+       ],
+       [
+        "PX"
        ]
       ]
      },
-     "to": "upper-side",
+     "to": "upper-area",
      "unsure": false
     }
    ],
    "members": {},
    "note": "",
    "regions": {
-    "left-side": {
+    "left-area": {
      "color": "#fbbc04",
-     "name": "Left Side",
+     "name": "Left Area",
      "note": "",
      "poly": [
       [
@@ -1393,9 +2113,9 @@
       ]
      ]
     },
-    "left-side-cave": {
+    "left-area-cave": {
      "color": "#a7ffeb",
-     "name": "Left Side Cave",
+     "name": "Left Area Cave",
      "note": "",
      "poly": [
       [
@@ -1422,9 +2142,9 @@
      "note": "",
      "poly": null
     },
-    "upper-side": {
+    "upper-area": {
      "color": "#81c995",
-     "name": "Upper Side",
+     "name": "Upper Area",
      "note": "",
      "poly": [
       [
@@ -1457,9 +2177,9 @@
       ]
      ]
     },
-    "upper-side-cave": {
+    "upper-area-cave": {
      "color": "#d7aefb",
-     "name": "Upper Side Cave",
+     "name": "Upper Area Cave",
      "note": "",
      "poly": [
       [
@@ -1486,7 +2206,7 @@
   "a02": {
    "conns": [
     {
-     "from": "upper-side",
+     "from": "upper-area",
      "note": "",
      "req": {
       "normal": [
@@ -1506,7 +2226,7 @@
        ]
       ]
      },
-     "to": "upper-side",
+     "to": "upper-area",
      "unsure": false
     }
    ],
@@ -1519,9 +2239,9 @@
      "note": "",
      "poly": null
     },
-    "upper-side": {
+    "upper-area": {
      "color": "#f28b82",
-     "name": "Upper Side",
+     "name": "Upper Area",
      "note": "",
      "poly": [
       [
@@ -1546,10 +2266,60 @@
    "req": null
   },
   "a03": {
-   "conns": [],
+   "conns": [
+    {
+     "from": "h-4-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "FX"
+       ]
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    },
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "FX"
+       ]
+      ]
+     },
+     "to": "h-4-entrance",
+     "unsure": false
+    }
+   ],
    "members": {},
    "note": "",
    "regions": {
+    "h-4-entrance": {
+     "color": "#f28b82",
+     "name": "H-4 Entrance",
+     "note": "",
+     "poly": [
+      [
+       1924,
+       827
+      ],
+      [
+       2197,
+       830
+      ],
+      [
+       2200,
+       922
+      ],
+      [
+       1933,
+       912
+      ]
+     ]
+    },
     "main": {
      "color": "#8ab4f8",
      "name": "Main",
@@ -1588,7 +2358,7 @@
      "unsure": false
     },
     {
-     "from": "right-path",
+     "from": "j-1-entrance",
      "note": "",
      "req": {
       "normal": [
@@ -1610,7 +2380,31 @@
        ]
       ]
      },
-     "to": "right-path",
+     "to": "j-1-entrance",
+     "unsure": false
+    },
+    {
+     "from": "m-1-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    },
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "m-1-entrance",
      "unsure": false
     }
    ],
@@ -1640,15 +2434,9 @@
       ]
      ]
     },
-    "main": {
-     "color": "#8ab4f8",
-     "name": "Main",
-     "note": "",
-     "poly": null
-    },
-    "right-path": {
+    "j-1-entrance": {
      "color": "#fbbc04",
-     "name": "Right Path",
+     "name": "J-1 Entrance",
      "note": "",
      "poly": [
       [
@@ -1668,6 +2456,35 @@
        808
       ]
      ]
+    },
+    "m-1-entrance": {
+     "color": "#81c995",
+     "name": "M-1 Entrance",
+     "note": "",
+     "poly": [
+      [
+       779,
+       221
+      ],
+      [
+       1283,
+       221
+      ],
+      [
+       1291,
+       392
+      ],
+      [
+       776,
+       388
+      ]
+     ]
+    },
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
     }
    },
    "req": null
@@ -1689,7 +2506,7 @@
   "b02": {
    "conns": [
     {
-     "from": "right-side",
+     "from": "right-area-before-boss",
      "note": "",
      "req": {
       "normal": [
@@ -1709,11 +2526,11 @@
        ]
       ]
      },
-     "to": "right-side",
+     "to": "right-area-before-boss",
      "unsure": false
     },
     {
-     "from": "top-of-interior-area",
+     "from": "d-1-entrance",
      "note": "",
      "req": {
       "normal": [
@@ -1733,7 +2550,31 @@
        ]
       ]
      },
-     "to": "top-of-interior-area",
+     "to": "d-1-entrance",
+     "unsure": false
+    },
+    {
+     "from": "right-area-before-boss",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "right-area-after-boss",
+     "unsure": false
+    },
+    {
+     "from": "right-area-after-boss",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "right-area-before-boss",
      "unsure": false
     }
    ],
@@ -1763,38 +2604,9 @@
       ]
      ]
     },
-    "main": {
-     "color": "#8ab4f8",
-     "name": "Main",
-     "note": "",
-     "poly": null
-    },
-    "right-side": {
-     "color": "#f28b82",
-     "name": "Right Side",
-     "note": "",
-     "poly": [
-      [
-       2876,
-       421
-      ],
-      [
-       2873,
-       765
-      ],
-      [
-       4386,
-       787
-      ],
-      [
-       4379,
-       389
-      ]
-     ]
-    },
-    "top-of-interior-area": {
+    "d-1-entrance": {
      "color": "#81c995",
-     "name": "Top of Interior Area",
+     "name": "D-1 Entrance",
      "note": "",
      "poly": [
       [
@@ -1814,6 +2626,58 @@
        447
       ]
      ]
+    },
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    },
+    "right-area-after-boss": {
+     "color": "#a7ffeb",
+     "name": "Right Area (After Boss)",
+     "note": "",
+     "poly": [
+      [
+       3782,
+       407
+      ],
+      [
+       4422,
+       398
+      ],
+      [
+       4424,
+       819
+      ],
+      [
+       3784,
+       811
+      ]
+     ]
+    },
+    "right-area-before-boss": {
+     "color": "#f28b82",
+     "name": "Right Area (Before Boss)",
+     "note": "",
+     "poly": [
+      [
+       2588,
+       420
+      ],
+      [
+       2873,
+       765
+      ],
+      [
+       3516,
+       755
+      ],
+      [
+       3514,
+       420
+      ]
+     ]
     }
    },
    "req": null
@@ -1821,7 +2685,7 @@
   "b03": {
    "conns": [
     {
-     "from": "left-side-of-door-switch",
+     "from": "b-1-entrance",
      "note": "",
      "req": {
       "expert": [
@@ -1851,7 +2715,7 @@
      "unsure": false
     },
     {
-     "from": "top-area",
+     "from": "f-1-entrance",
      "note": "",
      "req": {
       "normal": [
@@ -1871,11 +2735,11 @@
        ]
       ]
      },
-     "to": "top-area",
+     "to": "f-1-entrance",
      "unsure": false
     },
     {
-     "from": "top-area",
+     "from": "f-1-entrance",
      "note": "",
      "req": {
       "normal": [
@@ -1913,9 +2777,9 @@
    "members": {},
    "note": "",
    "regions": {
-    "left-side-of-door-switch": {
+    "b-1-entrance": {
      "color": "#f28b82",
-     "name": "Left Side of Door Switch",
+     "name": "B-1 Entrance",
      "note": "",
      "poly": [
       [
@@ -1933,6 +2797,29 @@
       [
        259,
        1553
+      ]
+     ]
+    },
+    "f-1-entrance": {
+     "color": "#fbbc04",
+     "name": "F-1 Entrance",
+     "note": "",
+     "poly": [
+      [
+       2372,
+       606
+      ],
+      [
+       2374,
+       774
+      ],
+      [
+       1229,
+       799
+      ],
+      [
+       1232,
+       622
       ]
      ]
     },
@@ -1964,29 +2851,6 @@
        1163
       ]
      ]
-    },
-    "top-area": {
-     "color": "#fbbc04",
-     "name": "Top Area",
-     "note": "",
-     "poly": [
-      [
-       2372,
-       606
-      ],
-      [
-       2374,
-       774
-      ],
-      [
-       1229,
-       799
-      ],
-      [
-       1232,
-       622
-      ]
-     ]
     }
    },
    "req": null
@@ -2009,23 +2873,152 @@
    "conns": [
     {
      "from": "main",
-     "note": "gate interno coarse (v0.2): llaves/verjas de las puertas internas",
+     "note": "",
      "req": {
       "normal": [
        [
-        "GREEN"
+        "HX"
        ]
       ]
      },
-     "to": "interior",
-     "unsure": true
+     "to": "under-the-truck",
+     "unsure": false
     },
     {
-     "from": "interior",
+     "from": "under-the-truck",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "HU"
+       ]
+      ]
+     },
+     "to": "hidden-passage-below-truck",
+     "unsure": false
+    },
+    {
+     "from": "hidden-passage-below-truck",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "HU"
+       ]
+      ]
+     },
+     "to": "under-the-truck",
+     "unsure": false
+    },
+    {
+     "from": "c-2-entrance-top",
      "note": "",
      "req": {
       "normal": [
        []
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    },
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "HX"
+       ]
+      ]
+     },
+     "to": "c-2-entrance-top",
+     "unsure": false
+    },
+    {
+     "from": "c-2-entrance-top",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "c-2-entrance-bottom",
+     "unsure": false
+    },
+    {
+     "from": "c-2-entrance-bottom",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "c-2-entrance-top",
+     "unsure": false
+    },
+    {
+     "from": "c-2-entrance-bottom",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "HU"
+       ]
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    },
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "HU"
+       ]
+      ]
+     },
+     "to": "c-2-entrance-bottom",
+     "unsure": false
+    },
+    {
+     "from": "a-2-entrance-top-part",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "a-2-entrance-bottom-part",
+     "unsure": false
+    },
+    {
+     "from": "a-2-entrance-bottom-part",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "HX"
+       ],
+       [
+        "PX"
+       ]
+      ]
+     },
+     "to": "a-2-entrance-top-part",
+     "unsure": false
+    },
+    {
+     "from": "under-the-truck",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "HX"
+       ]
       ]
      },
      "to": "main",
@@ -2035,26 +3028,141 @@
    "members": {},
    "note": "",
    "regions": {
-    "interior": {
-     "color": "#78d9ec",
-     "name": "Interior",
-     "note": "POLÍGONO PROVISIONAL (gate interno coarse de v0.2: GREEN): redibujar.",
+    "a-2-building": {
+     "color": "#fde293",
+     "name": "A-2 Building",
+     "note": "",
      "poly": [
       [
-       7821,
-       1000
+       6319,
+       948
       ],
       [
-       7954,
-       1000
+       6825,
+       948
       ],
       [
-       7954,
-       1096
+       6845,
+       1645
       ],
       [
-       7821,
-       1096
+       6319,
+       1639
+      ]
+     ]
+    },
+    "a-2-entrance-bottom-part": {
+     "color": "#81c995",
+     "name": "A-2 Entrance (Bottom Part)",
+     "note": "",
+     "poly": [
+      [
+       5137,
+       612
+      ],
+      [
+       6258,
+       622
+      ],
+      [
+       6268,
+       836
+      ],
+      [
+       5114,
+       830
+      ]
+     ]
+    },
+    "a-2-entrance-top-part": {
+     "color": "#a7ffeb",
+     "name": "A-2 Entrance (Top Part)",
+     "note": "",
+     "poly": [
+      [
+       5721,
+       413
+      ],
+      [
+       5725,
+       622
+      ],
+      [
+       5873,
+       618
+      ],
+      [
+       5875,
+       398
+      ]
+     ]
+    },
+    "c-2-entrance-bottom": {
+     "color": "#d7aefb",
+     "name": "C-2 Entrance (Bottom)",
+     "note": "",
+     "poly": [
+      [
+       4652,
+       780
+      ],
+      [
+       4652,
+       930
+      ],
+      [
+       4930,
+       934
+      ],
+      [
+       4922,
+       787
+      ]
+     ]
+    },
+    "c-2-entrance-top": {
+     "color": "#ff8bcb",
+     "name": "C-2 Entrance (Top)",
+     "note": "",
+     "poly": [
+      [
+       4492,
+       609
+      ],
+      [
+       4915,
+       605
+      ],
+      [
+       4922,
+       763
+      ],
+      [
+       4494,
+       748
+      ]
+     ]
+    },
+    "hidden-passage-below-truck": {
+     "color": "#fbbc04",
+     "name": "Hidden Passage Below Truck",
+     "note": "",
+     "poly": [
+      [
+       2923,
+       1084
+      ],
+      [
+       2924,
+       1182
+      ],
+      [
+       3038,
+       1182
+      ],
+      [
+       3039,
+       1089
       ]
      ]
     },
@@ -2063,6 +3171,29 @@
      "name": "Main",
      "note": "",
      "poly": null
+    },
+    "under-the-truck": {
+     "color": "#f28b82",
+     "name": "Under the Truck",
+     "note": "",
+     "poly": [
+      [
+       2543,
+       976
+      ],
+      [
+       2863,
+       983
+      ],
+      [
+       2869,
+       1258
+      ],
+      [
+       2536,
+       1254
+      ]
+     ]
     }
    },
    "req": null
@@ -2070,20 +3201,33 @@
   "c02": {
    "conns": [
     {
-     "from": "main",
-     "note": "gate interno coarse (v0.2): llaves/verjas de las puertas internas",
+     "from": "middle-building-bottom",
+     "note": "",
      "req": {
       "normal": [
        [
-        "YELLOW"
+        "HU"
        ]
       ]
      },
-     "to": "interior",
-     "unsure": true
+     "to": "main",
+     "unsure": false
     },
     {
-     "from": "interior",
+     "from": "main",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "HU"
+       ]
+      ]
+     },
+     "to": "middle-building-bottom",
+     "unsure": false
+    },
+    {
+     "from": "middle-building-top",
      "note": "",
      "req": {
       "normal": [
@@ -2092,40 +3236,95 @@
      },
      "to": "main",
      "unsure": false
+    },
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "middle-building-top",
+     "unsure": false
+    },
+    {
+     "from": "below-fountain",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    },
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "HX"
+       ]
+      ]
+     },
+     "to": "below-fountain",
+     "unsure": false
     }
    ],
    "members": {
-    "c02 door (1792,784)": "main",
-    "c02 door (3808,928)": "main",
-    "c02 door (3808,928)@in": "main",
-    "c02 door (4016,928)": "main",
-    "c02 door (4512,864)": "main",
-    "c02 door (4512,864)@in": "main",
-    "c02 door (5024,864)": "main",
     "c02 door (5056,1088)": "main"
    },
    "note": "",
    "regions": {
-    "interior": {
-     "color": "#fde293",
-     "name": "Interior",
-     "note": "POLÍGONO PROVISIONAL (gate interno coarse de v0.2: YELLOW): redibujar.",
+    "arcade": {
+     "color": "#d7aefb",
+     "name": "Arcade",
+     "note": "",
      "poly": [
       [
-       1664,
-       648
+       5326,
+       894
       ],
       [
-       6280,
-       648
+       5315,
+       1248
       ],
       [
-       6280,
-       1176
+       6021,
+       1238
       ],
       [
-       1664,
-       1176
+       6027,
+       894
+      ]
+     ]
+    },
+    "below-fountain": {
+     "color": "#ff8bcb",
+     "name": "Below Fountain",
+     "note": "",
+     "poly": [
+      [
+       4637,
+       935
+      ],
+      [
+       5193,
+       929
+      ],
+      [
+       5186,
+       1226
+      ],
+      [
+       4629,
+       1207
       ]
      ]
     },
@@ -2134,12 +3333,136 @@
      "name": "Main",
      "note": "",
      "poly": null
+    },
+    "middle-building-bottom": {
+     "color": "#a7ffeb",
+     "name": "Middle Building Bottom",
+     "note": "",
+     "poly": [
+      [
+       2902,
+       846
+      ],
+      [
+       3465,
+       847
+      ],
+      [
+       3469,
+       988
+      ],
+      [
+       2897,
+       972
+      ]
+     ]
+    },
+    "middle-building-top": {
+     "color": "#81c995",
+     "name": "Middle Building Top",
+     "note": "",
+     "poly": [
+      [
+       2935,
+       534
+      ],
+      [
+       2941,
+       820
+      ],
+      [
+       3451,
+       819
+      ],
+      [
+       3451,
+       524
+      ],
+      [
+       2951,
+       531
+      ]
+     ]
+    },
+    "yellow-card-key-building-interior": {
+     "color": "#fbbc04",
+     "name": "Yellow Card Key Building Interior",
+     "note": "",
+     "poly": [
+      [
+       5311,
+       136
+      ],
+      [
+       7605,
+       143
+      ],
+      [
+       7593,
+       678
+      ],
+      [
+       5327,
+       706
+      ]
+     ]
+    },
+    "yellow-card-key-hidden-room": {
+     "color": "#f28b82",
+     "name": "Yellow Card Key Hidden Room",
+     "note": "",
+     "poly": [
+      [
+       1656,
+       716
+      ],
+      [
+       1881,
+       718
+      ],
+      [
+       1874,
+       838
+      ],
+      [
+       1656,
+       822
+      ]
+     ]
     }
    },
    "req": null
   },
   "c03": {
-   "conns": [],
+   "conns": [
+    {
+     "from": "upper-area",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    },
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "HX"
+       ],
+       [
+        "PX"
+       ]
+      ]
+     },
+     "to": "upper-area",
+     "unsure": false
+    }
+   ],
    "members": {},
    "note": "",
    "regions": {
@@ -2148,15 +3471,313 @@
      "name": "Main",
      "note": "",
      "poly": null
+    },
+    "upper-area": {
+     "color": "#f28b82",
+     "name": "Upper Area",
+     "note": "",
+     "poly": [
+      [
+       470,
+       418
+      ],
+      [
+       466,
+       630
+      ],
+      [
+       1687,
+       619
+      ],
+      [
+       1680,
+       419
+      ]
+     ]
     }
    },
    "req": null
   },
   "d01": {
-   "conns": [],
+   "conns": [
+    {
+     "from": "hub-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    },
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "hub-entrance",
+     "unsure": false
+    },
+    {
+     "from": "b-2-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    },
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "b-2-entrance",
+     "unsure": false
+    },
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "bridge",
+     "unsure": false
+    },
+    {
+     "from": "bridge",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "after-bridge",
+     "unsure": false
+    },
+    {
+     "from": "after-bridge",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "bottom-switch-door-area",
+     "unsure": false
+    },
+    {
+     "from": "bottom-switch-door-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "after-bridge",
+     "unsure": false
+    },
+    {
+     "from": "bottom-switch-door-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "inside-switch-door",
+     "unsure": false
+    },
+    {
+     "from": "inside-switch-door",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "bottom-switch-door-area",
+     "unsure": false
+    }
+   ],
    "members": {},
    "note": "",
    "regions": {
+    "after-bridge": {
+     "color": "#d7aefb",
+     "name": "After Bridge",
+     "note": "",
+     "poly": [
+      [
+       2754,
+       344
+      ],
+      [
+       4396,
+       372
+      ],
+      [
+       4391,
+       623
+      ],
+      [
+       3795,
+       681
+      ],
+      [
+       3158,
+       516
+      ],
+      [
+       2749,
+       516
+      ]
+     ]
+    },
+    "b-2-entrance": {
+     "color": "#fbbc04",
+     "name": "B-2 Entrance",
+     "note": "",
+     "poly": [
+      [
+       1698,
+       686
+      ],
+      [
+       1944,
+       687
+      ],
+      [
+       1946,
+       818
+      ],
+      [
+       1686,
+       804
+      ]
+     ]
+    },
+    "bottom-switch-door-area": {
+     "color": "#a7ffeb",
+     "name": "Bottom Switch Door Area",
+     "note": "",
+     "poly": [
+      [
+       2839,
+       563
+      ],
+      [
+       2840,
+       563
+      ],
+      [
+       3082,
+       563
+      ],
+      [
+       3088,
+       799
+      ],
+      [
+       2843,
+       793
+      ]
+     ]
+    },
+    "bridge": {
+     "color": "#81c995",
+     "name": "Bridge",
+     "note": "",
+     "poly": [
+      [
+       2246,
+       193
+      ],
+      [
+       2242,
+       685
+      ],
+      [
+       2707,
+       688
+      ],
+      [
+       2715,
+       186
+      ]
+     ]
+    },
+    "hub-entrance": {
+     "color": "#f28b82",
+     "name": "Hub Entrance",
+     "note": "",
+     "poly": [
+      [
+       290,
+       497
+      ],
+      [
+       446,
+       490
+      ],
+      [
+       443,
+       654
+      ],
+      [
+       285,
+       646
+      ]
+     ]
+    },
+    "inside-switch-door": {
+     "color": "#ff8bcb",
+     "name": "Inside Switch Door",
+     "note": "",
+     "poly": [
+      [
+       3087,
+       617
+      ],
+      [
+       3090,
+       777
+      ],
+      [
+       3205,
+       777
+      ],
+      [
+       3201,
+       625
+      ]
+     ]
+    },
     "main": {
      "color": "#8ab4f8",
      "name": "Main",
@@ -2167,38 +3788,494 @@
    "req": null
   },
   "d02": {
-   "conns": [],
+   "conns": [
+    {
+     "from": "d-1-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "middle-area",
+     "unsure": false
+    },
+    {
+     "from": "middle-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "d-1-entrance",
+     "unsure": false
+    },
+    {
+     "from": "middle-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "boss-room",
+     "unsure": false
+    },
+    {
+     "from": "boss-room",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "middle-area",
+     "unsure": false
+    },
+    {
+     "from": "hub-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "boss-room",
+     "unsure": false
+    },
+    {
+     "from": "boss-room",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "hub-entrance",
+     "unsure": false
+    }
+   ],
    "members": {},
    "note": "",
    "regions": {
+    "boss-room": {
+     "color": "#81c995",
+     "name": "Boss Room",
+     "note": "",
+     "poly": [
+      [
+       7539,
+       369
+      ],
+      [
+       7542,
+       693
+      ],
+      [
+       8338,
+       700
+      ],
+      [
+       8323,
+       354
+      ]
+     ]
+    },
+    "d-1-entrance": {
+     "color": "#f28b82",
+     "name": "D-1 Entrance",
+     "note": "",
+     "poly": [
+      [
+       302,
+       390
+      ],
+      [
+       1464,
+       364
+      ],
+      [
+       1480,
+       638
+      ],
+      [
+       220,
+       628
+      ]
+     ]
+    },
+    "hub-entrance": {
+     "color": "#a7ffeb",
+     "name": "Hub Entrance",
+     "note": "",
+     "poly": [
+      [
+       8444,
+       435
+      ],
+      [
+       8442,
+       666
+      ],
+      [
+       8805,
+       668
+      ],
+      [
+       8812,
+       428
+      ]
+     ]
+    },
     "main": {
      "color": "#8ab4f8",
      "name": "Main",
      "note": "",
      "poly": null
+    },
+    "middle-area": {
+     "color": "#fbbc04",
+     "name": "Middle Area",
+     "note": "",
+     "poly": [
+      [
+       1492,
+       372
+      ],
+      [
+       1499,
+       879
+      ],
+      [
+       7347,
+       793
+      ],
+      [
+       7449,
+       204
+      ]
+     ]
     }
    },
    "req": null
   },
   "d03": {
-   "conns": [],
+   "conns": [
+    {
+     "from": "upper-area",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    },
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "HX"
+       ]
+      ]
+     },
+     "to": "upper-area",
+     "unsure": false
+    },
+    {
+     "from": "g-1-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    },
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "g-1-entrance",
+     "unsure": false
+    }
+   ],
    "members": {},
    "note": "",
    "regions": {
+    "g-1-entrance": {
+     "color": "#fbbc04",
+     "name": "G-1 Entrance",
+     "note": "",
+     "poly": [
+      [
+       3372,
+       645
+      ],
+      [
+       3370,
+       851
+      ],
+      [
+       2754,
+       989
+      ],
+      [
+       2733,
+       877
+      ]
+     ]
+    },
     "main": {
      "color": "#8ab4f8",
      "name": "Main",
      "note": "",
      "poly": null
+    },
+    "upper-area": {
+     "color": "#f28b82",
+     "name": "Upper Area",
+     "note": "",
+     "poly": [
+      [
+       1349,
+       427
+      ],
+      [
+       1354,
+       616
+      ],
+      [
+       2309,
+       621
+      ],
+      [
+       2306,
+       400
+      ]
+     ]
     }
    },
    "req": null
   },
   "d04": {
-   "conns": [],
+   "conns": [
+    {
+     "from": "d-2-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "elevator-1",
+     "unsure": false
+    },
+    {
+     "from": "elevator-1",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "d-2-entrance",
+     "unsure": false
+    },
+    {
+     "from": "after-boss-rush",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "boss-rush",
+     "unsure": false
+    },
+    {
+     "from": "boss-rush",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "after-boss-rush",
+     "unsure": false
+    },
+    {
+     "from": "elevator-2",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "after-boss-rush",
+     "unsure": false
+    },
+    {
+     "from": "after-boss-rush",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "elevator-2",
+     "unsure": false
+    }
+   ],
    "members": {},
    "note": "",
    "regions": {
+    "after-boss-rush": {
+     "color": "#a7ffeb",
+     "name": "After Boss Rush",
+     "note": "",
+     "poly": [
+      [
+       206,
+       4285
+      ],
+      [
+       200,
+       4538
+      ],
+      [
+       2560,
+       4533
+      ],
+      [
+       2550,
+       4253
+      ]
+     ]
+    },
+    "boss-rush": {
+     "color": "#81c995",
+     "name": "Boss Rush",
+     "note": "",
+     "poly": [
+      [
+       165,
+       155
+      ],
+      [
+       1102,
+       152
+      ],
+      [
+       1135,
+       989
+      ],
+      [
+       153,
+       974
+      ]
+     ]
+    },
+    "d-2-entrance": {
+     "color": "#fbbc04",
+     "name": "D-2 Entrance",
+     "note": "",
+     "poly": [
+      [
+       127,
+       3697
+      ],
+      [
+       1284,
+       3732
+      ],
+      [
+       1288,
+       4233
+      ],
+      [
+       123,
+       4201
+      ]
+     ]
+    },
+    "elevator-1": {
+     "color": "#f28b82",
+     "name": "Elevator 1",
+     "note": "",
+     "poly": [
+      [
+       1378,
+       132
+      ],
+      [
+       2028,
+       139
+      ],
+      [
+       2008,
+       4271
+      ],
+      [
+       1351,
+       4278
+      ]
+     ]
+    },
+    "elevator-2": {
+     "color": "#d7aefb",
+     "name": "Elevator 2",
+     "note": "",
+     "poly": [
+      [
+       2467,
+       540
+      ],
+      [
+       2948,
+       548
+      ],
+      [
+       2982,
+       4602
+      ],
+      [
+       2479,
+       4571
+      ]
+     ]
+    },
     "main": {
      "color": "#8ab4f8",
      "name": "Main",
@@ -2209,43 +4286,477 @@
    "req": null
   },
   "d05": {
-   "conns": [],
+   "conns": [
+    {
+     "from": "middle-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "right-entrance",
+     "unsure": false
+    },
+    {
+     "from": "right-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "middle-area",
+     "unsure": false
+    },
+    {
+     "from": "d-4-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "PX"
+       ],
+       [
+        "HX"
+       ]
+      ]
+     },
+     "to": "middle-area",
+     "unsure": false
+    },
+    {
+     "from": "middle-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "PX"
+       ],
+       [
+        "HX"
+       ]
+      ]
+     },
+     "to": "d-4-entrance",
+     "unsure": false
+    }
+   ],
    "members": {},
    "note": "",
    "regions": {
+    "boss-room": {
+     "color": "#a7ffeb",
+     "name": "Boss Room",
+     "note": "",
+     "poly": [
+      [
+       4043,
+       374
+      ],
+      [
+       4736,
+       380
+      ],
+      [
+       4743,
+       678
+      ],
+      [
+       4014,
+       633
+      ]
+     ]
+    },
+    "d-4-entrance": {
+     "color": "#81c995",
+     "name": "D-4 Entrance",
+     "note": "",
+     "poly": [
+      [
+       232,
+       383
+      ],
+      [
+       713,
+       385
+      ],
+      [
+       714,
+       636
+      ],
+      [
+       231,
+       627
+      ]
+     ]
+    },
     "main": {
      "color": "#8ab4f8",
      "name": "Main",
      "note": "",
      "poly": null
+    },
+    "middle-area": {
+     "color": "#fbbc04",
+     "name": "Middle Area",
+     "note": "",
+     "poly": [
+      [
+       2656,
+       404
+      ],
+      [
+       2649,
+       494
+      ],
+      [
+       2525,
+       516
+      ],
+      [
+       2499,
+       592
+      ],
+      [
+       736,
+       591
+      ],
+      [
+       736,
+       369
+      ]
+     ]
+    },
+    "right-entrance": {
+     "color": "#f28b82",
+     "name": "Right Entrance",
+     "note": "",
+     "poly": [
+      [
+       2595,
+       515
+      ],
+      [
+       2542,
+       540
+      ],
+      [
+       2555,
+       593
+      ],
+      [
+       3890,
+       611
+      ],
+      [
+       3909,
+       474
+      ]
+     ]
     }
    },
    "req": null
   },
   "e01": {
-   "conns": [],
+   "conns": [
+    {
+     "from": "c-2-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "middle-area",
+     "unsure": false
+    },
+    {
+     "from": "middle-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "c-2-entrance",
+     "unsure": false
+    },
+    {
+     "from": "middle-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "e-2-entrance",
+     "unsure": false
+    },
+    {
+     "from": "e-2-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "middle-area",
+     "unsure": false
+    }
+   ],
    "members": {},
    "note": "",
    "regions": {
+    "c-2-entrance": {
+     "color": "#fbbc04",
+     "name": "C-2 Entrance",
+     "note": "",
+     "poly": [
+      [
+       217,
+       595
+      ],
+      [
+       452,
+       607
+      ],
+      [
+       437,
+       827
+      ],
+      [
+       194,
+       817
+      ]
+     ]
+    },
+    "e-2-entrance": {
+     "color": "#81c995",
+     "name": "E-2 Entrance",
+     "note": "",
+     "poly": [
+      [
+       2892,
+       595
+      ],
+      [
+       2885,
+       837
+      ],
+      [
+       3119,
+       817
+      ],
+      [
+       3127,
+       575
+      ]
+     ]
+    },
     "main": {
      "color": "#8ab4f8",
      "name": "Main",
      "note": "",
      "poly": null
+    },
+    "middle-area": {
+     "color": "#f28b82",
+     "name": "Middle Area",
+     "note": "",
+     "poly": [
+      [
+       489,
+       400
+      ],
+      [
+       467,
+       867
+      ],
+      [
+       2855,
+       862
+      ],
+      [
+       2852,
+       500
+      ]
+     ]
     }
    },
    "req": null
   },
   "e02": {
-   "conns": [],
+   "conns": [
+    {
+     "from": "e-1-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "upper-area",
+     "unsure": false
+    },
+    {
+     "from": "upper-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "e-1-entrance",
+     "unsure": false
+    },
+    {
+     "from": "e-4-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "electric-rods",
+     "unsure": false
+    },
+    {
+     "from": "electric-rods",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "e-4-entrance",
+     "unsure": false
+    }
+   ],
    "members": {},
    "note": "",
    "regions": {
+    "e-1-entrance": {
+     "color": "#f28b82",
+     "name": "E-1 Entrance",
+     "note": "",
+     "poly": [
+      [
+       224,
+       276
+      ],
+      [
+       222,
+       345
+      ],
+      [
+       638,
+       362
+      ],
+      [
+       606,
+       256
+      ]
+     ]
+    },
+    "e-4-entrance": {
+     "color": "#a7ffeb",
+     "name": "E-4 Entrance",
+     "note": "",
+     "poly": [
+      [
+       718,
+       1001
+      ],
+      [
+       1299,
+       1028
+      ],
+      [
+       1287,
+       1163
+      ],
+      [
+       701,
+       1184
+      ],
+      [
+       718,
+       988
+      ]
+     ]
+    },
+    "electric-rods": {
+     "color": "#fbbc04",
+     "name": "Electric Rods",
+     "note": "",
+     "poly": [
+      [
+       771,
+       410
+      ],
+      [
+       1303,
+       413
+      ],
+      [
+       1300,
+       969
+      ],
+      [
+       724,
+       978
+      ]
+     ]
+    },
     "main": {
      "color": "#8ab4f8",
      "name": "Main",
      "note": "",
      "poly": null
+    },
+    "upper-area": {
+     "color": "#81c995",
+     "name": "Upper Area",
+     "note": "",
+     "poly": [
+      [
+       620,
+       208
+      ],
+      [
+       687,
+       391
+      ],
+      [
+       1323,
+       391
+      ],
+      [
+       1308,
+       169
+      ]
+     ]
     }
    },
    "req": null
@@ -2265,43 +4776,617 @@
    "req": null
   },
   "e04": {
-   "conns": [],
+   "conns": [
+    {
+     "from": "e-2-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "left-stairs",
+     "unsure": false
+    },
+    {
+     "from": "left-stairs",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "e-2-entrance",
+     "unsure": false
+    },
+    {
+     "from": "left-stairs",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "upper-area",
+     "unsure": false
+    },
+    {
+     "from": "upper-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "left-stairs",
+     "unsure": false
+    },
+    {
+     "from": "lower-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "HX"
+       ]
+      ]
+     },
+     "to": "upper-area",
+     "unsure": false
+    },
+    {
+     "from": "upper-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "lower-area",
+     "unsure": false
+    },
+    {
+     "from": "after-mini-boss-room",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "HU"
+       ]
+      ]
+     },
+     "to": "lower-area",
+     "unsure": false
+    }
+   ],
    "members": {},
    "note": "",
    "regions": {
+    "after-mini-boss-room": {
+     "color": "#d7aefb",
+     "name": "After Mini-Boss Room",
+     "note": "",
+     "poly": [
+      [
+       2718,
+       784
+      ],
+      [
+       3103,
+       782
+      ],
+      [
+       3099,
+       1041
+      ],
+      [
+       2724,
+       974
+      ]
+     ]
+    },
+    "e-2-entrance": {
+     "color": "#f28b82",
+     "name": "E-2 Entrance",
+     "note": "",
+     "poly": [
+      [
+       258,
+       618
+      ],
+      [
+       259,
+       826
+      ],
+      [
+       534,
+       809
+      ],
+      [
+       530,
+       616
+      ],
+      [
+       372,
+       605
+      ],
+      [
+       315,
+       603
+      ]
+     ]
+    },
+    "left-stairs": {
+     "color": "#fbbc04",
+     "name": "Left Stairs",
+     "note": "",
+     "poly": [
+      [
+       534,
+       196
+      ],
+      [
+       549,
+       854
+      ],
+      [
+       1136,
+       864
+      ],
+      [
+       1135,
+       163
+      ],
+      [
+       533,
+       174
+      ]
+     ]
+    },
+    "lower-area": {
+     "color": "#a7ffeb",
+     "name": "Lower Area",
+     "note": "",
+     "poly": [
+      [
+       1159,
+       389
+      ],
+      [
+       1157,
+       850
+      ],
+      [
+       3330,
+       1271
+      ],
+      [
+       3354,
+       763
+      ],
+      [
+       3118,
+       771
+      ],
+      [
+       3114,
+       1111
+      ],
+      [
+       2708,
+       1007
+      ],
+      [
+       2685,
+       767
+      ],
+      [
+       2149,
+       385
+      ]
+     ]
+    },
     "main": {
      "color": "#8ab4f8",
      "name": "Main",
      "note": "",
      "poly": null
+    },
+    "upper-area": {
+     "color": "#81c995",
+     "name": "Upper Area",
+     "note": "",
+     "poly": [
+      [
+       1144,
+       176
+      ],
+      [
+       1149,
+       373
+      ],
+      [
+       3138,
+       381
+      ],
+      [
+       3133,
+       185
+      ]
+     ]
     }
    },
    "req": null
   },
   "e05": {
-   "conns": [],
+   "conns": [
+    {
+     "from": "stairs",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "e-4-entrance",
+     "unsure": false
+    },
+    {
+     "from": "e-4-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "stairs",
+     "unsure": false
+    },
+    {
+     "from": "e-7-entrance",
+     "note": "",
+     "req": {
+      "expert": [
+       [
+        "MODEL"
+       ]
+      ],
+      "normal": [
+       [
+        "HX"
+       ]
+      ]
+     },
+     "to": "platforms",
+     "unsure": false
+    },
+    {
+     "from": "platforms",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "e-7-entrance",
+     "unsure": false
+    },
+    {
+     "from": "platforms",
+     "note": "",
+     "req": {
+      "expert": [
+       [
+        "MODEL"
+       ]
+      ],
+      "normal": [
+       [
+        "HX"
+       ]
+      ]
+     },
+     "to": "stairs",
+     "unsure": false
+    },
+    {
+     "from": "stairs",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "platforms",
+     "unsure": false
+    }
+   ],
    "members": {},
    "note": "",
    "regions": {
+    "e-4-entrance": {
+     "color": "#f28b82",
+     "name": "E-4 Entrance",
+     "note": "",
+     "poly": [
+      [
+       255,
+       853
+      ],
+      [
+       263,
+       979
+      ],
+      [
+       439,
+       982
+      ],
+      [
+       415,
+       838
+      ]
+     ]
+    },
+    "e-7-entrance": {
+     "color": "#a7ffeb",
+     "name": "E-7 Entrance",
+     "note": "",
+     "poly": [
+      [
+       2442,
+       423
+      ],
+      [
+       3145,
+       424
+      ],
+      [
+       3142,
+       613
+      ],
+      [
+       2445,
+       596
+      ]
+     ]
+    },
     "main": {
      "color": "#8ab4f8",
      "name": "Main",
      "note": "",
      "poly": null
+    },
+    "platforms": {
+     "color": "#81c995",
+     "name": "Platforms",
+     "note": "",
+     "poly": [
+      [
+       1846,
+       196
+      ],
+      [
+       1858,
+       587
+      ],
+      [
+       2409,
+       584
+      ],
+      [
+       2407,
+       320
+      ],
+      [
+       2757,
+       308
+      ],
+      [
+       2740,
+       156
+      ]
+     ]
+    },
+    "stairs": {
+     "color": "#fbbc04",
+     "name": "Stairs",
+     "note": "",
+     "poly": [
+      [
+       449,
+       1432
+      ],
+      [
+       1860,
+       1424
+      ],
+      [
+       1826,
+       209
+      ],
+      [
+       476,
+       252
+      ]
+     ]
     }
    },
    "req": null
   },
   "e06": {
-   "conns": [],
+   "conns": [
+    {
+     "from": "mini-boss-room",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "e-4-entrance-bottom-area",
+     "unsure": false
+    },
+    {
+     "from": "e-4-entrance-bottom-area",
+     "note": "",
+     "req": {
+      "expert": [
+       [
+        "MODEL"
+       ]
+      ],
+      "normal": [
+       [
+        "X"
+       ],
+       [
+        "ZX"
+       ],
+       [
+        "FX"
+       ],
+       [
+        "OX"
+       ]
+      ]
+     },
+     "to": "mini-boss-room",
+     "unsure": false
+    },
+    {
+     "from": "mini-boss-room",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "e-4-entrance-after-mini-boss",
+     "unsure": false
+    },
+    {
+     "from": "e-4-entrance-after-mini-boss",
+     "note": "",
+     "req": {
+      "expert": [
+       [
+        "MODEL"
+       ]
+      ],
+      "normal": [
+       [
+        "X"
+       ],
+       [
+        "ZX"
+       ],
+       [
+        "FX"
+       ],
+       [
+        "OX"
+       ]
+      ]
+     },
+     "to": "mini-boss-room",
+     "unsure": false
+    }
+   ],
    "members": {},
    "note": "",
    "regions": {
+    "e-4-entrance-after-mini-boss": {
+     "color": "#fbbc04",
+     "name": "E-4 Entrance (After Mini-Boss)",
+     "note": "",
+     "poly": [
+      [
+       671,
+       325
+      ],
+      [
+       678,
+       381
+      ],
+      [
+       744,
+       385
+      ],
+      [
+       742,
+       324
+      ]
+     ]
+    },
+    "e-4-entrance-bottom-area": {
+     "color": "#f28b82",
+     "name": "E-4 Entrance (Bottom Area)",
+     "note": "",
+     "poly": [
+      [
+       285,
+       332
+      ],
+      [
+       287,
+       375
+      ],
+      [
+       353,
+       380
+      ],
+      [
+       361,
+       324
+      ]
+     ]
+    },
     "main": {
      "color": "#8ab4f8",
      "name": "Main",
      "note": "",
      "poly": null
+    },
+    "mini-boss-room": {
+     "color": "#81c995",
+     "name": "Mini-Boss Room",
+     "note": "",
+     "poly": [
+      [
+       372,
+       226
+      ],
+      [
+       369,
+       391
+      ],
+      [
+       669,
+       388
+      ],
+      [
+       667,
+       216
+      ]
+     ]
     }
    },
    "req": null
@@ -2309,7 +5394,7 @@
   "e07": {
    "conns": [
     {
-     "from": "main",
+     "from": "e-5-entrance",
      "note": "",
      "req": {
       "normal": [
@@ -2318,11 +5403,11 @@
        ]
       ]
      },
-     "to": "oeste",
+     "to": "boss-room",
      "unsure": false
     },
     {
-     "from": "oeste",
+     "from": "boss-room",
      "note": "",
      "req": {
       "normal": [
@@ -2331,41 +5416,113 @@
        ]
       ]
      },
-     "to": "main",
+     "to": "e-5-entrance",
+     "unsure": false
+    },
+    {
+     "from": "boss-room",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "e-8-entrance",
+     "unsure": false
+    },
+    {
+     "from": "e-8-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "boss-room",
      "unsure": false
     }
    ],
    "members": {},
    "note": "",
    "regions": {
+    "boss-room": {
+     "color": "#81c995",
+     "name": "Boss Room",
+     "note": "",
+     "poly": [
+      [
+       408,
+       424
+      ],
+      [
+       1419,
+       424
+      ],
+      [
+       1418,
+       847
+      ],
+      [
+       426,
+       830
+      ]
+     ]
+    },
+    "e-5-entrance": {
+     "color": "#f28b82",
+     "name": "E-5 Entrance",
+     "note": "",
+     "poly": [
+      [
+       247,
+       655
+      ],
+      [
+       391,
+       642
+      ],
+      [
+       406,
+       834
+      ],
+      [
+       243,
+       831
+      ]
+     ]
+    },
+    "e-8-entrance": {
+     "color": "#fbbc04",
+     "name": "E-8 Entrance",
+     "note": "",
+     "poly": [
+      [
+       1459,
+       595
+      ],
+      [
+       1804,
+       593
+      ],
+      [
+       1807,
+       796
+      ],
+      [
+       1448,
+       788
+      ]
+     ]
+    },
     "main": {
      "color": "#8ab4f8",
      "name": "Main",
      "note": "",
      "poly": null
-    },
-    "oeste": {
-     "color": "#81c995",
-     "name": "Oeste",
-     "note": "POLÍGONO PROVISIONAL (bbox migrado): redibujar. ",
-     "poly": [
-      [
-       240,
-       672
-      ],
-      [
-       336,
-       672
-      ],
-      [
-       336,
-       768
-      ],
-      [
-       240,
-       768
-      ]
-     ]
     }
    },
    "req": null
@@ -2385,10 +5542,109 @@
    "req": null
   },
   "f01": {
-   "conns": [],
+   "conns": [
+    {
+     "from": "b-3-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    },
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "b-3-entrance",
+     "unsure": false
+    },
+    {
+     "from": "f-2-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    },
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "f-2-entrance",
+     "unsure": false
+    }
+   ],
    "members": {},
    "note": "",
    "regions": {
+    "b-3-entrance": {
+     "color": "#f28b82",
+     "name": "B-3 Entrance",
+     "note": "",
+     "poly": [
+      [
+       235,
+       474
+      ],
+      [
+       233,
+       585
+      ],
+      [
+       353,
+       591
+      ],
+      [
+       343,
+       469
+      ]
+     ]
+    },
+    "f-2-entrance": {
+     "color": "#fbbc04",
+     "name": "F-2 Entrance",
+     "note": "",
+     "poly": [
+      [
+       1958,
+       683
+      ],
+      [
+       1957,
+       821
+      ],
+      [
+       2093,
+       821
+      ],
+      [
+       2085,
+       694
+      ]
+     ]
+    },
     "main": {
      "color": "#8ab4f8",
      "name": "Main",
@@ -2399,10 +5655,206 @@
    "req": null
   },
   "f02": {
-   "conns": [],
+   "conns": [
+    {
+     "from": "f-3-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    },
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "f-3-entrance",
+     "unsure": false
+    },
+    {
+     "from": "f-1-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    },
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "f-1-entrance",
+     "unsure": false
+    },
+    {
+     "from": "ice-cube-blocked-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "FX"
+       ]
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    },
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "FX"
+       ]
+      ]
+     },
+     "to": "ice-cube-blocked-area",
+     "unsure": false
+    }
+   ],
    "members": {},
    "note": "",
    "regions": {
+    "f-1-entrance": {
+     "color": "#f28b82",
+     "name": "F-1 Entrance",
+     "note": "",
+     "poly": [
+      [
+       254,
+       466
+      ],
+      [
+       350,
+       468
+      ],
+      [
+       359,
+       573
+      ],
+      [
+       259,
+       581
+      ]
+     ]
+    },
+    "f-3-entrance": {
+     "color": "#81c995",
+     "name": "F-3 Entrance",
+     "note": "",
+     "poly": [
+      [
+       2461,
+       486
+      ],
+      [
+       2575,
+       498
+      ],
+      [
+       2577,
+       591
+      ],
+      [
+       2457,
+       586
+      ]
+     ]
+    },
+    "ice-cube-blocked-area": {
+     "color": "#fbbc04",
+     "name": "Ice Cube Blocked Area",
+     "note": "",
+     "poly": [
+      [
+       659,
+       424
+      ],
+      [
+       627,
+       651
+      ],
+      [
+       1074,
+       859
+      ],
+      [
+       1060,
+       942
+      ],
+      [
+       1208,
+       963
+      ],
+      [
+       1210,
+       1063
+      ],
+      [
+       1391,
+       1058
+      ],
+      [
+       1388,
+       959
+      ],
+      [
+       1456,
+       958
+      ],
+      [
+       1447,
+       863
+      ],
+      [
+       1546,
+       861
+      ],
+      [
+       1544,
+       781
+      ],
+      [
+       1676,
+       782
+      ],
+      [
+       1676,
+       556
+      ],
+      [
+       1835,
+       558
+      ],
+      [
+       1825,
+       505
+      ]
+     ]
+    },
     "main": {
      "color": "#8ab4f8",
      "name": "Main",
@@ -2413,29 +5865,538 @@
    "req": null
   },
   "f03": {
-   "conns": [],
+   "conns": [
+    {
+     "from": "f-4-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "lower-area",
+     "unsure": false
+    },
+    {
+     "from": "lower-area",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "f-4-entrance",
+     "unsure": false
+    },
+    {
+     "from": "lower-area",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "f-2-entrance",
+     "unsure": false
+    },
+    {
+     "from": "f-2-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "lower-area",
+     "unsure": false
+    },
+    {
+     "from": "top-door",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "upper-area",
+     "unsure": false
+    },
+    {
+     "from": "upper-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "top-door",
+     "unsure": false
+    },
+    {
+     "from": "ice-cube-room",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "FX"
+       ]
+      ]
+     },
+     "to": "upper-area",
+     "unsure": false
+    },
+    {
+     "from": "upper-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "FX"
+       ]
+      ]
+     },
+     "to": "ice-cube-room",
+     "unsure": false
+    },
+    {
+     "from": "upper-area",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "lower-area",
+     "unsure": false
+    },
+    {
+     "from": "lower-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "upper-area",
+     "unsure": false
+    }
+   ],
    "members": {},
    "note": "",
    "regions": {
+    "f-2-entrance": {
+     "color": "#f28b82",
+     "name": "F-2 Entrance",
+     "note": "",
+     "poly": [
+      [
+       258,
+       1667
+      ],
+      [
+       345,
+       1666
+      ],
+      [
+       345,
+       1752
+      ],
+      [
+       255,
+       1750
+      ]
+     ]
+    },
+    "f-4-entrance": {
+     "color": "#fbbc04",
+     "name": "F-4 Entrance",
+     "note": "",
+     "poly": [
+      [
+       339,
+       1572
+      ],
+      [
+       453,
+       1573
+      ],
+      [
+       453,
+       1664
+      ],
+      [
+       337,
+       1657
+      ]
+     ]
+    },
+    "ice-cube-room": {
+     "color": "#a7ffeb",
+     "name": "Ice Cube Room",
+     "note": "",
+     "poly": [
+      [
+       874,
+       740
+      ],
+      [
+       1173,
+       738
+      ],
+      [
+       1175,
+       925
+      ],
+      [
+       872,
+       918
+      ]
+     ]
+    },
+    "ice-cube-room-interior": {
+     "color": "#78d9ec",
+     "name": "Ice Cube Room Interior",
+     "note": "",
+     "poly": [
+      [
+       1500,
+       535
+      ],
+      [
+       1512,
+       820
+      ],
+      [
+       2167,
+       829
+      ],
+      [
+       2148,
+       545
+      ]
+     ]
+    },
+    "lower-area": {
+     "color": "#81c995",
+     "name": "Lower Area",
+     "note": "",
+     "poly": [
+      [
+       971,
+       1088
+      ],
+      [
+       927,
+       1108
+      ],
+      [
+       930,
+       1212
+      ],
+      [
+       275,
+       1237
+      ],
+      [
+       280,
+       1549
+      ],
+      [
+       546,
+       1549
+      ],
+      [
+       547,
+       1751
+      ],
+      [
+       1267,
+       1759
+      ],
+      [
+       1238,
+       1195
+      ],
+      [
+       985,
+       1088
+      ]
+     ]
+    },
     "main": {
      "color": "#8ab4f8",
      "name": "Main",
      "note": "",
      "poly": null
+    },
+    "mini-boss-room": {
+     "color": "#fde293",
+     "name": "Mini-Boss Room",
+     "note": "",
+     "poly": [
+      [
+       1366,
+       121
+      ],
+      [
+       1386,
+       1198
+      ],
+      [
+       1889,
+       1203
+      ],
+      [
+       1861,
+       935
+      ],
+      [
+       1491,
+       933
+      ],
+      [
+       1491,
+       476
+      ],
+      [
+       2126,
+       433
+      ],
+      [
+       2103,
+       136
+      ]
+     ]
+    },
+    "top-door": {
+     "color": "#d7aefb",
+     "name": "Top Door",
+     "note": "",
+     "poly": [
+      [
+       605,
+       497
+      ],
+      [
+       756,
+       493
+      ],
+      [
+       759,
+       627
+      ],
+      [
+       602,
+       627
+      ]
+     ]
+    },
+    "upper-area": {
+     "color": "#ff8bcb",
+     "name": "Upper Area",
+     "note": "",
+     "poly": [
+      [
+       778,
+       498
+      ],
+      [
+       1291,
+       473
+      ],
+      [
+       1284,
+       708
+      ],
+      [
+       867,
+       716
+      ],
+      [
+       859,
+       976
+      ],
+      [
+       1182,
+       967
+      ],
+      [
+       1182,
+       1114
+      ],
+      [
+       899,
+       1052
+      ],
+      [
+       892,
+       1151
+      ],
+      [
+       265,
+       1162
+      ],
+      [
+       254,
+       680
+      ],
+      [
+       444,
+       456
+      ],
+      [
+       587,
+       446
+      ],
+      [
+       583,
+       661
+      ],
+      [
+       776,
+       656
+      ]
+     ]
     }
    },
    "req": null
   },
   "f04": {
-   "conns": [],
+   "conns": [
+    {
+     "from": "f-3-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "water-area",
+     "unsure": false
+    },
+    {
+     "from": "water-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "f-3-entrance",
+     "unsure": false
+    },
+    {
+     "from": "water-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "f-5-entrance",
+     "unsure": false
+    },
+    {
+     "from": "f-5-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "water-area",
+     "unsure": false
+    }
+   ],
    "members": {},
    "note": "",
    "regions": {
+    "f-3-entrance": {
+     "color": "#f28b82",
+     "name": "F-3 Entrance",
+     "note": "",
+     "poly": [
+      [
+       234,
+       234
+      ],
+      [
+       374,
+       232
+      ],
+      [
+       334,
+       393
+      ],
+      [
+       229,
+       359
+      ]
+     ]
+    },
+    "f-5-entrance": {
+     "color": "#81c995",
+     "name": "F-5 Entrance",
+     "note": "",
+     "poly": [
+      [
+       1745,
+       494
+      ],
+      [
+       1816,
+       497
+      ],
+      [
+       1816,
+       582
+      ],
+      [
+       1747,
+       576
+      ]
+     ]
+    },
     "main": {
      "color": "#8ab4f8",
      "name": "Main",
      "note": "",
      "poly": null
+    },
+    "water-area": {
+     "color": "#fbbc04",
+     "name": "Water Area",
+     "note": "",
+     "poly": [
+      [
+       769,
+       341
+      ],
+      [
+       1786,
+       223
+      ],
+      [
+       1714,
+       612
+      ],
+      [
+       641,
+       582
+      ]
+     ]
     }
    },
    "req": null
@@ -2452,11 +6413,11 @@
        ]
       ]
      },
-     "to": "oeste",
+     "to": "f-4-entrance",
      "unsure": false
     },
     {
-     "from": "oeste",
+     "from": "f-4-entrance",
      "note": "",
      "req": {
       "normal": [
@@ -2467,20 +6428,40 @@
      },
      "to": "main",
      "unsure": false
+    },
+    {
+     "from": "hub-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    },
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "hub-entrance",
+     "unsure": false
     }
    ],
    "members": {},
    "note": "",
    "regions": {
-    "main": {
-     "color": "#8ab4f8",
-     "name": "Main",
-     "note": "",
-     "poly": null
-    },
-    "oeste": {
+    "f-4-entrance": {
      "color": "#a7ffeb",
-     "name": "Oeste",
+     "name": "F-4 Entrance",
      "note": "POLÍGONO PROVISIONAL (bbox migrado): redibujar. ",
      "poly": [
       [
@@ -2500,15 +6481,147 @@
        784
       ]
      ]
+    },
+    "hub-entrance": {
+     "color": "#f28b82",
+     "name": "Hub Entrance",
+     "note": "",
+     "poly": [
+      [
+       1187,
+       688
+      ],
+      [
+       1293,
+       690
+      ],
+      [
+       1283,
+       790
+      ],
+      [
+       1179,
+       786
+      ]
+     ]
+    },
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
     }
    },
    "req": null
   },
   "g01": {
-   "conns": [],
+   "conns": [
+    {
+     "from": "d-3-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    },
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "d-3-entrance",
+     "unsure": false
+    },
+    {
+     "from": "g-2-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    },
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "g-2-entrance",
+     "unsure": false
+    }
+   ],
    "members": {},
    "note": "",
    "regions": {
+    "d-3-entrance": {
+     "color": "#f28b82",
+     "name": "D-3 Entrance",
+     "note": "",
+     "poly": [
+      [
+       265,
+       1064
+      ],
+      [
+       388,
+       1053
+      ],
+      [
+       392,
+       1224
+      ],
+      [
+       239,
+       1202
+      ],
+      [
+       261,
+       1077
+      ]
+     ]
+    },
+    "g-2-entrance": {
+     "color": "#fbbc04",
+     "name": "G-2 Entrance",
+     "note": "",
+     "poly": [
+      [
+       3740,
+       711
+      ],
+      [
+       3880,
+       708
+      ],
+      [
+       3870,
+       834
+      ],
+      [
+       3738,
+       828
+      ]
+     ]
+    },
     "main": {
      "color": "#8ab4f8",
      "name": "Main",
@@ -2521,59 +6634,978 @@
   "g02": {
    "conns": [
     {
-     "from": "main",
-     "note": "gate interno coarse (v0.2): llaves/verjas de las puertas internas",
-     "req": {
-      "normal": [
-       [
-        "FIGHT_THE_MAVERICKS"
-       ]
-      ]
-     },
-     "to": "interior",
-     "unsure": true
-    },
-    {
-     "from": "interior",
+     "from": "8th-floor",
      "note": "",
      "req": {
       "normal": [
        []
       ]
      },
-     "to": "main",
+     "to": "7th-floor",
+     "unsure": false
+    },
+    {
+     "from": "7th-floor",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "8th-floor",
+     "unsure": false
+    },
+    {
+     "from": "7th-floor",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "6th-floor",
+     "unsure": false
+    },
+    {
+     "from": "6th-floor",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "7th-floor",
+     "unsure": false
+    },
+    {
+     "from": "6th-floor",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "5th-floor",
+     "unsure": false
+    },
+    {
+     "from": "5th-floor",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "6th-floor",
+     "unsure": false
+    },
+    {
+     "from": "5th-floor",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "4th-floor",
+     "unsure": false
+    },
+    {
+     "from": "4th-floor",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "5th-floor",
+     "unsure": false
+    },
+    {
+     "from": "4th-floor",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "3rd-floor",
+     "unsure": false
+    },
+    {
+     "from": "3rd-floor",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "4th-floor",
+     "unsure": false
+    },
+    {
+     "from": "3rd-floor",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "g-1-entrance",
+     "unsure": false
+    },
+    {
+     "from": "g-1-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "3rd-floor",
+     "unsure": false
+    },
+    {
+     "from": "2nd-floor",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "3rd-floor",
+     "unsure": false
+    },
+    {
+     "from": "3rd-floor",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "2nd-floor",
+     "unsure": false
+    },
+    {
+     "from": "2nd-floor",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "1st-floor",
+     "unsure": false
+    },
+    {
+     "from": "1st-floor",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "2nd-floor",
+     "unsure": false
+    },
+    {
+     "from": "basement",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "1st-floor",
+     "unsure": false
+    },
+    {
+     "from": "1st-floor",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "basement",
+     "unsure": false
+    },
+    {
+     "from": "7th-floor-room-r-7th-floor-room",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "7th-floor-room-outside",
+     "unsure": false
+    },
+    {
+     "from": "7th-floor-room-outside",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "7th-floor-room-r-7th-floor-room",
+     "unsure": false
+    },
+    {
+     "from": "7th-floor-room-r-7th-floor-room",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "7th-floor",
+     "unsure": false
+    },
+    {
+     "from": "7th-floor",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "7th-floor-room-r-7th-floor-room",
+     "unsure": false
+    },
+    {
+     "from": "6th-floor-room-r-6th-floor-room",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "6th-floor",
+     "unsure": false
+    },
+    {
+     "from": "6th-floor",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "6th-floor-room-r-6th-floor-room",
+     "unsure": false
+    },
+    {
+     "from": "6th-floor-room-r-6th-floor-room",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "6th-floor-room-outside",
+     "unsure": false
+    },
+    {
+     "from": "6th-floor-room-outside",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "6th-floor-room-r-6th-floor-room",
+     "unsure": false
+    },
+    {
+     "from": "5th-floor-room-r-5th-floor-room",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "5th-floor",
+     "unsure": false
+    },
+    {
+     "from": "5th-floor",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "5th-floor-room-r-5th-floor-room",
+     "unsure": false
+    },
+    {
+     "from": "5th-floor-room-r-5th-floor-room",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "5th-floor-room-outside",
+     "unsure": false
+    },
+    {
+     "from": "5th-floor-room-outside",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "5th-floor-room-r-5th-floor-room",
+     "unsure": false
+    },
+    {
+     "from": "4th-floor-room",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "4th-floor",
+     "unsure": false
+    },
+    {
+     "from": "4th-floor",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "4th-floor-room",
+     "unsure": false
+    },
+    {
+     "from": "3rd-floor-room-r-3rd-floor-room",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "3rd-floor",
+     "unsure": false
+    },
+    {
+     "from": "3rd-floor",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "3rd-floor-room-r-3rd-floor-room",
+     "unsure": false
+    },
+    {
+     "from": "3rd-floor-room-outside",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "3rd-floor-room-r-3rd-floor-room",
+     "unsure": false
+    },
+    {
+     "from": "3rd-floor-room-r-3rd-floor-room",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "3rd-floor-room-outside",
+     "unsure": false
+    },
+    {
+     "from": "2nd-floor-room-r-2nd-floor-2",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "2nd-floor",
+     "unsure": false
+    },
+    {
+     "from": "2nd-floor",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "2nd-floor-room-r-2nd-floor-2",
+     "unsure": false
+    },
+    {
+     "from": "2nd-floor-room-outside",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "2nd-floor-room-r-2nd-floor-2",
+     "unsure": false
+    },
+    {
+     "from": "2nd-floor-room-r-2nd-floor-2",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "2nd-floor-room-outside",
+     "unsure": false
+    },
+    {
+     "from": "basement-room",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "basement",
+     "unsure": false
+    },
+    {
+     "from": "basement",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "basement-room",
      "unsure": false
     }
    ],
-   "members": {
-    "g01 door (3808,768)@in": "main",
-    "g02 door (288,1152)": "main",
-    "g02 door (376,2400)": "main",
-    "g02 door (552,2032)@in": "main",
-    "g02 door (656,592)@in": "main"
-   },
+   "members": {},
    "note": "",
    "regions": {
-    "interior": {
+    "1st-floor": {
      "color": "#f28b82",
-     "name": "Interior",
-     "note": "POLÍGONO PROVISIONAL (gate interno coarse de v0.2: FIGHT_THE_MAVERICKS): redibujar.",
+     "name": "1st Floor",
+     "note": "",
      "poly": [
       [
-       230,
-       314
+       382,
+       1454
       ],
       [
-       396,
-       314
+       382,
+       1616
       ],
       [
-       396,
-       2498
+       736,
+       1609
       ],
       [
-       230,
-       2498
+       734,
+       1477
+      ]
+     ]
+    },
+    "2nd-floor": {
+     "color": "#fde293",
+     "name": "2nd Floor",
+     "note": "",
+     "poly": [
+      [
+       371,
+       1302
+      ],
+      [
+       376,
+       1432
+      ],
+      [
+       732,
+       1435
+      ],
+      [
+       727,
+       1328
+      ],
+      [
+       391,
+       1308
+      ]
+     ]
+    },
+    "2nd-floor-room-outside": {
+     "color": "#d7aefb",
+     "name": "2nd Floor Room (Outside)",
+     "note": "",
+     "poly": [
+      [
+       255,
+       5806
+      ],
+      [
+       522,
+       5810
+      ],
+      [
+       528,
+       6092
+      ],
+      [
+       256,
+       6085
+      ]
+     ]
+    },
+    "2nd-floor-room-r-2nd-floor-2": {
+     "color": "#a7ffeb",
+     "name": "2nd Floor Room (r-2nd-floor-2)",
+     "note": "",
+     "poly": [
+      [
+       237,
+       5446
+      ],
+      [
+       800,
+       5445
+      ],
+      [
+       797,
+       5709
+      ],
+      [
+       222,
+       5698
+      ]
+     ]
+    },
+    "3rd-floor": {
+     "color": "#78d9ec",
+     "name": "3rd Floor",
+     "note": "",
+     "poly": [
+      [
+       353,
+       1145
+      ],
+      [
+       749,
+       1154
+      ],
+      [
+       740,
+       1291
+      ],
+      [
+       354,
+       1267
+      ]
+     ]
+    },
+    "3rd-floor-room-outside": {
+     "color": "#81c995",
+     "name": "3rd Floor Room (Outside)",
+     "note": "",
+     "poly": [
+      [
+       247,
+       5038
+      ],
+      [
+       516,
+       5032
+      ],
+      [
+       522,
+       5285
+      ],
+      [
+       233,
+       5294
+      ]
+     ]
+    },
+    "3rd-floor-room-r-3rd-floor-room": {
+     "color": "#fbbc04",
+     "name": "3rd Floor Room (r-3rd-floor-room)",
+     "note": "",
+     "poly": [
+      [
+       247,
+       4691
+      ],
+      [
+       255,
+       4889
+      ],
+      [
+       781,
+       4888
+      ],
+      [
+       775,
+       4680
+      ]
+     ]
+    },
+    "4th-floor": {
+     "color": "#d7aefb",
+     "name": "4th Floor",
+     "note": "",
+     "poly": [
+      [
+       756,
+       1012
+      ],
+      [
+       316,
+       995
+      ],
+      [
+       323,
+       1116
+      ],
+      [
+       758,
+       1114
+      ]
+     ]
+    },
+    "4th-floor-room": {
+     "color": "#f28b82",
+     "name": "4th Floor Room",
+     "note": "",
+     "poly": [
+      [
+       251,
+       4306
+      ],
+      [
+       777,
+       4307
+      ],
+      [
+       776,
+       4515
+      ],
+      [
+       245,
+       4506
+      ]
+     ]
+    },
+    "5th-floor": {
+     "color": "#a7ffeb",
+     "name": "5th Floor",
+     "note": "",
+     "poly": [
+      [
+       729,
+       824
+      ],
+      [
+       292,
+       811
+      ],
+      [
+       307,
+       963
+      ],
+      [
+       743,
+       953
+      ]
+     ]
+    },
+    "5th-floor-room-outside": {
+     "color": "#fde293",
+     "name": "5th Floor Room (Outside)",
+     "note": "",
+     "poly": [
+      [
+       256,
+       3912
+      ],
+      [
+       519,
+       3909
+      ],
+      [
+       523,
+       4118
+      ],
+      [
+       254,
+       4115
+      ]
+     ]
+    },
+    "5th-floor-room-r-5th-floor-room": {
+     "color": "#78d9ec",
+     "name": "5th Floor Room (r-5th-floor-room)",
+     "note": "",
+     "poly": [
+      [
+       252,
+       3522
+      ],
+      [
+       257,
+       3722
+      ],
+      [
+       792,
+       3726
+      ],
+      [
+       783,
+       3524
+      ]
+     ]
+    },
+    "6th-floor": {
+     "color": "#81c995",
+     "name": "6th Floor",
+     "note": "",
+     "poly": [
+      [
+       274,
+       667
+      ],
+      [
+       687,
+       676
+      ],
+      [
+       696,
+       805
+      ],
+      [
+       272,
+       793
+      ]
+     ]
+    },
+    "6th-floor-room-outside": {
+     "color": "#ff8bcb",
+     "name": "6th Floor Room (Outside)",
+     "note": "",
+     "poly": [
+      [
+       254,
+       3122
+      ],
+      [
+       516,
+       3123
+      ],
+      [
+       526,
+       3338
+      ],
+      [
+       248,
+       3331
+      ]
+     ]
+    },
+    "6th-floor-room-r-6th-floor-room": {
+     "color": "#d7aefb",
+     "name": "6th Floor Room (r-6th-floor-room)",
+     "note": "",
+     "poly": [
+      [
+       237,
+       2725
+      ],
+      [
+       799,
+       2728
+      ],
+      [
+       797,
+       2977
+      ],
+      [
+       235,
+       2954
+      ]
+     ]
+    },
+    "7th-floor": {
+     "color": "#fbbc04",
+     "name": "7th Floor",
+     "note": "",
+     "poly": [
+      [
+       278,
+       488
+      ],
+      [
+       749,
+       499
+      ],
+      [
+       741,
+       665
+      ],
+      [
+       256,
+       654
+      ]
+     ]
+    },
+    "7th-floor-room-outside": {
+     "color": "#a7ffeb",
+     "name": "7th Floor Room (Outside)",
+     "note": "",
+     "poly": [
+      [
+       240,
+       2337
+      ],
+      [
+       529,
+       2335
+      ],
+      [
+       534,
+       2576
+      ],
+      [
+       240,
+       2565
+      ]
+     ]
+    },
+    "7th-floor-room-r-7th-floor-room": {
+     "color": "#81c995",
+     "name": "7th Floor Room (r-7th-floor-room)",
+     "note": "",
+     "poly": [
+      [
+       231,
+       1933
+      ],
+      [
+       228,
+       2190
+      ],
+      [
+       807,
+       2187
+      ],
+      [
+       814,
+       1930
+      ]
+     ]
+    },
+    "8th-floor": {
+     "color": "#f28b82",
+     "name": "8th Floor",
+     "note": "",
+     "poly": [
+      [
+       270,
+       316
+      ],
+      [
+       270,
+       471
+      ],
+      [
+       756,
+       475
+      ],
+      [
+       754,
+       325
+      ]
+     ]
+    },
+    "basement": {
+     "color": "#fbbc04",
+     "name": "Basement",
+     "note": "",
+     "poly": [
+      [
+       269,
+       1623
+      ],
+      [
+       769,
+       1625
+      ],
+      [
+       759,
+       1757
+      ],
+      [
+       268,
+       1754
+      ]
+     ]
+    },
+    "basement-room": {
+     "color": "#ff8bcb",
+     "name": "Basement Room",
+     "note": "",
+     "poly": [
+      [
+       250,
+       6264
+      ],
+      [
+       777,
+       6265
+      ],
+      [
+       781,
+       6481
+      ],
+      [
+       246,
+       6468
+      ]
+     ]
+    },
+    "g-1-entrance": {
+     "color": "#ff8bcb",
+     "name": "G-1 Entrance",
+     "note": "",
+     "poly": [
+      [
+       263,
+       1118
+      ],
+      [
+       309,
+       1112
+      ],
+      [
+       316,
+       1202
+      ],
+      [
+       263,
+       1187
       ]
      ]
     },
@@ -2601,10 +7633,109 @@
    "req": null
   },
   "g04": {
-   "conns": [],
+   "conns": [
+    {
+     "from": "g-2-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    },
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "g-2-entrance",
+     "unsure": false
+    },
+    {
+     "from": "g-5-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    },
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "g-5-entrance",
+     "unsure": false
+    }
+   ],
    "members": {},
    "note": "",
    "regions": {
+    "g-2-entrance": {
+     "color": "#f28b82",
+     "name": "G-2 Entrance",
+     "note": "",
+     "poly": [
+      [
+       248,
+       277
+      ],
+      [
+       360,
+       277
+      ],
+      [
+       353,
+       406
+      ],
+      [
+       233,
+       406
+      ]
+     ]
+    },
+    "g-5-entrance": {
+     "color": "#fbbc04",
+     "name": "G-5 Entrance",
+     "note": "",
+     "poly": [
+      [
+       1457,
+       297
+      ],
+      [
+       1621,
+       295
+      ],
+      [
+       1601,
+       447
+      ],
+      [
+       1447,
+       431
+      ]
+     ]
+    },
     "main": {
      "color": "#8ab4f8",
      "name": "Main",
@@ -2626,11 +7757,11 @@
        ]
       ]
      },
-     "to": "pad",
+     "to": "hub-entrance",
      "unsure": false
     },
     {
-     "from": "pad",
+     "from": "hub-entrance",
      "note": "",
      "req": {
       "normal": [
@@ -2641,21 +7772,64 @@
      },
      "to": "main",
      "unsure": false
+    },
+    {
+     "from": "g-4-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    },
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "g-4-entrance",
+     "unsure": false
     }
    ],
    "members": {},
    "note": "",
    "regions": {
-    "main": {
-     "color": "#8ab4f8",
-     "name": "Main",
+    "g-4-entrance": {
+     "color": "#f28b82",
+     "name": "G-4 Entrance",
      "note": "",
-     "poly": null
+     "poly": [
+      [
+       201,
+       482
+      ],
+      [
+       407,
+       476
+      ],
+      [
+       390,
+       636
+      ],
+      [
+       226,
+       622
+      ]
+     ]
     },
-    "pad": {
+    "hub-entrance": {
      "color": "#d7aefb",
-     "name": "Pad",
-     "note": "POLÍGONO PROVISIONAL (bbox migrado): redibujar. ",
+     "name": "Hub Entrance",
+     "note": "",
      "poly": [
       [
        3248,
@@ -2674,6 +7848,12 @@
        592
       ]
      ]
+    },
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
     }
    },
    "req": null
@@ -2693,24 +7873,392 @@
    "req": null
   },
   "h02": {
-   "conns": [],
+   "conns": [
+    {
+     "from": "h-1-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "mini-boss-room",
+     "unsure": false
+    },
+    {
+     "from": "mini-boss-room",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "h-1-entrance",
+     "unsure": false
+    },
+    {
+     "from": "h-3-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "mini-boss-room",
+     "unsure": false
+    },
+    {
+     "from": "mini-boss-room",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "h-3-entrance",
+     "unsure": false
+    }
+   ],
    "members": {},
    "note": "",
    "regions": {
+    "h-1-entrance": {
+     "color": "#f28b82",
+     "name": "H-1 Entrance",
+     "note": "",
+     "poly": [
+      [
+       243,
+       651
+      ],
+      [
+       367,
+       639
+      ],
+      [
+       369,
+       753
+      ],
+      [
+       219,
+       764
+      ]
+     ]
+    },
+    "h-3-entrance": {
+     "color": "#fbbc04",
+     "name": "H-3 Entrance",
+     "note": "",
+     "poly": [
+      [
+       1378,
+       625
+      ],
+      [
+       1372,
+       806
+      ],
+      [
+       1631,
+       794
+      ],
+      [
+       1604,
+       579
+      ]
+     ]
+    },
     "main": {
      "color": "#8ab4f8",
      "name": "Main",
      "note": "",
      "poly": null
+    },
+    "mini-boss-room": {
+     "color": "#81c995",
+     "name": "Mini-Boss Room",
+     "note": "",
+     "poly": [
+      [
+       470,
+       389
+      ],
+      [
+       1199,
+       373
+      ],
+      [
+       1224,
+       908
+      ],
+      [
+       404,
+       891
+      ]
+     ]
     }
    },
    "req": null
   },
   "h03": {
-   "conns": [],
+   "conns": [
+    {
+     "from": "left-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "FX",
+        "HU"
+       ]
+      ]
+     },
+     "to": "hidden-room",
+     "unsure": false
+    },
+    {
+     "from": "hidden-room",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "FX",
+        "HU"
+       ]
+      ]
+     },
+     "to": "left-area",
+     "unsure": false
+    },
+    {
+     "from": "h-4-entrance",
+     "note": "",
+     "req": {
+      "expert": [
+       []
+      ],
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "blimps",
+     "unsure": false
+    },
+    {
+     "from": "blimps",
+     "note": "",
+     "req": {
+      "expert": [
+       []
+      ],
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "h-4-entrance",
+     "unsure": false
+    },
+    {
+     "from": "blimps",
+     "note": "",
+     "req": {
+      "expert": [
+       []
+      ],
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "left-area",
+     "unsure": false
+    },
+    {
+     "from": "left-area",
+     "note": "",
+     "req": {
+      "expert": [
+       []
+      ],
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "blimps",
+     "unsure": false
+    },
+    {
+     "from": "h-2-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "left-area",
+     "unsure": false
+    },
+    {
+     "from": "left-area",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "h-2-entrance",
+     "unsure": false
+    }
+   ],
    "members": {},
    "note": "",
    "regions": {
+    "blimps": {
+     "color": "#81c995",
+     "name": "Blimps",
+     "note": "",
+     "poly": [
+      [
+       2746,
+       157
+      ],
+      [
+       3711,
+       157
+      ],
+      [
+       3715,
+       666
+      ],
+      [
+       2748,
+       692
+      ]
+     ]
+    },
+    "h-2-entrance": {
+     "color": "#d7aefb",
+     "name": "H-2 Entrance",
+     "note": "",
+     "poly": [
+      [
+       211,
+       793
+      ],
+      [
+       382,
+       801
+      ],
+      [
+       398,
+       1025
+      ],
+      [
+       191,
+       1016
+      ]
+     ]
+    },
+    "h-4-entrance": {
+     "color": "#a7ffeb",
+     "name": "H-4 Entrance",
+     "note": "",
+     "poly": [
+      [
+       3741,
+       266
+      ],
+      [
+       3743,
+       477
+      ],
+      [
+       3902,
+       470
+      ],
+      [
+       3898,
+       231
+      ]
+     ]
+    },
+    "hidden-room": {
+     "color": "#f28b82",
+     "name": "Hidden Room",
+     "note": "",
+     "poly": [
+      [
+       2047,
+       805
+      ],
+      [
+       2049,
+       1036
+      ],
+      [
+       2431,
+       1034
+      ],
+      [
+       2408,
+       750
+      ]
+     ]
+    },
+    "left-area": {
+     "color": "#fbbc04",
+     "name": "Left Area",
+     "note": "",
+     "poly": [
+      [
+       521,
+       756
+      ],
+      [
+       515,
+       1023
+      ],
+      [
+       2014,
+       1070
+      ],
+      [
+       2016,
+       694
+      ],
+      [
+       2716,
+       681
+      ],
+      [
+       2709,
+       144
+      ],
+      [
+       1764,
+       129
+      ],
+      [
+       1454,
+       653
+      ]
+     ]
+    },
     "main": {
      "color": "#8ab4f8",
      "name": "Main",
@@ -2723,7 +8271,7 @@
   "h04": {
    "conns": [
     {
-     "from": "main",
+     "from": "h-3-entrance",
      "note": "",
      "req": {
       "normal": [
@@ -2732,11 +8280,11 @@
        ]
       ]
      },
-     "to": "oeste",
+     "to": "boss-room",
      "unsure": false
     },
     {
-     "from": "oeste",
+     "from": "boss-room",
      "note": "",
      "req": {
       "normal": [
@@ -2745,23 +8293,137 @@
        ]
       ]
      },
-     "to": "main",
+     "to": "h-3-entrance",
+     "unsure": false
+    },
+    {
+     "from": "a-3-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "right-area",
+     "unsure": false
+    },
+    {
+     "from": "right-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "a-3-entrance",
+     "unsure": false
+    },
+    {
+     "from": "right-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "boss-room",
+     "unsure": false
+    },
+    {
+     "from": "boss-room",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "right-area",
+     "unsure": false
+    },
+    {
+     "from": "upper-right-area",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "right-area",
+     "unsure": false
+    },
+    {
+     "from": "right-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "HX"
+       ]
+      ]
+     },
+     "to": "upper-right-area",
      "unsure": false
     }
    ],
    "members": {},
    "note": "",
    "regions": {
-    "main": {
-     "color": "#8ab4f8",
-     "name": "Main",
+    "a-3-entrance": {
+     "color": "#81c995",
+     "name": "A-3 Entrance",
      "note": "",
-     "poly": null
+     "poly": [
+      [
+       757,
+       1774
+      ],
+      [
+       847,
+       1774
+      ],
+      [
+       843,
+       1865
+      ],
+      [
+       751,
+       1867
+      ]
+     ]
     },
-    "oeste": {
+    "boss-room": {
+     "color": "#f28b82",
+     "name": "Boss Room",
+     "note": "",
+     "poly": [
+      [
+       353,
+       778
+      ],
+      [
+       770,
+       784
+      ],
+      [
+       781,
+       1002
+      ],
+      [
+       354,
+       993
+      ]
+     ]
+    },
+    "h-3-entrance": {
      "color": "#ff8bcb",
-     "name": "Oeste",
-     "note": "POLÍGONO PROVISIONAL (bbox migrado): redibujar. ",
+     "name": "H-3 Entrance",
+     "note": "\n",
      "poly": [
       [
        240,
@@ -2778,6 +8440,66 @@
       [
        240,
        992
+      ]
+     ]
+    },
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    },
+    "right-area": {
+     "color": "#a7ffeb",
+     "name": "Right Area",
+     "note": "",
+     "poly": [
+      [
+       768,
+       342
+      ],
+      [
+       1366,
+       349
+      ],
+      [
+       1379,
+       2010
+      ],
+      [
+       851,
+       1991
+      ],
+      [
+       864,
+       1323
+      ],
+      [
+       818,
+       1023
+      ]
+     ]
+    },
+    "upper-right-area": {
+     "color": "#fbbc04",
+     "name": "Upper Right Area",
+     "note": "",
+     "poly": [
+      [
+       1009,
+       185
+      ],
+      [
+       1302,
+       179
+      ],
+      [
+       1309,
+       310
+      ],
+      [
+       1001,
+       299
       ]
      ]
     }
@@ -2785,29 +8507,658 @@
    "req": null
   },
   "i01": {
-   "conns": [],
+   "conns": [
+    {
+     "from": "hub-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "left-area",
+     "unsure": false
+    },
+    {
+     "from": "left-area",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "hub-entrance",
+     "unsure": false
+    },
+    {
+     "from": "left-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "i-2-entrance",
+     "unsure": false
+    },
+    {
+     "from": "i-2-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "left-area",
+     "unsure": false
+    },
+    {
+     "from": "tower-interior",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "HU"
+       ]
+      ]
+     },
+     "to": "left-area",
+     "unsure": false
+    },
+    {
+     "from": "tower-interior",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "FX"
+       ]
+      ]
+     },
+     "to": "i-2-entrance",
+     "unsure": false
+    },
+    {
+     "from": "tower-interior",
+     "note": "",
+     "req": {
+      "expert": [
+       [
+        "MODEL"
+       ]
+      ],
+      "normal": [
+       [
+        "PX"
+       ]
+      ]
+     },
+     "to": "dark-room-1",
+     "unsure": false
+    },
+    {
+     "from": "dark-room-1",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "tower-interior",
+     "unsure": false
+    },
+    {
+     "from": "dark-room-1",
+     "note": "",
+     "req": {
+      "expert": [
+       [
+        "MODEL"
+       ]
+      ],
+      "normal": [
+       [
+        "PX"
+       ],
+       [
+        "LX"
+       ]
+      ]
+     },
+     "to": "dark-room-2",
+     "unsure": false
+    },
+    {
+     "from": "dark-room-2",
+     "note": "",
+     "req": {
+      "expert": [
+       [
+        "MODEL"
+       ]
+      ],
+      "normal": [
+       [
+        "PX"
+       ],
+       [
+        "LX"
+       ]
+      ]
+     },
+     "to": "dark-room-1",
+     "unsure": false
+    },
+    {
+     "from": "dark-room-2",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "PX"
+       ],
+       [
+        "LX"
+       ]
+      ]
+     },
+     "to": "i-3-entrance",
+     "unsure": false
+    },
+    {
+     "from": "i-3-entrance",
+     "note": "",
+     "req": {
+      "expert": [
+       [
+        "MODEL"
+       ]
+      ],
+      "normal": [
+       [
+        "PX"
+       ],
+       [
+        "LX"
+       ]
+      ]
+     },
+     "to": "dark-room-2",
+     "unsure": false
+    }
+   ],
    "members": {},
    "note": "",
    "regions": {
+    "dark-room-1": {
+     "color": "#d7aefb",
+     "name": "Dark Room 1",
+     "note": "",
+     "poly": [
+      [
+       2525,
+       180
+      ],
+      [
+       2518,
+       445
+      ],
+      [
+       3699,
+       450
+      ],
+      [
+       3695,
+       139
+      ]
+     ]
+    },
+    "dark-room-2": {
+     "color": "#ff8bcb",
+     "name": "Dark Room 2",
+     "note": "",
+     "poly": [
+      [
+       2502,
+       565
+      ],
+      [
+       2507,
+       826
+      ],
+      [
+       3406,
+       775
+      ],
+      [
+       3408,
+       565
+      ]
+     ]
+    },
+    "hub-entrance": {
+     "color": "#f28b82",
+     "name": "Hub Entrance",
+     "note": "",
+     "poly": [
+      [
+       258,
+       849
+      ],
+      [
+       335,
+       846
+      ],
+      [
+       331,
+       959
+      ],
+      [
+       245,
+       957
+      ]
+     ]
+    },
+    "i-2-entrance": {
+     "color": "#81c995",
+     "name": "I-2 Entrance",
+     "note": "",
+     "poly": [
+      [
+       1833,
+       457
+      ],
+      [
+       1835,
+       577
+      ],
+      [
+       2053,
+       582
+      ],
+      [
+       2048,
+       449
+      ]
+     ]
+    },
+    "i-3-entrance": {
+     "color": "#78d9ec",
+     "name": "I-3 Entrance",
+     "note": "",
+     "poly": [
+      [
+       3442,
+       572
+      ],
+      [
+       3453,
+       797
+      ],
+      [
+       3652,
+       796
+      ],
+      [
+       3658,
+       545
+      ]
+     ]
+    },
+    "left-area": {
+     "color": "#fbbc04",
+     "name": "Left Area",
+     "note": "",
+     "poly": [
+      [
+       352,
+       500
+      ],
+      [
+       350,
+       959
+      ],
+      [
+       1750,
+       963
+      ],
+      [
+       1804,
+       623
+      ]
+     ]
+    },
     "main": {
      "color": "#8ab4f8",
      "name": "Main",
      "note": "",
      "poly": null
+    },
+    "tower-interior": {
+     "color": "#a7ffeb",
+     "name": "Tower Interior",
+     "note": "",
+     "poly": [
+      [
+       1835,
+       612
+      ],
+      [
+       1801,
+       973
+      ],
+      [
+       2082,
+       969
+      ],
+      [
+       2075,
+       605
+      ]
+     ]
     }
    },
    "req": null
   },
   "i02": {
-   "conns": [],
+   "conns": [
+    {
+     "from": "i-1-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "upper-area",
+     "unsure": false
+    },
+    {
+     "from": "upper-area",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "i-1-entrance",
+     "unsure": false
+    },
+    {
+     "from": "upper-area",
+     "note": "",
+     "req": {
+      "expert": [
+       []
+      ],
+      "normal": [
+       [
+        "PX"
+       ],
+       [
+        "LX"
+       ]
+      ]
+     },
+     "to": "dark-area",
+     "unsure": false
+    },
+    {
+     "from": "dark-area",
+     "note": "",
+     "req": {
+      "expert": [
+       []
+      ],
+      "normal": [
+       [
+        "PX"
+       ],
+       [
+        "LX"
+       ]
+      ]
+     },
+     "to": "upper-area",
+     "unsure": false
+    },
+    {
+     "from": "dark-area",
+     "note": "",
+     "req": {
+      "expert": [
+       []
+      ],
+      "normal": [
+       [
+        "PX"
+       ],
+       [
+        "LX"
+       ]
+      ]
+     },
+     "to": "i-4-entrance",
+     "unsure": false
+    },
+    {
+     "from": "i-4-entrance",
+     "note": "",
+     "req": {
+      "expert": [
+       []
+      ],
+      "normal": [
+       [
+        "PX"
+       ],
+       [
+        "LX"
+       ]
+      ]
+     },
+     "to": "dark-area",
+     "unsure": false
+    },
+    {
+     "from": "upper-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "HX"
+       ]
+      ]
+     },
+     "to": "spikes",
+     "unsure": false
+    },
+    {
+     "from": "spikes",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "HX"
+       ]
+      ]
+     },
+     "to": "i-5-entrance",
+     "unsure": false
+    }
+   ],
    "members": {},
    "note": "",
    "regions": {
+    "dark-area": {
+     "color": "#fbbc04",
+     "name": "Dark Area",
+     "note": "",
+     "poly": [
+      [
+       775,
+       592
+      ],
+      [
+       1807,
+       592
+      ],
+      [
+       1787,
+       934
+      ],
+      [
+       2101,
+       963
+      ],
+      [
+       2083,
+       1265
+      ],
+      [
+       1260,
+       1231
+      ],
+      [
+       1173,
+       838
+      ],
+      [
+       775,
+       812
+      ]
+     ]
+    },
+    "i-1-entrance": {
+     "color": "#81c995",
+     "name": "I-1 Entrance",
+     "note": "",
+     "poly": [
+      [
+       246,
+       298
+      ],
+      [
+       342,
+       295
+      ],
+      [
+       345,
+       441
+      ],
+      [
+       260,
+       433
+      ]
+     ]
+    },
+    "i-4-entrance": {
+     "color": "#f28b82",
+     "name": "I-4 Entrance",
+     "note": "",
+     "poly": [
+      [
+       2142,
+       1072
+      ],
+      [
+       2153,
+       1182
+      ],
+      [
+       2272,
+       1196
+      ],
+      [
+       2277,
+       1070
+      ]
+     ]
+    },
+    "i-5-entrance": {
+     "color": "#d7aefb",
+     "name": "I-5 Entrance",
+     "note": "",
+     "poly": [
+      [
+       2150,
+       667
+      ],
+      [
+       2145,
+       817
+      ],
+      [
+       2313,
+       802
+      ],
+      [
+       2280,
+       689
+      ]
+     ]
+    },
     "main": {
      "color": "#8ab4f8",
      "name": "Main",
      "note": "",
      "poly": null
+    },
+    "spikes": {
+     "color": "#ff8bcb",
+     "name": "Spikes",
+     "note": "",
+     "poly": [
+      [
+       1899,
+       204
+      ],
+      [
+       1900,
+       553
+      ],
+      [
+       2372,
+       579
+      ],
+      [
+       2369,
+       142
+      ]
+     ]
+    },
+    "upper-area": {
+     "color": "#a7ffeb",
+     "name": "Upper Area",
+     "note": "",
+     "poly": [
+      [
+       388,
+       300
+      ],
+      [
+       429,
+       630
+      ],
+      [
+       706,
+       814
+      ],
+      [
+       728,
+       538
+      ],
+      [
+       1886,
+       364
+      ],
+      [
+       1874,
+       173
+      ]
+     ]
     }
    },
    "req": null
@@ -2815,7 +9166,7 @@
   "i03": {
    "conns": [
     {
-     "from": "main",
+     "from": "hub-entrance",
      "note": "",
      "req": {
       "normal": [
@@ -2824,11 +9175,11 @@
        ]
       ]
      },
-     "to": "pad",
+     "to": "boss-room",
      "unsure": false
     },
     {
-     "from": "pad",
+     "from": "boss-room",
      "note": "",
      "req": {
       "normal": [
@@ -2837,25 +9188,186 @@
        ]
       ]
      },
-     "to": "main",
+     "to": "hub-entrance",
+     "unsure": false
+    },
+    {
+     "from": "boss-room",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "before-boss-room",
+     "unsure": false
+    },
+    {
+     "from": "before-boss-room",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "boss-room",
+     "unsure": false
+    },
+    {
+     "from": "i-1-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "before-boss-room",
+     "unsure": false
+    },
+    {
+     "from": "before-boss-room",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "i-1-entrance",
+     "unsure": false
+    },
+    {
+     "from": "above-i-1-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "before-boss-room",
+     "unsure": false
+    },
+    {
+     "from": "before-boss-room",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "above-i-1-entrance",
+     "unsure": false
+    },
+    {
+     "from": "i-5-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "above-i-1-entrance",
+     "unsure": false
+    },
+    {
+     "from": "i-5-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "before-boss-room",
      "unsure": false
     }
    ],
    "members": {
-    "z01 transerver to i03@in": "pad"
+    "z01 transerver to i03@in": "hub-entrance"
    },
    "note": "",
    "regions": {
-    "main": {
-     "color": "#8ab4f8",
-     "name": "Main",
+    "above-i-1-entrance": {
+     "color": "#81c995",
+     "name": "Above I-1 Entrance",
      "note": "",
-     "poly": null
+     "poly": [
+      [
+       247,
+       779
+      ],
+      [
+       241,
+       849
+      ],
+      [
+       494,
+       849
+      ],
+      [
+       488,
+       765
+      ]
+     ]
     },
-    "pad": {
+    "before-boss-room": {
+     "color": "#d7aefb",
+     "name": "Before Boss Room",
+     "note": "",
+     "poly": [
+      [
+       507,
+       871
+      ],
+      [
+       1012,
+       869
+      ],
+      [
+       1006,
+       963
+      ],
+      [
+       485,
+       958
+      ]
+     ]
+    },
+    "boss-room": {
+     "color": "#ff8bcb",
+     "name": "Boss Room",
+     "note": "",
+     "poly": [
+      [
+       1305,
+       780
+      ],
+      [
+       1545,
+       782
+      ],
+      [
+       1548,
+       964
+      ],
+      [
+       1291,
+       965
+      ]
+     ]
+    },
+    "hub-entrance": {
      "color": "#78d9ec",
-     "name": "Pad",
-     "note": "POLÍGONO PROVISIONAL (bbox migrado): redibujar. ",
+     "name": "Hub Entrance",
+     "note": "",
      "poly": [
       [
        2128,
@@ -2874,76 +9386,1437 @@
        992
       ]
      ]
+    },
+    "i-1-entrance": {
+     "color": "#fbbc04",
+     "name": "I-1 Entrance",
+     "note": "",
+     "poly": [
+      [
+       323,
+       912
+      ],
+      [
+       364,
+       914
+      ],
+      [
+       365,
+       975
+      ],
+      [
+       329,
+       969
+      ]
+     ]
+    },
+    "i-4-entrance": {
+     "color": "#f28b82",
+     "name": "I-4 Entrance",
+     "note": "",
+     "poly": [
+      [
+       889,
+       699
+      ],
+      [
+       968,
+       698
+      ],
+      [
+       971,
+       792
+      ],
+      [
+       879,
+       791
+      ]
+     ]
+    },
+    "i-5-entrance": {
+     "color": "#a7ffeb",
+     "name": "I-5 Entrance",
+     "note": "",
+     "poly": [
+      [
+       590,
+       471
+      ],
+      [
+       1023,
+       472
+      ],
+      [
+       1019,
+       580
+      ],
+      [
+       592,
+       562
+      ]
+     ]
+    },
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
     }
    },
    "req": null
   },
   "i04": {
-   "conns": [],
+   "conns": [
+    {
+     "from": "i-3-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "platforms",
+     "unsure": false
+    },
+    {
+     "from": "platforms",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "i-3-entrance",
+     "unsure": false
+    },
+    {
+     "from": "platforms",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "mini-boss-room",
+     "unsure": false
+    },
+    {
+     "from": "mini-boss-room",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "platforms",
+     "unsure": false
+    },
+    {
+     "from": "i-2-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "mini-boss-room",
+     "unsure": false
+    },
+    {
+     "from": "mini-boss-room",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "i-2-entrance",
+     "unsure": false
+    }
+   ],
    "members": {},
    "note": "",
    "regions": {
+    "i-2-entrance": {
+     "color": "#f28b82",
+     "name": "I-2 Entrance",
+     "note": "",
+     "poly": [
+      [
+       241,
+       488
+      ],
+      [
+       314,
+       487
+      ],
+      [
+       316,
+       592
+      ],
+      [
+       247,
+       592
+      ]
+     ]
+    },
+    "i-3-entrance": {
+     "color": "#a7ffeb",
+     "name": "I-3 Entrance",
+     "note": "",
+     "poly": [
+      [
+       3238,
+       249
+      ],
+      [
+       3364,
+       247
+      ],
+      [
+       3351,
+       375
+      ],
+      [
+       3218,
+       369
+      ]
+     ]
+    },
     "main": {
      "color": "#8ab4f8",
      "name": "Main",
      "note": "",
      "poly": null
+    },
+    "mini-boss-room": {
+     "color": "#fbbc04",
+     "name": "Mini-Boss Room",
+     "note": "",
+     "poly": [
+      [
+       634,
+       381
+      ],
+      [
+       1176,
+       384
+      ],
+      [
+       1187,
+       596
+      ],
+      [
+       593,
+       599
+      ]
+     ]
+    },
+    "platforms": {
+     "color": "#81c995",
+     "name": "Platforms",
+     "note": "",
+     "poly": [
+      [
+       1370,
+       171
+      ],
+      [
+       2210,
+       180
+      ],
+      [
+       2220,
+       684
+      ],
+      [
+       1308,
+       668
+      ]
+     ]
     }
    },
    "req": null
   },
   "i05": {
-   "conns": [],
+   "conns": [
+    {
+     "from": "i-3-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "right-area",
+     "unsure": false
+    },
+    {
+     "from": "right-area",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "i-3-entrance",
+     "unsure": false
+    },
+    {
+     "from": "i-2-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "mini-boss-room",
+     "unsure": false
+    },
+    {
+     "from": "mini-boss-room",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "i-2-entrance",
+     "unsure": false
+    },
+    {
+     "from": "mini-boss-room",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "right-area",
+     "unsure": false
+    },
+    {
+     "from": "right-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "mini-boss-room",
+     "unsure": false
+    }
+   ],
    "members": {},
    "note": "",
    "regions": {
+    "i-2-entrance": {
+     "color": "#fbbc04",
+     "name": "I-2 Entrance",
+     "note": "",
+     "poly": [
+      [
+       235,
+       691
+      ],
+      [
+       329,
+       697
+      ],
+      [
+       352,
+       793
+      ],
+      [
+       214,
+       800
+      ]
+     ]
+    },
+    "i-3-entrance": {
+     "color": "#81c995",
+     "name": "I-3 Entrance",
+     "note": "",
+     "poly": [
+      [
+       3221,
+       666
+      ],
+      [
+       3356,
+       671
+      ],
+      [
+       3364,
+       866
+      ],
+      [
+       3162,
+       827
+      ]
+     ]
+    },
     "main": {
      "color": "#8ab4f8",
      "name": "Main",
      "note": "",
      "poly": null
+    },
+    "mini-boss-room": {
+     "color": "#f28b82",
+     "name": "Mini-Boss Room",
+     "note": "",
+     "poly": [
+      [
+       601,
+       510
+      ],
+      [
+       1264,
+       500
+      ],
+      [
+       1293,
+       813
+      ],
+      [
+       535,
+       791
+      ]
+     ]
+    },
+    "right-area": {
+     "color": "#a7ffeb",
+     "name": "Right Area",
+     "note": "",
+     "poly": [
+      [
+       2711,
+       362
+      ],
+      [
+       3395,
+       371
+      ],
+      [
+       3377,
+       636
+      ],
+      [
+       3108,
+       634
+      ],
+      [
+       3010,
+       842
+      ],
+      [
+       1377,
+       829
+      ],
+      [
+       1314,
+       504
+      ]
+     ]
     }
    },
    "req": null
   },
   "j01": {
-   "conns": [],
+   "conns": [
+    {
+     "from": "a-4-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "left-area",
+     "unsure": false
+    },
+    {
+     "from": "left-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "a-4-entrance",
+     "unsure": false
+    },
+    {
+     "from": "upper-right-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "lower-right-area",
+     "unsure": false
+    },
+    {
+     "from": "lower-right-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "upper-right-area",
+     "unsure": false
+    },
+    {
+     "from": "left-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "LX"
+       ]
+      ]
+     },
+     "to": "upper-right-area",
+     "unsure": false
+    },
+    {
+     "from": "upper-right-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "LX"
+       ]
+      ]
+     },
+     "to": "left-area",
+     "unsure": false
+    },
+    {
+     "from": "lower-right-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "j-2-entrance",
+     "unsure": false
+    },
+    {
+     "from": "j-2-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "lower-right-area",
+     "unsure": false
+    },
+    {
+     "from": "hub-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "upper-right-area",
+     "unsure": false
+    },
+    {
+     "from": "upper-right-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "hub-entrance",
+     "unsure": false
+    }
+   ],
    "members": {},
    "note": "",
    "regions": {
+    "a-4-entrance": {
+     "color": "#f28b82",
+     "name": "A-4 Entrance",
+     "note": "",
+     "poly": [
+      [
+       398,
+       306
+      ],
+      [
+       518,
+       311
+      ],
+      [
+       506,
+       404
+      ],
+      [
+       420,
+       397
+      ]
+     ]
+    },
+    "hub-entrance": {
+     "color": "#fbbc04",
+     "name": "Hub Entrance",
+     "note": "",
+     "poly": [
+      [
+       1190,
+       223
+      ],
+      [
+       1188,
+       281
+      ],
+      [
+       1251,
+       284
+      ],
+      [
+       1259,
+       224
+      ]
+     ]
+    },
+    "j-2-entrance": {
+     "color": "#81c995",
+     "name": "J-2 Entrance",
+     "note": "",
+     "poly": [
+      [
+       1218,
+       527
+      ],
+      [
+       1281,
+       521
+      ],
+      [
+       1285,
+       601
+      ],
+      [
+       1208,
+       600
+      ]
+     ]
+    },
+    "left-area": {
+     "color": "#a7ffeb",
+     "name": "Left Area",
+     "note": "",
+     "poly": [
+      [
+       329,
+       409
+      ],
+      [
+       727,
+       416
+      ],
+      [
+       752,
+       577
+      ],
+      [
+       272,
+       557
+      ]
+     ]
+    },
+    "lower-right-area": {
+     "color": "#d7aefb",
+     "name": "Lower Right Area",
+     "note": "",
+     "poly": [
+      [
+       892,
+       435
+      ],
+      [
+       1200,
+       462
+      ],
+      [
+       1180,
+       630
+      ],
+      [
+       806,
+       613
+      ]
+     ]
+    },
     "main": {
      "color": "#8ab4f8",
      "name": "Main",
      "note": "",
      "poly": null
+    },
+    "side-room": {
+     "color": "#78d9ec",
+     "name": "Side Room",
+     "note": "",
+     "poly": [
+      [
+       229,
+       772
+      ],
+      [
+       806,
+       793
+      ],
+      [
+       805,
+       1003
+      ],
+      [
+       227,
+       1001
+      ]
+     ]
+    },
+    "upper-right-area": {
+     "color": "#ff8bcb",
+     "name": "Upper Right Area",
+     "note": "",
+     "poly": [
+      [
+       878,
+       224
+      ],
+      [
+       1164,
+       224
+      ],
+      [
+       1175,
+       366
+      ],
+      [
+       877,
+       382
+      ]
+     ]
     }
    },
    "req": null
   },
   "j02": {
-   "conns": [],
+   "conns": [
+    {
+     "from": "j-1-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "water-area",
+     "unsure": false
+    },
+    {
+     "from": "water-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "j-1-entrance",
+     "unsure": false
+    },
+    {
+     "from": "water-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "HU"
+       ],
+       [
+        "LX"
+       ]
+      ]
+     },
+     "to": "surface",
+     "unsure": false
+    },
+    {
+     "from": "surface",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "water-area",
+     "unsure": false
+    },
+    {
+     "from": "j-3-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "water-area",
+     "unsure": false
+    },
+    {
+     "from": "water-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "j-3-entrance",
+     "unsure": false
+    },
+    {
+     "from": "j-4-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "area-below",
+     "unsure": false
+    },
+    {
+     "from": "area-below",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "j-4-entrance",
+     "unsure": false
+    },
+    {
+     "from": "area-below",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "HU",
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "water-area",
+     "unsure": false
+    }
+   ],
    "members": {},
    "note": "",
    "regions": {
+    "area-below": {
+     "color": "#a7ffeb",
+     "name": "Area Below",
+     "note": "",
+     "poly": [
+      [
+       805,
+       813
+      ],
+      [
+       806,
+       1108
+      ],
+      [
+       2899,
+       1167
+      ],
+      [
+       2889,
+       915
+      ],
+      [
+       3144,
+       913
+      ],
+      [
+       3132,
+       785
+      ]
+     ]
+    },
+    "j-1-entrance": {
+     "color": "#fbbc04",
+     "name": "J-1 Entrance",
+     "note": "",
+     "poly": [
+      [
+       241,
+       682
+      ],
+      [
+       334,
+       682
+      ],
+      [
+       341,
+       841
+      ],
+      [
+       220,
+       828
+      ]
+     ]
+    },
+    "j-3-entrance": {
+     "color": "#ff8bcb",
+     "name": "J-3 Entrance",
+     "note": "",
+     "poly": [
+      [
+       3235,
+       698
+      ],
+      [
+       3385,
+       698
+      ],
+      [
+       3376,
+       842
+      ],
+      [
+       3230,
+       839
+      ]
+     ]
+    },
+    "j-4-entrance": {
+     "color": "#81c995",
+     "name": "J-4 Entrance",
+     "note": "",
+     "poly": [
+      [
+       2929,
+       1000
+      ],
+      [
+       2934,
+       1140
+      ],
+      [
+       3141,
+       1173
+      ],
+      [
+       3136,
+       973
+      ]
+     ]
+    },
     "main": {
      "color": "#8ab4f8",
      "name": "Main",
      "note": "",
      "poly": null
+    },
+    "surface": {
+     "color": "#f28b82",
+     "name": "Surface",
+     "note": "",
+     "poly": [
+      [
+       1565,
+       401
+      ],
+      [
+       1560,
+       539
+      ],
+      [
+       2784,
+       526
+      ],
+      [
+       2789,
+       348
+      ]
+     ]
+    },
+    "water-area": {
+     "color": "#d7aefb",
+     "name": "Water Area",
+     "note": "",
+     "poly": [
+      [
+       383,
+       566
+      ],
+      [
+       3350,
+       566
+      ],
+      [
+       3350,
+       658
+      ],
+      [
+       3141,
+       658
+      ],
+      [
+       3144,
+       767
+      ],
+      [
+       736,
+       741
+      ],
+      [
+       748,
+       1114
+      ],
+      [
+       354,
+       1100
+      ]
+     ]
     }
    },
    "req": null
   },
   "j03": {
-   "conns": [],
+   "conns": [
+    {
+     "from": "j-2-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "mini-boss-room",
+     "unsure": false
+    },
+    {
+     "from": "mini-boss-room",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "j-2-entrance",
+     "unsure": false
+    },
+    {
+     "from": "1st-water-segment",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "LX"
+       ]
+      ]
+     },
+     "to": "2nd-water-segment",
+     "unsure": false
+    },
+    {
+     "from": "2nd-water-segment",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "LX"
+       ]
+      ]
+     },
+     "to": "1st-water-segment",
+     "unsure": false
+    },
+    {
+     "from": "1st-water-segment",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "LX"
+       ],
+       [
+        "HU",
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "surface",
+     "unsure": false
+    },
+    {
+     "from": "surface",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "1st-water-segment",
+     "unsure": false
+    },
+    {
+     "from": "surface",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "2nd-water-segment",
+     "unsure": false
+    },
+    {
+     "from": "2nd-water-segment",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "LX"
+       ],
+       [
+        "HU",
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "surface",
+     "unsure": false
+    },
+    {
+     "from": "surface",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "3rd-water-segment",
+     "unsure": false
+    },
+    {
+     "from": "3rd-water-segment",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "LX"
+       ],
+       [
+        "HU",
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "surface",
+     "unsure": false
+    },
+    {
+     "from": "mini-boss-room",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "1st-water-segment",
+     "unsure": false
+    },
+    {
+     "from": "1st-water-segment",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "mini-boss-room",
+     "unsure": false
+    },
+    {
+     "from": "j-5-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "3rd-water-segment",
+     "unsure": false
+    },
+    {
+     "from": "3rd-water-segment",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "j-5-entrance",
+     "unsure": false
+    }
+   ],
    "members": {},
    "note": "",
    "regions": {
+    "1st-water-segment": {
+     "color": "#81c995",
+     "name": "1st Water Segment",
+     "note": "",
+     "poly": [
+      [
+       536,
+       642
+      ],
+      [
+       831,
+       639
+      ],
+      [
+       834,
+       506
+      ],
+      [
+       971,
+       509
+      ],
+      [
+       971,
+       732
+      ],
+      [
+       536,
+       747
+      ]
+     ]
+    },
+    "2nd-water-segment": {
+     "color": "#a7ffeb",
+     "name": "2nd Water Segment",
+     "note": "",
+     "poly": [
+      [
+       1073,
+       518
+      ],
+      [
+       1231,
+       520
+      ],
+      [
+       1230,
+       736
+      ],
+      [
+       1083,
+       736
+      ]
+     ]
+    },
+    "3rd-water-segment": {
+     "color": "#ff8bcb",
+     "name": "3rd Water Segment",
+     "note": "",
+     "poly": [
+      [
+       1333,
+       539
+      ],
+      [
+       2222,
+       519
+      ],
+      [
+       2238,
+       1046
+      ],
+      [
+       1315,
+       1029
+      ]
+     ]
+    },
+    "j-2-entrance": {
+     "color": "#f28b82",
+     "name": "J-2 Entrance",
+     "note": "",
+     "poly": [
+      [
+       257,
+       712
+      ],
+      [
+       318,
+       712
+      ],
+      [
+       313,
+       779
+      ],
+      [
+       248,
+       783
+      ]
+     ]
+    },
+    "j-5-entrance": {
+     "color": "#78d9ec",
+     "name": "J-5 Entrance",
+     "note": "",
+     "poly": [
+      [
+       2241,
+       709
+      ],
+      [
+       2244,
+       797
+      ],
+      [
+       2294,
+       797
+      ],
+      [
+       2309,
+       693
+      ]
+     ]
+    },
     "main": {
      "color": "#8ab4f8",
      "name": "Main",
      "note": "",
      "poly": null
+    },
+    "mini-boss-room": {
+     "color": "#fbbc04",
+     "name": "Mini-Boss Room",
+     "note": "",
+     "poly": [
+      [
+       328,
+       620
+      ],
+      [
+       331,
+       800
+      ],
+      [
+       468,
+       805
+      ],
+      [
+       481,
+       632
+      ]
+     ]
+    },
+    "surface": {
+     "color": "#d7aefb",
+     "name": "Surface",
+     "note": "",
+     "poly": [
+      [
+       840,
+       415
+      ],
+      [
+       2038,
+       403
+      ],
+      [
+       2032,
+       496
+      ],
+      [
+       838,
+       505
+      ]
+     ]
     }
    },
    "req": null
@@ -2965,7 +10838,7 @@
   "j05": {
    "conns": [
     {
-     "from": "main",
+     "from": "j-3-entrance",
      "note": "",
      "req": {
       "normal": [
@@ -2974,11 +10847,11 @@
        ]
       ]
      },
-     "to": "entrada",
+     "to": "boss-room",
      "unsure": false
     },
     {
-     "from": "entrada",
+     "from": "boss-room",
      "note": "",
      "req": {
       "normal": [
@@ -2987,33 +10860,154 @@
        ]
       ]
      },
-     "to": "main",
+     "to": "j-3-entrance",
+     "unsure": false
+    },
+    {
+     "from": "boss-room",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "after-boss-room",
+     "unsure": false
+    },
+    {
+     "from": "after-boss-room",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "boss-room",
+     "unsure": false
+    },
+    {
+     "from": "after-boss-room",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "j-4-entrance",
+     "unsure": false
+    },
+    {
+     "from": "j-4-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "after-boss-room",
      "unsure": false
     }
    ],
    "members": {},
    "note": "",
    "regions": {
-    "entrada": {
-     "color": "#fde293",
-     "name": "Entrada",
-     "note": "POLÍGONO PROVISIONAL (bbox migrado): redibujar. ",
+    "after-boss-room": {
+     "color": "#a7ffeb",
+     "name": "After Boss Room",
+     "note": "",
      "poly": [
       [
-       240,
-       704
+       1948,
+       238
       ],
       [
-       336,
-       704
+       838,
+       214
       ],
       [
-       336,
-       800
+       826,
+       853
       ],
       [
-       240,
-       800
+       1943,
+       851
+      ]
+     ]
+    },
+    "boss-room": {
+     "color": "#fbbc04",
+     "name": "Boss Room",
+     "note": "",
+     "poly": [
+      [
+       512,
+       406
+      ],
+      [
+       754,
+       406
+      ],
+      [
+       769,
+       784
+      ],
+      [
+       486,
+       774
+      ]
+     ]
+    },
+    "j-3-entrance": {
+     "color": "#f28b82",
+     "name": "J-3 Entrance",
+     "note": "",
+     "poly": [
+      [
+       245,
+       702
+      ],
+      [
+       330,
+       698
+      ],
+      [
+       332,
+       807
+      ],
+      [
+       225,
+       807
+      ]
+     ]
+    },
+    "j-4-entrance": {
+     "color": "#81c995",
+     "name": "J-4 Entrance",
+     "note": "",
+     "poly": [
+      [
+       1964,
+       434
+      ],
+      [
+       2076,
+       417
+      ],
+      [
+       2073,
+       654
+      ],
+      [
+       1979,
+       654
       ]
      ]
     },
@@ -3029,55 +11023,273 @@
   "k01": {
    "conns": [
     {
-     "from": "main",
+     "from": "c-3-entrance",
      "note": "",
      "req": {
-      "normal": []
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
      },
-     "to": "subterraneo",
+     "to": "main-area",
      "unsure": false
     },
     {
-     "from": "subterraneo",
+     "from": "main-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "c-3-entrance",
+     "unsure": false
+    },
+    {
+     "from": "k-2-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "main-area",
+     "unsure": false
+    },
+    {
+     "from": "main-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "k-2-entrance",
+     "unsure": false
+    },
+    {
+     "from": "cable-car",
      "note": "",
      "req": {
       "normal": [
        []
       ]
      },
-     "to": "main",
+     "to": "k-2-entrance",
+     "unsure": false
+    },
+    {
+     "from": "k-5-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "right-area",
+     "unsure": false
+    },
+    {
+     "from": "right-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "k-5-entrance",
+     "unsure": false
+    },
+    {
+     "from": "cable-car",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "right-area",
+     "unsure": false
+    },
+    {
+     "from": "right-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "cable-car",
      "unsure": false
     }
    ],
    "members": {},
    "note": "",
    "regions": {
+    "c-3-entrance": {
+     "color": "#fbbc04",
+     "name": "C-3 Entrance",
+     "note": "",
+     "poly": [
+      [
+       241,
+       840
+      ],
+      [
+       794,
+       598
+      ],
+      [
+       774,
+       1014
+      ],
+      [
+       233,
+       1002
+      ]
+     ]
+    },
+    "cable-car": {
+     "color": "#d7aefb",
+     "name": "Cable Car",
+     "note": "",
+     "poly": [
+      [
+       4939,
+       821
+      ],
+      [
+       5308,
+       820
+      ],
+      [
+       5317,
+       1022
+      ],
+      [
+       4934,
+       1019
+      ]
+     ]
+    },
+    "k-2-entrance": {
+     "color": "#a7ffeb",
+     "name": "K-2 Entrance",
+     "note": "",
+     "poly": [
+      [
+       4108,
+       811
+      ],
+      [
+       4447,
+       791
+      ],
+      [
+       4452,
+       1079
+      ],
+      [
+       4121,
+       1062
+      ]
+     ]
+    },
+    "k-5-entrance": {
+     "color": "#f28b82",
+     "name": "K-5 Entrance",
+     "note": "",
+     "poly": [
+      [
+       7258,
+       666
+      ],
+      [
+       7261,
+       821
+      ],
+      [
+       7719,
+       832
+      ],
+      [
+       7718,
+       654
+      ]
+     ]
+    },
     "main": {
      "color": "#8ab4f8",
      "name": "Main",
      "note": "",
      "poly": null
     },
-    "subterraneo": {
-     "color": "#f28b82",
-     "name": "Subterraneo",
-     "note": "POLÍGONO PROVISIONAL (bbox migrado): redibujar. ",
+    "main-area": {
+     "color": "#81c995",
+     "name": "Main Area",
+     "note": "",
      "poly": [
       [
-       7168,
-       704
+       857,
+       609
       ],
       [
-       7344,
-       704
+       4028,
+       588
       ],
       [
-       7344,
-       1362
+       4041,
+       1065
       ],
       [
-       7168,
-       1362
+       847,
+       1067
+      ]
+     ]
+    },
+    "right-area": {
+     "color": "#ff8bcb",
+     "name": "Right Area",
+     "note": "",
+     "poly": [
+      [
+       5116,
+       724
+      ],
+      [
+       5120,
+       805
+      ],
+      [
+       5336,
+       810
+      ],
+      [
+       5357,
+       1023
+      ],
+      [
+       7117,
+       995
+      ],
+      [
+       7111,
+       567
       ]
      ]
     }
@@ -3101,18 +11313,7 @@
   "k03": {
    "conns": [
     {
-     "from": "main",
-     "note": "",
-     "req": {
-      "normal": [
-       []
-      ]
-     },
-     "to": "fondo",
-     "unsure": true
-    },
-    {
-     "from": "fondo",
+     "from": "k-4-entrance",
      "note": "",
      "req": {
       "normal": [
@@ -3121,29 +11322,92 @@
        ]
       ]
      },
-     "to": "main",
-     "unsure": true
+     "to": "lower-area",
+     "unsure": false
+    },
+    {
+     "from": "lower-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "k-4-entrance",
+     "unsure": false
+    },
+    {
+     "from": "upper-area",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "lower-area",
+     "unsure": false
+    },
+    {
+     "from": "lower-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "HX"
+       ],
+       [
+        "PX"
+       ]
+      ]
+     },
+     "to": "upper-area",
+     "unsure": false
     }
    ],
    "members": {},
    "note": "",
    "regions": {
-    "fondo": {
+    "k-4-entrance": {
+     "color": "#81c995",
+     "name": "K-4 Entrance",
+     "note": "",
+     "poly": [
+      [
+       1534,
+       1051
+      ],
+      [
+       1534,
+       1138
+      ],
+      [
+       1797,
+       1155
+      ],
+      [
+       1797,
+       1060
+      ]
+     ]
+    },
+    "lower-area": {
      "color": "#fbbc04",
-     "name": "Fondo",
-     "note": "POLÍGONO PROVISIONAL (bbox migrado): redibujar. ",
+     "name": "Lower Area",
+     "note": "",
      "poly": [
       [
        512,
        1040
       ],
       [
-       1808,
-       1040
+       1483,
+       1044
       ],
       [
-       1808,
-       1152
+       1490,
+       1144
       ],
       [
        512,
@@ -3156,6 +11420,29 @@
      "name": "Main",
      "note": "",
      "poly": null
+    },
+    "upper-area": {
+     "color": "#f28b82",
+     "name": "Upper Area",
+     "note": "",
+     "poly": [
+      [
+       877,
+       436
+      ],
+      [
+       1549,
+       452
+      ],
+      [
+       1544,
+       1002
+      ],
+      [
+       812,
+       1006
+      ]
+     ]
     }
    },
    "req": null
@@ -3163,7 +11450,7 @@
   "k04": {
    "conns": [
     {
-     "from": "main",
+     "from": "k-3-entrance",
      "note": "",
      "req": {
       "normal": [
@@ -3172,11 +11459,11 @@
        ]
       ]
      },
-     "to": "pad",
+     "to": "lava-chase",
      "unsure": false
     },
     {
-     "from": "pad",
+     "from": "lava-chase",
      "note": "",
      "req": {
       "normal": [
@@ -3185,64 +11472,431 @@
        ]
       ]
      },
-     "to": "main",
+     "to": "k-3-entrance",
      "unsure": false
     },
     {
-     "from": "main",
-     "note": "gate interno coarse (v0.2): llaves/verjas de las puertas internas",
+     "from": "lava-chase",
+     "note": "",
      "req": {
       "normal": [
        [
-        "WHITE"
+        "FX"
        ]
       ]
      },
-     "to": "interior",
-     "unsure": true
+     "to": "hidden-path",
+     "unsure": false
     },
     {
-     "from": "interior",
+     "from": "hidden-path",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "FX"
+       ]
+      ]
+     },
+     "to": "lava-chase",
+     "unsure": false
+    },
+    {
+     "from": "hidden-path-3-top",
      "note": "",
      "req": {
       "normal": [
        []
       ]
      },
-     "to": "main",
+     "to": "hidden-path-3-bottom",
+     "unsure": false
+    },
+    {
+     "from": "hidden-path-3-bottom",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "hidden-path-3-top",
+     "unsure": false
+    },
+    {
+     "from": "hidden-path-3-top",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "item-cluster-in-hidden-path",
+     "unsure": false
+    },
+    {
+     "from": "item-cluster-in-hidden-path",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "hidden-path-3-top",
+     "unsure": false
+    },
+    {
+     "from": "before-boss-room",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "boss-room",
+     "unsure": false
+    },
+    {
+     "from": "boss-room",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "before-boss-room",
+     "unsure": false
+    },
+    {
+     "from": "hub-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "boss-room",
+     "unsure": false
+    },
+    {
+     "from": "boss-room",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "hub-entrance",
+     "unsure": false
+    },
+    {
+     "from": "before-boss-room",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "lava-chase-2",
+     "unsure": false
+    },
+    {
+     "from": "lava-chase-2",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "before-boss-room",
      "unsure": false
     }
    ],
-   "members": {
-    "k04 door (1328,944)": "main",
-    "k04 door (1456,1632)": "main",
-    "k04 door (1456,1632)@in": "main",
-    "k04 door (1680,912)": "main",
-    "k04 door (2704,1136)": "main",
-    "k04 door (2704,1136)@in": "main"
-   },
+   "members": {},
    "note": "",
    "regions": {
-    "interior": {
+    "before-boss-room": {
      "color": "#fbbc04",
-     "name": "Interior",
-     "note": "POLÍGONO PROVISIONAL (gate interno coarse de v0.2: WHITE): redibujar.",
+     "name": "Before Boss Room",
+     "note": "",
      "poly": [
       [
-       770,
-       856
+       3639,
+       1055
       ],
       [
-       3016,
-       856
+       3885,
+       1053
       ],
       [
-       3016,
-       1912
+       3896,
+       1197
       ],
       [
-       770,
-       1912
+       3216,
+       1180
+      ],
+      [
+       3203,
+       1063
+      ]
+     ]
+    },
+    "boss-room": {
+     "color": "#81c995",
+     "name": "Boss Room",
+     "note": "",
+     "poly": [
+      [
+       3917,
+       978
+      ],
+      [
+       4138,
+       976
+      ],
+      [
+       4149,
+       1201
+      ],
+      [
+       3926,
+       1189
+      ]
+     ]
+    },
+    "hidden-path": {
+     "color": "#d7aefb",
+     "name": "Hidden Path",
+     "note": "",
+     "poly": [
+      [
+       2458,
+       257
+      ],
+      [
+       2469,
+       419
+      ],
+      [
+       3359,
+       429
+      ],
+      [
+       3362,
+       257
+      ]
+     ]
+    },
+    "hidden-path-2": {
+     "color": "#fbbc04",
+     "name": "Hidden Path 2",
+     "note": "",
+     "poly": [
+      [
+       1232,
+       839
+      ],
+      [
+       2148,
+       846
+      ],
+      [
+       2137,
+       1058
+      ],
+      [
+       1213,
+       1035
+      ]
+     ]
+    },
+    "hidden-path-3-bottom": {
+     "color": "#fde293",
+     "name": "Hidden Path 3 Bottom",
+     "note": "",
+     "poly": [
+      [
+       1161,
+       1824
+      ],
+      [
+       1150,
+       1953
+      ],
+      [
+       1348,
+       1960
+      ],
+      [
+       1322,
+       1824
+      ]
+     ]
+    },
+    "hidden-path-3-top": {
+     "color": "#78d9ec",
+     "name": "Hidden Path 3 Top",
+     "note": "",
+     "poly": [
+      [
+       1632,
+       1520
+      ],
+      [
+       1043,
+       1544
+      ],
+      [
+       1048,
+       1774
+      ],
+      [
+       1621,
+       1788
+      ]
+     ]
+    },
+    "hub-entrance": {
+     "color": "#81c995",
+     "name": "Hub Entrance",
+     "note": "",
+     "poly": [
+      [
+       4232,
+       1057
+      ],
+      [
+       4230,
+       1199
+      ],
+      [
+       4395,
+       1201
+      ],
+      [
+       4406,
+       1025
+      ]
+     ]
+    },
+    "item-cluster-in-hidden-path": {
+     "color": "#ff8bcb",
+     "name": "Item Cluster in Hidden Path",
+     "note": "",
+     "poly": [
+      [
+       797,
+       1781
+      ],
+      [
+       1015,
+       1781
+      ],
+      [
+       1011,
+       1927
+      ],
+      [
+       775,
+       1916
+      ]
+     ]
+    },
+    "k-3-entrance": {
+     "color": "#f28b82",
+     "name": "K-3 Entrance",
+     "note": "",
+     "poly": [
+      [
+       580,
+       474
+      ],
+      [
+       580,
+       581
+      ],
+      [
+       743,
+       608
+      ],
+      [
+       718,
+       464
+      ]
+     ]
+    },
+    "lava-chase": {
+     "color": "#a7ffeb",
+     "name": "Lava Chase",
+     "note": "",
+     "poly": [
+      [
+       777,
+       427
+      ],
+      [
+       3340,
+       461
+      ],
+      [
+       3334,
+       614
+      ],
+      [
+       787,
+       764
+      ],
+      [
+       287,
+       600
+      ],
+      [
+       289,
+       462
+      ],
+      [
+       780,
+       655
+      ]
+     ]
+    },
+    "lava-chase-2": {
+     "color": "#a7ffeb",
+     "name": "Lava Chase 2",
+     "note": "",
+     "poly": [
+      [
+       481,
+       1029
+      ],
+      [
+       3162,
+       1055
+      ],
+      [
+       3168,
+       1240
+      ],
+      [
+       469,
+       1232
       ]
      ]
     },
@@ -3252,26 +11906,26 @@
      "note": "",
      "poly": null
     },
-    "pad": {
-     "color": "#81c995",
-     "name": "Pad",
-     "note": "POLÍGONO PROVISIONAL (bbox migrado): redibujar. ",
+    "switch-room": {
+     "color": "#f28b82",
+     "name": "Switch Room",
+     "note": "",
      "poly": [
       [
-       4272,
-       1072
+       169,
+       1535
       ],
       [
-       4368,
-       1072
+       162,
+       2020
       ],
       [
-       4368,
-       1168
+       601,
+       2026
       ],
       [
-       4272,
-       1168
+       584,
+       1474
       ]
      ]
     }
@@ -3279,10 +11933,106 @@
    "req": null
   },
   "k05": {
-   "conns": [],
+   "conns": [
+    {
+     "from": "lava-rising-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "k-1-entrance",
+     "unsure": false
+    },
+    {
+     "from": "k-3-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "lava-rising-area",
+     "unsure": false
+    }
+   ],
    "members": {},
    "note": "",
    "regions": {
+    "k-1-entrance": {
+     "color": "#fbbc04",
+     "name": "K-1 Entrance",
+     "note": "",
+     "poly": [
+      [
+       487,
+       220
+      ],
+      [
+       807,
+       208
+      ],
+      [
+       820,
+       375
+      ],
+      [
+       471,
+       365
+      ]
+     ]
+    },
+    "k-3-entrance": {
+     "color": "#f28b82",
+     "name": "K-3 Entrance",
+     "note": "",
+     "poly": [
+      [
+       207,
+       2550
+      ],
+      [
+       390,
+       2543
+      ],
+      [
+       382,
+       2701
+      ],
+      [
+       154,
+       2713
+      ]
+     ]
+    },
+    "lava-rising-area": {
+     "color": "#81c995",
+     "name": "Lava Rising Area",
+     "note": "",
+     "poly": [
+      [
+       459,
+       445
+      ],
+      [
+       805,
+       452
+      ],
+      [
+       835,
+       2916
+      ],
+      [
+       459,
+       2867
+      ]
+     ]
+    },
     "main": {
      "color": "#8ab4f8",
      "name": "Main",
@@ -3293,10 +12043,109 @@
    "req": null
   },
   "l01": {
-   "conns": [],
+   "conns": [
+    {
+     "from": "h-2-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    },
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "h-2-entrance",
+     "unsure": false
+    },
+    {
+     "from": "l-2-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    },
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "l-2-entrance",
+     "unsure": false
+    }
+   ],
    "members": {},
    "note": "",
    "regions": {
+    "h-2-entrance": {
+     "color": "#f28b82",
+     "name": "H-2 Entrance",
+     "note": "",
+     "poly": [
+      [
+       208,
+       641
+      ],
+      [
+       419,
+       638
+      ],
+      [
+       419,
+       929
+      ],
+      [
+       211,
+       910
+      ]
+     ]
+    },
+    "l-2-entrance": {
+     "color": "#fbbc04",
+     "name": "L-2 Entrance",
+     "note": "",
+     "poly": [
+      [
+       4203,
+       630
+      ],
+      [
+       4199,
+       876
+      ],
+      [
+       4490,
+       860
+      ],
+      [
+       4512,
+       588
+      ]
+     ]
+    },
     "main": {
      "color": "#8ab4f8",
      "name": "Main",
@@ -3307,10 +12156,109 @@
    "req": null
   },
   "l02": {
-   "conns": [],
+   "conns": [
+    {
+     "from": "l-1-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    },
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "l-1-entrance",
+     "unsure": false
+    },
+    {
+     "from": "l-3-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    },
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "l-3-entrance",
+     "unsure": false
+    }
+   ],
    "members": {},
    "note": "",
    "regions": {
+    "l-1-entrance": {
+     "color": "#f28b82",
+     "name": "L-1 Entrance",
+     "note": "",
+     "poly": [
+      [
+       190,
+       675
+      ],
+      [
+       430,
+       673
+      ],
+      [
+       423,
+       840
+      ],
+      [
+       150,
+       843
+      ]
+     ]
+    },
+    "l-3-entrance": {
+     "color": "#fbbc04",
+     "name": "L-3 Entrance",
+     "note": "",
+     "poly": [
+      [
+       4260,
+       683
+      ],
+      [
+       4236,
+       836
+      ],
+      [
+       4420,
+       849
+      ],
+      [
+       4413,
+       672
+      ]
+     ]
+    },
     "main": {
      "color": "#8ab4f8",
      "name": "Main",
@@ -3321,15 +12269,158 @@
    "req": null
   },
   "l03": {
-   "conns": [],
+   "conns": [
+    {
+     "from": "l-2-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "before-container",
+     "unsure": false
+    },
+    {
+     "from": "before-container",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "l-2-entrance",
+     "unsure": false
+    },
+    {
+     "from": "l-4-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "main-area",
+     "unsure": false
+    },
+    {
+     "from": "main-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "l-4-entrance",
+     "unsure": false
+    }
+   ],
    "members": {},
    "note": "",
    "regions": {
+    "before-container": {
+     "color": "#81c995",
+     "name": "Before Container",
+     "note": "",
+     "poly": [
+      [
+       1259,
+       790
+      ],
+      [
+       1558,
+       553
+      ],
+      [
+       2187,
+       581
+      ],
+      [
+       2193,
+       771
+      ]
+     ]
+    },
+    "l-2-entrance": {
+     "color": "#fbbc04",
+     "name": "L-2 Entrance",
+     "note": "",
+     "poly": [
+      [
+       197,
+       528
+      ],
+      [
+       1518,
+       534
+      ],
+      [
+       1228,
+       767
+      ],
+      [
+       167,
+       872
+      ]
+     ]
+    },
+    "l-4-entrance": {
+     "color": "#f28b82",
+     "name": "L-4 Entrance",
+     "note": "",
+     "poly": [
+      [
+       4387,
+       634
+      ],
+      [
+       3855,
+       634
+      ],
+      [
+       3859,
+       837
+      ],
+      [
+       4384,
+       831
+      ]
+     ]
+    },
     "main": {
      "color": "#8ab4f8",
      "name": "Main",
      "note": "",
      "poly": null
+    },
+    "main-area": {
+     "color": "#a7ffeb",
+     "name": "Main Area",
+     "note": "",
+     "poly": [
+      [
+       2216,
+       586
+      ],
+      [
+       2228,
+       813
+      ],
+      [
+       3817,
+       838
+      ],
+      [
+       3807,
+       508
+      ]
+     ]
     }
    },
    "req": null
@@ -3337,7 +12428,7 @@
   "l04": {
    "conns": [
     {
-     "from": "main",
+     "from": "hub-entrance",
      "note": "",
      "req": {
       "normal": [
@@ -3346,11 +12437,11 @@
        ]
       ]
      },
-     "to": "pad",
+     "to": "boss-room",
      "unsure": false
     },
     {
-     "from": "pad",
+     "from": "boss-room",
      "note": "",
      "req": {
       "normal": [
@@ -3359,23 +12450,88 @@
        ]
       ]
      },
-     "to": "main",
+     "to": "hub-entrance",
+     "unsure": false
+    },
+    {
+     "from": "l-3-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "main-area",
+     "unsure": false
+    },
+    {
+     "from": "main-area",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "l-3-entrance",
+     "unsure": false
+    },
+    {
+     "from": "main-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "boss-room",
+     "unsure": false
+    },
+    {
+     "from": "boss-room",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "main-area",
      "unsure": false
     }
    ],
    "members": {},
    "note": "",
    "regions": {
-    "main": {
-     "color": "#8ab4f8",
-     "name": "Main",
+    "boss-room": {
+     "color": "#f28b82",
+     "name": "Boss Room",
      "note": "",
-     "poly": null
+     "poly": [
+      [
+       2611,
+       411
+      ],
+      [
+       3101,
+       412
+      ],
+      [
+       3107,
+       772
+      ],
+      [
+       2613,
+       772
+      ]
+     ]
     },
-    "pad": {
+    "hub-entrance": {
      "color": "#a7ffeb",
-     "name": "Pad",
-     "note": "POLÍGONO PROVISIONAL (bbox migrado): redibujar. ",
+     "name": "Hub Entrance",
+     "note": "",
      "poly": [
       [
        3248,
@@ -3392,6 +12548,58 @@
       [
        3248,
        800
+      ]
+     ]
+    },
+    "l-3-entrance": {
+     "color": "#fbbc04",
+     "name": "L-3 Entrance",
+     "note": "",
+     "poly": [
+      [
+       229,
+       642
+      ],
+      [
+       418,
+       625
+      ],
+      [
+       420,
+       853
+      ],
+      [
+       199,
+       851
+      ]
+     ]
+    },
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    },
+    "main-area": {
+     "color": "#81c995",
+     "name": "Main Area",
+     "note": "",
+     "poly": [
+      [
+       448,
+       486
+      ],
+      [
+       461,
+       855
+      ],
+      [
+       2243,
+       849
+      ],
+      [
+       2232,
+       492
       ]
      ]
     }
@@ -3399,37 +12607,35 @@
    "req": null
   },
   "m01": {
-   "conns": [],
-   "members": {},
-   "note": "",
-   "regions": {
-    "main": {
-     "color": "#8ab4f8",
-     "name": "Main",
-     "note": "",
-     "poly": null
-    }
-   },
-   "req": null
-  },
-  "m02": {
-   "conns": [],
-   "members": {},
-   "note": "",
-   "regions": {
-    "main": {
-     "color": "#8ab4f8",
-     "name": "Main",
-     "note": "",
-     "poly": null
-    }
-   },
-   "req": null
-  },
-  "m03": {
    "conns": [
     {
-     "from": "main",
+     "from": "switch-door-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "FX"
+       ]
+      ]
+     },
+     "to": "behind-switch-door",
+     "unsure": false
+    },
+    {
+     "from": "behind-switch-door",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "FX"
+       ]
+      ]
+     },
+     "to": "switch-door-area",
+     "unsure": false
+    },
+    {
+     "from": "ledge-above-door",
      "note": "",
      "req": {
       "normal": [
@@ -3438,13 +12644,1062 @@
        ]
       ]
      },
-     "to": "pad",
+     "to": "main-area",
      "unsure": false
     },
     {
-     "from": "pad",
+     "from": "main-area",
      "note": "",
      "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "ledge-above-door",
+     "unsure": false
+    },
+    {
+     "from": "a-4-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "main-area",
+     "unsure": false
+    },
+    {
+     "from": "main-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "a-4-entrance",
+     "unsure": false
+    },
+    {
+     "from": "switch-door-entry",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "main-area",
+     "unsure": false
+    },
+    {
+     "from": "main-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "HX"
+       ]
+      ]
+     },
+     "to": "switch-door-entry",
+     "unsure": false
+    }
+   ],
+   "members": {},
+   "note": "",
+   "regions": {
+    "a-4-entrance": {
+     "color": "#d7aefb",
+     "name": "A-4 Entrance",
+     "note": "",
+     "poly": [
+      [
+       247,
+       649
+      ],
+      [
+       352,
+       638
+      ],
+      [
+       344,
+       771
+      ],
+      [
+       248,
+       765
+      ]
+     ]
+    },
+    "behind-switch-door": {
+     "color": "#f28b82",
+     "name": "Behind Switch Door",
+     "note": "",
+     "poly": [
+      [
+       5982,
+       682
+      ],
+      [
+       6246,
+       683
+      ],
+      [
+       6251,
+       810
+      ],
+      [
+       5982,
+       809
+      ]
+     ]
+    },
+    "ledge-above-door": {
+     "color": "#ff8bcb",
+     "name": "Ledge Above Door",
+     "note": "",
+     "poly": [
+      [
+       1285,
+       425
+      ],
+      [
+       1396,
+       411
+      ],
+      [
+       1391,
+       544
+      ],
+      [
+       1252,
+       542
+      ]
+     ]
+    },
+    "m-2-entrance": {
+     "color": "#a7ffeb",
+     "name": "M-2 Entrance",
+     "note": "",
+     "poly": [
+      [
+       5004,
+       648
+      ],
+      [
+       5183,
+       655
+      ],
+      [
+       5168,
+       794
+      ],
+      [
+       5015,
+       797
+      ]
+     ]
+    },
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    },
+    "main-area": {
+     "color": "#78d9ec",
+     "name": "Main Area",
+     "note": "",
+     "poly": [
+      [
+       404,
+       621
+      ],
+      [
+       404,
+       796
+      ],
+      [
+       4991,
+       800
+      ],
+      [
+       4969,
+       608
+      ]
+     ]
+    },
+    "side-room": {
+     "color": "#fde293",
+     "name": "Side Room",
+     "note": "",
+     "poly": [
+      [
+       5305,
+       142
+      ],
+      [
+       5762,
+       161
+      ],
+      [
+       5765,
+       477
+      ],
+      [
+       5292,
+       446
+      ]
+     ]
+    },
+    "switch-door-area": {
+     "color": "#fbbc04",
+     "name": "Switch Door Area",
+     "note": "",
+     "poly": [
+      [
+       5379,
+       575
+      ],
+      [
+       5965,
+       582
+      ],
+      [
+       5967,
+       820
+      ],
+      [
+       5369,
+       800
+      ]
+     ]
+    },
+    "switch-door-entry": {
+     "color": "#81c995",
+     "name": "Switch Door Entry",
+     "note": "",
+     "poly": [
+      [
+       4970,
+       383
+      ],
+      [
+       4975,
+       585
+      ],
+      [
+       5185,
+       571
+      ],
+      [
+       5185,
+       383
+      ]
+     ]
+    }
+   },
+   "req": null
+  },
+  "m02": {
+   "conns": [
+    {
+     "from": "m-1-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "FX"
+       ]
+      ]
+     },
+     "to": "top-path",
+     "unsure": false
+    },
+    {
+     "from": "top-path",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "FX"
+       ]
+      ]
+     },
+     "to": "m-1-entrance",
+     "unsure": false
+    },
+    {
+     "from": "m-1-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "stairs",
+     "unsure": false
+    },
+    {
+     "from": "stairs",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "m-1-entrance",
+     "unsure": false
+    },
+    {
+     "from": "lower-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "HX"
+       ]
+      ]
+     },
+     "to": "stairs",
+     "unsure": false
+    },
+    {
+     "from": "stairs",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "lower-area",
+     "unsure": false
+    },
+    {
+     "from": "top-path",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "HU"
+       ]
+      ]
+     },
+     "to": "lower-area",
+     "unsure": false
+    },
+    {
+     "from": "lower-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "LX"
+       ]
+      ]
+     },
+     "to": "water-segment",
+     "unsure": false
+    },
+    {
+     "from": "water-segment",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "LX"
+       ]
+      ]
+     },
+     "to": "lower-area",
+     "unsure": false
+    },
+    {
+     "from": "m-3-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "LX"
+       ]
+      ]
+     },
+     "to": "water-segment",
+     "unsure": false
+    },
+    {
+     "from": "water-segment",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "LX"
+       ]
+      ]
+     },
+     "to": "m-3-entrance",
+     "unsure": false
+    },
+    {
+     "from": "surface-of-water-segment",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "HX"
+       ]
+      ]
+     },
+     "to": "lower-area",
+     "unsure": false
+    },
+    {
+     "from": "lower-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "HX"
+       ]
+      ]
+     },
+     "to": "surface-of-water-segment",
+     "unsure": false
+    },
+    {
+     "from": "water-segment",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "LX"
+       ]
+      ]
+     },
+     "to": "surface-of-water-segment",
+     "unsure": false
+    },
+    {
+     "from": "surface-of-water-segment",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "LX"
+       ]
+      ]
+     },
+     "to": "water-segment",
+     "unsure": false
+    }
+   ],
+   "members": {},
+   "note": "",
+   "regions": {
+    "lower-area": {
+     "color": "#81c995",
+     "name": "Lower Area",
+     "note": "",
+     "poly": [
+      [
+       1119,
+       1026
+      ],
+      [
+       1652,
+       1025
+      ],
+      [
+       1663,
+       1169
+      ],
+      [
+       1126,
+       1166
+      ]
+     ]
+    },
+    "m-1-entrance": {
+     "color": "#f28b82",
+     "name": "M-1 Entrance",
+     "note": "",
+     "poly": [
+      [
+       259,
+       323
+      ],
+      [
+       344,
+       320
+      ],
+      [
+       345,
+       391
+      ],
+      [
+       255,
+       393
+      ]
+     ]
+    },
+    "m-3-entrance": {
+     "color": "#d7aefb",
+     "name": "M-3 Entrance",
+     "note": "",
+     "poly": [
+      [
+       3262,
+       1042
+      ],
+      [
+       3267,
+       1158
+      ],
+      [
+       3339,
+       1155
+      ],
+      [
+       3344,
+       1030
+      ]
+     ]
+    },
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    },
+    "stairs": {
+     "color": "#a7ffeb",
+     "name": "Stairs",
+     "note": "",
+     "poly": [
+      [
+       549,
+       457
+      ],
+      [
+       773,
+       457
+      ],
+      [
+       802,
+       1151
+      ],
+      [
+       491,
+       1153
+      ]
+     ]
+    },
+    "surface-of-water-segment": {
+     "color": "#78d9ec",
+     "name": "Surface of Water Segment",
+     "note": "",
+     "poly": [
+      [
+       1903,
+       1006
+      ],
+      [
+       1903,
+       1062
+      ],
+      [
+       2247,
+       1072
+      ],
+      [
+       2256,
+       986
+      ]
+     ]
+    },
+    "top-path": {
+     "color": "#fbbc04",
+     "name": "Top Path",
+     "note": "",
+     "poly": [
+      [
+       698,
+       221
+      ],
+      [
+       699,
+       337
+      ],
+      [
+       1201,
+       342
+      ],
+      [
+       1188,
+       196
+      ]
+     ]
+    },
+    "water-segment": {
+     "color": "#ff8bcb",
+     "name": "Water Segment",
+     "note": "",
+     "poly": [
+      [
+       1676,
+       1071
+      ],
+      [
+       3169,
+       1118
+      ],
+      [
+       3189,
+       1382
+      ],
+      [
+       1695,
+       1365
+      ]
+     ]
+    }
+   },
+   "req": null
+  },
+  "m03": {
+   "conns": [
+    {
+     "from": "before-boss-room",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "m-2-entrance",
+     "unsure": false
+    },
+    {
+     "from": "m-2-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "before-boss-room",
+     "unsure": false
+    },
+    {
+     "from": "boss-room",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "before-boss-room",
+     "unsure": false
+    },
+    {
+     "from": "before-boss-room",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "boss-room",
+     "unsure": false
+    },
+    {
+     "from": "hub-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "boss-room",
+     "unsure": false
+    },
+    {
+     "from": "boss-room",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "hub-entrance",
+     "unsure": false
+    }
+   ],
+   "members": {},
+   "note": "",
+   "regions": {
+    "before-boss-room": {
+     "color": "#fbbc04",
+     "name": "Before Boss Room",
+     "note": "",
+     "poly": [
+      [
+       438,
+       262
+      ],
+      [
+       1191,
+       258
+      ],
+      [
+       1198,
+       855
+      ],
+      [
+       455,
+       846
+      ]
+     ]
+    },
+    "boss-room": {
+     "color": "#81c995",
+     "name": "Boss Room",
+     "note": "",
+     "poly": [
+      [
+       1310,
+       502
+      ],
+      [
+       1315,
+       835
+      ],
+      [
+       1572,
+       839
+      ],
+      [
+       1559,
+       508
+      ]
+     ]
+    },
+    "hub-entrance": {
+     "color": "#a7ffeb",
+     "name": "Hub Entrance",
+     "note": "",
+     "poly": [
+      [
+       1851,
+       659
+      ],
+      [
+       2024,
+       659
+      ],
+      [
+       2015,
+       839
+      ],
+      [
+       1838,
+       835
+      ]
+     ]
+    },
+    "m-2-entrance": {
+     "color": "#f28b82",
+     "name": "M-2 Entrance",
+     "note": "",
+     "poly": [
+      [
+       233,
+       255
+      ],
+      [
+       385,
+       272
+      ],
+      [
+       384,
+       381
+      ],
+      [
+       200,
+       398
+      ]
+     ]
+    },
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "n01": {
+   "conns": [
+    {
+     "from": "first-platforms",
+     "note": "",
+     "req": {
+      "expert": [
+       [
+        "MODEL"
+       ]
+      ],
+      "normal": [
+       [
+        "PX"
+       ],
+       [
+        "HX"
+       ]
+      ]
+     },
+     "to": "omega-zero-door",
+     "unsure": false
+    },
+    {
+     "from": "omega-zero-door",
+     "note": "",
+     "req": {
+      "expert": [
+       [
+        "MODEL"
+       ]
+      ],
+      "normal": [
+       [
+        "PX"
+       ],
+       [
+        "HX"
+       ]
+      ]
+     },
+     "to": "first-platforms",
+     "unsure": false
+    },
+    {
+     "from": "hub-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "main-area",
+     "unsure": false
+    },
+    {
+     "from": "main-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "hub-entrance",
+     "unsure": false
+    },
+    {
+     "from": "main-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "first-platforms",
+     "unsure": false
+    },
+    {
+     "from": "first-platforms",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "main-area",
+     "unsure": false
+    }
+   ],
+   "members": {},
+   "note": "",
+   "regions": {
+    "first-platforms": {
+     "color": "#81c995",
+     "name": "First Platforms",
+     "note": "",
+     "poly": [
+      [
+       1643,
+       223
+      ],
+      [
+       1638,
+       793
+      ],
+      [
+       2575,
+       806
+      ],
+      [
+       2544,
+       194
+      ]
+     ]
+    },
+    "hub-entrance": {
+     "color": "#f28b82",
+     "name": "Hub Entrance",
+     "note": "",
+     "poly": [
+      [
+       623,
+       319
+      ],
+      [
+       618,
+       436
+      ],
+      [
+       784,
+       430
+      ],
+      [
+       783,
+       288
+      ]
+     ]
+    },
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    },
+    "main-area": {
+     "color": "#fbbc04",
+     "name": "Main Area",
+     "note": "",
+     "poly": [
+      [
+       261,
+       291
+      ],
+      [
+       585,
+       306
+      ],
+      [
+       590,
+       486
+      ],
+      [
+       1402,
+       429
+      ],
+      [
+       1572,
+       441
+      ],
+      [
+       1582,
+       782
+      ],
+      [
+       286,
+       819
+      ]
+     ]
+    },
+    "omega-zero-arena": {
+     "color": "#d7aefb",
+     "name": "Omega Zero Arena",
+     "note": "",
+     "poly": [
+      [
+       237,
+       922
+      ],
+      [
+       1343,
+       931
+      ],
+      [
+       1337,
+       1462
+      ],
+      [
+       211,
+       1419
+      ]
+     ]
+    },
+    "omega-zero-door": {
+     "color": "#a7ffeb",
+     "name": "Omega Zero Door",
+     "note": "",
+     "poly": [
+      [
+       3443,
+       265
+      ],
+      [
+       3417,
+       690
+      ],
+      [
+       3681,
+       682
+      ],
+      [
+       3675,
+       246
+      ]
+     ]
+    }
+   },
+   "req": null
+  },
+  "o01": {
+   "conns": [
+    {
+     "from": "d-3-entrance",
+     "note": "",
+     "req": {
+      "expert": [
+       []
+      ],
       "normal": [
        [
         "MODEL"
@@ -3453,69 +13708,110 @@
      },
      "to": "main",
      "unsure": false
+    },
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "expert": [
+       []
+      ],
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "d-3-entrance",
+     "unsure": false
+    },
+    {
+     "from": "o-2-entrance",
+     "note": "",
+     "req": {
+      "expert": [
+       []
+      ],
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    },
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "expert": [
+       []
+      ],
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "o-2-entrance",
+     "unsure": false
     }
    ],
-   "members": {
-    "z01 transerver to m03@in": "pad"
-   },
-   "note": "",
+   "members": {},
+   "note": "? Discord: \"you need Hx for Area O\"",
    "regions": {
+    "d-3-entrance": {
+     "color": "#f28b82",
+     "name": "D-3 Entrance",
+     "note": "",
+     "poly": [
+      [
+       186,
+       649
+      ],
+      [
+       186,
+       838
+      ],
+      [
+       409,
+       826
+      ],
+      [
+       417,
+       637
+      ]
+     ]
+    },
     "main": {
      "color": "#8ab4f8",
      "name": "Main",
      "note": "",
      "poly": null
     },
-    "pad": {
-     "color": "#d7aefb",
-     "name": "Pad",
-     "note": "POLÍGONO PROVISIONAL (bbox migrado): redibujar. ",
+    "o-2-entrance": {
+     "color": "#fbbc04",
+     "name": "O-2 Entrance",
+     "note": "",
      "poly": [
       [
-       1888,
-       704
+       4196,
+       634
       ],
       [
-       1984,
-       704
+       4491,
+       592
       ],
       [
-       1984,
-       800
+       4491,
+       932
       ],
       [
-       1888,
-       800
+       4170,
+       925
       ]
      ]
-    }
-   },
-   "req": null
-  },
-  "n01": {
-   "conns": [],
-   "members": {},
-   "note": "",
-   "regions": {
-    "main": {
-     "color": "#8ab4f8",
-     "name": "Main",
-     "note": "",
-     "poly": null
-    }
-   },
-   "req": null
-  },
-  "o01": {
-   "conns": [],
-   "members": {},
-   "note": "? Discord: \"you need Hx for Area O\"",
-   "regions": {
-    "main": {
-     "color": "#8ab4f8",
-     "name": "Main",
-     "note": "",
-     "poly": null
     }
    },
    "req": {
@@ -3529,20 +13825,29 @@
   "o02": {
    "conns": [
     {
-     "from": "main",
+     "from": "o-1-entrance",
      "note": "",
      "req": {
       "normal": [
-       [
-        "MODEL"
-       ]
+       []
       ]
      },
-     "to": "este",
+     "to": "hub-entrance",
      "unsure": false
     },
     {
-     "from": "este",
+     "from": "hub-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "o-1-entrance",
+     "unsure": false
+    },
+    {
+     "from": "hub-entrance",
      "note": "",
      "req": {
       "normal": [
@@ -3551,33 +13856,122 @@
        ]
       ]
      },
-     "to": "main",
+     "to": "east-segment",
+     "unsure": false
+    },
+    {
+     "from": "east-segment",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "hub-entrance",
+     "unsure": false
+    },
+    {
+     "from": "boss-room",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "east-segment",
+     "unsure": false
+    },
+    {
+     "from": "east-segment",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "boss-room",
      "unsure": false
     }
    ],
    "members": {},
    "note": "? ",
    "regions": {
-    "este": {
-     "color": "#ff8bcb",
-     "name": "Este",
-     "note": "POLÍGONO PROVISIONAL (bbox migrado): redibujar. ",
+    "boss-room": {
+     "color": "#a7ffeb",
+     "name": "Boss Room",
+     "note": "",
      "poly": [
       [
-       5176,
-       488
+       5927,
+       351
       ],
       [
-       5272,
-       488
+       6477,
+       351
       ],
       [
-       5272,
-       584
+       6481,
+       694
       ],
       [
-       5176,
-       584
+       5928,
+       682
+      ]
+     ]
+    },
+    "east-segment": {
+     "color": "#81c995",
+     "name": "East Segment",
+     "note": "",
+     "poly": [
+      [
+       2746,
+       302
+      ],
+      [
+       2746,
+       755
+      ],
+      [
+       5817,
+       715
+      ],
+      [
+       5806,
+       163
+      ],
+      [
+       2757,
+       196
+      ]
+     ]
+    },
+    "hub-entrance": {
+     "color": "#fbbc04",
+     "name": "Hub Entrance",
+     "note": "",
+     "poly": [
+      [
+       409,
+       402
+      ],
+      [
+       401,
+       655
+      ],
+      [
+       2715,
+       635
+      ],
+      [
+       2717,
+       385
       ]
      ]
     },
@@ -3586,6 +13980,29 @@
      "name": "Main",
      "note": "",
      "poly": null
+    },
+    "o-1-entrance": {
+     "color": "#f28b82",
+     "name": "O-1 Entrance",
+     "note": "",
+     "poly": [
+      [
+       217,
+       500
+      ],
+      [
+       218,
+       602
+      ],
+      [
+       391,
+       601
+      ],
+      [
+       386,
+       490
+      ]
+     ]
     }
    },
    "req": {
@@ -3625,10 +14042,60 @@
    "req": null
   },
   "x03": {
-   "conns": [],
+   "conns": [
+    {
+     "from": "boss-room",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    },
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "boss-room",
+     "unsure": false
+    }
+   ],
    "members": {},
    "note": "",
    "regions": {
+    "boss-room": {
+     "color": "#f28b82",
+     "name": "Boss Room",
+     "note": "",
+     "poly": [
+      [
+       1566,
+       325
+      ],
+      [
+       1807,
+       326
+      ],
+      [
+       1811,
+       551
+      ],
+      [
+       1558,
+       554
+      ]
+     ]
+    },
     "main": {
      "color": "#8ab4f8",
      "name": "Main",

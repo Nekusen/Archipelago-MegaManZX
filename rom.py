@@ -165,7 +165,7 @@ PICKUP_FLAG_PATCH = [
 # 0x020CB490-0x020CB9D4 sin lecturas ni escrituras en sesión (exp363).
 PICKUP_MAILBOX_HOOK_RAM = 0x020A30A2
 PICKUP_MAILBOX_HOOK_ORIG = bytes.fromhex("6cf7b3fd")   # bl FUN_0200fc0c
-PICKUP_MAILBOX_HOOK_NEW = bytes.fromhex("28f0fdf9")    # bl 0x020CB4A0 (Thumb)
+PICKUP_MAILBOX_HOOK_NEW = bytes.fromhex("28f0adfb")    # bl 0x020CB800 = cave de MARCADO, que llama al del buzón (antes 28f0fdf9 = bl 0x020CB4A0)
 PICKUP_MAILBOX_CAVE_RAM = 0x020CB4A0                   # tras SKIP_CAVE (0x020CB460+48)
 # push{r4,lr}; bl FUN_0200fc0c; ldr r0,[r5,#0x94]; lsrs #3; bcc done;
 # ldr r0,[r5,#0xC0]; beq done; r1=[0x021081F4]; loop: beq done; [r1+4]==r5?
@@ -178,6 +178,80 @@ PICKUP_MAILBOX_CAVE = bytes.fromhex(
     "a400e41862600130186010bdf48110022882100200b50c02")
 PICKUP_MAILBOX_RAM = 0x020CB500          # = data.PICKUP_MAILBOX_ADDR (gen_ap_data)
 PICKUP_MAILBOX_SLOTS = 8
+
+# --- Marcador visual "pickup ya enviado" (agente exp483-491, 2026-09-04;
+# docs/v02_notes.md §2a) ---
+# El hook del buzón (0x020A30A2) apunta ahora al cave de marcado, que llama al
+# cave del buzón (0x020CB4A0 -> FUN_0200fc0c) y después, para los refills
+# (role 0..7) cuyo índice de coords esté en el bitmap de la TABLA (misma
+# subárea que 0x02108228), pone la paleta FIJA (ent+0xB bit6, +0x2B = slot)
+# y regenera cada frame el slot 15 de la sombra de paletas OBJ (0x020F5C08)
+# como copia desaturada de la paleta origen (+0x2A): el pickup se ve GRIS.
+# El slot 15 no lo carga ninguna de las 42 subáreas con pickups (exp485).
+# Tabla: u8 sub, u8 slot (0 = apagado, el cliente escribe 15), u16 pad, 32 B
+# bitmap (bit = idx). Verificado en RAM y en frío (exp486-490, 488b).
+PICKUP_MARK_CAVE_RAM = 0x020CB800                       # zona 0x020CB800-0x020CB97F
+PICKUP_MARK_CAVE = bytes.fromhex(
+    "f0b5fff74dfe287d082847d2244c6278002a43d0e87a410620d420782149097888423bd1"
+    "20490968002937d04b68ab4201d00968f8e70b89d8080019007907211940c840400829d3"
+    "2b21685c0139685401316a54e87a40210843e87213492a23e85c0f2318404001081852018918"
+    "00260e800226825bd306db0e5709ff06ff0edb19970aff06ff0edb199b085f013b437f01"
+    "3b438b530236202eebd3f0bd0000"
+    "00b90c02" "28821002" "f4811002" "085c0f02")           # pool: TABLA, 0x02108228, 0x021081F4, 0x020F5C08
+PICKUP_MARK_TABLE_RAM = 0x020CB900   # = data.PICKUP_MARK_TABLE_ADDR (36 B)
+PICKUP_MARK_SLOT = 15
+
+# --- Avisos en pantalla del cliente AP ("NOTIFY"; agente exp473-480,
+# 2026-09-04; docs/v02_notes.md §2a) ---
+# El handler de gameplay FUN_02021bb0 llama cada frame a msg_tick FUN_0201242c
+# (0x02021DD4). El bl pasa a un cave que, si hay una petición en el buzón y el
+# sistema de mensajes (0x027E02C4) está libre (sin cutscene 0x0214F502.0 ni
+# consola 0x0214F506.1), abre el POPUP PEQUEÑO del juego (el de "Found a Life
+# Up!": no bloquea el gameplay) con el texto del buzón (replica
+# show_pickup_msg FUN_020122d4 con puntero directo: OBJ+0x1C = BUF, OBJ+0xC =
+# DUR, FUN_020121dc, FUN_02012050, OBJ+0x10 = tipo) o el mensaje vanilla `id`
+# (REQ=2), y por último llama a msg_tick. REQ se borra al ver la fase de
+# cierre (OBJ+0x11 == 6); si el mensaje se resetea antes (cambio de sala), se
+# relanza. Buzón: u8 REQ (0/1 texto/2 id), u8 STATE (cave), u16 DUR (frames
+# con el texto entero), +4 BUF (<= 0xFC B, fuente = ASCII-0x20, fin 0xFE).
+# Popup = 1 línea de 30 glifos (el 31º pisa el 1º). Verificado en RAM y en
+# frío (exp475-480).
+NOTIFY_HOOK_RAM = 0x02021DD4
+NOTIFY_HOOK_ORIG = bytes.fromhex("f0f72afb")   # bl FUN_0201242c
+NOTIFY_HOOK_NEW = bytes.fromhex("a9f014fc")    # bl 0x020CB600
+NOTIFY_CAVE_RAM = 0x020CB600                   # zona 0x020CB600-0x020CB7FF
+NOTIFY_CAVE = bytes.fromhex(
+    "10b5204c2078002839d01f496078002806d0487e062803d10020207060702ee0"
+    "488900282bd18869002828d117480078400824d216480078800820d201206070"
+    "2078022804d1a088618846f743fe16e0201d486260884861c889002801d03bf7"
+    "61ff0c4846f7bafd0a4846f7f1fc0649087b002801d0012000e00220886146f7"
+    "d5fe10bd00b70c02c4027e0202f5140206f51402cc027e02")
+NOTIFY_RAM = 0x020CB700        # = data.NOTIFY_ADDR
+NOTIFY_BUF_MAX = 0xFC
+NOTIFY_POPUP_GLYPHS = 30
+
+# --- Cutscenes SIEMPRE saltables (agente exp453-462, 2026-09-04;
+# docs/v02_notes.md §2a) ---
+# Vanilla: START solo salta una cutscene si su evento único (bitfield de 96
+# bits 0x021045C0) ya está puesto: el opcode 0x23 sub 0 de la VM
+# (FUN_0201bfd0, "abrir bloque saltable") solo pone el flag 0x10 de
+# 0x0214F502 ("saltable") si el bit ya estaba; el lector de START
+# FUN_0201b1c8 exige ese flag y salta al estado post-cutscene del handler
+# (mismo camino que "morir y repetir": los flags/warps los reproduce el
+# handler, no los opcodes restantes). Parche: (1) el beq "evento no visto"
+# pasa a `mov r8,r8` => saltable siempre; (2) al saltar, un cave hace lo que
+# haría el cierre del bloque (FUN_02008624(evento) = "visto" + backup) para
+# que el estado quede IDÉNTICO al de ver la cutscene (0 bits de diferencia
+# en 8 cutscenes, exp456-462). Solo afecta a los guiones con bloque 23 (87
+# de 292: las de historia); las intros de jefe (1-2 mensajes) no lo tienen.
+CUTSCENE_SKIP_PATCH = [
+    (0x0201C00C, "17d0", "c046"),           # FUN_0201bfd0 (op 23 sub 0): beq -> mov r8,r8
+    (0x0201B1E4, "1348417f", "b0f0acf9"),   # FUN_0201b1c8: ldr r3,=...; ldrb r1,[r0,#0x1d] -> bl 0x020CB540
+]
+CUTSCENE_SKIP_CAVE_RAM = 0x020CB540         # zona 0x020CB540-0x020CB5FF
+# push {r4,lr}; ldr r4,=0x0214F500; ldrb r0,[r4,#3]; bl FUN_02008624;
+# ldr r0,=0x0214F6B0; ldrb r1,[r0,#0x1d]; pop {r4,pc}; pool
+CUTSCENE_SKIP_CAVE = bytes.fromhex("10b5034ce0783df76df80248417f10bd00f51402b0f61402")
 
 # --- Iconos de biometal de la pantalla DATA SELECT (Continue) — exp429/430,
 # 2026-09-03 ---
@@ -250,6 +324,30 @@ MENU_WARP_TEXT_ROM = 0xDFB200        # m_sub_en.bin (NitroFS, sin comprimir; ver
 MENU_WARP_TEXT_OLD = bytes.fromhex("e0e1234f4e54524f4c003041441a3343414e0021524541002d4150")  # <pad>Control Pad:Scan Area Map
 MENU_WARP_TEXT_NEW = bytes.fromhex("3900225554544f4e1a274f00544f003452414e5345525645520000")  # Y Button:Go to Transerver
 MENU_WARP_TEXT_OFFS = (0xB14, 0xB4B, 0xB85)   # 3 variantes (sin/1/varios servers en el área)
+
+# --- Sprite del Secret Disk = LOGO DE ARCHIPELAGO (agente exp463-467,
+# 2026-09-04; docs/v02_notes.md §2b) ---
+# obj_fnt.bin (NitroFS id 235, ROM 0x00F09000) tiene 511 "sets" de gráficos
+# de objetos; el cuerpo del disco es la unidad 0x11 (16x16, 4bpp OBJ 1D,
+# 4 tiles TL/TR/BL/BR, nibble bajo = píxel izquierdo, 128 B) del set 58
+# (atlas de items: refills, 1-Up, disco, destellos), paleta OBJ slot 1. Las
+# 4 series (B/M/E/O) comparten el frame. El set 58 se carga a VRAM una vez
+# al arrancar. Parche in-place, mismo tamaño, sin recomprimir (fuera de la
+# CRC de cabecera). Logo: círculo naranja/amarillo con borde y "A" blanca
+# con los índices de la paleta 1 (work/experiments/465_ap_logo_patch.py
+# genera el PNG y el tile; editar build_logo() para retocar el arte).
+# Verificado en frío: VRAM = logo, el disco de A-2/E-1 se ve y se recoge.
+DISK_LOGO_ROM = 0x00F5F20C   # obj_fnt.bin + 0x5620C
+DISK_LOGO_OLD = bytes.fromhex(
+    "000044f40040458f0054f48800ff8f88f088888884884844dc44848844887800"
+    "ff0f000088f8000088880f008888f8008888880f44848848884844cd00878844"
+    "dc88780084ff8f88dc88f8ff4088888800848888004088880000847700004047"
+    "008788cd88f8ff48ff8f88cd8888880488884800888804007748000074040000")
+DISK_LOGO_NEW = bytes.fromhex(
+    "000070770070d7dd00d7dddd70ddddff70ddfdffd7ddffccd7ddffccc7ccffff"
+    "77070000dd7d0700dddd7d00ffdddd07ffdfdd07ccffcc7cccffcc7cffffcc7c"
+    "c7ccffffc7ccffccc7ccffcc70ccffcc70ccffcc00a7aaaa0070a7aa00007077"
+    "ffffcc7cccffcc7cccffcc7cccffcc07ccffcc07aaaa7a00aa7a070077070000")
 
 
 # --- Compresor BLZ con parse ÓPTIMO (agente exp360-369, exp367) ---
@@ -412,6 +510,10 @@ class MMZXPatchExtension(APPatchExtension):
         poke(PICKUP_MAILBOX_CAVE_RAM, PICKUP_MAILBOX_CAVE,
              bytes(len(PICKUP_MAILBOX_CAVE)))
         poke(PICKUP_MAILBOX_HOOK_RAM, PICKUP_MAILBOX_HOOK_NEW, PICKUP_MAILBOX_HOOK_ORIG)
+        #     + marcador visual de pickups ya enviados (el hook de arriba
+        #     apunta al cave de marcado, que encadena al del buzón); tabla a 0
+        assert len(PICKUP_MARK_CAVE) <= PICKUP_MARK_TABLE_RAM - PICKUP_MARK_CAVE_RAM
+        poke(PICKUP_MARK_CAVE_RAM, PICKUP_MARK_CAVE, bytes(len(PICKUP_MARK_CAVE)))
         # 1f) iconos de biometal del DATA SELECT = posesión del randomizer
         #     (siempre): H/F/L/P por 0x02104627.0-3 y X oculto si no se posee
         for ram, orig, new in DATASELECT_ICON_PATCH:
@@ -423,6 +525,15 @@ class MMZXPatchExtension(APPatchExtension):
         poke(MENU_WARP_CAVE_A_RAM, MENU_WARP_CAVE_A, bytes(len(MENU_WARP_CAVE_A)))
         poke(MENU_WARP_CAVE_B_RAM, MENU_WARP_CAVE_B, bytes(len(MENU_WARP_CAVE_B)))
         for ram, orig, new in MENU_WARP_HOOKS:
+            poke(ram, bytes.fromhex(new), bytes.fromhex(orig))
+        # 1h) avisos en pantalla del cliente (popup pequeño; siempre)
+        assert len(NOTIFY_CAVE) <= NOTIFY_RAM - NOTIFY_CAVE_RAM
+        poke(NOTIFY_CAVE_RAM, NOTIFY_CAVE, bytes(len(NOTIFY_CAVE)))
+        poke(NOTIFY_HOOK_RAM, NOTIFY_HOOK_NEW, NOTIFY_HOOK_ORIG)
+        # 1i) cutscenes siempre saltables con START (siempre)
+        assert CUTSCENE_SKIP_CAVE_RAM + len(CUTSCENE_SKIP_CAVE) <= NOTIFY_CAVE_RAM
+        poke(CUTSCENE_SKIP_CAVE_RAM, CUTSCENE_SKIP_CAVE, bytes(len(CUTSCENE_SKIP_CAVE)))
+        for ram, orig, new in CUTSCENE_SKIP_PATCH:
             poke(ram, bytes.fromhex(new), bytes.fromhex(orig))
         # 2) Hu-gate (opcional)
         if hu_in_pool:
@@ -457,6 +568,13 @@ class MMZXPatchExtension(APPatchExtension):
             if cur != MENU_WARP_TEXT_OLD:
                 raise ValueError("MMZX: texto inesperado en m_sub_en.bin+0x%X (%s)" % (off, cur.hex()))
             d[o:o + len(MENU_WARP_TEXT_NEW)] = MENU_WARP_TEXT_NEW
+
+        # sprite del Secret Disk = logo de Archipelago (NitroFS in-place, 128 B)
+        cur = bytes(d[DISK_LOGO_ROM:DISK_LOGO_ROM + len(DISK_LOGO_NEW)])
+        if cur != DISK_LOGO_NEW:
+            if cur != DISK_LOGO_OLD:
+                raise ValueError("MMZX: tile del disco inesperado en ROM 0x%X (%s)" % (DISK_LOGO_ROM, cur[:8].hex()))
+            d[DISK_LOGO_ROM:DISK_LOGO_ROM + len(DISK_LOGO_NEW)] = DISK_LOGO_NEW
 
         # CRC16 de cabecera (CRC-16/MODBUS sobre [0:0x15E])
         crc = 0xFFFF

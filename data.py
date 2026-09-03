@@ -353,6 +353,17 @@ GOAL_BITS_ALT = [(0x02104602, 2), (0x02104602, 3)]
 # re-sincroniza si el contador retrocede (reset del emulador).
 PICKUP_MAILBOX_ADDR = 0x020CB500
 PICKUP_MAILBOX_SLOTS = 8
+# Marcador visual de pickups ya enviados (rom.py PICKUP_MARK_*; agente
+# exp483-491): u8 sub, u8 slot (0 apagado; el cliente escribe 15), u16
+# pad, 32 B bitmap (bit = idx de coords) -> el pickup se ve GRIS.
+PICKUP_MARK_TABLE_ADDR = 0x020CB900
+PICKUP_MARK_SLOT = 15
+# Avisos en pantalla (rom.py NOTIFY_*; agente exp473-480): u8 REQ (1 =
+# texto en BUF; el cave lo borra al cerrarse el popup), u8 STATE, u16 DUR
+# (frames), +4 BUF (fuente = ASCII-0x20, fin 0xFE; 1 linea de 30 glifos).
+NOTIFY_ADDR = 0x020CB700
+NOTIFY_BUF_MAX = 0xFC
+NOTIFY_POPUP_GLYPHS = 30
 PICKUP_CATEGORIES = ['pickup_1up', 'pickup_crystal', 'pickup_energy', 'pickup_weapon']
 
 # --- Modo AUTO force-accept de misiones (v0.2) ---

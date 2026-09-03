@@ -5,6 +5,7 @@ Dominio de memoria: "ARM9 System Bus" con direcciones absolutas 0x02xxxxxx
 (verificar el mapeo del core melonDS al montar; ver playbook §1).
 """
 
+import collections
 import time
 from typing import TYPE_CHECKING, Any
 
@@ -18,6 +19,7 @@ from .data import (LOCATIONS, ITEMS, GOAL_BITS, GOAL_BITS_ALT, MISSION_ACCEPT,
 from .data import EVENT_GATES, EVENT_GATES_OPEN, EVENT_GATES_ALL6
 from .data import HUB_FLOOR_BOSS, HUB_FLOOR_DOOR_X, HUB_FLOOR_Y, WARP_DESTINATIONS
 from .data import PICKUP_MAILBOX_ADDR, PICKUP_MAILBOX_SLOTS
+from .data import PICKUP_MARK_TABLE_ADDR, PICKUP_MARK_SLOT, NOTIFY_ADDR, NOTIFY_BUF_MAX, NOTIFY_POPUP_GLYPHS
 from .golden import GOLDEN_IMAGE, GOLDEN_IMAGE_ADDR, build_image
 
 if TYPE_CHECKING:
@@ -180,6 +182,68 @@ PICKUP_OPTION_KEYS = ("pickup_checks_1up", "pickup_checks_energy",
                       "pickup_checks_weapon", "pickup_checks_crystals")
 
 
+# --- Avisos en pantalla (parche rom.py NOTIFY_*; agente exp473-480,
+# docs/v02_notes.md §2a) ---
+# El cave abre el popup pequeño del juego (el de "Found a Life Up!", no
+# bloquea) con el texto que el cliente deja en NOTIFY_ADDR: u8 REQ (1 = texto
+# en BUF; el cave lo pone a 0 al cerrarse el aviso), u8 STATE (del cave), u16
+# DUR (frames con el texto entero), BUF en +4 (fuente del juego = ASCII-0x20,
+# fin 0xFE). Una línea de NOTIFY_POPUP_GLYPHS glifos; los controles de color
+# (F1 03 verde / F1 00 blanco) no cuentan. Umbrales por clase de item con
+# /mmzx_notify (received/sent: off, progression, useful = progresión+útil, all).
+NOTIFY_DUR = 90
+NOTIFY_LEVELS = ("off", "progression", "useful", "all")
+NOTIFY_PUNCT = {"!": 0x01, "'": 0x07, ",": 0x0C, "-": 0x0D, ".": 0x0E, ":": 0x1A, "?": 0x1F}
+NOTIFY_GREEN, NOTIFY_WHITE = b"\xf1\x03", b"\xf1\x00"
+NOTIFY_QUEUE_MAX = 16
+
+
+def encode_text(text: str, terminate: bool = True) -> bytes:
+    """Codifica con la fuente de MMZX (ASCII-0x20; verificado en pantalla para
+    espacio, dígitos, A-Z, a-z y la puntuación de NOTIFY_PUNCT; el resto -> espacio)."""
+    out = bytearray()
+    for ch in text:
+        if ch == " ":
+            out.append(0x00)
+        elif "0" <= ch <= "9":
+            out.append(0x10 + ord(ch) - 0x30)
+        elif "A" <= ch <= "Z":
+            out.append(0x21 + ord(ch) - 0x41)
+        elif "a" <= ch <= "z":
+            out.append(0x41 + ord(ch) - 0x61)
+        elif ch in NOTIFY_PUNCT:
+            out.append(NOTIFY_PUNCT[ch])
+        else:
+            out.append(0x00)
+    if terminate:
+        out.append(0xFE)
+    return bytes(out)
+
+
+def notify_bytes(head: str, item: str, tail: str) -> bytes:
+    """head + item (en verde) + tail, en una línea de NOTIFY_POPUP_GLYPHS glifos:
+    si no cabe se sacrifica primero tail (' from Alice') y luego se recorta el item."""
+    n = NOTIFY_POPUP_GLYPHS
+    if len(head) + len(item) + len(tail) > n:
+        tail = ""
+    if len(head) + len(item) > n:
+        item = item[:max(0, n - len(head) - 1)] + "."
+    data = (encode_text(head, False) + NOTIFY_GREEN + encode_text(item, False)
+            + NOTIFY_WHITE + encode_text(tail, False) + b"\xfe")
+    if len(data) > NOTIFY_BUF_MAX:
+        data = data[:NOTIFY_BUF_MAX - 1] + b"\xfe"
+    return data
+
+
+def item_level(flags: int) -> int:
+    """Nivel de un item para el umbral de avisos: 1 progression, 2 useful, 3 resto."""
+    if flags & 0b001:
+        return 1
+    if flags & 0b010:
+        return 2
+    return 3
+
+
 class MMZXClient(BizHawkClient):
     game = "Mega Man ZX"
     system = "NDS"
@@ -230,6 +294,17 @@ class MMZXClient(BizHawkClient):
         self.mailbox_map: dict[tuple[int, int], int] | None = None
         self.mailbox_enabled: bool | None = None
         self.pos_last = None          # (sub, x, y, t) del último envío de posición
+        # avisos en pantalla (parche NOTIFY): cola de textos ya codificados,
+        # índice de items ya avisados (None = sincronizar sin backlog al
+        # conectar), umbrales de /mmzx_notify, scouts pedidos (avisos 'Sent')
+        self.notify_queue: collections.deque = collections.deque()
+        self.notified_items: int | None = None
+        self.notify_cfg = {"received": 2, "sent": 2}      # índices en NOTIFY_LEVELS
+        self.scout_requested: set[int] = set()
+        # marcador gris de pickups ya enviados (parche PICKUP_MARK)
+        self.marks_enabled = True
+        self.mark_written: tuple[int, bytes] | None = None
+        self.mark_by_sub: dict[int, dict[int, int]] | None = None
 
     async def validate_rom(self, ctx: "BizHawkClientContext") -> bool:
         from CommonClient import logger
@@ -270,6 +345,10 @@ class MMZXClient(BizHawkClient):
         self.mailbox_checked = set()
         self.mailbox_enabled = None
         self.pos_last = None
+        self.notify_queue.clear()
+        self.notified_items = None
+        self.scout_requested = set()
+        self.mark_written = None
         return True
 
     async def set_auth(self, ctx: "BizHawkClientContext") -> None:
@@ -359,6 +438,8 @@ class MMZXClient(BizHawkClient):
             ctx.command_processor.commands["mmzx_start"] = _cmd_start
             ctx.command_processor.commands["mmzx_accept"] = _cmd_accept
             ctx.command_processor.commands["mmzx_where"] = _cmd_where
+            ctx.command_processor.commands["mmzx_notify"] = _cmd_notify
+            ctx.command_processor.commands["mmzx_marks"] = _cmd_marks
 
         # ---- tutorial-skip: estado one-shot (datastore) + imagen dorada ----
         # Resolver PRONTO (también en menús) la máquina one-shot del modelo
@@ -447,7 +528,11 @@ class MMZXClient(BizHawkClient):
             newly = checked - self.local_checked
             if newly:
                 await ctx.check_locations(list(checked))
+                self._notify_sent(ctx, newly)
             self.local_checked = checked
+
+        # ---- marcador gris de pickups ya enviados (parche PICKUP_MARK) ----
+        await self._stage("marcas de pickups", self._sync_pickup_marks(ctx))
 
         # ---- diagnóstico: trazar bits que cambian (mapear misión completada) ----
         if self.flag_watch:
@@ -463,6 +548,9 @@ class MMZXClient(BizHawkClient):
 
         # ---- conceder items recibidos (idempotente, re-aplicar todo) ----
         await self._stage("items", self._grant_items(ctx, guard))
+
+        # ---- avisos en pantalla: items recibidos nuevos + bomba de la cola ----
+        await self._stage("avisos", self._notify_tick(ctx))
 
         # ---- #5: revertir formas de jefe / Troop no poseídas por item AP ----
         await self._stage("modelos", self._revert_unowned_models(ctx, guard))
@@ -592,6 +680,117 @@ class MMZXClient(BizHawkClient):
                 except Exception:
                     names.append(str(i))
             logger.info("[mmzx] pickup recogido: %s" % ", ".join(names))
+
+    async def _sync_pickup_marks(self, ctx) -> None:
+        """Escribe en la ROM (tabla PICKUP_MARK) el bitmap de pickups
+        respawneables YA ENVIADOS de la subárea actual: el cave los pinta en
+        gris al spawnear (o en <= 2 frames si la sala ya está cargada). Se
+        reescribe al cambiar de sub, al enviar un check de pickup, al recibir
+        checked_locations del servidor y si la ROM perdió la tabla (reset:
+        slot 0). Con /mmzx_marks off se apaga (slot 0)."""
+        if not self.mailbox_enabled:
+            return
+        if self.mark_by_sub is None:
+            self.mark_by_sub = {}
+            for v in LOCATIONS.values():
+                det = v.get("detect")
+                if det and det[0] == "mailbox" and int(det[2]) < 256:
+                    self.mark_by_sub.setdefault(int(det[1]), {})[v["id"]] = int(det[2])
+        try:
+            r = await bizhawk.read(ctx.bizhawk_ctx, [(SUBAREA_STABLE, 1, DOM),
+                                                     (PICKUP_MARK_TABLE_ADDR, 4, DOM)])
+        except bizhawk.RequestFailedError:
+            return
+        sub, head = r[0][0], r[1]
+        if not self.marks_enabled:
+            if head[1] != 0:
+                await bizhawk.write(ctx.bizhawk_ctx, [(PICKUP_MARK_TABLE_ADDR, bytes(36), DOM)])
+                self.mark_written = None
+            return
+        done = set(ctx.checked_locations) | self.mailbox_checked
+        bm = bytearray(32)
+        for loc_id, idx in self.mark_by_sub.get(sub, {}).items():
+            if loc_id in done:
+                bm[idx >> 3] |= 1 << (idx & 7)
+        want = (sub, bytes(bm))
+        if want == self.mark_written and head[0] == sub and head[1] == PICKUP_MARK_SLOT:
+            return
+        await bizhawk.write(ctx.bizhawk_ctx, [
+            (PICKUP_MARK_TABLE_ADDR, bytes([sub, PICKUP_MARK_SLOT, 0, 0]) + bytes(bm), DOM)])
+        self.mark_written = want
+
+    def _ensure_scouts(self, ctx) -> list:
+        """Pide LocationScouts (sin crear hints) de las locations pendientes
+        para saber qué item de qué jugador hay en cada una (avisos 'Sent')."""
+        if self.notify_cfg["sent"] == 0:
+            return []
+        info = getattr(ctx, "locations_info", None) or {}
+        if not info and self.scout_requested:
+            self.scout_requested = set()        # el servidor limpió la info (reconexión)
+        pending = set(getattr(ctx, "missing_locations", ())) - set(info) - self.scout_requested
+        if not pending:
+            return []
+        self.scout_requested |= pending
+        return [{"cmd": "LocationScouts", "locations": sorted(pending), "create_as_hint": 0}]
+
+    def _notify_sent(self, ctx, newly: set) -> None:
+        """Encola 'Sent <item> to <jugador>' por cada check nuevo cuyo item es
+        de OTRO jugador (según el umbral 'sent')."""
+        lvl = self.notify_cfg["sent"]
+        if lvl == 0:
+            return
+        infos = getattr(ctx, "locations_info", None) or {}
+        names = getattr(ctx, "player_names", {})
+        for loc in sorted(newly):
+            info = infos.get(loc)
+            if info is None or info.player == ctx.slot or item_level(info.flags) > lvl:
+                continue
+            if len(self.notify_queue) >= NOTIFY_QUEUE_MAX:
+                break
+            try:
+                item = ctx.item_names.lookup_in_slot(info.item, info.player)
+            except Exception:
+                item = str(info.item)
+            who = names.get(info.player, str(info.player))
+            self.notify_queue.append(notify_bytes("Sent ", item, " to " + who))
+
+    async def _notify_tick(self, ctx) -> None:
+        """Encola 'Got <item> [from <jugador>]' por cada item recibido nuevo
+        (según el umbral 'received'; el backlog al conectar no se avisa) y, si
+        el popup está libre (REQ == 0), escribe el siguiente aviso de la cola."""
+        msgs = self._ensure_scouts(ctx)
+        if msgs and hasattr(ctx, "send_msgs"):
+            await ctx.send_msgs(msgs)
+        n = len(ctx.items_received)
+        if self.notified_items is None:
+            self.notified_items = n
+        lvl = self.notify_cfg["received"]
+        while self.notified_items < n:
+            net = ctx.items_received[self.notified_items]
+            self.notified_items += 1
+            if lvl == 0 or item_level(net.flags) > lvl or len(self.notify_queue) >= NOTIFY_QUEUE_MAX:
+                continue
+            try:
+                item = ctx.item_names.lookup_in_game(net.item, getattr(ctx, "game", "Mega Man ZX"))
+            except Exception:
+                item = str(net.item)
+            tail = ""
+            if net.player != ctx.slot:
+                tail = " from " + getattr(ctx, "player_names", {}).get(net.player, str(net.player))
+            self.notify_queue.append(notify_bytes("Got ", item, tail))
+        if not self.notify_queue:
+            return
+        try:
+            req = (await bizhawk.read(ctx.bizhawk_ctx, [(NOTIFY_ADDR, 1, DOM)]))[0][0]
+        except bizhawk.RequestFailedError:
+            return
+        if req != 0:
+            return                              # el aviso anterior sigue en pantalla
+        data = self.notify_queue.popleft()
+        await bizhawk.write(ctx.bizhawk_ctx, [
+            (NOTIFY_ADDR + 4, data, DOM),
+            (NOTIFY_ADDR + 2, NOTIFY_DUR.to_bytes(2, "little"), DOM)])
+        await bizhawk.write(ctx.bizhawk_ctx, [(NOTIFY_ADDR, b"\x01", DOM)])   # REQ el último
 
     async def _flag_watch_tick(self, ctx) -> None:
         """Lee la ventana ancha del bloque de progreso y reporta en el log
@@ -1423,3 +1622,36 @@ def _cmd_dump(self, *args) -> None:
         return
     handler.pending_dump = True
     logger.info("mmzx_dump: encolado (se vuelca en el próximo frame de juego).")
+
+
+def _cmd_notify(self, *args) -> None:
+    """Avisos en pantalla al recibir/enviar items: /mmzx_notify [received|sent]
+    [off|progression|useful|all] ('useful' = progresión + útiles). Sin
+    argumentos muestra la configuración actual."""
+    from CommonClient import logger
+    handler = self.ctx.client_handler
+    if not isinstance(handler, MMZXClient):
+        return
+    if len(args) >= 2 and str(args[0]).lower() in ("received", "sent") \
+            and str(args[1]).lower() in NOTIFY_LEVELS:
+        handler.notify_cfg[str(args[0]).lower()] = NOTIFY_LEVELS.index(str(args[1]).lower())
+    elif args:
+        logger.error("uso: /mmzx_notify [received|sent] [off|progression|useful|all]")
+        return
+    logger.info("[mmzx] avisos en pantalla: received=%s, sent=%s" % (
+        NOTIFY_LEVELS[handler.notify_cfg["received"]], NOTIFY_LEVELS[handler.notify_cfg["sent"]]))
+
+
+def _cmd_marks(self, *args) -> None:
+    """Marcador gris de los pickups respawneables ya enviados: /mmzx_marks [on|off]."""
+    from CommonClient import logger
+    handler = self.ctx.client_handler
+    if not isinstance(handler, MMZXClient):
+        return
+    if args and str(args[0]).lower() in ("on", "off"):
+        handler.marks_enabled = str(args[0]).lower() == "on"
+        handler.mark_written = None
+    elif args:
+        logger.error("uso: /mmzx_marks [on|off]")
+        return
+    logger.info("[mmzx] marcador de pickups enviados: %s" % ("on" if handler.marks_enabled else "off"))

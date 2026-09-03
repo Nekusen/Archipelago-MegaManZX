@@ -485,12 +485,40 @@ def empty_logic(world=None):
     return doc
 
 
+# Aristas renombradas en data.DOORS: las curadas sin posición sustituidas por
+# su PUERTA DE VUELTA sintetizada (RE 2026-09-03, docs/v02_notes.md §1t). Los
+# documentos antiguos (o un editor abierto con los datos viejos) se migran al
+# normalizar.
+LEGACY_EDGE_NAMES = {
+    "a04 curated to j01": "a04 door (2016,752)",
+    "b02 curated to d01": "b02 door (5088,496)",
+    "e07 curated to e08": "e07 door (1760,720)",
+    "k03 door to k04": "k03 door (1760,1104)",
+}
+
+
+def _migrate_edge_names(doc):
+    edges = doc.get("edges", {})
+    for old, new in LEGACY_EDGE_NAMES.items():
+        if old in edges:
+            v = edges.pop(old)
+            v["pos"], v["dst_pos"] = None, None      # la nueva arista ya trae posición
+            edges.setdefault(new, v)
+        for rl in doc.get("rooms", {}).values():
+            m = rl.get("members", {})
+            for k in list(m):
+                if k == old or k == old + "@in":
+                    m.setdefault(k.replace(old, new), m.pop(k))
+
+
 def normalize_logic(doc, world=None):
-    """Rellena claves ausentes (documento parcial o antiguo)."""
+    """Rellena claves ausentes (documento parcial o antiguo) y migra nombres
+    de aristas retirados."""
     base = empty_logic()
     for k, v in base.items():
         if k not in doc:
             doc[k] = v
+    _migrate_edge_names(doc)
     for r in (world or {}).get("rooms", []):
         doc["rooms"].setdefault(r, empty_room())
     for r in doc["rooms"].values():

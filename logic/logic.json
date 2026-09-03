@@ -11,6 +11,17 @@
    },
    "unsure": false
   },
+  "A-1: Disk E-1": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU"
+     ]
+    ]
+   },
+   "unsure": false
+  },
   "A-1: Disk E-31": {
    "note": "",
    "req": {
@@ -77,6 +88,17 @@
    },
    "unsure": false
   },
+  "A-1: Weapon Energy L": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU"
+     ]
+    ]
+   },
+   "unsure": false
+  },
   "A-2: Disk E-27": {
    "note": "",
    "req": {
@@ -130,7 +152,7 @@
      ]
     ]
    },
-   "unsure": true
+   "unsure": false
   },
   "A-4: E-Crystal L": {
    "note": "",
@@ -188,7 +210,18 @@
      ]
     ]
    },
-   "unsure": true
+   "unsure": false
+  },
+  "B-2: Energy Capsule L (2)": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
   },
   "B-3: 1-Up": {
    "note": "",
@@ -218,6 +251,17 @@
     "normal": [
      [
       "HX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "B-3: Energy Capsule L": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
      ]
     ]
    },
@@ -907,13 +951,7 @@
    "dst_pos": null,
    "note": "puerta Amarilla en lo alto del muro derecho (tile y=47 vs suelo 69): hay que escalar",
    "pos": null,
-   "req": {
-    "normal": [
-     [
-      "MODEL"
-     ]
-    ]
-   },
+   "req": null,
    "unsure": true
   },
   "a03 door (2096,880)": {
@@ -943,7 +981,7 @@
    },
    "unsure": true
   },
-  "b02 curated to d01": {
+  "b02 door (5088,496)": {
    "dst_pos": null,
    "note": "el Rayfly (miniboss) esta en el tramo derecho de B-2, antes del corredor a D-1",
    "pos": null,
@@ -1037,7 +1075,7 @@
    },
    "unsure": true
   },
-  "e07 curated to e08": {
+  "e07 door (1760,720)": {
    "dst_pos": null,
    "note": "",
    "pos": null,
@@ -1255,8 +1293,45 @@
   "a01": {
    "conns": [
     {
+     "from": "left-side",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    },
+    {
      "from": "main",
-     "note": "usuario (playtest 4): HX;",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "left-side",
+     "unsure": false
+    },
+    {
+     "from": "upper-side",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "left-side",
+     "unsure": false
+    },
+    {
+     "from": "left-side",
+     "note": "",
      "req": {
       "normal": [
        [
@@ -1264,11 +1339,11 @@
        ]
       ]
      },
-     "to": "cueva-e1",
+     "to": "upper-side",
      "unsure": false
     },
     {
-     "from": "cueva-e1",
+     "from": "upper-side",
      "note": "",
      "req": {
       "normal": [
@@ -1277,33 +1352,67 @@
      },
      "to": "main",
      "unsure": false
+    },
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "HX"
+       ]
+      ]
+     },
+     "to": "upper-side",
+     "unsure": false
     }
    ],
-   "members": {
-    "A-1: Weapon Energy L": "main"
-   },
+   "members": {},
    "note": "",
    "regions": {
-    "cueva-e1": {
-     "color": "#f28b82",
-     "name": "Cueva E1",
-     "note": "POLÍGONO PROVISIONAL (bbox migrado): redibujar. usuario (playtest 4): HX;",
+    "left-side": {
+     "color": "#fbbc04",
+     "name": "Left Side",
+     "note": "",
      "poly": [
       [
-       7584,
-       296
+       240,
+       891
       ],
       [
-       7680,
-       296
+       1064,
+       886
       ],
       [
-       7680,
-       392
+       1064,
+       1221
       ],
       [
-       7584,
-       392
+       224,
+       1216
+      ]
+     ]
+    },
+    "left-side-cave": {
+     "color": "#a7ffeb",
+     "name": "Left Side Cave",
+     "note": "",
+     "poly": [
+      [
+       6610,
+       141
+      ],
+      [
+       6602,
+       458
+      ],
+      [
+       7092,
+       455
+      ],
+      [
+       7084,
+       136
       ]
      ]
     },
@@ -1312,6 +1421,64 @@
      "name": "Main",
      "note": "",
      "poly": null
+    },
+    "upper-side": {
+     "color": "#81c995",
+     "name": "Upper Side",
+     "note": "",
+     "poly": [
+      [
+       325,
+       655
+      ],
+      [
+       327,
+       875
+      ],
+      [
+       1564,
+       862
+      ],
+      [
+       1572,
+       918
+      ],
+      [
+       2381,
+       939
+      ],
+      [
+       3315,
+       886
+      ],
+      [
+       3299,
+       748
+      ]
+     ]
+    },
+    "upper-side-cave": {
+     "color": "#d7aefb",
+     "name": "Upper Side Cave",
+     "note": "",
+     "poly": [
+      [
+       7134,
+       144
+      ],
+      [
+       7140,
+       450
+      ],
+      [
+       7823,
+       455
+      ],
+      [
+       7826,
+       147
+      ]
+     ]
     }
    },
    "req": null
@@ -1319,30 +1486,28 @@
   "a02": {
    "conns": [
     {
+     "from": "upper-side",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    },
+    {
      "from": "main",
      "note": "",
      "req": {
       "normal": [
        [
-        "MODEL"
+        "HX"
        ]
       ]
      },
-     "to": "sur",
-     "unsure": true
-    },
-    {
-     "from": "sur",
-     "note": "",
-     "req": {
-      "normal": [
-       [
-        "MODEL"
-       ]
-      ]
-     },
-     "to": "main",
-     "unsure": true
+     "to": "upper-side",
+     "unsure": false
     }
    ],
    "members": {},
@@ -1354,26 +1519,26 @@
      "note": "",
      "poly": null
     },
-    "sur": {
-     "color": "#fbbc04",
-     "name": "Sur",
-     "note": "POLÍGONO PROVISIONAL (bbox migrado): redibujar. ",
+    "upper-side": {
+     "color": "#f28b82",
+     "name": "Upper Side",
+     "note": "",
      "poly": [
       [
-       240,
-       864
+       410,
+       381
       ],
       [
-       336,
-       864
+       376,
+       758
       ],
       [
-       336,
-       960
+       1745,
+       772
       ],
       [
-       240,
-       960
+       1861,
+       407
       ]
      ]
     }
@@ -1395,15 +1560,114 @@
    "req": null
   },
   "a04": {
-   "conns": [],
+   "conns": [
+    {
+     "from": "behind-narrow-path",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "HU"
+       ]
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    },
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "HU"
+       ]
+      ]
+     },
+     "to": "behind-narrow-path",
+     "unsure": false
+    },
+    {
+     "from": "right-path",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "behind-narrow-path",
+     "unsure": false
+    },
+    {
+     "from": "behind-narrow-path",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "right-path",
+     "unsure": false
+    }
+   ],
    "members": {},
    "note": "",
    "regions": {
+    "behind-narrow-path": {
+     "color": "#f28b82",
+     "name": "Behind Narrow Path",
+     "note": "",
+     "poly": [
+      [
+       1156,
+       589
+      ],
+      [
+       1150,
+       773
+      ],
+      [
+       1576,
+       770
+      ],
+      [
+       1569,
+       583
+      ]
+     ]
+    },
     "main": {
      "color": "#8ab4f8",
      "name": "Main",
      "note": "",
      "poly": null
+    },
+    "right-path": {
+     "color": "#fbbc04",
+     "name": "Right Path",
+     "note": "",
+     "poly": [
+      [
+       1834,
+       597
+      ],
+      [
+       2120,
+       587
+      ],
+      [
+       2120,
+       815
+      ],
+      [
+       1829,
+       808
+      ]
+     ]
     }
    },
    "req": null
@@ -1423,29 +1687,306 @@
    "req": null
   },
   "b02": {
-   "conns": [],
+   "conns": [
+    {
+     "from": "right-side",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    },
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "right-side",
+     "unsure": false
+    },
+    {
+     "from": "top-of-interior-area",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "bottom-of-interior-area",
+     "unsure": false
+    },
+    {
+     "from": "bottom-of-interior-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "top-of-interior-area",
+     "unsure": false
+    }
+   ],
    "members": {},
    "note": "",
    "regions": {
+    "bottom-of-interior-area": {
+     "color": "#fbbc04",
+     "name": "Bottom of Interior Area",
+     "note": "",
+     "poly": [
+      [
+       4886,
+       649
+      ],
+      [
+       5223,
+       649
+      ],
+      [
+       5224,
+       829
+      ],
+      [
+       4883,
+       815
+      ]
+     ]
+    },
     "main": {
      "color": "#8ab4f8",
      "name": "Main",
      "note": "",
      "poly": null
+    },
+    "right-side": {
+     "color": "#f28b82",
+     "name": "Right Side",
+     "note": "",
+     "poly": [
+      [
+       2876,
+       421
+      ],
+      [
+       2873,
+       765
+      ],
+      [
+       4386,
+       787
+      ],
+      [
+       4379,
+       389
+      ]
+     ]
+    },
+    "top-of-interior-area": {
+     "color": "#81c995",
+     "name": "Top of Interior Area",
+     "note": "",
+     "poly": [
+      [
+       4909,
+       423
+      ],
+      [
+       4909,
+       563
+      ],
+      [
+       5216,
+       566
+      ],
+      [
+       5213,
+       447
+      ]
+     ]
     }
    },
    "req": null
   },
   "b03": {
-   "conns": [],
+   "conns": [
+    {
+     "from": "left-side-of-door-switch",
+     "note": "",
+     "req": {
+      "expert": [
+       [
+        "MODEL"
+       ]
+      ],
+      "normal": [
+       [
+        "FX"
+       ],
+       [
+        "HX"
+       ],
+       [
+        "FX"
+       ],
+       [
+        "LX"
+       ],
+       [
+        "OX"
+       ]
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    },
+    {
+     "from": "top-area",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "middle-area",
+     "unsure": false
+    },
+    {
+     "from": "middle-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "top-area",
+     "unsure": false
+    },
+    {
+     "from": "top-area",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    },
+    {
+     "from": "middle-area",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    },
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "middle-area",
+     "unsure": false
+    }
+   ],
    "members": {},
    "note": "",
    "regions": {
+    "left-side-of-door-switch": {
+     "color": "#f28b82",
+     "name": "Left Side of Door Switch",
+     "note": "",
+     "poly": [
+      [
+       258,
+       1378
+      ],
+      [
+       515,
+       1375
+      ],
+      [
+       513,
+       1563
+      ],
+      [
+       259,
+       1553
+      ]
+     ]
+    },
     "main": {
      "color": "#8ab4f8",
      "name": "Main",
      "note": "",
      "poly": null
+    },
+    "middle-area": {
+     "color": "#81c995",
+     "name": "Middle Area",
+     "note": "",
+     "poly": [
+      [
+       1253,
+       813
+      ],
+      [
+       2296,
+       809
+      ],
+      [
+       2293,
+       1417
+      ],
+      [
+       1272,
+       1163
+      ]
+     ]
+    },
+    "top-area": {
+     "color": "#fbbc04",
+     "name": "Top Area",
+     "note": "",
+     "poly": [
+      [
+       2372,
+       606
+      ],
+      [
+       2374,
+       774
+      ],
+      [
+       1229,
+       799
+      ],
+      [
+       1232,
+       622
+      ]
+     ]
     }
    },
    "req": null

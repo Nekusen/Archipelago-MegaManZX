@@ -710,20 +710,82 @@ def validate(world, doc, start_room=None):
     if members:
         for r in world["rooms"]:
             reach = local_reachability(world, doc, r, members, "expert", start_room)
+            conns_of = {}
+            for c in rooms[r].get("conns", []):
+                conns_of.setdefault(c["from"], []).append(c)
+                conns_of.setdefault(c["to"], []).append(c)
             for rid in rooms[r]["regions"]:
-                if rid not in reach:
-                    nodes = [n for n, m in members[r].items() if m == rid]
+                nodes = [n for n, m in members[r].items() if m == rid]
+                if rid not in reach and (nodes or conns_of.get(rid)):
+                    # (Main vacía y sin conexiones = patrón "todo en polígonos": no se avisa)
                     warnings.append("%s/%s: región sin entrada posible (%d nodos: %s)" % (
                         r, rid, len(nodes), ", ".join(sorted(nodes)[:6]) + ("…" if len(nodes) > 6 else "")))
-            for rid in rooms[r]["regions"]:
-                if rid != "main" and not any(m == rid for m in members[r].values()):
-                    warnings.append("%s/%s: región vacía (sin checks ni puertas)" % (r, rid))
+                if rid != "main" and not nodes and not conns_of.get(rid):
+                    warnings.append("%s/%s: región vacía (sin checks, puertas ni conexiones)" % (r, rid))
+            warnings.extend(_region_flow_warnings(world, doc, r, members))
     unsure = 0
     for rl in rooms.values():
         unsure += sum(1 for c in rl.get("conns", []) if c.get("unsure"))
     unsure += sum(1 for v in doc.get("checks", {}).values() if v.get("unsure"))
     unsure += sum(1 for v in doc.get("edges", {}).values() if v.get("unsure"))
     return {"errors": errors, "warnings": warnings, "unsure": unsure, "unplaced": len(unplaced)}
+
+
+def _region_flow_warnings(world, doc, room, members):
+    """Avisos de flujo por región: (a) región con entradas pero SIN SALIDA
+    (callejón: en el juego siempre se puede volver); (b) nodos en Main sin
+    conexión con las otras regiones de la sala (extremos de arista sin
+    colocar o fuera de los polígonos) cuando la sala tiene regiones."""
+    out = []
+    rl = doc["rooms"][room]
+    regs = rl["regions"]
+    edges = {e["name"]: e for e in world["edges"]}
+    per = {rid: [] for rid in regs}
+    for node, rid in members[room].items():
+        per.setdefault(rid, []).append(node)
+    conn_in = {rid: [c for c in rl.get("conns", []) if c["to"] == rid] for rid in regs}
+    conn_out = {rid: [c for c in rl.get("conns", []) if c["from"] == rid] for rid in regs}
+
+    def label(node):
+        if node.endswith("@in"):
+            e = edges[node[:-3]]
+            return "llegada de %s" % world["room_label"].get(e["src"], e["src"])
+        if node in edges:
+            e = edges[node]
+            return "salida a %s" % world["room_label"].get(e["dst"], e["dst"])
+        return node
+
+    for rid, nodes in per.items():
+        ins, outs = [], []
+        for n in nodes:
+            if n.endswith("@in"):
+                e = edges[n[:-3]]
+                if e["kind"] in NON_TRANSITION_KINDS:
+                    continue
+                if e["src"] != room or members[room].get(n[:-3], "main") != rid:
+                    ins.append(n)          # llega desde otra sala u otra región
+            elif n in edges:
+                e = edges[n]
+                if e["kind"] in NON_TRANSITION_KINDS:
+                    continue
+                if e["dst"] != room or members[room].get(n + "@in", "main") != rid:
+                    outs.append(n)         # sale a otra sala u otra región
+        has_in = bool(ins) or bool(conn_in[rid]) or (rid == "main" and room == world["hub"])
+        has_out = bool(outs) or bool(conn_out[rid])
+        if has_in and not has_out:
+            out.append("%s/%s: región SIN SALIDA (se entra por %s pero no hay puerta ni conexión de vuelta)" % (
+                room, rid, ", ".join(label(n) for n in ins[:3]) or "una conexión"))
+        if rid == "main" and len(regs) > 1 and nodes and not conn_in[rid] and not conn_out[rid] \
+                and not any(n in edges and edges[n]["src"] == edges[n]["dst"]
+                            and members[room].get(n + "@in", "main") != "main" for n in nodes) \
+                and not any(n.endswith("@in") and edges[n[:-3]]["src"] == room
+                            and members[room].get(n[:-3], "main") != "main" for n in nodes):
+            unplaced = [n for n in nodes if (n.endswith("@in") and not edge_endpoints(world, doc, edges[n[:-3]])[1])
+                        or (n in edges and not edge_endpoints(world, doc, edges[n])[0])]
+            out.append("%s/main: nodos en Main sin conexión con las otras regiones (%s)%s" % (
+                room, ", ".join(label(n) for n in nodes[:6]) + ("…" if len(nodes) > 6 else ""),
+                "; sin colocar: " + ", ".join(label(n) for n in unplaced) if unplaced else ""))
+    return out
 
 
 def _check_req(req, where, errors, allow_none=False):

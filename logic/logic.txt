@@ -352,7 +352,6 @@ room C-2 [c02]
     internal -> Main @(4512,864)
     internal -> Main @(5024,592)
     door -> E-1/C-2 Entrance @(5024,864)  key Yellow Card Key
-    warp -> Hub @(5056,1088)
     internal -> Main @(6176,864)
     internal -> Main @(7200,992)
     path -> C-3 @(4016,928)
@@ -381,6 +380,7 @@ room C-2 [c02]
   region Arcade  (4 vértices)
     internal -> Main @(5408,1120)
   region Below Fountain  (4 vértices)
+    warp -> Hub @(5056,1088)
     check C-2: Disk E-30
     conn -> Main
       normal: MODEL
@@ -1440,6 +1440,8 @@ room I-3 [i03]
   region I-4 Entrance  (4 vértices)
     door -> I-4/I-3 Entrance @(928,736)
     <- I-4 @(928,736)
+    conn -> Before Boss Room
+      normal: free
   region I-5 Entrance  (4 vértices)
     door -> I-5/I-3 Entrance @(928,544)
     <- I-5 @(928,544)
@@ -1951,6 +1953,8 @@ room M-1 [m01]
   region M-2 Entrance  (4 vértices)
     door -> M-2/M-1 Entrance @(5088,736)
     <- M-2 @(5088,736)
+    conn -> Main Area
+      normal: MODEL
   region Main Area  (4 vértices)
     internal -> Main Area @(896,736)  gate 395
     internal -> Side Room @(4512,736)
@@ -1961,6 +1965,8 @@ room M-1 [m01]
       normal: MODEL
     conn -> Switch Door Entry
       normal: HX
+    conn -> M-2 Entrance
+      normal: MODEL
   region Side Room  (4 vértices)
     internal -> Main Area @(5408,352)
     check M-1: Disk M-2

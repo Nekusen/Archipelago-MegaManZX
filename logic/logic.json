@@ -3277,9 +3277,7 @@
      "unsure": false
     }
    ],
-   "members": {
-    "c02 door (5056,1088)": "main"
-   },
+   "members": {},
    "note": "",
    "regions": {
     "arcade": {
@@ -9288,6 +9286,17 @@
      },
      "to": "before-boss-room",
      "unsure": false
+    },
+    {
+     "from": "i-4-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "before-boss-room",
+     "unsure": false
     }
    ],
    "members": {
@@ -12710,6 +12719,32 @@
       ]
      },
      "to": "switch-door-entry",
+     "unsure": false
+    },
+    {
+     "from": "m-2-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "main-area",
+     "unsure": false
+    },
+    {
+     "from": "main-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "m-2-entrance",
      "unsure": false
     }
    ],

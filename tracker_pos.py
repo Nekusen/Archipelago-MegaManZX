@@ -12,7 +12,7 @@ Las transformaciones vienen de tracker_meta.py (generado por
 tools/gen_tracker_pack.py).
 """
 
-from .tracker_meta import ROOMS, SUB_TO_ROOM, OVERALL_MAP, OVERALL_POINTS
+from .tracker_meta import ROOMS, SUB_TO_ROOM, OVERALL_MAP, OVERALL_POINTS, OVERALL_ROOM_POINTS
 from .data import HUB_FLOOR_Y
 
 PLAYER_ICON = "images/player.png"
@@ -54,13 +54,13 @@ def location_icon_coords(index: int, data):
     if p is None:
         return None
     if index == OVERALL_MAP and OVERALL_MAP is not None:
-        # mapa general: icono sobre el badge del área (en el hub, la del piso)
+        # mapa general: icono sobre la caja de la sala actual; en el hub,
+        # sobre el badge del área del piso en el que está el jugador
         if p[0] == HUB_SUB:
-            letter = _hub_area(p[2])
+            pt = OVERALL_POINTS.get(_hub_area(p[2]) or "")
         else:
             room = SUB_TO_ROOM.get(p[0], "")
-            letter = room[:1].upper() if room else None
-        pt = OVERALL_POINTS.get(letter or "")
+            pt = OVERALL_ROOM_POINTS.get(room) or OVERALL_POINTS.get(room[:1].upper() if room else "")
         return (int(pt[0]), int(pt[1]), PLAYER_ICON) if pt else None
     info = ROOMS.get(SUB_TO_ROOM.get(p[0], ""))
     if not info:

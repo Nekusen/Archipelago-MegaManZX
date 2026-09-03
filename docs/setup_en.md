@@ -6,7 +6,8 @@
 - **BizHawk 2.9+** with the NDS (melonDS) core.
 - Your own **Mega Man ZX (USA)** ROM (`ARZE`). It is never distributed.
 - Optional: **Universal Tracker** (the world ships an embedded map pack:
-  overall map with per-area counters, one map per area and one per room,
+  overall map with a counter per room (missions/biometals/quests on each
+  area badge), one map per area and one per room,
   auto-tab and a player position icon).
 
 ## One-time setup

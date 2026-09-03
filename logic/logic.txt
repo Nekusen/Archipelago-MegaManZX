@@ -1,0 +1,1110 @@
+# Lógica de Mega Man ZX — GENERADO por tools/logic_editor (no editar a mano:
+#   edita con el editor; este fichero es la vista legible de logic.json).
+# Requisitos: una línea por alternativa y nivel; 'free' = sin requisito,
+#   'never' = imposible. expert AMPLÍA normal (en expert valen las alternativas
+#   de ambos niveles). '?' = sin confirmar in-game.
+# Átomos: HU X ZX HX FX LX PX OX MODEL ALL6 · YELLOW GREEN RED BLUE WHITE PURPLE ·
+#   LIFEUP>=n SUBTANK>=n · <MISION> (completada) · ACCESS_<área>.
+
+gates:  # verjas de evento (flag): requisito o 'free' (el cliente la abre)
+  191: normal: FIGHT_THE_MAVERICKS
+  225: normal: ALL6
+  381: free
+  382: free
+  395: free
+  768: free
+  769: free
+
+room A-1 [a01]
+  region Main
+    internal -> Main @(864,1120)
+    door -> A-4 @(1456,1120)
+    internal -> Main @(2160,896)
+    door -> A-3 @(6256,752)  key Yellow Card Key
+      ? normal: MODEL   # puerta Amarilla en lo alto del muro derecho (tile y=47 vs suelo 69): hay que escalar
+    door -> A-2/Sur @(6368,1104)
+    <- A-2 @(6368,1104)
+    check A-1: 1-Up
+      normal: HX
+    check A-1: Disk E-31
+      normal: HX
+    check A-1: Disk O-9
+      normal: HU
+    check A-1: E-Crystal L
+    check A-1: E-Crystal L (2)
+      normal: HX
+    check A-1: E-Crystal L (3)
+      normal: HX
+    check A-1: Energy Capsule L
+      normal: HX
+    check A-1: Energy Capsule L (2)
+    check A-1: Energy Capsule L (3)
+      normal: HX
+    check A-1: Weapon Energy L
+    conn -> Cueva E1
+      normal: HX   # usuario (playtest 4): HX;
+  region Cueva E1  (4 vértices)   # POLÍGONO PROVISIONAL (bbox migrado): redibujar. usuario (playtest 4): HX;
+    check A-1: Disk E-1
+    conn -> Main
+      normal: free
+
+room A-2 [a02]
+  region Main
+    warp -> Hub @(3120,928)
+    warp -> Hub @(4672,928)
+    door -> B-1 @(5168,688)
+    door -> C-1 @(5984,912)
+    <- Hub
+    check A-2: Disk B-3
+    check A-2: Disk E-27
+      normal: HX
+    check A-2: Disk E-29
+    check A-2: E-Crystal L
+      normal: HX
+    check A-2: Energy Capsule L
+      normal: HX
+    check A-2: Sub Tank
+      normal: HX   # dash aereo hasta la plataforma
+    conn -> Sur
+      ? normal: MODEL
+  region Sur  (4 vértices)   # POLÍGONO PROVISIONAL (bbox migrado): redibujar. 
+    door -> A-1 @(288,912)
+    <- A-1 @(288,912)
+    conn -> Main
+      ? normal: MODEL
+
+room A-3 [a03]
+  region Main
+    door -> H-1 @(1632,576)
+    door -> H-4 @(2096,880)  key Purple Card Key
+      ? normal: FX   # Fire thorns (118,55) en el pasillo a la puerta Purpura (131,55): quemarlas a04->m01: el "sello de los 6 biometales" de M-1 era un mito: lo abre una cutscene de Stop The Dig (agente exp350-359) y el cliente pone su flag (395); las capas de ovl104 son cosmeticas. Sin ALL6 aqui (el goal lo exige en D-2 -> D-4).
+    <- A-1 @(288,912)
+    check A-3: Disk E-46
+    check A-3: Weapon Energy L
+
+room A-4 [a04]
+  region Main
+    door -> M-1 @(864,320)
+      ? normal: MODEL & RED   # puerta en la estructura alta (54,20): se sube por escalera y columna; y nada mas entrar en M-1 esta la puerta Roja interna (56,46) + el Orehawk (miniboss)
+    path -> J-1  key Blue Card Key
+    <- A-1 @(288,720)
+    <- J-1 @(2016,752)
+    check A-4: Disk E-20
+      ? normal: MODEL   # A-4: arriba a la derecha de la estructura alta (escalera + columna vertical)
+    check A-4: E-Crystal L
+      normal: HU
+      normal: LX
+    check A-4: Energy Capsule L
+
+room B-1 [b01]
+  region Main
+    internal -> Main @(2640,896)
+    door -> B-3 @(2992,704)
+    door -> B-4 @(3744,960)  key Yellow Card Key
+    door -> B-2 @(5344,1120)
+    <- A-2 @(288,880)
+    <- B-2 @(5344,1120)
+    check B-1: Disk E-24
+      ? normal: HX   # B-1: repisa elevada al fondo derecho
+    check B-1: E-Crystal L
+      normal: HX
+    check B-1: Energy Capsule XL
+
+room B-2 [b02]
+  region Main
+    door -> B-1 @(288,928)
+    warp -> Hub @(1968,928)
+    internal -> Main @(4112,736)
+    path -> D-1
+      ? normal: MODEL   # el Rayfly (miniboss) esta en el tramo derecho de B-2, antes del corredor a D-1
+    path -> C-1
+    <- B-1 @(288,928)
+    <- D-1 @(5088,496)
+    <- Hub
+    <- C-1
+    check B-2: Disk B-1
+      ? normal: HX   # B-2: cima de la estructura derecha (y=28)
+    check B-2: Disk E-17
+      ? normal: HX   # B-2: en lo alto de un pilar (tile y=29)
+    check B-2: Disk E-28
+    check B-2: E-Crystal L
+    check B-2: Energy Capsule L
+    check B-2: Energy Capsule L (2)
+
+room B-3 [b03]
+  region Main
+    door -> F-1 @(2272,704)
+      ? normal: MODEL   # caverna ascendente con pinchos hasta F-1
+    <- B-1 @(288,1504)
+    <- F-1 @(2272,704)
+    check B-3: 1-Up
+      normal: HX
+    check B-3: E-Crystal L
+      normal: HX
+    check B-3: E-Crystal L (2)
+      normal: HX
+    check B-3: Energy Capsule L
+    check B-3: Energy Capsule XL
+      normal: HU
+
+room B-4 [b04]
+  region Main
+    <- B-1 @(288,768)
+    check B-4: Disk E-11
+      ? normal: MODEL   # B-4: estructura alta arriba a la derecha
+    check B-4: E-Crystal L
+    check B-4: Energy Capsule L
+
+room C-1 [c01]
+  region Main
+    warp -> Hub @(336,672)
+    internal -> Main @(1040,912)
+    internal -> Main @(1328,912)
+    internal -> Main @(1632,912)
+    internal -> Main @(1776,912)  key Green Card Key
+    internal -> Main @(2848,688)
+    internal -> Main @(2848,848)
+    internal -> Main @(3600,864)
+    door -> C-3 @(3792,864)  key Yellow Card Key
+    internal -> Main @(4096,896)
+    door -> C-2 @(4832,896)
+      normal: HU
+      normal: HX   # bloque derecho de C-1: hueco de 1 tile (Hu) o saltarlo por encima + gap grande (Hx) [usuario]
+    internal -> Main @(5792,464)
+    internal -> Main @(5792,592)
+    internal -> Main @(6880,576)
+    path -> B-2
+    <- A-2 @(5152,720)
+    <- C-2 @(4832,896)
+    <- Hub
+    <- B-2
+    check C-1: E-Crystal L
+      normal: HX
+    check C-1: E-Crystal L (2)
+      normal: HX
+    check C-1: E-Crystal L (3)
+    check C-1: E-Crystal L (4)
+    check C-1: E-Crystal L (5)
+      normal: HX
+    check C-1: E-Crystal L (6)
+    check C-1: E-Crystal L (7)
+    check C-1: E-Crystal L (8)
+    check C-1: Energy Capsule L
+    check C-1: Energy Capsule XL
+    check C-1: Weapon Energy L
+      normal: HX
+    check C-1: Weapon Energy L (2)
+    check C-1: Weapon Energy L (3)
+    conn -> Interior
+      ? normal: GREEN   # gate interno coarse (v0.2): llaves/verjas de las puertas internas
+  region Interior  (4 vértices)   # POLÍGONO PROVISIONAL (gate interno coarse de v0.2: GREEN): redibujar.
+    check C-1: 1-Up
+    check C-1: E-Crystal L (9)
+    check C-1: Weapon Energy L (4)
+    conn -> Main
+      normal: free
+
+room C-2 [c02]
+  region Main
+    door -> C-1 @(288,896)
+    internal -> Main @(1248,928)  key Yellow Card Key
+    internal -> Main @(1792,784)
+    internal -> Main @(3808,928)
+    warp -> Hub @(4016,928)
+    internal -> Main @(4512,864)
+    internal -> Main @(5024,592)
+    door -> E-1 @(5024,864)  key Yellow Card Key
+    warp -> Hub @(5056,1088)
+    internal -> Main @(6240,480)
+    internal -> Main @(6800,480)
+    path -> C-3
+    path -> D-1
+    <- C-1 @(288,896)
+    <- Hub
+    <- C-3
+    <- D-1
+    conn -> Interior
+      ? normal: YELLOW   # gate interno coarse (v0.2): llaves/verjas de las puertas internas
+  region Interior  (4 vértices)   # POLÍGONO PROVISIONAL (gate interno coarse de v0.2: YELLOW): redibujar.
+    check C-2: Disk E-30
+    check C-2: Disk O-17
+    check C-2: Disk O-18
+    check C-2: E-Crystal L
+    check C-2: E-Crystal L (2)
+    check C-2: E-Crystal L (3)
+    check C-2: E-Crystal L (4)
+    check C-2: Energy Capsule L
+    check C-2: Energy Capsule XL
+    conn -> Main
+      normal: free
+
+room C-3 [c03]
+  region Main
+    pad(save) -> Hub @(1408,736)
+    door -> K-1 @(2224,720)  key Red Card Key
+    path -> C-2
+    path -> D-1
+    <- C-1 @(288,672)
+    <- C-2
+    <- D-1
+    check C-3: Disk E-49
+      ? normal: MODEL   # C-3: repisa alta a la izquierda (y=34)
+    check C-3: Energy Capsule XL
+    check C-3: Weapon Energy L
+
+room D-1 [d01]
+  region Main
+    pad(save) -> Hub @(352,592)
+    door -> B-2 @(1840,752)
+    door -> D-2 @(4320,544)
+      ? normal: MODEL   # el puente de la autopista se baja con un switch (Bridge switch (141,34)): hay que golpear
+    path -> C-2
+    path -> C-3
+    <- D-2 @(4320,544)
+    <- B-2
+    <- C-2
+    <- C-3
+    check D-1: Disk E-12
+    check D-1: Disk E-19
+    check D-1: Energy Capsule XL
+    check D-1: Life Up
+      normal: MODEL   # "any transformation"
+
+room D-2 [d02]
+  region Main
+    door -> D-1 @(288,544)
+    door -> D-4 @(7808,544)  gate 225
+    warp -> Hub @(8640,544)
+    path -> D-3
+    <- D-1 @(288,544)
+    <- Hub
+    <- D-3
+    check D-2: Disk B-4
+    check D-2: Disk E-40
+    check D-2: Disk M-4
+    check D-2: Disk O-12
+    check D-2: Energy Capsule L
+
+room D-3 [d03]
+  region Main
+    warp -> Hub @(288,736)
+    door -> O-1 @(2224,544)
+    door -> G-1 @(3296,736)
+    path -> D-2
+    <- G-1 @(3296,736)
+    <- Hub @(288,736)
+    <- D-2
+    check D-3: Disk E-6
+    check D-3: E-Crystal L
+
+room D-4 [d04]
+  region Main
+    door -> Hub-2 @(288,272)
+    door -> Hub-2 @(288,656)
+    internal -> Main @(288,4384)
+    door -> Hub-2 @(480,272)
+    door -> Hub-2 @(480,656)
+    door -> Hub-2 @(800,272)
+    door -> Hub-2 @(800,656)
+    door -> Hub-2 @(992,272)
+    internal -> Main @(992,352)
+    door -> Hub-2 @(992,656)
+    door -> D-5 @(992,736)
+    internal -> Main @(1664,543)
+    internal -> Main @(1664,2463)
+    internal -> Main @(2688,927)
+    internal -> Main @(2688,2847)
+    <- D-2 @(288,4000)
+    <- D-5 @(992,736)
+    <- Hub-2 @(288,272)
+    <- Hub-2 @(288,656)
+    <- Hub-2 @(800,656)
+    <- Hub-2 @(480,272)
+    <- Hub-2 @(992,272)
+    <- Hub-2 @(480,656)
+    <- Hub-2 @(800,272)
+    <- Hub-2 @(992,656)
+    check D-4: 1-Up
+    check D-4: Disk B-5
+    check D-4: E-Crystal L
+    check D-4: E-Crystal L (2)
+    check D-4: Energy Capsule L
+    check D-4: Energy Capsule L (2)
+    check D-4: Weapon Energy L
+
+room D-5 [d05]
+  region Main
+    door -> D-4 @(288,544)
+    internal -> Main @(3712,560)
+    <- D-4 @(288,544)
+    check D-5: Disk B-6
+    check D-5: Energy Capsule L
+
+room E-1 [e01]
+  region Main
+    door -> E-2 @(3040,704)
+    <- C-2 @(288,736)
+    <- E-2 @(3040,704)
+    check E-1: Disk E-4
+    check E-1: Weapon Energy L
+
+room E-2 [e02]
+  region Main
+    door -> E-1 @(288,320)
+      ? normal: MODEL   # sus botones (Electric Rod button): golpear
+    door -> E-4 @(1248,1088)
+      ? normal: MODEL   # pozo de E-2: barras electricas giratorias y
+    <- E-1 @(288,320)
+    <- E-4 @(1248,1088)
+    check E-2: E-Crystal L
+    check E-2: Weapon Energy L
+
+room E-3 [e03]
+  region Main
+    <- E-4 @(288,352)
+
+room E-4 [e04]
+  region Main
+    door -> E-2 @(288,704)
+    door -> E-5 @(2736,928)
+    door -> E-3 @(2864,352)
+    door -> E-6 @(2880,928)
+    door -> E-6 @(3264,928)
+    <- E-2 @(288,704)
+    <- E-6 @(3264,928)
+    <- E-6 @(2880,928)
+    check E-4: Disk E-21
+    check E-4: Disk E-8
+      ? normal: MODEL   # E-4: arriba a la derecha, por la ruta de los engranajes hacia E-3 (nota interordi)
+    check E-4: Energy Capsule L
+    check E-4: Sub Tank
+      normal: MODEL   # "any transformation"
+
+room E-5 [e05]
+  region Main
+    door -> E-7/Oeste @(3040,528)
+      ? normal: MODEL   # plataformas electrificadas (Electric Platform x10) antes de la salida a E-7
+    <- E-4 @(288,928)
+    <- E-7 @(3040,528)
+    check E-5: Disk E-37
+      ? normal: MODEL   # E-5: pasadas las plataformas electricas E-4 (Sub Tank) ya cubierto por Steam; E-21 abajo por escalera; M-5 arriba de la escalera larga de E-5; B-8 en el suelo de E-8.
+    check E-5: Disk M-5
+    check E-5: E-Crystal L
+    check E-5: E-Crystal L (2)
+    check E-5: Energy Capsule L
+    check E-5: Energy Capsule XL
+    check E-5: Weapon Energy L
+
+room E-6 [e06]
+  region Main
+    door -> E-4 @(320,352)
+    door -> E-4 @(704,352)
+    <- E-4 @(704,352)
+    <- E-4 @(320,352)
+
+room E-7 [e07]
+  region Main
+    warp -> Hub @(1632,720)
+    path -> E-8
+      normal: SEARCH_THE_PLANT
+    path -> I-1
+    <- E-8 @(1760,720)
+    <- Hub
+    <- I-1
+    conn -> Oeste
+      normal: MODEL
+  region Oeste  (4 vértices)   # POLÍGONO PROVISIONAL (bbox migrado): redibujar. 
+    door -> E-5 @(288,720)
+    <- E-5 @(288,720)
+    conn -> Main
+      normal: MODEL
+
+room E-8 [e08]
+  region Main
+    door -> E-7 @(320,720)
+    <- E-7
+    check E-8: Disk B-8
+    check E-8: Weapon Energy L
+
+room F-1 [f01]
+  region Main
+    door -> B-3 @(288,544)
+    door -> F-2 @(2016,736)
+      ? normal: MODEL   # cubos/cajas de hielo tapando la puerta
+    <- B-3 @(288,544)
+    <- F-2 @(2016,736)
+    check F-1: Disk E-39
+      ? normal: MODEL   # F-1: repisa en la cueva izquierda (y=34)
+
+room F-2 [f02]
+  region Main
+    door -> F-1 @(288,544)
+    door -> F-3 @(2528,544)
+      ? normal: MODEL   # cubos en el pasillo superior (109-111,32)
+    <- F-1 @(288,544)
+    <- F-3 @(2528,544)
+    check F-2: Disk E-15
+      ? normal: MODEL   # F-2: laberinto inferior (cubos (75,54-62))
+    check F-2: Disk E-44
+      ? normal: LX   # F-2: zona baja entre filas de pinchos bajo el agua (Steam: pinchos "barely underwater" en F-2)
+    check F-2: Life Up
+      normal: HX & FX   # bloques de hielo + salto alto
+
+room F-3 [f03]
+  region Main
+    door -> F-2 @(288,1696)
+    door -> F-4 @(384,1600)  gate 381
+      ? normal: MODEL   # cubos de hielo junto a la VERJA de evento (flag 381, la abre el cliente; NO es puerta Azul: exp341d)
+    internal -> Main @(672,576)
+    internal -> Main @(992,864)
+    internal -> Main @(1984,352)
+    <- F-2 @(288,1696)
+    check F-3: Disk E-2
+      ? normal: MODEL   # F-3: el disco esta ENTRE cubos (122-124,39)
+    check F-3: Disk E-48
+      ? normal: MODEL   # F-3: arriba del todo tras una fila de cubos (37-45,30) y cajas (46-48,33-35)
+    check F-3: Energy Capsule L
+    check F-3: Weapon Energy L
+
+room F-4 [f04]
+  region Main
+    door -> F-5/Oeste @(1760,528)
+      ? normal: MODEL   # filas de cubos/cajas a lo largo de F-4
+    <- F-3 @(288,288)
+    <- F-5 @(1760,528)
+    check F-4: Disk B-15
+      normal: LX   # F-4: "Use Model Lx's charged attack to make a platform and get this disk" (interordi)
+    check F-4: Disk E-45
+      ? normal: MODEL   # F-4: cubos pegados (92-94,32)
+
+room F-5 [f05]
+  region Main
+    warp -> Hub @(1232,736)
+    <- Hub
+    conn -> Oeste
+      normal: MODEL
+  region Oeste  (4 vértices)   # POLÍGONO PROVISIONAL (bbox migrado): redibujar. 
+    door -> F-4 @(288,736)
+    <- F-4 @(288,736)
+    conn -> Main
+      normal: MODEL
+
+room G-1 [g01]
+  region Main
+    door -> D-3 @(288,1120)
+    door -> G-2 @(3808,768)
+    <- D-3 @(288,1120)
+    <- G-2 @(3808,768)
+    check G-1: Disk E-38
+    check G-1: Energy Capsule L
+    check G-1: Weapon Energy L
+
+room G-2 [g02]
+  region Main
+    door -> G-1 @(288,1152)
+    internal -> Main @(376,2400)
+    internal -> Main @(376,3168)
+    internal -> Main @(376,3936)
+    internal -> Main @(376,5088)
+    internal -> Main @(376,5856)
+    internal -> Main @(456,3568)
+    internal -> Main @(456,5488)
+    internal -> Main @(552,2032)
+    internal -> Main @(552,2800)
+    internal -> Main @(648,4720)
+    door -> G-4 @(656,432)  gate 382
+    internal -> Main @(656,592)
+    internal -> Main @(656,752)
+    internal -> Main @(656,912)
+    internal -> Main @(656,1072)
+    internal -> Main @(656,1232)
+    internal -> Main @(656,1392)
+    door -> G-3 @(656,1552)
+    internal -> Main @(656,1712)  gate 191
+    <- G-1 @(288,1152)
+    conn -> Interior
+      ? normal: FIGHT_THE_MAVERICKS   # gate interno coarse (v0.2): llaves/verjas de las puertas internas
+  region Interior  (4 vértices)   # POLÍGONO PROVISIONAL (gate interno coarse de v0.2: FIGHT_THE_MAVERICKS): redibujar.
+    check G-2: Disk E-16
+    check G-2: Weapon Energy L
+    conn -> Main
+      normal: free
+
+room G-3 [g03]
+  region Main
+    internal -> Main @(992,544)
+    internal -> Main @(1568,544)
+    <- G-2 @(288,544)
+    check G-3: Disk E-9
+
+room G-4 [g04]
+  region Main
+    internal -> Main @(664,864)
+    internal -> Main @(824,304)
+    internal -> Main @(1048,864)
+    internal -> Main @(1208,304)
+    door -> G-5 @(1504,352)
+    <- G-2 @(288,352)
+    <- G-5 @(1504,352)
+    check G-4: E-Crystal L
+
+room G-5 [g05]
+  region Main
+    door -> G-4 @(288,544)
+    internal -> Main @(1792,688)
+    <- G-4 @(288,544)
+    check G-5: Disk B-11
+      ? normal: HX   # G-5: sub-sala (puerta (112,43)) tapada por fuego; interordi apunta con flecha
+    check G-5: Disk E-32
+    conn -> Pad
+      normal: MODEL
+  region Pad  (4 vértices)   # POLÍGONO PROVISIONAL (bbox migrado): redibujar. 
+    warp -> Hub @(3296,544)
+    <- Hub @(3296,544)
+    conn -> Main
+      normal: MODEL
+
+room H-1 [h01]
+  region Main
+    door -> H-2 @(4832,896)
+    <- A-3 @(288,928)
+    <- H-2 @(4832,896)
+    check H-1: E-Crystal L
+    check H-1: E-Crystal L (2)
+    check H-1: E-Crystal L (3)
+    check H-1: E-Crystal L (4)
+    check H-1: E-Crystal L (5)
+    check H-1: E-Crystal L (6)
+    check H-1: Energy Capsule L
+    check H-1: Energy Capsule L (2)
+    check H-1: Energy Capsule XL
+    check H-1: Weapon Energy L
+
+room H-2 [h02]
+  region Main
+    door -> H-1 @(288,704)
+    door -> L-1 @(1440,704)  key Purple Card Key
+      ? normal: MODEL   # de H-2; ambas salidas quedan detras
+    door -> H-3 @(1504,704)
+      ? normal: MODEL   # Powmettaur (miniboss) en el foso central
+    <- H-1 @(288,704)
+    <- H-3 @(1504,704)
+
+room H-3 [h03]
+  region Main
+    door -> H-2 @(288,896)
+    door -> H-4/Oeste @(3808,368)
+    <- H-2 @(288,896)
+    <- H-4 @(3808,368)
+    check H-3: Disk E-10
+    check H-3: Disk M-8
+    check H-3: E-Crystal L
+    check H-3: E-Crystal L (2)
+    check H-3: E-Crystal L (3)
+    check H-3: Energy Capsule L
+    check H-3: Energy Capsule XL
+
+room H-4 [h04]
+  region Main
+    pad(save) -> Hub @(1104,944)
+    <- A-3 @(800,1808)
+    check H-4: Disk B-7
+    check H-4: E-Crystal L
+    check H-4: Energy Capsule L
+    check H-4: Energy Capsule L (2)
+    check H-4: Weapon Energy L
+    conn -> Oeste
+      normal: MODEL
+  region Oeste  (4 vértices)   # POLÍGONO PROVISIONAL (bbox migrado): redibujar. 
+    door -> H-3 @(288,944)
+    <- H-3 @(288,944)
+    conn -> Main
+      normal: MODEL
+
+room I-1 [i01]
+  region Main
+    warp -> Hub @(288,912)
+    door -> I-2 @(1920,544)
+    internal -> Main @(1920,928)
+    internal -> Main @(3488,352)
+    door -> I-3 @(3488,736)
+    path -> E-7
+    <- I-3 @(3488,736)
+    <- Hub @(288,912)
+    <- E-7
+    check I-1: Disk E-3
+    check I-1: E-Crystal L
+    check I-1: E-Crystal L (2)
+    check I-1: Energy Capsule L
+    check I-1: Weapon Energy L
+    check I-1: Weapon Energy L (2)
+
+room I-2 [i02]
+  region Main
+    door -> I-5 @(2208,736)
+      ? normal: MODEL   # Steephinx (miniboss) nada mas entrar en I-5
+    door -> I-4 @(2208,1120)
+      ? normal: MODEL   # Diadrake (miniboss) nada mas entrar en I-4
+    <- I-1 @(288,352)
+    check I-2: Disk E-33
+      normal: HX   # I-2: "Use Model Hx hover ability to get across the spikes and get the disk"
+    check I-2: Disk E-34
+
+room I-3 [i03]
+  region Main
+    door -> I-1 @(352,944)
+    door -> I-5 @(928,544)
+    door -> I-4 @(928,736)
+    <- I-1 @(352,944)
+    check I-3: Disk B-9
+    conn -> Pad
+      normal: MODEL
+  region Pad  (4 vértices)   # POLÍGONO PROVISIONAL (bbox migrado): redibujar. 
+    warp -> Hub @(2176,944)
+    <- Hub
+    conn -> Main
+      normal: MODEL
+
+room I-4 [i04]
+  region Main
+    <- I-2 @(288,544)
+    <- I-3 @(3296,320)
+    check I-4: Disk E-14
+      normal: HX   # I-4:  power the platforms and get the disks"
+    check I-4: Disk M-1
+      normal: HX   # I-4: "Use Model Hx's electric spark to
+
+room I-5 [i05]
+  region Main
+    <- I-2 @(288,736)
+    <- I-3 @(3296,736)
+    check I-5: Disk E-13
+      ? normal: MODEL   # I-5: estructura derecha (y=32), escalera E-3 (I-1) en sub-sala por puerta del pasillo inferior; E-34 (I-2), B-9 (I-3), E-23 (I-5) a pie de suelo -> sin requisito.
+    check I-5: Disk E-23
+    check I-5: Disk M-6
+      ? normal: MODEL   # I-5: en lo alto del tronco de un arbol
+    check I-5: Life Up
+      normal: HX   # tornados (ambas mitades)
+
+room J-1 [j01]
+  region Main
+    door -> A-4 @(448,352)  key Blue Card Key
+      ? normal: MODEL   # subir 13 tiles bajo el agua hasta la puerta Azul (28,22): escalar paredes
+    internal -> Main @(880,560)
+    pad(save) -> Hub @(1216,256)
+    door -> J-2 @(1248,560)
+    <- J-2 @(1248,560)
+    <- A-4
+    check J-1: Life Up
+      normal: LX   # nadar entre pinchos
+
+room J-2 [j02]
+  region Main
+    door -> J-1 @(288,752)
+    door -> J-4 @(3008,1056)
+    door -> J-3 @(3296,752)
+      ? normal: MODEL   # Tentalamia (miniboss) nada mas entrar en J-3
+    <- J-1 @(288,752)
+    <- J-3 @(3296,752)
+    check J-2: Disk E-7
+      ? normal: LX   # J-2: hueco alto con fila de pinchos bajo el agua (1360-1450,85)
+    check J-2: E-Crystal L
+    check J-2: E-Crystal L (2)
+    check J-2: E-Crystal L (3)
+    check J-2: Energy Capsule XL
+
+room J-3 [j03]
+  region Main
+    door -> J-2 @(288,736)
+    door -> J-5/Entrada @(2272,752)
+    <- J-2 @(288,736)
+    <- J-5 @(2272,752)
+    check J-3: Disk E-36
+      ? normal: MODEL   # J-3: en lo alto de la estructura derecha Life Up J-1 (Steam, LX) ya cubierto; M-7 (J-3) en un hueco al que se cae; B-16 (J-5) tras Leganchor por escalera -> sin requisito propio.
+    check J-3: Disk M-7
+    check J-3: E-Crystal L
+    check J-3: E-Crystal L (2)
+    check J-3: Energy Capsule L
+    check J-3: Weapon Energy L
+
+room J-4 [j04]
+  region Main
+    <- J-2 @(288,656)
+    <- J-5 @(1248,416)
+    check J-4: Weapon Energy L
+
+room J-5 [j05]
+  region Main
+    internal -> Main @(1472,512)
+    door -> J-4 @(2000,608)
+    check J-5: Disk B-16
+    check J-5: Energy Capsule L
+    conn -> Entrada
+      normal: MODEL
+  region Entrada  (4 vértices)   # POLÍGONO PROVISIONAL (bbox migrado): redibujar. 
+    door -> J-3 @(288,752)
+    <- J-3 @(288,752)
+    conn -> Main
+      normal: MODEL
+
+room K-1 [k01]
+  region Main
+    internal -> Main @(5168,768)
+    internal -> Main @(6752,928)
+    path -> K-2
+    <- C-3 @(288,912)
+    check K-1: Disk E-22
+      ? normal: MODEL   # K-1: estructura alta a la derecha (y=38)
+    check K-1: Energy Capsule L
+    check K-1: Energy Capsule L (2)
+    check K-1: Weapon Energy L
+    conn -> Subterraneo
+      never
+  region Subterraneo  (4 vértices)   # POLÍGONO PROVISIONAL (bbox migrado): redibujar. 
+    door -> K-5 @(7296,752)
+    <- K-5 @(7296,752)
+    check K-1: Sub Tank
+      normal: HX & FX & LX & PX   # el mas largo (techos, bloques, boton oculto, nado)
+    conn -> Main
+      normal: free
+
+room K-2 [k02]
+  region Main
+    path -> K-3
+      normal: MODEL   # Lava Demon (miniboss) en K-2: hay que matarlo para caer al subterraneo
+    <- K-1
+
+room K-3 [k03]
+  region Main
+    door -> K-5 @(1504,528)
+      ? normal: MODEL   # subir por el pozo de K-3 hasta la salida alta
+    path -> K-4
+    <- K-5 @(1504,528)
+    <- K-2
+    check K-3: Disk E-35
+      ? normal: MODEL   # K-3: repisa a media altura del pozo
+    conn -> Fondo
+      ? normal: free
+  region Fondo  (4 vértices)   # POLÍGONO PROVISIONAL (bbox migrado): redibujar. 
+    <- K-4 @(1760,1104)
+    check K-3: Disk E-43
+    check K-3: Disk M-9
+    conn -> Main
+      ? normal: MODEL
+
+room K-4 [k04]
+  region Main
+    door -> K-3/Fondo @(640,528)
+    internal -> Main @(640,1104)
+    internal -> Main @(1328,944)
+    internal -> Main @(1456,1632)
+    internal -> Main @(1680,912)
+    internal -> Main @(2704,1136)  key White Card Key
+    internal -> Main @(3296,1120)
+    internal -> Main @(3616,1120)
+    <- K-3
+    check K-4: Disk E-26
+    conn -> Pad
+      normal: MODEL
+    conn -> Interior
+      ? normal: WHITE   # gate interno coarse (v0.2): llaves/verjas de las puertas internas
+  region Interior  (4 vértices)   # POLÍGONO PROVISIONAL (gate interno coarse de v0.2: WHITE): redibujar.
+    check K-4: 1-Up
+    check K-4: Disk B-12
+      normal: WHITE   # K-4: tras la puerta interna Blanca (169,71) -> aterriza en (78,117), junto a B-12 E-26 (K-4, pasillo central) y E-25 (K-5, escalera) sin requisito.
+    check K-4: E-Crystal L
+    check K-4: Energy Capsule L
+    conn -> Main
+      normal: free
+  region Pad  (4 vértices)   # POLÍGONO PROVISIONAL (bbox migrado): redibujar. 
+    warp -> Hub @(4320,1120)
+    <- Hub @(4320,1120)
+    conn -> Main
+      normal: MODEL
+
+room K-5 [k05]
+  region Main
+    door -> K-3 @(288,2640)
+    door -> K-1/Subterraneo @(560,272)
+    <- K-1 @(560,272)
+    <- K-3 @(288,2640)
+    check K-5: Disk E-25
+    check K-5: E-Crystal L
+    check K-5: E-Crystal L (2)
+    check K-5: E-Crystal L (3)
+
+room L-1 [l01]
+  region Main
+    door -> L-2 @(4320,752)
+    <- H-2 @(288,752)
+    <- L-2 @(4320,752)
+    check L-1: Disk E-18
+      ? normal: HX   # L-1: plataforma flotante muy alta (y=33 con suelo en 47); nada que escalar
+    check L-1: Energy Capsule L
+
+room L-2 [l02]
+  region Main
+    door -> L-1 @(288,752)
+    door -> L-3 @(4320,752)
+    <- L-1 @(288,752)
+    <- L-3 @(4320,752)
+    check L-2: Disk E-41
+      ? normal: HX   # L-2: idem (y=29) E-5 (L-3) y B-13 (L-4) a pie de suelo -> sin requisito propio.
+
+room L-3 [l03]
+  region Main
+    door -> L-2 @(288,752)
+    door -> L-4 @(4320,736)
+    <- L-2 @(288,752)
+    <- L-4 @(4320,736)
+    check L-3: 1-Up
+    check L-3: Disk E-5
+    check L-3: Energy Capsule L
+    check L-3: Weapon Energy L
+
+room L-4 [l04]
+  region Main
+    door -> L-3 @(288,736)
+    <- L-3 @(288,736)
+    check L-4: Disk B-13
+    conn -> Pad
+      normal: MODEL
+  region Pad  (4 vértices)   # POLÍGONO PROVISIONAL (bbox migrado): redibujar. 
+    warp -> Hub @(3296,752)
+    <- Hub @(3296,752)
+    conn -> Main
+      normal: MODEL
+
+room M-1 [m01]
+  region Main
+    internal -> Main @(896,736)  gate 395
+    internal -> Main @(4512,736)
+    internal -> Main @(5056,480)
+    door -> M-2 @(5088,736)
+    <- A-4 @(288,704)
+    <- M-2 @(5088,736)
+    check M-1: Disk E-50
+      normal: FX   # M-1: "Use Model Fx Buster Edit to hit this switch" (sub-sala por la puerta (316,30)) B-10 (M-3) a pie de suelo antes de Pandora -> sin requisito.
+    check M-1: Disk M-2
+      ? normal: MODEL   # M-1: sub-sala por la puerta (282,46); el disco 5 tiles por encima del aterrizaje
+    check M-1: E-Crystal L
+    check M-1: Energy Capsule L
+    check M-1: Weapon Energy L
+
+room M-2 [m02]
+  region Main
+    door -> M-1 @(288,352)
+    door -> M-3 @(3296,1088)
+    <- M-1 @(288,352)
+    <- M-3 @(3296,1088)
+    check M-2: 1-Up
+    check M-2: E-Crystal L
+    check M-2: E-Crystal L (2)
+    check M-2: E-Crystal L (3)
+
+room M-3 [m03]
+  region Main
+    door -> M-2 @(288,320)
+    path -> N-1
+    <- M-2 @(288,320)
+    <- N-1
+    check M-3: Disk B-10
+    conn -> Pad
+      normal: MODEL
+  region Pad  (4 vértices)   # POLÍGONO PROVISIONAL (bbox migrado): redibujar. 
+    warp -> Hub @(1936,752)
+    <- Hub
+    conn -> Main
+      normal: MODEL
+
+room N-1 [n01]
+  region Main
+    internal -> Main @(400,1712)  gate 768
+    internal -> Main @(624,1712)  gate 769
+    warp -> Hub @(688,368)
+    internal -> Main @(688,720)
+    internal -> Main @(1320,1616)
+    internal -> Main @(1320,1712)
+    internal -> Main @(1408,1712)
+    internal -> Main @(1496,1616)
+    internal -> Main @(1496,1712)
+    internal -> Main @(1832,1616)
+    internal -> Main @(1832,1712)
+    internal -> Main @(1920,1712)
+    internal -> Main @(2008,1616)
+    internal -> Main @(2008,1712)
+    internal -> Main @(3520,512)
+    path -> M-3
+    <- Hub
+    <- M-3
+    check N-1: Disk B-2
+      ? normal: MODEL   # N-1: zona superior con plataformas que desaparecen y pinchos (gate Blanco coarse de la sala tambien aplica: sobre-estricto)
+    check N-1: E-Crystal L
+    check N-1: Energy Capsule L
+    check N-1: Weapon Energy L
+
+room O-1 [o01]   entry: normal: HX   # ? Discord: "you need Hx for Area O"
+  region Main
+    door -> O-2 @(4320,736)
+    <- D-3 @(288,736)
+    <- O-2 @(4320,736)
+    check O-1: Disk E-42
+    check O-1: Disk M-3
+
+room O-2 [o02]   entry: normal: HX   # ? 
+  region Main
+    door -> O-1 @(288,544)
+    warp -> Hub @(2528,560)
+    <- O-1 @(288,544)
+    <- Hub
+    check O-2: Energy Capsule L
+    conn -> Este
+      normal: MODEL
+  region Este  (4 vértices)   # POLÍGONO PROVISIONAL (bbox migrado): redibujar. 
+    check O-2: Disk B-14
+    conn -> Main
+      normal: MODEL
+
+room X-1 [x01]
+  region Main
+    door -> X-2 @(288,1120)
+    internal -> Main @(384,1120)
+    warp -> Hub @(640,1120)
+    internal -> Main @(1072,960)
+    internal -> Main @(1072,1120)
+    internal -> Main @(1072,1280)
+    internal -> Main @(1200,960)
+    internal -> Main @(1200,1120)
+    internal -> Main @(1200,1280)
+    internal -> Main @(1328,1280)
+    door -> X-3 @(1760,1488)
+    <- X-2 @(288,1120)
+    <- X-3 @(1760,1488)
+    <- Hub
+    check X-1: Disk O-1
+    check X-1: Disk O-10
+    check X-1: Disk O-13
+    check X-1: Disk O-14
+    check X-1: Disk O-15
+    check X-1: Disk O-19
+    check X-1: Disk O-2
+    check X-1: Disk O-20
+    check X-1: Disk O-4
+    check X-1: Disk O-5
+    check X-1: Disk O-6
+    check X-1: Disk O-7
+    check X-1: Disk O-8
+
+room X-2 [x02]
+  region Main
+    internal -> Main @(672,512)
+    door -> X-1 @(736,512)
+    <- X-1 @(736,512)
+    check X-2: Disk O-16
+    check X-2: Disk O-3
+
+room X-3 [x03]
+  region Main
+    door -> X-1 @(288,528)
+    <- X-1 @(288,528)
+    check X-3: Disk O-11
+
+room Hub [z01]
+  region Main
+    warp -> G-5/Pad @(288,2656)  needs Transerver Access - Area G
+    warp -> K-4/Pad @(288,4192)  needs Transerver Access - Area K
+    warp -> L-4/Pad @(288,4576)  needs Transerver Access - Area L
+    warp -> D-3 @(480,1504)  needs Transerver Access - Area D
+    warp -> I-1 @(480,1888)  needs Transerver Access - Area E
+    warp -> A-2  needs Transerver Access - Area A
+    warp -> B-2  needs Transerver Access - Area B
+    warp -> C-1  needs Transerver Access - Area B
+    warp -> C-2  needs Transerver Access - Area C
+    warp -> D-2  needs Transerver Access - Area D
+    warp -> E-7  needs Transerver Access - Area E
+    warp -> F-5  needs Transerver Access - Area F
+    warp -> I-3/Pad  needs Transerver Access - Area I
+    warp -> M-3/Pad  needs Transerver Access - Area M
+    warp -> N-1  needs Transerver Access - Area M
+    warp -> O-2  needs Transerver Access - Area O
+    warp -> X-1  needs Transerver Access - Area X
+    <- A-2 @(288,352)
+    <- A-2 @(480,352)
+    <- B-2 @(288,736)
+    <- C-1 @(480,736)
+    <- C-2 @(288,1120)
+    <- C-2 @(800,1120)
+    <- D-2 @(288,1504)
+    <- D-3 @(480,1504)
+    <- E-7 @(288,1888)
+    <- F-5 @(288,2272)
+    <- G-5 @(288,2656)
+    <- I-1 @(480,1888)
+    <- I-3 @(288,3424)
+    <- K-4 @(288,4192)
+    <- L-4 @(288,4576)
+    <- M-3 @(288,4960)
+    <- N-1 @(480,4960)
+    <- O-2 @(288,5344)
+    <- X-1 @(288,5728)
+
+room Hub-2 [z02]
+  region Main
+    door -> D-4 @(304,544)
+    door -> D-4 @(304,1904)
+    door -> D-4 @(304,2480)
+    door -> D-4 @(304,3248)
+    door -> D-4 @(304,4208)
+    door -> D-4 @(304,4768)
+    door -> D-4 @(432,1312)
+    door -> D-4 @(464,5552)
+    <- D-4 @(304,544)
+    <- D-4 @(304,1904)
+    <- D-4 @(304,3248)
+    <- D-4 @(304,4768)
+    <- D-4 @(432,1312)
+    <- D-4 @(304,2480)
+    <- D-4 @(304,4208)
+    <- D-4 @(464,5552)
+
+unplaced:  # sin sala: usan la regla de etiqueta de área (data.room)
+  Mission - Attack The Excavators  [K-4]  normal: MODEL
+  Mission - Destroy Model W  [D-4D-5]  normal: MODEL
+  Mission - Fight The Mavericks  [G]  normal: HU & MODEL
+  Mission - Find The Survivors  [F]  normal: MODEL
+  Mission - Locate Giro  [B-1B-2]  normal: MODEL
+  Mission - Pass The Test  [C-1C-2]  normal: HU & MODEL
+  Mission - Protect Hq  [X HQ]  normal: MODEL
+  Mission - Protect The Lab  [L-4]  normal: MODEL
+  Mission - Recover The Disk  [J-5]  normal: MODEL
+  Mission - Repel The Army  [O]  normal: MODEL
+  Mission - Save The People  [I-3]  normal: MODEL
+  Mission - Search The Plant  [E-7]  normal: MODEL
+  Mission - Secure The Biometal  [H-4]  normal: MODEL
+  Mission - Stop The Dig  [M]  normal: MODEL
+  Mission - Troop Reinforcement  [D-2]  normal: MODEL
+  Obtain Biometal F  [G-5/K-4]  normal: MODEL
+  Obtain Biometal H  [E-7/I-3]  normal: MODEL
+  Obtain Biometal L  [F-5/J-5]  normal: MODEL
+  Obtain Biometal P  [H-4/L-4]  normal: MODEL
+  Quest - Another Quiz  [C-1C-3]
+  Quest - Clean The Room  [C-1]
+  Quest - Deliver A Reply  [X-1 HQ]
+  Quest - Deliver The Aid Kit  [L-1L-2L-3]  normal: MODEL
+  Quest - Find Mushroom  [A-2]
+  Quest - Find The Boy  [G-1G-2]  normal: HU
+  Quest - Find The Flower  [A-1]
+  Quest - Find The Pearl  [F-2]  normal: LX
+  Quest - Find The Purse  [B-2]
+  Quest - Find The Rock  [K-1]
+  Quest - Gather The Screws  [K-3K-4K-5]
+  Quest - Guess What A Letter  [C-2]
+  Quest - Not Another Letter  [C-2]
+  Quest - One More Letter  [C-2]
+  Quest - Purify The Lakes  [B-4]  normal: LX & MODEL
+  Quest - Quiz Partner  [C-1C-3]
+  Quest - Sending A Letter  [C-2]
+  Quest - Sending Another Letter  [C-2]
+  Quest - Smash The Rock  [E-4]
+  Quest - Trim The Weeds  [C-2]
+  Quest - Yet Another Letter  [C-2]

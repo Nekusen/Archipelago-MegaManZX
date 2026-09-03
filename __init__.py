@@ -1,4 +1,4 @@
-"""Mega Man ZX (Nintendo DS) — mundo de Archipelago. v0.1 no-logic.
+"""Mega Man ZX (Nintendo DS) — mundo de Archipelago. v0.3: lógica desde logic/logic.json.
 
 RE completo en docs/client_integration.md; puente en worlds/mmzx/data.py.
 """
@@ -15,7 +15,7 @@ from .items import MMZXItem, item_name_to_id, get_classification, ITEM_GROUPS
 from .locations import (location_name_to_id, locations_for_options, LOCATION_GROUPS,
                         pickup_flags_from_options)
 from .options import MMZXOptions
-from .regions import create_regions
+from .regions import create_regions, progression_overrides
 from .rom import MMZXPatch, write_patch_tokens, MMZX_US_MD5
 from . import client  # registra el BizHawkClient  # noqa: F401
 from . import tracker_pos  # auto-tab / icono de posición para Universal Tracker
@@ -79,7 +79,13 @@ class MMZXWorld(World):
         create_regions(self)
 
     def create_item(self, name: str) -> MMZXItem:
-        return MMZXItem(name, get_classification(name), self.item_name_to_id[name], self.player)
+        cls = get_classification(name)
+        # Life Up / Sub Tank pasan a progresión si la lógica (logic/logic.json)
+        # los exige en algún átomo LIFEUP>=n / SUBTANK>=n: el estado de AP
+        # solo cuenta items de progresión.
+        if name in progression_overrides():
+            cls = ItemClassification.progression
+        return MMZXItem(name, cls, self.item_name_to_id[name], self.player)
 
     def create_event(self, name: str) -> MMZXItem:
         return MMZXItem(name, ItemClassification.progression, None, self.player)
@@ -161,6 +167,7 @@ class MMZXWorld(World):
             "starting_model": self.options.starting_model.current_key,
             "starting_transerver": self.options.starting_transerver.current_key,
             "hu_in_pool": bool(self.options.hu_in_pool.value),
+            "logic_difficulty": self.options.logic_difficulty.current_key,
             # pickups respawneables como checks (v0.2): el cliente sondea el
             # buzón solo si alguna categoría está activa
             "pickup_checks_1up": bool(self.options.pickup_checks_1up.value),

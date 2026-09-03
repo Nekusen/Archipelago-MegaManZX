@@ -1,0 +1,3133 @@
+{
+ "checks": {
+  "A-1: 1-Up": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "A-1: Disk E-31": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "A-1: Disk O-9": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "A-1: E-Crystal L (2)": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "A-1: E-Crystal L (3)": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "A-1: Energy Capsule L": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "A-1: Energy Capsule L (3)": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "A-2: Disk E-27": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "A-2: E-Crystal L": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "A-2: Energy Capsule L": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "A-2: Sub Tank": {
+   "note": "dash aereo hasta la plataforma",
+   "req": {
+    "normal": [
+     [
+      "HX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "A-4: Disk E-20": {
+   "note": "A-4: arriba a la derecha de la estructura alta (escalera + columna vertical)",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": true
+  },
+  "A-4: E-Crystal L": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU"
+     ],
+     [
+      "LX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "B-1: Disk E-24": {
+   "note": "B-1: repisa elevada al fondo derecho",
+   "req": {
+    "normal": [
+     [
+      "HX"
+     ]
+    ]
+   },
+   "unsure": true
+  },
+  "B-1: E-Crystal L": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "B-2: Disk B-1": {
+   "note": "B-2: cima de la estructura derecha (y=28)",
+   "req": {
+    "normal": [
+     [
+      "HX"
+     ]
+    ]
+   },
+   "unsure": true
+  },
+  "B-2: Disk E-17": {
+   "note": "B-2: en lo alto de un pilar (tile y=29)",
+   "req": {
+    "normal": [
+     [
+      "HX"
+     ]
+    ]
+   },
+   "unsure": true
+  },
+  "B-3: 1-Up": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "B-3: E-Crystal L": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "B-3: E-Crystal L (2)": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "B-3: Energy Capsule XL": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "B-4: Disk E-11": {
+   "note": "B-4: estructura alta arriba a la derecha",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": true
+  },
+  "C-1: E-Crystal L": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "C-1: E-Crystal L (2)": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "C-1: E-Crystal L (5)": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "C-1: Weapon Energy L": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "C-3: Disk E-49": {
+   "note": "C-3: repisa alta a la izquierda (y=34)",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": true
+  },
+  "D-1: Life Up": {
+   "note": "\"any transformation\"",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "E-4: Disk E-8": {
+   "note": "E-4: arriba a la derecha, por la ruta de los engranajes hacia E-3 (nota interordi)",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": true
+  },
+  "E-4: Sub Tank": {
+   "note": "\"any transformation\"",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "E-5: Disk E-37": {
+   "note": "E-5: pasadas las plataformas electricas E-4 (Sub Tank) ya cubierto por Steam; E-21 abajo por escalera; M-5 arriba de la escalera larga de E-5; B-8 en el suelo de E-8.",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": true
+  },
+  "F-1: Disk E-39": {
+   "note": "F-1: repisa en la cueva izquierda (y=34)",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": true
+  },
+  "F-2: Disk E-15": {
+   "note": "F-2: laberinto inferior (cubos (75,54-62))",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": true
+  },
+  "F-2: Disk E-44": {
+   "note": "F-2: zona baja entre filas de pinchos bajo el agua (Steam: pinchos \"barely underwater\" en F-2)",
+   "req": {
+    "normal": [
+     [
+      "LX"
+     ]
+    ]
+   },
+   "unsure": true
+  },
+  "F-2: Life Up": {
+   "note": "bloques de hielo + salto alto",
+   "req": {
+    "normal": [
+     [
+      "HX",
+      "FX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "F-3: Disk E-2": {
+   "note": "F-3: el disco esta ENTRE cubos (122-124,39)",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": true
+  },
+  "F-3: Disk E-48": {
+   "note": "F-3: arriba del todo tras una fila de cubos (37-45,30) y cajas (46-48,33-35)",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": true
+  },
+  "F-4: Disk B-15": {
+   "note": "F-4: \"Use Model Lx's charged attack to make a platform and get this disk\" (interordi)",
+   "req": {
+    "normal": [
+     [
+      "LX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "F-4: Disk E-45": {
+   "note": "F-4: cubos pegados (92-94,32)",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": true
+  },
+  "G-5: Disk B-11": {
+   "note": "G-5: sub-sala (puerta (112,43)) tapada por fuego; interordi apunta con flecha",
+   "req": {
+    "normal": [
+     [
+      "HX"
+     ]
+    ]
+   },
+   "unsure": true
+  },
+  "I-2: Disk E-33": {
+   "note": "I-2: \"Use Model Hx hover ability to get across the spikes and get the disk\"",
+   "req": {
+    "normal": [
+     [
+      "HX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "I-4: Disk E-14": {
+   "note": "I-4:  power the platforms and get the disks\"",
+   "req": {
+    "normal": [
+     [
+      "HX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "I-4: Disk M-1": {
+   "note": "I-4: \"Use Model Hx's electric spark to",
+   "req": {
+    "normal": [
+     [
+      "HX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "I-5: Disk E-13": {
+   "note": "I-5: estructura derecha (y=32), escalera E-3 (I-1) en sub-sala por puerta del pasillo inferior; E-34 (I-2), B-9 (I-3), E-23 (I-5) a pie de suelo -> sin requisito.",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": true
+  },
+  "I-5: Disk M-6": {
+   "note": "I-5: en lo alto del tronco de un arbol",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": true
+  },
+  "I-5: Life Up": {
+   "note": "tornados (ambas mitades)",
+   "req": {
+    "normal": [
+     [
+      "HX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "J-1: Life Up": {
+   "note": "nadar entre pinchos",
+   "req": {
+    "normal": [
+     [
+      "LX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "J-2: Disk E-7": {
+   "note": "J-2: hueco alto con fila de pinchos bajo el agua (1360-1450,85)",
+   "req": {
+    "normal": [
+     [
+      "LX"
+     ]
+    ]
+   },
+   "unsure": true
+  },
+  "J-3: Disk E-36": {
+   "note": "J-3: en lo alto de la estructura derecha Life Up J-1 (Steam, LX) ya cubierto; M-7 (J-3) en un hueco al que se cae; B-16 (J-5) tras Leganchor por escalera -> sin requisito propio.",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": true
+  },
+  "K-1: Disk E-22": {
+   "note": "K-1: estructura alta a la derecha (y=38)",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": true
+  },
+  "K-1: Sub Tank": {
+   "note": "el mas largo (techos, bloques, boton oculto, nado)",
+   "req": {
+    "normal": [
+     [
+      "HX",
+      "FX",
+      "LX",
+      "PX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "K-3: Disk E-35": {
+   "note": "K-3: repisa a media altura del pozo",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": true
+  },
+  "K-4: Disk B-12": {
+   "note": "K-4: tras la puerta interna Blanca (169,71) -> aterriza en (78,117), junto a B-12 E-26 (K-4, pasillo central) y E-25 (K-5, escalera) sin requisito.",
+   "req": {
+    "normal": [
+     [
+      "WHITE"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "L-1: Disk E-18": {
+   "note": "L-1: plataforma flotante muy alta (y=33 con suelo en 47); nada que escalar",
+   "req": {
+    "normal": [
+     [
+      "HX"
+     ]
+    ]
+   },
+   "unsure": true
+  },
+  "L-2: Disk E-41": {
+   "note": "L-2: idem (y=29) E-5 (L-3) y B-13 (L-4) a pie de suelo -> sin requisito propio.",
+   "req": {
+    "normal": [
+     [
+      "HX"
+     ]
+    ]
+   },
+   "unsure": true
+  },
+  "M-1: Disk E-50": {
+   "note": "M-1: \"Use Model Fx Buster Edit to hit this switch\" (sub-sala por la puerta (316,30)) B-10 (M-3) a pie de suelo antes de Pandora -> sin requisito.",
+   "req": {
+    "normal": [
+     [
+      "FX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "M-1: Disk M-2": {
+   "note": "M-1: sub-sala por la puerta (282,46); el disco 5 tiles por encima del aterrizaje",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": true
+  },
+  "Mission - Attack The Excavators": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "Mission - Destroy Model W": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "Mission - Fight The Mavericks": {
+   "note": "hablar con NPCs + pelear",
+   "req": {
+    "normal": [
+     [
+      "HU",
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "Mission - Find The Survivors": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "Mission - Locate Giro": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "Mission - Pass The Test": {
+   "note": "(hablar + superar)",
+   "req": {
+    "normal": [
+     [
+      "HU",
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": true
+  },
+  "Mission - Protect Hq": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "Mission - Protect The Lab": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "Mission - Recover The Disk": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "Mission - Repel The Army": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "Mission - Save The People": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "Mission - Search The Plant": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "Mission - Secure The Biometal": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "Mission - Stop The Dig": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "Mission - Troop Reinforcement": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "N-1: Disk B-2": {
+   "note": "N-1: zona superior con plataformas que desaparecen y pinchos (gate Blanco coarse de la sala tambien aplica: sobre-estricto)",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": true
+  },
+  "Obtain Biometal F": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "Obtain Biometal H": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "Obtain Biometal L": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "Obtain Biometal P": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "Quest - Deliver The Aid Kit": {
+   "note": "destruir contenedores en L",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "Quest - Find The Boy": {
+   "note": "escondite con los ninos (hablar) E-38 en la calle de G-1; E-16 arriba del edificio (rampas); E-9 en G-3; E-32 al pie de la cuesta de G-5 -> sin requisito.",
+   "req": {
+    "normal": [
+     [
+      "HU"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "Quest - Find The Pearl": {
+   "note": "F-2: la Cold Pearl esta bajo el agua del lago",
+   "req": {
+    "normal": [
+     [
+      "LX"
+     ]
+    ]
+   },
+   "unsure": true
+  },
+  "Quest - Purify The Lakes": {
+   "note": "B-4: 5 Pure Water Tanks en el lago (bajo el agua; romperlos)",
+   "req": {
+    "normal": [
+     [
+      "LX",
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": true
+  }
+ },
+ "edges": {
+  "a01 door (6256,752)": {
+   "dst_pos": null,
+   "note": "puerta Amarilla en lo alto del muro derecho (tile y=47 vs suelo 69): hay que escalar",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": true
+  },
+  "a03 door (2096,880)": {
+   "dst_pos": null,
+   "note": "Fire thorns (118,55) en el pasillo a la puerta Purpura (131,55): quemarlas a04->m01: el \"sello de los 6 biometales\" de M-1 era un mito: lo abre una cutscene de Stop The Dig (agente exp350-359) y el cliente pone su flag (395); las capas de ovl104 son cosmeticas. Sin ALL6 aqui (el goal lo exige en D-2 -> D-4).",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "FX"
+     ]
+    ]
+   },
+   "unsure": true
+  },
+  "a04 door (864,320)": {
+   "dst_pos": null,
+   "note": "puerta en la estructura alta (54,20): se sube por escalera y columna; y nada mas entrar en M-1 esta la puerta Roja interna (56,46) + el Orehawk (miniboss)",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "MODEL",
+      "RED"
+     ]
+    ]
+   },
+   "unsure": true
+  },
+  "b02 curated to d01": {
+   "dst_pos": null,
+   "note": "el Rayfly (miniboss) esta en el tramo derecho de B-2, antes del corredor a D-1",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": true
+  },
+  "b03 door (2272,704)": {
+   "dst_pos": null,
+   "note": "caverna ascendente con pinchos hasta F-1",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": true
+  },
+  "c01 door (4832,896)": {
+   "dst_pos": null,
+   "note": "bloque derecho de C-1: hueco de 1 tile (Hu) o saltarlo por encima + gap grande (Hx) [usuario]",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "HU"
+     ],
+     [
+      "HX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "d01 door (4320,544)": {
+   "dst_pos": null,
+   "note": "el puente de la autopista se baja con un switch (Bridge switch (141,34)): hay que golpear",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": true
+  },
+  "e02 door (1248,1088)": {
+   "dst_pos": null,
+   "note": "pozo de E-2: barras electricas giratorias y",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": true
+  },
+  "e02 door (288,320)": {
+   "dst_pos": null,
+   "note": "sus botones (Electric Rod button): golpear",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": true
+  },
+  "e05 door (3040,528)": {
+   "dst_pos": null,
+   "note": "plataformas electrificadas (Electric Platform x10) antes de la salida a E-7",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": true
+  },
+  "e07 curated to e08": {
+   "dst_pos": null,
+   "note": "",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "SEARCH_THE_PLANT"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "f01 door (2016,736)": {
+   "dst_pos": null,
+   "note": "cubos/cajas de hielo tapando la puerta",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": true
+  },
+  "f02 door (2528,544)": {
+   "dst_pos": null,
+   "note": "cubos en el pasillo superior (109-111,32)",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": true
+  },
+  "f03 door (384,1600)": {
+   "dst_pos": null,
+   "note": "cubos de hielo junto a la VERJA de evento (flag 381, la abre el cliente; NO es puerta Azul: exp341d)",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": true
+  },
+  "f04 door (1760,528)": {
+   "dst_pos": null,
+   "note": "filas de cubos/cajas a lo largo de F-4",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": true
+  },
+  "h02 door (1440,704)": {
+   "dst_pos": null,
+   "note": "de H-2; ambas salidas quedan detras",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": true
+  },
+  "h02 door (1504,704)": {
+   "dst_pos": null,
+   "note": "Powmettaur (miniboss) en el foso central",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": true
+  },
+  "i02 door (2208,1120)": {
+   "dst_pos": null,
+   "note": "Diadrake (miniboss) nada mas entrar en I-4",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": true
+  },
+  "i02 door (2208,736)": {
+   "dst_pos": null,
+   "note": "Steephinx (miniboss) nada mas entrar en I-5",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": true
+  },
+  "j01 door (448,352)": {
+   "dst_pos": null,
+   "note": "subir 13 tiles bajo el agua hasta la puerta Azul (28,22): escalar paredes",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": true
+  },
+  "j02 door (3296,752)": {
+   "dst_pos": null,
+   "note": "Tentalamia (miniboss) nada mas entrar en J-3",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": true
+  },
+  "k02 fall to k03": {
+   "dst_pos": null,
+   "note": "Lava Demon (miniboss) en K-2: hay que matarlo para caer al subterraneo",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "k03 door (1504,528)": {
+   "dst_pos": null,
+   "note": "subir por el pozo de K-3 hasta la salida alta",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": true
+  }
+ },
+ "format": 1,
+ "gates": {
+  "191": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "FIGHT_THE_MAVERICKS"
+     ]
+    ]
+   }
+  },
+  "225": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "ALL6"
+     ]
+    ]
+   }
+  },
+  "381": {
+   "note": "",
+   "req": null
+  },
+  "382": {
+   "note": "",
+   "req": null
+  },
+  "395": {
+   "note": "",
+   "req": null
+  },
+  "768": {
+   "note": "",
+   "req": null
+  },
+  "769": {
+   "note": "",
+   "req": null
+  }
+ },
+ "placed": {},
+ "rooms": {
+  "a01": {
+   "conns": [
+    {
+     "from": "main",
+     "note": "usuario (playtest 4): HX;",
+     "req": {
+      "normal": [
+       [
+        "HX"
+       ]
+      ]
+     },
+     "to": "cueva-e1",
+     "unsure": false
+    },
+    {
+     "from": "cueva-e1",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    }
+   ],
+   "members": {
+    "A-1: Weapon Energy L": "main"
+   },
+   "note": "",
+   "regions": {
+    "cueva-e1": {
+     "color": "#f28b82",
+     "name": "Cueva E1",
+     "note": "POLÍGONO PROVISIONAL (bbox migrado): redibujar. usuario (playtest 4): HX;",
+     "poly": [
+      [
+       7584,
+       296
+      ],
+      [
+       7680,
+       296
+      ],
+      [
+       7680,
+       392
+      ],
+      [
+       7584,
+       392
+      ]
+     ]
+    },
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "a02": {
+   "conns": [
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "sur",
+     "unsure": true
+    },
+    {
+     "from": "sur",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "main",
+     "unsure": true
+    }
+   ],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    },
+    "sur": {
+     "color": "#fbbc04",
+     "name": "Sur",
+     "note": "POLÍGONO PROVISIONAL (bbox migrado): redibujar. ",
+     "poly": [
+      [
+       240,
+       864
+      ],
+      [
+       336,
+       864
+      ],
+      [
+       336,
+       960
+      ],
+      [
+       240,
+       960
+      ]
+     ]
+    }
+   },
+   "req": null
+  },
+  "a03": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "a04": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "b01": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "b02": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "b03": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "b04": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "c01": {
+   "conns": [
+    {
+     "from": "main",
+     "note": "gate interno coarse (v0.2): llaves/verjas de las puertas internas",
+     "req": {
+      "normal": [
+       [
+        "GREEN"
+       ]
+      ]
+     },
+     "to": "interior",
+     "unsure": true
+    },
+    {
+     "from": "interior",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    }
+   ],
+   "members": {},
+   "note": "",
+   "regions": {
+    "interior": {
+     "color": "#78d9ec",
+     "name": "Interior",
+     "note": "POLÍGONO PROVISIONAL (gate interno coarse de v0.2: GREEN): redibujar.",
+     "poly": [
+      [
+       7821,
+       1000
+      ],
+      [
+       7954,
+       1000
+      ],
+      [
+       7954,
+       1096
+      ],
+      [
+       7821,
+       1096
+      ]
+     ]
+    },
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "c02": {
+   "conns": [
+    {
+     "from": "main",
+     "note": "gate interno coarse (v0.2): llaves/verjas de las puertas internas",
+     "req": {
+      "normal": [
+       [
+        "YELLOW"
+       ]
+      ]
+     },
+     "to": "interior",
+     "unsure": true
+    },
+    {
+     "from": "interior",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    }
+   ],
+   "members": {
+    "c02 door (1792,784)": "main",
+    "c02 door (3808,928)": "main",
+    "c02 door (3808,928)@in": "main",
+    "c02 door (4016,928)": "main",
+    "c02 door (4512,864)": "main",
+    "c02 door (4512,864)@in": "main",
+    "c02 door (5024,864)": "main",
+    "c02 door (5056,1088)": "main"
+   },
+   "note": "",
+   "regions": {
+    "interior": {
+     "color": "#fde293",
+     "name": "Interior",
+     "note": "POLÍGONO PROVISIONAL (gate interno coarse de v0.2: YELLOW): redibujar.",
+     "poly": [
+      [
+       1664,
+       648
+      ],
+      [
+       6280,
+       648
+      ],
+      [
+       6280,
+       1176
+      ],
+      [
+       1664,
+       1176
+      ]
+     ]
+    },
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "c03": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "d01": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "d02": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "d03": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "d04": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "d05": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "e01": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "e02": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "e03": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "e04": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "e05": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "e06": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "e07": {
+   "conns": [
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "oeste",
+     "unsure": false
+    },
+    {
+     "from": "oeste",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    }
+   ],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    },
+    "oeste": {
+     "color": "#81c995",
+     "name": "Oeste",
+     "note": "POLÍGONO PROVISIONAL (bbox migrado): redibujar. ",
+     "poly": [
+      [
+       240,
+       672
+      ],
+      [
+       336,
+       672
+      ],
+      [
+       336,
+       768
+      ],
+      [
+       240,
+       768
+      ]
+     ]
+    }
+   },
+   "req": null
+  },
+  "e08": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "f01": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "f02": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "f03": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "f04": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "f05": {
+   "conns": [
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "oeste",
+     "unsure": false
+    },
+    {
+     "from": "oeste",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    }
+   ],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    },
+    "oeste": {
+     "color": "#a7ffeb",
+     "name": "Oeste",
+     "note": "POLÍGONO PROVISIONAL (bbox migrado): redibujar. ",
+     "poly": [
+      [
+       240,
+       688
+      ],
+      [
+       336,
+       688
+      ],
+      [
+       336,
+       784
+      ],
+      [
+       240,
+       784
+      ]
+     ]
+    }
+   },
+   "req": null
+  },
+  "g01": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "g02": {
+   "conns": [
+    {
+     "from": "main",
+     "note": "gate interno coarse (v0.2): llaves/verjas de las puertas internas",
+     "req": {
+      "normal": [
+       [
+        "FIGHT_THE_MAVERICKS"
+       ]
+      ]
+     },
+     "to": "interior",
+     "unsure": true
+    },
+    {
+     "from": "interior",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    }
+   ],
+   "members": {
+    "g01 door (3808,768)@in": "main",
+    "g02 door (288,1152)": "main",
+    "g02 door (376,2400)": "main",
+    "g02 door (552,2032)@in": "main",
+    "g02 door (656,592)@in": "main"
+   },
+   "note": "",
+   "regions": {
+    "interior": {
+     "color": "#f28b82",
+     "name": "Interior",
+     "note": "POLÍGONO PROVISIONAL (gate interno coarse de v0.2: FIGHT_THE_MAVERICKS): redibujar.",
+     "poly": [
+      [
+       230,
+       314
+      ],
+      [
+       396,
+       314
+      ],
+      [
+       396,
+       2498
+      ],
+      [
+       230,
+       2498
+      ]
+     ]
+    },
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "g03": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "g04": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "g05": {
+   "conns": [
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "pad",
+     "unsure": false
+    },
+    {
+     "from": "pad",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    }
+   ],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    },
+    "pad": {
+     "color": "#d7aefb",
+     "name": "Pad",
+     "note": "POLÍGONO PROVISIONAL (bbox migrado): redibujar. ",
+     "poly": [
+      [
+       3248,
+       496
+      ],
+      [
+       3344,
+       496
+      ],
+      [
+       3344,
+       592
+      ],
+      [
+       3248,
+       592
+      ]
+     ]
+    }
+   },
+   "req": null
+  },
+  "h01": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "h02": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "h03": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "h04": {
+   "conns": [
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "oeste",
+     "unsure": false
+    },
+    {
+     "from": "oeste",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    }
+   ],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    },
+    "oeste": {
+     "color": "#ff8bcb",
+     "name": "Oeste",
+     "note": "POLÍGONO PROVISIONAL (bbox migrado): redibujar. ",
+     "poly": [
+      [
+       240,
+       896
+      ],
+      [
+       336,
+       896
+      ],
+      [
+       336,
+       992
+      ],
+      [
+       240,
+       992
+      ]
+     ]
+    }
+   },
+   "req": null
+  },
+  "i01": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "i02": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "i03": {
+   "conns": [
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "pad",
+     "unsure": false
+    },
+    {
+     "from": "pad",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    }
+   ],
+   "members": {
+    "z01 transerver to i03@in": "pad"
+   },
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    },
+    "pad": {
+     "color": "#78d9ec",
+     "name": "Pad",
+     "note": "POLÍGONO PROVISIONAL (bbox migrado): redibujar. ",
+     "poly": [
+      [
+       2128,
+       896
+      ],
+      [
+       2224,
+       896
+      ],
+      [
+       2224,
+       992
+      ],
+      [
+       2128,
+       992
+      ]
+     ]
+    }
+   },
+   "req": null
+  },
+  "i04": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "i05": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "j01": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "j02": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "j03": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "j04": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "j05": {
+   "conns": [
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "entrada",
+     "unsure": false
+    },
+    {
+     "from": "entrada",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    }
+   ],
+   "members": {},
+   "note": "",
+   "regions": {
+    "entrada": {
+     "color": "#fde293",
+     "name": "Entrada",
+     "note": "POLÍGONO PROVISIONAL (bbox migrado): redibujar. ",
+     "poly": [
+      [
+       240,
+       704
+      ],
+      [
+       336,
+       704
+      ],
+      [
+       336,
+       800
+      ],
+      [
+       240,
+       800
+      ]
+     ]
+    },
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "k01": {
+   "conns": [
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "normal": []
+     },
+     "to": "subterraneo",
+     "unsure": false
+    },
+    {
+     "from": "subterraneo",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    }
+   ],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    },
+    "subterraneo": {
+     "color": "#f28b82",
+     "name": "Subterraneo",
+     "note": "POLÍGONO PROVISIONAL (bbox migrado): redibujar. ",
+     "poly": [
+      [
+       7168,
+       704
+      ],
+      [
+       7344,
+       704
+      ],
+      [
+       7344,
+       1362
+      ],
+      [
+       7168,
+       1362
+      ]
+     ]
+    }
+   },
+   "req": null
+  },
+  "k02": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "k03": {
+   "conns": [
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "fondo",
+     "unsure": true
+    },
+    {
+     "from": "fondo",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "main",
+     "unsure": true
+    }
+   ],
+   "members": {},
+   "note": "",
+   "regions": {
+    "fondo": {
+     "color": "#fbbc04",
+     "name": "Fondo",
+     "note": "POLÍGONO PROVISIONAL (bbox migrado): redibujar. ",
+     "poly": [
+      [
+       512,
+       1040
+      ],
+      [
+       1808,
+       1040
+      ],
+      [
+       1808,
+       1152
+      ],
+      [
+       512,
+       1152
+      ]
+     ]
+    },
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "k04": {
+   "conns": [
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "pad",
+     "unsure": false
+    },
+    {
+     "from": "pad",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    },
+    {
+     "from": "main",
+     "note": "gate interno coarse (v0.2): llaves/verjas de las puertas internas",
+     "req": {
+      "normal": [
+       [
+        "WHITE"
+       ]
+      ]
+     },
+     "to": "interior",
+     "unsure": true
+    },
+    {
+     "from": "interior",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    }
+   ],
+   "members": {
+    "k04 door (1328,944)": "main",
+    "k04 door (1456,1632)": "main",
+    "k04 door (1456,1632)@in": "main",
+    "k04 door (1680,912)": "main",
+    "k04 door (2704,1136)": "main",
+    "k04 door (2704,1136)@in": "main"
+   },
+   "note": "",
+   "regions": {
+    "interior": {
+     "color": "#fbbc04",
+     "name": "Interior",
+     "note": "POLÍGONO PROVISIONAL (gate interno coarse de v0.2: WHITE): redibujar.",
+     "poly": [
+      [
+       770,
+       856
+      ],
+      [
+       3016,
+       856
+      ],
+      [
+       3016,
+       1912
+      ],
+      [
+       770,
+       1912
+      ]
+     ]
+    },
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    },
+    "pad": {
+     "color": "#81c995",
+     "name": "Pad",
+     "note": "POLÍGONO PROVISIONAL (bbox migrado): redibujar. ",
+     "poly": [
+      [
+       4272,
+       1072
+      ],
+      [
+       4368,
+       1072
+      ],
+      [
+       4368,
+       1168
+      ],
+      [
+       4272,
+       1168
+      ]
+     ]
+    }
+   },
+   "req": null
+  },
+  "k05": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "l01": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "l02": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "l03": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "l04": {
+   "conns": [
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "pad",
+     "unsure": false
+    },
+    {
+     "from": "pad",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    }
+   ],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    },
+    "pad": {
+     "color": "#a7ffeb",
+     "name": "Pad",
+     "note": "POLÍGONO PROVISIONAL (bbox migrado): redibujar. ",
+     "poly": [
+      [
+       3248,
+       704
+      ],
+      [
+       3344,
+       704
+      ],
+      [
+       3344,
+       800
+      ],
+      [
+       3248,
+       800
+      ]
+     ]
+    }
+   },
+   "req": null
+  },
+  "m01": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "m02": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "m03": {
+   "conns": [
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "pad",
+     "unsure": false
+    },
+    {
+     "from": "pad",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    }
+   ],
+   "members": {
+    "z01 transerver to m03@in": "pad"
+   },
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    },
+    "pad": {
+     "color": "#d7aefb",
+     "name": "Pad",
+     "note": "POLÍGONO PROVISIONAL (bbox migrado): redibujar. ",
+     "poly": [
+      [
+       1888,
+       704
+      ],
+      [
+       1984,
+       704
+      ],
+      [
+       1984,
+       800
+      ],
+      [
+       1888,
+       800
+      ]
+     ]
+    }
+   },
+   "req": null
+  },
+  "n01": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "o01": {
+   "conns": [],
+   "members": {},
+   "note": "? Discord: \"you need Hx for Area O\"",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": {
+    "normal": [
+     [
+      "HX"
+     ]
+    ]
+   }
+  },
+  "o02": {
+   "conns": [
+    {
+     "from": "main",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "este",
+     "unsure": false
+    },
+    {
+     "from": "este",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "main",
+     "unsure": false
+    }
+   ],
+   "members": {},
+   "note": "? ",
+   "regions": {
+    "este": {
+     "color": "#ff8bcb",
+     "name": "Este",
+     "note": "POLÍGONO PROVISIONAL (bbox migrado): redibujar. ",
+     "poly": [
+      [
+       5176,
+       488
+      ],
+      [
+       5272,
+       488
+      ],
+      [
+       5272,
+       584
+      ],
+      [
+       5176,
+       584
+      ]
+     ]
+    },
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": {
+    "normal": [
+     [
+      "HX"
+     ]
+    ]
+   }
+  },
+  "x01": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "x02": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "x03": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "z01": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  },
+  "z02": {
+   "conns": [],
+   "members": {},
+   "note": "",
+   "regions": {
+    "main": {
+     "color": "#8ab4f8",
+     "name": "Main",
+     "note": "",
+     "poly": null
+    }
+   },
+   "req": null
+  }
+ },
+ "tiers": [
+  "normal",
+  "expert"
+ ]
+}

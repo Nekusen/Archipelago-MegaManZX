@@ -1,135 +1,153 @@
-"""Regiones del mundo Mega Man ZX.
+"""Regiones del mundo Mega Man ZX — v0.3: lógica desde logic/logic.json.
 
-v0.2 — LÓGICA (antes: v0.1 no-logic, una sola región). Una región por
-sala; transiciones = aristas dirigidas del grafo estático (data.DOORS:
-puertas, warps de Transerver, curadas) con las Card Keys como regla base.
-Encima, las REGLAS CURADAS de logic_rules.py (biometal por movimiento,
-Hu, gimmicks): por sala (entrada), por transición, por sub-región y por
-location, compiladas con el DSL de logic.py.
+Una región de Archipelago por SALA (`a01`, región 'main') y una más por
+cada sub-región dibujada en el editor visual (`a01/cueva-e1`). Aristas:
+  - data.DOORS (puertas, warps, pasillos, curadas): de la región donde
+    está su SALIDA a la región donde ATERRIZA (pertenencia geométrica
+    resuelta por logic_format.resolve_members); regla = llave ∧ verja de
+    evento ∧ requisito de entrada de la sala destino ∧ coste extra de la
+    arista ∧ regla de Transerver. Las puertas internas (src == dst) solo
+    crean transición si unen regiones distintas.
+  - conexiones curadas región→región (rooms[sala].conns) con su requisito.
+Locations: en la región de su posición (data.pos o colocada a mano);
+las que aún no tienen sala van a "Field" con la regla de etiqueta de
+área (logic.label_rule). Eventos "Cleared: <misión>" con la misma regla
+que el check de la misión. Nivel de lógica: opción logic_difficulty
+(normal / expert acumulativo).
 
-Diseño preparado para randomizar transiciones en el futuro (patrón del
-core de AP, docs "entrance randomization.md"): cada entrance tiene nombre
-estable ligado a la puerta física (sala + posición), y cada dirección es
-una arista independiente. Para activar ER bastará con
-disconnect_entrance_for_randomization + randomize_entrances en
-connect_entrances sobre el subconjunto kind=='door'.
-
-Las misiones/quests/biometales no viven en una sala concreta (su etiqueta
-de área es difusa: 'B-1B-2', 'E-7/I-3', 'F'): van a la región holder
-"Field" con regla can_reach_region sobre las salas de su etiqueta
-(logic.label_rule). Las locations físicas (disks, Life Ups, Sub Tanks)
-van a la región de su sala (o a su sub-región curada).
+Preparado para randomizar transiciones en el futuro: cada entrance lleva
+el nombre estable de su puerta física (data.DOORS[i].name).
 """
+
+import json
+import pkgutil
 
 from BaseClasses import Region
 
+from . import logic_format as F
 from .data import LOCATIONS
 from .locations import MMZXLocation, locations_for_options, pickup_flags_from_options
-from .logic import (ALL_EDGES, NON_TRANSITION_KINDS, ROOM_NAMES, and_rules,
-                    compile_rule, door_rule, gate_expr, internal_gate_rule,
-                    label_rule, starting_room, transerver_rule)
-from .logic_rules import DOOR_RULES, LOCATION_RULES, ROOM_RULES, SUBREGIONS
+from .logic import (ALL_EDGES, WORLD, and_rules, door_rule, label_rule,
+                    starting_room, transerver_rule)
+
+_DOC = None
+
+
+def load_document():
+    """logic/logic.json (empaquetado en el apworld) normalizado; cacheado."""
+    global _DOC
+    if _DOC is None:
+        raw = pkgutil.get_data(__name__, "logic/logic.json")
+        if raw is None:
+            raise FileNotFoundError("worlds/mmzx/logic/logic.json no encontrado: "
+                                    "genera la lógica con tools/logic_editor/")
+        _DOC = F.normalize_logic(json.loads(raw.decode("utf-8")), WORLD)
+    return _DOC
+
+
+def progression_overrides() -> set:
+    """Items 'useful' que la lógica del documento convierte en progresión
+    (Life Up / Sub Tank si algún requisito usa LIFEUP>=n / SUBTANK>=n)."""
+    return F.count_items_used(load_document())
 
 
 def create_regions(world) -> None:
     player, mw = world.player, world.multiworld
     hu_in_pool = bool(world.options.hu_in_pool.value)
+    tier = world.options.logic_difficulty.current_key
+    doc = load_document()
+    members = F.resolve_members(WORLD, doc)
 
-    def rule(expr):
-        return compile_rule(expr, player, hu_in_pool)
+    def rule(req):
+        return F.compile_req(req, tier, player, hu_in_pool)
 
     menu = Region("Menu", player, mw)
-    field = Region("Field", player, mw)   # misiones/quests (área difusa)
-    rooms = {r: Region(r, player, mw) for r in ROOM_NAMES}
-    mw.regions += [menu, field, *rooms.values()]
+    field = Region("Field", player, mw)   # misiones/quests sin colocar
+    regions = {}
+    for room, rl in doc["rooms"].items():
+        for rid in rl["regions"]:
+            name = F.region_name(room, rid)
+            regions[name] = Region(name, player, mw)
+    mw.regions += [menu, field, *regions.values()]
 
     start = starting_room(world)
-    menu.connect(rooms[start], "Start", rule(ROOM_RULES.get(start)))
+    menu.connect(regions[start], "Start", rule(doc["rooms"][start].get("req")))
     menu.connect(field, "Field access")
 
-    # sub-regiones curadas (partes de una sala con requisito propio). Una
-    # sub-región puede además RECIBIR puertas (doors_in: la puerta aterriza
-    # en ella, no en la sala) y EMITIR puertas (doors_out: la puerta sale
-    # de ella) — p. ej. el lado de una sala que queda detrás de un jefe.
-    loc_region = {}   # location -> nombre de sub-región
-    door_in, door_out = {}, {}   # "src->dst" o nombre de arista -> sub-región
-    for name, s in SUBREGIONS.items():
-        sub = Region(name, player, mw)
-        mw.regions.append(sub)
-        parent = rooms[s["parent"]]
-        parent.connect(sub, "%s enter" % name, rule(s.get("req")))
-        sub.connect(parent, "%s exit" % name, rule(s.get("back")))
-        rooms[name] = sub
-        for loc in s.get("locations", []):
-            loc_region[loc] = name
-        for k in s.get("doors_in", []):
-            door_in[k] = name
-        for k in s.get("doors_out", []):
-            door_out[k] = name
+    # conexiones curadas región -> región (dentro de una sala)
+    for room, rl in doc["rooms"].items():
+        for c in rl.get("conns", []):
+            src = regions[F.region_name(room, c["from"])]
+            dst = regions[F.region_name(room, c["to"])]
+            src.connect(dst, "%s: %s -> %s" % (room, c["from"], c["to"]), rule(c.get("req")))
 
-    # transiciones: una entrance por arista dirigida (salvo internas y
-    # pads save-only). Regla = llave & regla de entrada a la sala destino
-    # & regla curada de la transición.
+    # aristas del grafo estático
+    gates = doc.get("gates", {})
+    edge_ov = doc.get("edges", {})
     for d in ALL_EDGES:
-        if d["kind"] in NON_TRANSITION_KINDS:
+        if d["kind"] in F.NON_TRANSITION_KINDS:
             continue
-        pair = "%s->%s" % (d["src"], d["dst"])
-        extra = DOOR_RULES.get(d["name"], DOOR_RULES.get(pair))
-        # Red de Transervers (modelo HÍBRIDO, decisión 2026-09-02): salir del
-        # hub hacia un destino exige su item "Transerver Access - Area X"
-        # (el acceso A PIE sigue existiendo por las puertas físicas y los
-        # pasillos de piso). Entrar a la red (sala -> hub) es libre.
-        # Verjas de EVENTO (bit 1 del rol): regla por flag (GATE_RULES) o
-        # libre si el cliente pone el flag (EVENT_GATES_OPEN).
-        r = and_rules(door_rule(d, player), rule(ROOM_RULES.get(d["dst"])), rule(extra),
-                      transerver_rule(d, player), rule(gate_expr(d)))
-        src = rooms[door_out.get(d["name"], door_out.get(pair, d["src"]))]
-        dst = rooms[door_in.get(d["name"], door_in.get(pair, d["dst"]))]
-        src.connect(dst, d["name"], r)
+        src_rid = members[d["src"]].get(d["name"], "main")
+        dst_rid = members[d["dst"]].get(d["name"] + "@in", "main")
+        if d["src"] == d["dst"] and src_rid == dst_rid:
+            continue                       # puerta interna dentro de la misma región
+        gate_req = gates.get(str(d["gate"]), {}).get("req") if d.get("gate") is not None else None
+        entry_req = doc["rooms"][d["dst"]].get("req") if d["src"] != d["dst"] else None
+        r = and_rules(door_rule(d, player), rule(entry_req),
+                      rule(edge_ov.get(d["name"], {}).get("req")),
+                      transerver_rule(d, player), rule(gate_req))
+        regions[F.region_name(d["src"], src_rid)].connect(
+            regions[F.region_name(d["dst"], dst_rid)], d["name"], r)
 
     # locations
+    checks = doc.get("checks", {})
+
+    def place(name, v):
+        room, _ = F.check_position(WORLD, doc, name)
+        if room:
+            return regions[F.region_name(room, members[room].get(name, "main"))], None
+        return field, label_rule(v.get("room"), player)
+
     active = locations_for_options(
         include_quests=bool(world.options.submission_checks.value),
         include_level4=bool(world.options.level4_victories.value),
         pickups=pickup_flags_from_options(world.options),
     )
     for name, v in active.items():
-        room = v.get("room")
-        if room in rooms:
-            parent = rooms[loc_region.get(name, room)]
-            base = internal_gate_rule(room, player, name, hu_in_pool)
-        else:
-            parent, base = field, label_rule(room, player)
+        parent, base = place(name, v)
         loc = MMZXLocation(player, name, v["id"], parent)
-        r = and_rules(base, rule(LOCATION_RULES.get(name)))
+        r = and_rules(base, rule(checks.get(name, {}).get("req")))
         if r:
             loc.access_rule = r
         parent.locations.append(loc)
 
     # eventos "Cleared: <misión>" (una por misión, esté o no activa como
-    # check): misma regla de acceso que la location de la misión (etiqueta
-    # de área + regla curada). Los exigen los átomos de logic.MISSION_EVENT
-    # (p.ej. la puerta E-7 -> E-8 exige SEARCH_THE_PLANT).
+    # check): misma regla de acceso que la location de la misión. Los exigen
+    # los átomos de misión (p.ej. la puerta E-7 -> E-8 exige SEARCH_THE_PLANT).
     for name, v in LOCATIONS.items():
         if v.get("category") != "mission":
             continue
         ev_name = "Cleared: " + name[len("Mission - "):]
-        ev = MMZXLocation(player, ev_name, None, field)
+        parent, base = place(name, v)
+        ev = MMZXLocation(player, ev_name, None, parent)
         ev.place_locked_item(world.create_event(ev_name))
-        r = and_rules(label_rule(v.get("room"), player), rule(LOCATION_RULES.get(name)))
+        r = and_rules(base, rule(checks.get(name, {}).get("req")))
         if r:
             ev.access_rule = r
-        field.locations.append(ev)
+        parent.locations.append(ev)
 
-    # objetivo: evento Victory anclado a las salas de la misión final
+    # objetivo: evento Victory anclado a la misión final
     victory = MMZXLocation(player, "Defeat Serpent", None, field)
     victory.place_locked_item(world.create_event("Victory"))
-    goal_label = LOCATIONS.get("Mission - Destroy Model W", {}).get("room", "D-4D-5")
+    final = "Mission - Destroy Model W"
+    parent, base = place(final, LOCATIONS.get(final, {"room": "D-4D-5"}))
     # Serpent aparece en D-5 SIN misión ni checks de biometal (agente
     # exp290-299): físicamente basta d02 --Green Key--> d04 -> d05. Como
     # requisito de DISEÑO del goal (equivalente al sello de M-1 / "los 6
     # biometales" de vanilla) se exige además ALL6.
-    goal_rule = and_rules(label_rule(goal_label, player), rule("ALL6"))
-    if goal_rule:
-        victory.access_rule = goal_rule
+    if base is None:
+        pname = parent.name
+        base = lambda state, _p=pname: state.can_reach_region(_p, player)  # noqa: E731
+    goal_rule = and_rules(base, rule(checks.get(final, {}).get("req")), rule({"normal": [["ALL6"]]}))
+    victory.access_rule = goal_rule
     field.locations.append(victory)

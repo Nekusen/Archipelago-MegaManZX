@@ -60,6 +60,17 @@ class StartingModel(Choice):
     default = 0
 
 
+class LogicDifficulty(Choice):
+    """Nivel de la lógica de acceso (worlds/mmzx/logic/logic.json).
+    normal: solo rutas seguras. expert: además las alternativas marcadas
+    como expert en el editor (trucos, damage boost, saltos justos); es
+    ACUMULATIVO, todo lo válido en normal sigue valiendo en expert."""
+    display_name = "Logic Difficulty"
+    option_normal = 0
+    option_expert = 1
+    default = 0
+
+
 class HuInPool(Toggle):
     """(v0.2 EXPERIMENTAL) Convierte la forma humana (Hu) en un item de la
     pool en vez de estar siempre disponible. Aplica un parche de ROM que
@@ -132,6 +143,7 @@ class MMZXOptions(PerGameCommonOptions):
     starting_model: StartingModel
     starting_transerver: StartingTranserver
     hu_in_pool: HuInPool
+    logic_difficulty: LogicDifficulty
     level4_victories: Level4Victories
     submission_checks: SubmissionChecks
     mission_auto_accept: MissionAutoAccept

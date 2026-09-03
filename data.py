@@ -299,7 +299,7 @@ ITEMS = {
     'Green Card Key': {'id': 13664513, 'classification': 'progression', 'grant': ['live_bit', 34620925, 0], 'pooled': True},
     'Red Card Key': {'id': 13664514, 'classification': 'progression', 'grant': ['live_bit', 34620924, 5], 'pooled': True},
     'Blue Card Key': {'id': 13664515, 'classification': 'progression', 'grant': ['live_bit', 34620924, 6], 'pooled': True},
-    'White Card Key': {'id': 13664516, 'classification': 'progression', 'grant': ['live_bit', 34620925, 2], 'pooled': True},
+    'White Card Key': {'id': 13664516, 'classification': 'progression', 'grant': ['live_bit', 34620925, 2], 'pooled': False},
     'Purple Card Key': {'id': 13664517, 'classification': 'progression', 'grant': ['live_bit', 34620924, 7], 'pooled': True},
     'Life Up': {'id': 13664528, 'classification': 'useful', 'grant': ['lifeup'], 'pooled': True},
     'Sub Tank': {'id': 13664529, 'classification': 'useful', 'grant': ['subtank'], 'pooled': True},

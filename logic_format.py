@@ -80,7 +80,19 @@ CONST_FALSE = ("FALSE", "NEVER", "IMPOSSIBLE")
 _COUNT_RE = re.compile(r"^([A-Z_]+)>=(\d+)$")
 
 
-def atom_catalog():
+def unavailable_atoms(D):
+    """Átomos cuyo item NO está en el pool (data.ITEMS pooled=False, p. ej.
+    White Card Key): nunca se satisfacen; el validador avisa si se usan."""
+    out = set()
+    items = getattr(D, "ITEMS", {})
+    for atom, item in ATOM_ITEM.items():
+        v = items.get(item)
+        if v is not None and not v.get("pooled", True) and atom != "HU":
+            out.add(atom)
+    return out
+
+
+def atom_catalog(exclude=()):
     """Lista de átomos para la UI: [{id, group, label}]."""
     out = []
     labels = {"HU": "Hu (forma humana)", "X": "Model X", "ZX": "Model ZX", "HX": "Model HX",
@@ -105,7 +117,7 @@ def atom_catalog():
                     "label": "Misiones de área completadas x%d (de las 8: E-7…L-4)" % n})
     for a in ACCESS_AREAS:
         out.append({"id": "ACCESS_" + a, "group": "transerver", "label": "Transerver Access - Area " + a})
-    return out
+    return [a for a in out if a["id"] not in set(exclude)]
 
 
 def canonical_atom(tok: str):
@@ -686,8 +698,16 @@ def local_reachability(world, doc, room, members, tier="expert", start_room=None
 # Validación
 # --------------------------------------------------------------------------
 
-def validate(world, doc, start_room=None):
+def validate(world, doc, start_room=None, unavailable=()):
+    """unavailable: átomos de items fuera del pool (unavailable_atoms): las
+    reglas que los usan nunca se cumplen -> aviso."""
     errors, warnings = [], []
+    unavailable = set(unavailable)
+
+    def chk_unavail(req, where):
+        used = req_atoms(req) & unavailable
+        if used:
+            warnings.append("%s: usa %s, que no está en el pool (nunca se cumple)" % (where, ", ".join(sorted(used))))
     rooms = doc["rooms"]
     for r in world["rooms"]:
         if r not in rooms:
@@ -713,10 +733,12 @@ def validate(world, doc, start_room=None):
                 errors.append("%s: conexión duplicada %s->%s" % (r, k[0], k[1]))
             seen.add(k)
             _check_req(c.get("req"), "%s conexión %s->%s" % (r, k[0], k[1]), errors)
+            chk_unavail(c.get("req"), "%s conexión %s->%s" % (r, regs.get(k[0], {}).get("name", k[0]), regs.get(k[1], {}).get("name", k[1])))
         for node, rid in rl.get("members", {}).items():
             if rid not in regs:
                 errors.append("%s: override de %r a región desconocida %r" % (r, node, rid))
         _check_req(rl.get("req"), "%s (entrada)" % r, errors, allow_none=True)
+        chk_unavail(rl.get("req"), "%s (entrada)" % r)
     for name, p in doc.get("placed", {}).items():
         if name not in world["locations"]:
             errors.append("placed: location desconocida %r" % name)
@@ -729,13 +751,23 @@ def validate(world, doc, start_room=None):
         if name not in edge_names:
             errors.append("edges: arista desconocida %r" % name)
         _check_req(ov.get("req"), "arista %s" % name, errors, allow_none=True)
+        chk_unavail(ov.get("req"), "arista %s" % name)
     for name, ch in doc.get("checks", {}).items():
         if name not in world["locations"]:
             errors.append("checks: location desconocida %r" % name)
         _check_req(ch.get("req"), "check %s" % name, errors, allow_none=True)
+        chk_unavail(ch.get("req"), "check %s" % name)
     for flag, g in doc.get("gates", {}).items():
         _check_req(g.get("req"), "verja %s" % flag, errors, allow_none=True)
+        chk_unavail(g.get("req"), "verja %s" % flag)
 
+    if unavailable:
+        for e in world["edges"]:
+            key = e.get("key")
+            atom = next((a for a, it in ATOM_ITEM.items() if it == key), None)
+            if atom in unavailable and e["kind"] not in NON_TRANSITION_KINDS:
+                warnings.append("%s: la puerta %s exige %s, que no está en el pool: cerrada en la lógica" % (
+                    e["src"], e["name"], key))
     members = resolve_members(world, doc) if not errors else None
     unplaced = [n for n, v in world["locations"].items()
                 if check_position(world, doc, n)[0] is None]

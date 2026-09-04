@@ -579,10 +579,8 @@ room D-4 [d04]
     <- D-2 @(288,4000)
     check D-4: Disk B-5
       normal: HX
-      normal: PX
     check D-4: E-Crystal L
-      normal: HX
-      normal: PX
+      normal: MODEL
     check D-4: Energy Capsule L
       normal: HU
     conn -> Elevator 1
@@ -840,7 +838,6 @@ room F-2 [f02]
   region Main
     check F-2: Disk E-15   # F-2: laberinto inferior (cubos (75,54-62))
     check F-2: Disk E-44
-      ? normal: LX   # F-2: zona baja entre filas de pinchos bajo el agua (Steam: pinchos "barely underwater" en F-2)
     conn -> F-3 Entrance
       normal: MODEL
     conn -> F-1 Entrance

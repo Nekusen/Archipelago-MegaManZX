@@ -478,9 +478,6 @@
     "normal": [
      [
       "HX"
-     ],
-     [
-      "PX"
      ]
     ]
    },
@@ -491,10 +488,7 @@
    "req": {
     "normal": [
      [
-      "HX"
-     ],
-     [
-      "PX"
+      "MODEL"
      ]
     ]
    },
@@ -636,17 +630,6 @@
    "note": "F-2: laberinto inferior (cubos (75,54-62))",
    "req": null,
    "unsure": false
-  },
-  "F-2: Disk E-44": {
-   "note": "F-2: zona baja entre filas de pinchos bajo el agua (Steam: pinchos \"barely underwater\" en F-2)",
-   "req": {
-    "normal": [
-     [
-      "LX"
-     ]
-    ]
-   },
-   "unsure": true
   },
   "F-2: Life Up": {
    "note": "bloques de hielo + salto alto",

@@ -918,7 +918,7 @@ room F-3 [f03]
     conn -> Ice Cube Room
       normal: FX
     conn -> Lower Area
-      normal: free
+      normal: MODEL
 
 room F-4 [f04]
   region Main

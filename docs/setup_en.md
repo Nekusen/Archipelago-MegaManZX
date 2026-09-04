@@ -34,6 +34,34 @@
   when you enter their area (or approach a boss floor door in the hub), so
   they can be done in any order. Turning it off is not supported by the
   logic.
+- `boss_logic`: per-boss difficulty, your call. For each story boss you can
+  state what you must be carrying before the *logic* considers you able to
+  beat it, so the seed never requires you to fight something you consider
+  too hard for your current gear. It only restricts logic — in game you may
+  fight whatever you like with whatever you have.
+
+  ```yaml
+  boss_logic:
+    Hivolt: "HX & Life Up x2"          # one half of Biometal H, 2 Life Ups
+    Flammole: "Model FX (full) & Absorber Chip"   # both halves + a chip
+    Serpent: "ALL6 & Sub Tank x2 & Life Up x4"
+    Omega Zero: "OX | (ALL6 & SUBTANK>=2)"
+  ```
+
+  Bosses: Giga Aspis (B-2), Model Z (D-2), Hivolt (E-7), Lurerre (F-5),
+  Fistleo (G-5), Purprill (H-4), Hurricaune (I-3), Leganchor (J-5),
+  Flammole (K-4), Protectos (L-4), Prometheus (X-3), Pandora (M-3),
+  Prometheus & Pandora (O-2), Serpent (D-5), Omega Zero (N-1). The room code
+  ("E-7") works as a key too. Anything you leave out asks for nothing.
+
+  Requirements can name models (`X ZX HX FX LX PX OX`; `HX2` or
+  `Model HX (full)` means both halves of the progressive item, i.e. the
+  level-2 charge), `MODEL` (any), `ALL6`, `Life Up xN`, `Sub Tank xN`,
+  ITEM B chips by name, and Card Keys, combined with `&`, `|` and
+  parentheses. A required Life Up / Sub Tank / chip is promoted to
+  progression automatically. The eight Pseudoroids are fought twice (their
+  own area and the boss rush in the D-4 tower), and the requirement applies
+  to both — so reaching Serpent means being able to handle all eight.
 - `hu_in_pool`: human form becomes an item (experimental).
 - `submission_checks` (quests), `level4_victories`.
 - `pickup_checks_1up` / `_energy` / `_weapon` / `_crystals` (default off):

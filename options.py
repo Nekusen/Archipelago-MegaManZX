@@ -2,8 +2,8 @@
 
 from dataclasses import dataclass
 
-from Options import (Choice, DeathLink, DefaultOnToggle, PerGameCommonOptions,
-                     StartInventoryPool, Toggle)
+from Options import (Choice, DeathLink, DefaultOnToggle, OptionDict,
+                     PerGameCommonOptions, StartInventoryPool, Toggle)
 
 
 class Character(Choice):
@@ -69,6 +69,44 @@ class LogicDifficulty(Choice):
     option_normal = 0
     option_expert = 1
     default = 0
+
+
+class BossLogic(OptionDict):
+    """(v0.3) Dificultad de los jefes A TU GUSTO: qué tienes que llevar para
+    que la LÓGICA te considere capaz de vencer a cada jefe de la historia.
+
+    Es una restricción solo de lógica — en el juego puedes pelear con lo que
+    quieras. Lo que garantiza es que la seed nunca te OBLIGUE a pasar por un
+    jefe para el que no tienes lo que tú mismo has pedido: ni a cruzar su
+    arena hacia el otro lado, ni a coger lo que hay dentro, ni a completar su
+    misión, ni a obtener su biometal (los biometales salen de dos jefes: si
+    solo puedes con uno, la lógica cuenta ese camino y no el otro). Los ocho
+    Pseudoroids se pelean DOS veces (su área y el boss rush de la torre de
+    D-4): el requisito se aplica a los dos encuentros, así que llegar a
+    Serpent exige poder con los ocho.
+
+    Jefes: Giga Aspis (B-2), Model Z (D-2), Hivolt (E-7), Lurerre (F-5),
+    Fistleo (G-5), Purprill (H-4), Hurricaune (I-3), Leganchor (J-5),
+    Flammole (K-4), Protectos (L-4), Prometheus (X-3), Pandora (M-3),
+    Prometheus & Pandora (O-2), Serpent (D-5), Omega Zero (N-1). También vale
+    el código de la sala como clave ("E-7"). Los que no pongas no piden nada.
+
+    Requisitos: modelos (X ZX HX FX LX PX OX; "HX2" o "Model HX (full)" = las
+    dos mitades del progresivo, o sea carga de nivel 2), MODEL (cualquiera),
+    ALL6 (los seis biometales), "Life Up x2" (o LIFEUP>=2), "Sub Tank x1" (o
+    SUBTANK>=1), chips de ITEM B por su nombre ("Absorber Chip") y Card Keys.
+    Se combinan con & (Y) y | (O) y paréntesis. Un chip exigido pasa de
+    `useful` a progresión automáticamente.
+
+    Ejemplo:
+      boss_logic:
+        Hivolt: "HX & Life Up x2"
+        Flammole: "Model FX (full) & Absorber Chip"
+        Serpent: "ALL6 & Sub Tank x2 & Life Up x4"
+        Omega Zero: "OX | (ALL6 & SUBTANK>=2)"
+    """
+    display_name = "Boss Logic"
+    default = {}
 
 
 class HuInPool(Toggle):
@@ -144,6 +182,7 @@ class MMZXOptions(PerGameCommonOptions):
     starting_transerver: StartingTranserver
     hu_in_pool: HuInPool
     logic_difficulty: LogicDifficulty
+    boss_logic: BossLogic
     level4_victories: Level4Victories
     submission_checks: SubmissionChecks
     mission_auto_accept: MissionAutoAccept

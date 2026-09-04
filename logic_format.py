@@ -77,7 +77,97 @@ MACRO_ATOMS = ("MODEL", "ALL6")
 CONST_TRUE = ("TRUE", "ANY", "FREE")
 CONST_FALSE = ("FALSE", "NEVER", "IMPOSSIBLE")
 
+# Chips de ITEM B: `useful` por defecto, suben a PROGRESIÓN si algún
+# requisito (documento o YAML de jefes) los exige. Ver progression_items().
+CHIP_ATOMS = {
+    "CHIP_ABSORBER": "Absorber Chip",
+    "CHIP_FEATHERWEIGHT": "Featherweight Chip",
+    "CHIP_EXTENDER": "Extender Chip",
+    "CHIP_QUICK_CHARGER": "Quick Charger Chip",
+    "CHIP_ICE_BOOTS": "Ice Boots Chip",
+    "CHIP_WIND_BOOTS": "Wind Boots Chip",
+    "CHIP_FROG": "Frog Chip",
+    "CHIP_ERASER": "Eraser Chip",
+}
+ATOM_ITEM.update(CHIP_ATOMS)
+
 _COUNT_RE = re.compile(r"^([A-Z_]+)>=(\d+)$")
+
+# --------------------------------------------------------------------------
+# Jefes — dificultad configurable por el jugador (opción YAML boss_logic)
+# --------------------------------------------------------------------------
+# El requisito de cada jefe NO vive en el documento de lógica: lo escribe el
+# jugador en su YAML y el mundo lo inyecta como `extra_atoms` al compilar
+# (worlds/mmzx/bosses.py + regions.py). En el documento solo se ANCLA dónde
+# está cada jefe, de dos maneras:
+#   - etiqueta de región `rooms[sala].regions[rid].boss = "<id>"` (preferida:
+#     el mundo hace AND del requisito en TODA arista que aterriza en esa
+#     región, así que es imposible entrar, cruzar o coger nada de dentro sin
+#     cumplirlo, y no depende de acordarse de anotar arista por arista);
+#   - átomo `BOSS_<ID>` en cualquier requisito (para lo que no es una región:
+#     las 8 puertas del boss rush de D-4 comparten la sala genérica z02).
+# Sin YAML el átomo compila a LIBRE: la lógica por defecto es la de siempre.
+# `index` = orden canónico del Pseudoroid (niveles de victoria
+# 0x02104634..3B y arg del teletransportador del boss rush).
+BOSSES = {
+    "giga_aspis": {"name": "Giga Aspis", "room": "b02", "mission": "Locate Giro"},
+    "model_z": {"name": "Model Z", "room": "d02", "mission": "Troop Reinforcement"},
+    "hivolt": {"name": "Hivolt", "room": "e07", "mission": "Search The Plant", "index": 0},
+    "lurerre": {"name": "Lurerre", "room": "f05", "mission": "Find The Survivors", "index": 1},
+    "fistleo": {"name": "Fistleo", "room": "g05", "mission": "Fight The Mavericks", "index": 2},
+    "purprill": {"name": "Purprill", "room": "h04", "mission": "Secure The Biometal", "index": 3},
+    "hurricaune": {"name": "Hurricaune", "room": "i03", "mission": "Save The People", "index": 4},
+    "leganchor": {"name": "Leganchor", "room": "j05", "mission": "Recover The Disk", "index": 5},
+    "flammole": {"name": "Flammole", "room": "k04", "mission": "Attack The Excavators", "index": 6},
+    "protectos": {"name": "Protectos", "room": "l04", "mission": "Protect The Lab", "index": 7},
+    "prometheus": {"name": "Prometheus", "room": "x03", "mission": "Protect Hq"},
+    "pandora": {"name": "Pandora", "room": "m03", "mission": "Stop The Dig"},
+    "prometheus_pandora": {"name": "Prometheus & Pandora", "room": "o02", "mission": "Repel The Army"},
+    "serpent": {"name": "Serpent", "room": "d05", "mission": "Destroy Model W"},
+    "omega_zero": {"name": "Omega Zero", "room": "n01", "mission": None},
+}
+BOSS_ATOMS = {"BOSS_" + b.upper(): b for b in BOSSES}
+PSEUDOROIDS = [b for b, v in sorted(BOSSES.items(), key=lambda kv: kv[1].get("index", 99))
+               if "index" in v]
+# Boss rush de D-4 (torre de Slither Inc.): 8 teletransportadores (entidad
+# 5.4B con arg = índice del Pseudoroid, docs/entity_catalog.md §d04) hacia la
+# sala genérica z02. Como z02 no tiene checks, lo que de verdad importa es la
+# SALIDA a D-5: exige los 8 (decisión del usuario 2026-09-04 — vencer a un
+# jefe se exige en sus DOS encuentros).
+BOSS_RUSH_DOORS = {
+    "d04 door (288,272)": 0, "d04 door (800,272)": 1,
+    "d04 door (288,656)": 2, "d04 door (800,656)": 3,
+    "d04 door (480,272)": 4, "d04 door (992,272)": 5,
+    "d04 door (480,656)": 6, "d04 door (992,656)": 7,
+}
+BOSS_RUSH_EXIT = "d04 door (992,736)"        # Boss Rush -> D-5 (Serpent)
+# Aristas que SOLO cubren la re-pelea: no valen como anclaje de la pelea
+# de historia de un jefe (ver bosses_anchored).
+BOSS_RUSH_EDGES = set(BOSS_RUSH_DOORS) | {BOSS_RUSH_EXIT}
+
+
+def boss_atom(boss_id: str) -> str:
+    return "BOSS_" + boss_id.upper()
+
+
+def boss_regions(doc) -> dict:
+    """{(sala, rid): id de jefe} de las regiones etiquetadas como arena."""
+    out = {}
+    for room, rl in (doc.get("rooms") or {}).items():
+        for rid, reg in (rl.get("regions") or {}).items():
+            b = reg.get("boss")
+            if b:
+                out[(room, rid)] = b
+    return out
+
+
+def bosses_anchored(doc) -> set:
+    """Jefes anclados a su pelea de HISTORIA: etiqueta de arena, o átomo
+    BOSS_<ID> en algún requisito que NO sea una puerta del boss rush de D-4
+    (esas solo cubren la re-pelea: un jefe anclado solo ahí dejaría su pelea
+    original sin requisito, que es justo lo que no puede pasar)."""
+    atoms = document_atoms(doc, skip_edges=BOSS_RUSH_EDGES)
+    return {BOSS_ATOMS[a] for a in atoms if a in BOSS_ATOMS} | set(boss_regions(doc).values())
 
 
 def unavailable_atoms(D):
@@ -117,13 +207,20 @@ def atom_catalog(exclude=()):
                     "label": "Misiones de área completadas x%d (de las 8: E-7…L-4)" % n})
     for a in ACCESS_AREAS:
         out.append({"id": "ACCESS_" + a, "group": "transerver", "label": "Transerver Access - Area " + a})
+    for k, item in CHIP_ATOMS.items():
+        out.append({"id": k, "group": "chip", "label": item})
+    for atom, bid in BOSS_ATOMS.items():
+        b = BOSSES[bid]
+        out.append({"id": atom, "group": "jefe",
+                    "label": "%s vencido (%s) — requisito del YAML" % (b["name"], room_label(b["room"]))})
     return [a for a in out if a["id"] not in set(exclude)]
 
 
 def canonical_atom(tok: str):
     """Normaliza un átomo; devuelve None si no existe."""
     t = tok.strip().upper().replace(" ", "")
-    if t in ATOM_ITEM or t in MISSION_EVENT or t in MACRO_ATOMS or t in FULL_MODEL_ATOMS:
+    if (t in ATOM_ITEM or t in MISSION_EVENT or t in MACRO_ATOMS
+            or t in FULL_MODEL_ATOMS or t in BOSS_ATOMS):
         return t
     m = _COUNT_RE.match(t)
     if m and (m.group(1) in COUNT_ATOMS or m.group(1) in LIST_COUNT_ATOMS):
@@ -313,31 +410,42 @@ def req_atoms(req):
     return out
 
 
-def document_atoms(doc):
+def document_atoms(doc, skip_edges=()):
     """Todos los átomos usados en el documento (checks, conexiones, aristas,
-    salas, verjas)."""
+    salas, verjas). `skip_edges`: nombres de arista a ignorar."""
     out = set()
+    skip = set(skip_edges)
     for rl in doc.get("rooms", {}).values():
         out |= req_atoms(rl.get("req"))
         for c in rl.get("conns", []):
             out |= req_atoms(c.get("req"))
     for coll in ("checks", "edges", "gates"):
-        for v in doc.get(coll, {}).values():
+        for name, v in doc.get(coll, {}).items():
+            if coll == "edges" and name in skip:
+                continue
             out |= req_atoms(v.get("req"))
     return out
 
 
-def count_items_used(doc):
-    """Items de conteo (Life Up / Sub Tank) que la lógica exige en algún
-    átomo LIFEUP>=n / SUBTANK>=n. Archipelago solo cuenta en el estado los
-    items de PROGRESIÓN, así que estos deben clasificarse como progresión
-    cuando la lógica los usa (worlds/mmzx/__init__.create_item)."""
+def progression_items(atoms):
+    """Items `useful` que un conjunto de átomos convierte en PROGRESIÓN:
+    Life Up / Sub Tank (átomos de conteo) y chips de ITEM B. Archipelago solo
+    cuenta en el estado los items de progresión, así que si algún requisito
+    los exige tienen que reclasificarse (worlds/mmzx/__init__.create_item)."""
     used = set()
-    for a in document_atoms(doc):
+    for a in atoms:
+        if a in CHIP_ATOMS:
+            used.add(CHIP_ATOMS[a])
+            continue
         m = _COUNT_RE.match(a)
         if m and m.group(1) in COUNT_ATOMS:
             used.add(COUNT_ATOMS[m.group(1)][0])
     return used
+
+
+def count_items_used(doc):
+    """progression_items() de los átomos usados en el documento de lógica."""
+    return progression_items(document_atoms(doc))
 
 
 def req_and(a, b):
@@ -402,6 +510,10 @@ def atom_predicate(atom, player, hu_in_pool=False, extra_atoms=None):
     if atom == "ALL6":
         items = [ATOM_ITEM[m] for m in ALL6]
         return lambda state: state.has_all(items, player)
+    if atom in BOSS_ATOMS:
+        # Sin requisito en el YAML el jefe no pide nada: libre (None). El
+        # anfitrion (regions.py) lo pasa en extra_atoms cuando lo hay.
+        return None
     if atom in ATOM_ITEM:
         name = ATOM_ITEM[atom]
         return lambda state: state.has(name, player)
@@ -703,6 +815,7 @@ def validate(world, doc, start_room=None, unavailable=()):
     reglas que los usan nunca se cumplen -> aviso."""
     errors, warnings = [], []
     unavailable = set(unavailable)
+    boss_tags = {}
 
     def chk_unavail(req, where):
         used = req_atoms(req) & unavailable
@@ -722,6 +835,19 @@ def validate(world, doc, start_room=None, unavailable=()):
         for rid, reg in regs.items():
             if rid != "main" and (not reg.get("poly") or len(reg["poly"]) < 3):
                 errors.append("%s/%s: la región no tiene polígono (mínimo 3 vértices)" % (r, rid))
+            b = reg.get("boss")
+            if b is not None:
+                if b not in BOSSES:
+                    errors.append("%s/%s: jefe desconocido %r (ids: %s)" % (
+                        r, rid, b, ", ".join(sorted(BOSSES))))
+                elif b in boss_tags:
+                    errors.append("%s/%s: el jefe %r ya está etiquetado en %s/%s "
+                                  "(una arena por jefe)" % (r, rid, b, *boss_tags[b]))
+                else:
+                    boss_tags[b] = (r, rid)
+                    if BOSSES[b]["room"] != r:
+                        warnings.append("%s/%s: el jefe %s se esperaba en %s" % (
+                            r, rid, BOSSES[b]["name"], BOSSES[b]["room"]))
         seen = set()
         for c in rl.get("conns", []):
             if c.get("from") not in regs or c.get("to") not in regs:
@@ -761,6 +887,13 @@ def validate(world, doc, start_room=None, unavailable=()):
         _check_req(g.get("req"), "verja %s" % flag, errors, allow_none=True)
         chk_unavail(g.get("req"), "verja %s" % flag)
 
+    anchored = bosses_anchored(doc)
+    loose = [b for b in BOSSES if b not in anchored]
+    if loose:
+        warnings.append("%d jefes sin anclar en el documento (la opción boss_logic no puede "
+                        "aplicarles nada; dibuja su arena y etiquétala): %s" % (
+                            len(loose), ", ".join("%s (%s)" % (BOSSES[b]["name"], BOSSES[b]["room"])
+                                                  for b in loose)))
     if unavailable:
         for e in world["edges"]:
             key = e.get("key")
@@ -910,7 +1043,8 @@ def export_txt(world, doc, start_room=None):
     L.append("#   'never' = imposible. expert AMPLÍA normal (en expert valen las alternativas")
     L.append("#   de ambos niveles). '?' = sin confirmar in-game.")
     L.append("# Átomos: HU X ZX HX FX LX PX OX MODEL ALL6 · YELLOW GREEN RED BLUE WHITE PURPLE ·")
-    L.append("#   LIFEUP>=n SUBTANK>=n · <MISION> (completada) · ACCESS_<área>.")
+    L.append("#   LIFEUP>=n SUBTANK>=n · <MISION> (completada) · ACCESS_<área> · CHIP_<chip> ·")
+    L.append("#   BOSS_<JEFE> (requisito que pone el jugador en su YAML; libre si no lo pone).")
     L.append("")
     gates = doc.get("gates", {})
     if gates:
@@ -949,6 +1083,8 @@ def export_txt(world, doc, start_room=None):
             title = "  region %s" % reg.get("name", rid)
             if rid != "main" and reg.get("poly"):
                 title += "  (%d vértices)" % len(reg["poly"])
+            if reg.get("boss"):
+                title += "   [ARENA: %s]" % BOSSES.get(reg["boss"], {}).get("name", reg["boss"])
             if reg.get("note"):
                 title += "   # " + reg["note"]
             L.append(title)

@@ -1492,6 +1492,130 @@
    },
    "unsure": false
   },
+  "d04 door (288,272)": {
+   "dst_pos": null,
+   "note": "re-pelea del boss rush (teletransportador arg 00)",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "BOSS_HIVOLT"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "d04 door (288,656)": {
+   "dst_pos": null,
+   "note": "re-pelea del boss rush (teletransportador arg 02)",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "BOSS_FISTLEO"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "d04 door (480,272)": {
+   "dst_pos": null,
+   "note": "re-pelea del boss rush (teletransportador arg 04)",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "BOSS_HURRICAUNE"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "d04 door (480,656)": {
+   "dst_pos": null,
+   "note": "re-pelea del boss rush (teletransportador arg 06)",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "BOSS_FLAMMOLE"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "d04 door (800,272)": {
+   "dst_pos": null,
+   "note": "re-pelea del boss rush (teletransportador arg 01)",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "BOSS_LURERRE"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "d04 door (800,656)": {
+   "dst_pos": null,
+   "note": "re-pelea del boss rush (teletransportador arg 03)",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "BOSS_PURPRILL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "d04 door (992,272)": {
+   "dst_pos": null,
+   "note": "re-pelea del boss rush (teletransportador arg 05)",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "BOSS_LEGANCHOR"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "d04 door (992,656)": {
+   "dst_pos": null,
+   "note": "re-pelea del boss rush (teletransportador arg 07)",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "BOSS_PROTECTOS"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "d04 door (992,736)": {
+   "dst_pos": null,
+   "note": "la torre solo deja pasar a D-5 tras el boss rush: exige los 8 Pseudoroids",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "BOSS_HIVOLT",
+      "BOSS_LURERRE",
+      "BOSS_FISTLEO",
+      "BOSS_PURPRILL",
+      "BOSS_HURRICAUNE",
+      "BOSS_LEGANCHOR",
+      "BOSS_FLAMMOLE",
+      "BOSS_PROTECTOS"
+     ]
+    ]
+   },
+   "unsure": false
+  },
   "e02 door (1248,1088)": {
    "dst_pos": null,
    "note": "pozo de E-2: barras electricas giratorias y",
@@ -1726,24 +1850,9 @@
    "note": "",
    "pos": null,
    "req": {
-    "expert": [
-     [
-      "MODEL"
-     ]
-    ],
     "normal": [
      [
-      "MODEL",
-      "SUBTANK>=1",
-      "LIFEUP>=2"
-     ],
-     [
-      "MODEL",
-      "SUBTANK>=2"
-     ],
-     [
-      "MODEL",
-      "LIFEUP>=4"
+      "MODEL"
      ]
     ]
    },
@@ -4119,6 +4228,7 @@
    "note": "",
    "regions": {
     "boss-room": {
+     "boss": "model_z",
      "color": "#81c995",
      "name": "Boss Room",
      "note": "",
@@ -4602,6 +4712,7 @@
    "note": "",
    "regions": {
     "boss-room": {
+     "boss": "serpent",
      "color": "#a7ffeb",
      "name": "Boss Room",
      "note": "",
@@ -5702,6 +5813,7 @@
    "note": "",
    "regions": {
     "boss-room": {
+     "boss": "hivolt",
      "color": "#81c995",
      "name": "Boss Room",
      "note": "",
@@ -8652,6 +8764,7 @@
      ]
     },
     "boss-room": {
+     "boss": "purprill",
      "color": "#f28b82",
      "name": "Boss Room",
      "note": "",
@@ -9607,6 +9720,7 @@
      ]
     },
     "boss-room": {
+     "boss": "hurricaune",
      "color": "#ff8bcb",
      "name": "Boss Room",
      "note": "",
@@ -11208,6 +11322,7 @@
      ]
     },
     "boss-room": {
+     "boss": "leganchor",
      "color": "#fbbc04",
      "name": "Boss Room",
      "note": "",
@@ -11924,6 +12039,7 @@
      ]
     },
     "boss-room": {
+     "boss": "flammole",
      "color": "#81c995",
      "name": "Boss Room",
      "note": "",
@@ -12771,6 +12887,7 @@
    "note": "",
    "regions": {
     "boss-room": {
+     "boss": "protectos",
      "color": "#f28b82",
      "name": "Boss Room",
      "note": "",
@@ -13669,6 +13786,7 @@
      ]
     },
     "boss-room": {
+     "boss": "pandora",
      "color": "#81c995",
      "name": "Boss Room",
      "note": "",
@@ -13934,6 +14052,7 @@
      ]
     },
     "omega-zero-arena": {
+     "boss": "omega_zero",
      "color": "#d7aefb",
      "name": "Omega Zero Arena",
      "note": "",
@@ -14194,6 +14313,7 @@
    "note": "? ",
    "regions": {
     "boss-room": {
+     "boss": "prometheus_pandora",
      "color": "#a7ffeb",
      "name": "Boss Room",
      "note": "",
@@ -14365,6 +14485,7 @@
    "note": "",
    "regions": {
     "boss-room": {
+     "boss": "prometheus",
      "color": "#f28b82",
      "name": "Boss Room",
      "note": "",

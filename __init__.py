@@ -8,14 +8,17 @@ from typing import ClassVar
 
 import settings
 from BaseClasses import ItemClassification, Tutorial
+from Options import OptionError
 from worlds.AutoWorld import WebWorld, World
 
+from . import bosses
 from .data import LOCATIONS, ITEMS, STARTING_MODEL_ITEM, START_TRANSERVER_AREA
 from .items import MMZXItem, item_name_to_id, get_classification, ITEM_GROUPS
 from .locations import (location_name_to_id, locations_for_options, LOCATION_GROUPS,
                         pickup_flags_from_options)
 from .options import MMZXOptions
-from .regions import create_regions, progression_overrides
+from .regions import (boss_requirements, create_regions, load_document,
+                      progression_overrides)
 from .rom import MMZXPatch, write_patch_tokens, MMZX_US_MD5
 from . import client  # registra el BizHawkClient  # noqa: F401
 from . import tracker_pos  # auto-tab / icono de posición para Universal Tracker
@@ -75,15 +78,31 @@ class MMZXWorld(World):
         "location_icon_coords": tracker_pos.location_icon_coords,
     }
 
+    def generate_early(self) -> None:
+        # boss_logic: se parsea y valida ANTES de construir nada, para que un
+        # error del YAML salga con un mensaje claro y no a medio generar.
+        try:
+            reqs = boss_requirements(self)
+        except ValueError as e:
+            raise OptionError("[%s] boss_logic: %s" % (self.player_name, e)) from None
+        loose = bosses.unanchored(load_document(), reqs)
+        if loose:
+            # Un jefe sin arena etiquetada en logic/logic.json no puede recibir
+            # el requisito: fallar es más seguro que aplicarlo a nada.
+            raise OptionError(
+                "[%s] boss_logic: %s no está(n) anclado(s) en la lógica todavía, así que su "
+                "requisito no se aplicaría a nada. Quítalo(s) del YAML o dibuja su arena en "
+                "tools/logic_editor/." % (self.player_name, ", ".join(loose)))
+
     def create_regions(self) -> None:
         create_regions(self)
 
     def create_item(self, name: str) -> MMZXItem:
         cls = get_classification(name)
-        # Life Up / Sub Tank pasan a progresión si la lógica (logic/logic.json)
-        # los exige en algún átomo LIFEUP>=n / SUBTANK>=n: el estado de AP
-        # solo cuenta items de progresión.
-        if name in progression_overrides():
+        # Life Up / Sub Tank / chips de ITEM B pasan a progresión si algún
+        # requisito los exige (logic/logic.json o la opción boss_logic): el
+        # estado de AP solo cuenta items de progresión.
+        if name in progression_overrides(self):
             cls = ItemClassification.progression
         return MMZXItem(name, cls, self.item_name_to_id[name], self.player)
 
@@ -152,6 +171,28 @@ class MMZXWorld(World):
         self.multiworld.completion_condition[self.player] = \
             lambda state: state.has("Victory", self.player)
 
+    def pre_fill(self) -> None:
+        # Con boss_logic puesto es fácil pedir algo imposible (un biometal que
+        # solo sueltan los dos jefes a los que se le exige, más Life Ups de los
+        # que existen...). Se comprueba con TODO el pool en la mano: si ni así
+        # se llega, el mensaje dice qué jefe lo impide.
+        reqs = boss_requirements(self)
+        if not reqs:
+            return
+        state = self.multiworld.get_all_state()
+        if self.multiworld.completion_condition[self.player](state):
+            return
+        rules = bosses.compile_rules(reqs, self.options.logic_difficulty.current_key,
+                                     self.player, bool(self.options.hu_in_pool.value))
+        from . import logic_format as F
+        blocked = [F.BOSSES[b]["name"] for b in sorted(reqs)
+                   if not rules.get(F.boss_atom(b), lambda s: True)(state)]
+        raise OptionError(
+            "[%s] boss_logic: la seed no se puede terminar ni teniendo TODOS los items. "
+            "Jefes cuyo requisito no se cumple ni así: %s. Revisa que no pidas más Life Up / "
+            "Sub Tank de los que existen (4 de cada) ni un item fuera del pool."
+            % (self.player_name, ", ".join(blocked) or "ninguno (mira el resto de la lógica)"))
+
     def generate_output(self, output_directory: str) -> None:
         patch = MMZXPatch(player=self.player, player_name=self.player_name)
         write_patch_tokens(patch, self.player_name, self.multiworld.seed_name,
@@ -171,6 +212,7 @@ class MMZXWorld(World):
             "starting_transerver": self.options.starting_transerver.current_key,
             "hu_in_pool": bool(self.options.hu_in_pool.value),
             "logic_difficulty": self.options.logic_difficulty.current_key,
+            "boss_logic": bosses.describe(boss_requirements(self)),
             # pickups respawneables como checks (v0.2): el cliente sondea el
             # buzón solo si alguna categoría está activa
             "pickup_checks_1up": bool(self.options.pickup_checks_1up.value),

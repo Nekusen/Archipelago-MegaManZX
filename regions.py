@@ -24,6 +24,7 @@ import pkgutil
 
 from BaseClasses import Region
 
+from . import bosses as B
 from . import logic_format as F
 from .data import LOCATIONS
 from .locations import MMZXLocation, locations_for_options, pickup_flags_from_options
@@ -45,10 +46,21 @@ def load_document():
     return _DOC
 
 
-def progression_overrides() -> set:
-    """Items 'useful' que la lógica del documento convierte en progresión
-    (Life Up / Sub Tank si algún requisito usa LIFEUP>=n / SUBTANK>=n)."""
-    return F.count_items_used(load_document())
+def boss_requirements(world) -> dict:
+    """{id de jefe: REQ} de la opción boss_logic del jugador; cacheado en el
+    mundo porque lo consultan create_regions, create_item y fill_slot_data."""
+    reqs = getattr(world, "_mmzx_boss_reqs", None)
+    if reqs is None:
+        reqs = B.parse_boss_logic(world.options.boss_logic.value)
+        world._mmzx_boss_reqs = reqs
+    return reqs
+
+
+def progression_overrides(world) -> set:
+    """Items 'useful' que la lógica convierte en progresión: los que exige el
+    documento (LIFEUP>=n / SUBTANK>=n / CHIP_x) y los que exige el YAML de
+    jefes del jugador."""
+    return F.count_items_used(load_document()) | B.items_used(boss_requirements(world))
 
 
 def create_regions(world) -> None:
@@ -58,8 +70,21 @@ def create_regions(world) -> None:
     doc = load_document()
     members = F.resolve_members(WORLD, doc)
 
+    # Dificultad de jefes del YAML: {BOSS_<ID>: callable}. Se inyecta como
+    # átomo (las 8 puertas del boss rush lo usan explícitamente) Y se hace AND
+    # en toda arista que aterriza en una región etiquetada como su arena, así
+    # que es imposible entrar, cruzarla o coger nada de dentro sin cumplirlo.
+    boss_reqs = boss_requirements(world)
+    boss_rules = B.compile_rules(boss_reqs, tier, player, hu_in_pool)
+    boss_of = F.boss_regions(doc)
+
     def rule(req):
-        return F.compile_req(req, tier, player, hu_in_pool)
+        return F.compile_req(req, tier, player, hu_in_pool, boss_rules)
+
+    def arena_rule(room, rid):
+        """Requisito del jefe cuya arena es esta región (o None)."""
+        bid = boss_of.get((room, rid))
+        return boss_rules.get(F.boss_atom(bid)) if bid else None
 
     menu = Region("Menu", player, mw)
     field = Region("Field", player, mw)   # misiones/quests sin colocar
@@ -71,7 +96,8 @@ def create_regions(world) -> None:
     mw.regions += [menu, field, *regions.values()]
 
     start = starting_room(world)
-    menu.connect(regions[start], "Start", rule(doc["rooms"][start].get("req")))
+    menu.connect(regions[start], "Start",
+                 and_rules(rule(doc["rooms"][start].get("req")), arena_rule(start, "main")))
     menu.connect(field, "Field access")
 
     # conexiones curadas región -> región (dentro de una sala)
@@ -79,7 +105,8 @@ def create_regions(world) -> None:
         for c in rl.get("conns", []):
             src = regions[F.region_name(room, c["from"])]
             dst = regions[F.region_name(room, c["to"])]
-            src.connect(dst, "%s: %s -> %s" % (room, c["from"], c["to"]), rule(c.get("req")))
+            src.connect(dst, "%s: %s -> %s" % (room, c["from"], c["to"]),
+                        and_rules(rule(c.get("req")), arena_rule(room, c["to"])))
 
     # aristas del grafo estático
     gates = doc.get("gates", {})
@@ -95,7 +122,8 @@ def create_regions(world) -> None:
         entry_req = doc["rooms"][d["dst"]].get("req") if d["src"] != d["dst"] else None
         r = and_rules(door_rule(d, player), rule(entry_req),
                       rule(edge_ov.get(d["name"], {}).get("req")),
-                      transerver_rule(d, player), rule(gate_req))
+                      transerver_rule(d, player), rule(gate_req),
+                      arena_rule(d["dst"], dst_rid))
         regions[F.region_name(d["src"], src_rid)].connect(
             regions[F.region_name(d["dst"], dst_rid)], d["name"], r)
 

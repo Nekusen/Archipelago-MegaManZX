@@ -29,6 +29,15 @@ DOM = "ARM9 System Bus"
 
 # Anclas (docs/client_integration.md)
 LIVE_BLOCK = 0x021045CC       # copia viva del bloque de progreso
+# Card Keys: bits de llave por dirección (derivados de ITEMS). El juego las
+# REGALA por su cuenta en las recompensas de misión (exp505: al menos Verde
+# en FUN_02031028 estado 0xAB, Azul en 0xAE y Amarilla en FUN_02094288), así
+# que su posesión es AUTORITATIVA desde AP: se escribe exactamente el conjunto
+# recibido, respetando el resto de bits del byte (que son otros flags).
+CARDKEY_MASKS: dict[int, int] = {}
+for _kn, _kv in ITEMS.items():
+    if _kn.endswith("Card Key") and _kv["grant"][0] == "live_bit":
+        CARDKEY_MASKS[_kv["grant"][1]] = CARDKEY_MASKS.get(_kv["grant"][1], 0) | (1 << _kv["grant"][2])
 CANON_BLOCK = 0x021602B4      # copia canónica (conceder = set bit aquí)
 LIVE_LEN = 0x60               # ventana viva a leer (cubre disks/misiones/keys)
 PLAYER_POS = 0x0214FB64      # u32 x<<8 (0x0214FB64) y u32 y<<8 (0x0214FB68); px = >>8
@@ -1287,6 +1296,7 @@ class MMZXClient(BizHawkClient):
         n_lifeup = n_subtank = 0
         live_bits: set[tuple[int, int]] = set()    # (live_addr, bit) idempotentes
         consumables: list[str] = []    # E-Crystals / 1-Up recibidos, en orden del servidor
+        cardkeys: set[tuple[int, int]] = set()     # (addr, bit) de las llaves recibidas
         for net in ctx.items_received:
             entry = id_to_item.get(net.item)
             if not entry:
@@ -1298,7 +1308,10 @@ class MMZXClient(BizHawkClient):
             elif kind == "subtank":
                 n_subtank += 1
             elif kind == "live_bit":
-                live_bits.add((grant[1], grant[2]))
+                if name.endswith("Card Key"):
+                    cardkeys.add((grant[1], grant[2]))   # posesión autoritativa
+                else:
+                    live_bits.add((grant[1], grant[2]))
             elif kind == "progressive":
                 # la copia k pone el bit k (mitad 1, mitad 2...)
                 for k, (addr, bit) in enumerate(grant[1]):
@@ -1371,6 +1384,25 @@ class MMZXClient(BizHawkClient):
                     writes.append((a, bytes([live_v | mask]), DOM))
                 if canon_v & mask != mask:
                     writes.append((a + CANON_OFF, bytes([canon_v | mask]), DOM))
+
+        # Card Keys: posesión AUTORITATIVA. El juego las concede al reportar
+        # ciertas misiones (bug del playtest del usuario: la Azul aparecía sin
+        # haberla recibido por AP). Se escribe EXACTAMENTE el conjunto recibido
+        # en los 6 bits de llave de 0x021045FC/FD (vivo + canónica), dejando
+        # intactos los demás bits de esos bytes (cutscenes vistas, verjas...).
+        want_keys = {a: 0 for a in CARDKEY_MASKS}
+        for a, b in cardkeys:
+            want_keys[a] = want_keys.get(a, 0) | (1 << b)
+        kaddrs = sorted(CARDKEY_MASKS)
+        kcur = await bizhawk.read(ctx.bizhawk_ctx,
+                                  [(a, 1, DOM) for a in kaddrs]
+                                  + [(a + CANON_OFF, 1, DOM) for a in kaddrs])
+        for k, a in enumerate(kaddrs):
+            mask = CARDKEY_MASKS[a]
+            for off, cur in ((0, kcur[k][0]), (CANON_OFF, kcur[len(kaddrs) + k][0])):
+                new = (cur & ~mask) | (want_keys[a] & mask)
+                if new != cur:
+                    writes.append((a + off, bytes([new]), DOM))
 
         # Life Ups: capacidad AUTORITATIVA — solo los items AP, NUNCA la
         # recogida NATIVA del mundo. Se escribe EXACTAMENTE el conteo recibido

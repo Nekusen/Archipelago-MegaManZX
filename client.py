@@ -594,6 +594,10 @@ class MMZXClient(BizHawkClient):
         # ---- Troop: desatascar la escena de Giro si quedó a medias ----
         await self._stage("troop", self._troop_unstick(ctx, guard))
 
+        # ---- misión activa: reponer sus bits 'extra' si algo los borra ----
+        if self.mission_auto_accept:
+            await self._stage("bits de misión", self._mission_bits_tick(ctx, guard))
+
         # ---- diagnóstico: trazar bits que cambian (mapear misión completada) ----
         if self.flag_watch:
             await self._stage("flags", self._flag_watch_tick(ctx))
@@ -927,6 +931,42 @@ class MMZXClient(BizHawkClient):
             return [(a, b) for a, b in det[1]]
         return []
 
+    async def _mission_bits_tick(self, ctx, guard) -> None:
+        """Repone los bits 'extra' de la misión ACTIVA si desaparecen. Hacen
+        falta para que los guiones de sala la reconozcan (Troop: E0.5/E0.6 los
+        exige el auto-report de X-2) y una ROM sin la guarda del segundo bucle
+        OAM (0x02009D7C) puede corromper ese byte al disparar un mini-jefe."""
+        try:
+            state = int.from_bytes((await bizhawk.read(
+                ctx.bizhawk_ctx, [(MISSION_STATE_ADDR, 4, DOM)]))[0], "little")
+        except bizhawk.RequestFailedError:
+            return
+        rec = next((v for v in MISSION_ACCEPT.values() if v["state"] == state), None)
+        extras = (rec or {}).get("extra")
+        if not extras:
+            return
+        done = self._mission_done_bits(rec["name"])
+        try:
+            cur = await bizhawk.read(ctx.bizhawk_ctx,
+                                     [(a, 1, DOM) for a, _ in extras]
+                                     + [(a + CANON_OFF, 1, DOM) for a, _ in extras]
+                                     + [(a, 1, DOM) for a, _ in done])
+        except bizhawk.RequestFailedError:
+            return
+        n = len(extras)
+        if done and all(cur[2 * n + i][0] & (1 << b) for i, (_, b) in enumerate(done)):
+            return          # ya completada
+        writes = []
+        for i, (ea, eb) in enumerate(extras):
+            if not cur[i][0] & (1 << eb):
+                writes.append((ea, bytes([cur[i][0] | (1 << eb)]), DOM))
+            if not cur[n + i][0] & (1 << eb):
+                writes.append((ea + CANON_OFF, bytes([cur[n + i][0] | (1 << eb)]), DOM))
+        if writes and await bizhawk.guarded_write(ctx.bizhawk_ctx, writes, [guard]):
+            from CommonClient import logger
+            logger.info("[mmzx] %s: repuestos %d bits de misión que algo había borrado"
+                        % (rec["name"], len(writes)))
+
     async def _troop_unstick(self, ctx, guard) -> None:
         """Troop Reinforcement: el jefe del final de D-2 solo aparece si el
         flag de megamerge 0x02104602.1 está a 0 (exp507d). El juego lo pone al
@@ -943,13 +983,17 @@ class MMZXClient(BizHawkClient):
             return
         if sub not in TROOP_ROOMS:
             return
+        # La guarda del megamerge afecta SOLO a limpiar 0x02104602.1: el flag de
+        # INICIO hay que reponerlo siempre (si el bucle OAM sin guarda de una ROM
+        # vieja lo corrompe con el guion ya avanzado, no reponerlo deja la misión
+        # muerta: la escena de Giro no puede volver a armarse).
+        merged = False
         if sub == 16:
             try:
                 rs = (await bizhawk.read(ctx.bizhawk_ctx, [(TROOP_ROOM_OBJ + 0xB, 1, DOM)]))[0][0]
             except bizhawk.RequestFailedError:
                 return
-            if rs >= TROOP_ROOM_MERGED:
-                return   # la escena de Giro ya pasó: 602.1 es legítimo, no tocarlo
+            merged = rs >= TROOP_ROOM_MERGED
         try:
             r = await bizhawk.read(ctx.bizhawk_ctx, [
                 (MISSION_STATE_ADDR, 4, DOM), (addr, 1, DOM),
@@ -961,7 +1005,9 @@ class MMZXClient(BizHawkClient):
             return
         mask = 1 << bit
         smask = 1 << sbit
-        if not ((r[1][0] | r[2][0]) & mask) and (r[4][0] & r[5][0] & smask):
+        stuck_merge = bool((r[1][0] | r[2][0]) & mask) and not merged
+        stuck_start = not (r[4][0] & r[5][0] & smask)
+        if not (stuck_merge or stuck_start):
             return          # nada que arreglar
         done = self._mission_done_bits("Troop Reinforcement")
         if done:
@@ -972,12 +1018,13 @@ class MMZXClient(BizHawkClient):
             if all(vals[i][0] & (1 << b) for i, (_, b) in enumerate(done)):
                 return       # ya completada: el bit es legítimo, no tocarlo
         writes, what = [], []
-        if r[1][0] & mask:
-            writes.append((addr, bytes([r[1][0] & ~mask]), DOM))
-        if r[2][0] & mask:
-            writes.append((addr + CANON_OFF, bytes([r[2][0] & ~mask]), DOM))
-        if writes:
-            what.append("limpiado el flag de megamerge 0x02104602.1")
+        if stuck_merge:
+            if r[1][0] & mask:
+                writes.append((addr, bytes([r[1][0] & ~mask]), DOM))
+            if r[2][0] & mask:
+                writes.append((addr + CANON_OFF, bytes([r[2][0] & ~mask]), DOM))
+            if writes:
+                what.append("limpiado el flag de megamerge 0x02104602.1")
         if not (r[4][0] & smask):
             writes.append((saddr, bytes([r[4][0] | smask]), DOM))
         if not (r[5][0] & smask):

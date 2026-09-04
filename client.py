@@ -148,6 +148,15 @@ SCENE_DESC_MIRROR = 0x021604E8     # descriptor 2 (0x6C B; = descriptor 1 + 0x6C
 STORY_BLOCK_MIRROR = 0x02160670    # cola 2 (0x11C B; = cola 1 + 0x11C)
 SCENE_DESC_LEN, STORY_BLOCK_LEN, LIVE_BLOCK_LEN = 0x6C, 0x11C, 0xE4
 CUTSCENE_FLAG = 0x0214F502         # bit0 = cutscene/guion de historia en curso
+# Troop Reinforcement: la escena de Giro del final de D-2 (y con ella el jefe
+# Model Z) solo se dispara si 0x02104602.1 = 0 (VERIFICADO exp507d: con el bit
+# puesto no ocurre NADA a ninguna altura ni en toda la sala). Ese bit lo pone
+# el juego en el megamerge; si el jugador muere después sin que la misión
+# llegue a reportarse, D-2 se queda vacía PARA SIEMPRE y Troop es
+# incompletable. El cliente lo limpia mientras Troop sea la misión activa y no
+# esté completada (ver _troop_unstick).
+TROOP_STATE = 162                  # 0xA2 = estado "Troop Reinforcement aceptada"
+TROOP_MERGE = (0x02104602, 1)      # flag "megamerge de Troop hecho"
 STORY_HANDLER_ID = 0x0214F6C0
 STORY_HANDLER_OBJ = 0x0214F6C4     # 0x114 B; +9 = id de cutscene (0xFF = ninguna)
 
@@ -559,6 +568,9 @@ class MMZXClient(BizHawkClient):
         # ---- marcador gris de pickups ya enviados (parche PICKUP_MARK) ----
         await self._stage("marcas de pickups", self._sync_pickup_marks(ctx))
 
+        # ---- Troop: desatascar la escena de Giro si quedó a medias ----
+        await self._stage("troop", self._troop_unstick(ctx, guard))
+
         # ---- diagnóstico: trazar bits que cambian (mapear misión completada) ----
         if self.flag_watch:
             await self._stage("flags", self._flag_watch_tick(ctx))
@@ -615,13 +627,16 @@ class MMZXClient(BizHawkClient):
         r = await bizhawk.read(ctx.bizhawk_ctx, [
             (SUBAREA_STABLE, 1, DOM), (PLAYER_POS, 8, DOM), (GAME_STATE, 4, DOM),
             (HP, 1, DOM), (TITLE_CAROUSEL_STEP, 1, DOM), (MISSION_STATE_ADDR, 4, DOM),
-            (MISSION_ACTIVE_BYTE, 1, DOM), (0x0214F6C0, 4, DOM), (0x0214FC74, 1, DOM)])
+            (MISSION_ACTIVE_BYTE, 1, DOM), (0x0214F6C0, 4, DOM), (0x0214FC74, 1, DOM),
+            (0x0214F6CF, 1, DOM), (TROOP_MERGE[0], 1, DOM), (CUTSCENE_FLAG, 1, DOM)])
         x = int.from_bytes(r[1][0:4], "little") >> 8
         y = int.from_bytes(r[1][4:8], "little") >> 8
         logger.info("[mmzx] where: sub=%d pos=(%d,%d) gs=%06X hp=%d paso=%d mision(estado)=%d 462B=%02X handler=%d modelo=%d auto_accept=%s items=%d"
                     % (r[0][0], x, y, int.from_bytes(r[2], "little"), r[3][0], r[4][0],
                        int.from_bytes(r[5], "little"), r[6][0], int.from_bytes(r[7], "little"), r[8][0],
                        self.mission_auto_accept, len(ctx.items_received)))
+        logger.info("[mmzx] where+: handler_estado=%02X megamerge(0x02104602.1)=%d cutscene=%d"
+                    % (r[9][0], (r[10][0] >> TROOP_MERGE[1]) & 1, r[11][0] & 1))
 
     async def _send_position(self, ctx) -> None:
         """Escribe [subárea, x, y] en la clave mmzx_pos_<slot> del almacén de
@@ -888,6 +903,44 @@ class MMZXClient(BizHawkClient):
         if det and det[0] == "all":
             return [(a, b) for a, b in det[1]]
         return []
+
+    async def _troop_unstick(self, ctx, guard) -> None:
+        """Troop Reinforcement: el jefe del final de D-2 solo aparece si el
+        flag de megamerge 0x02104602.1 está a 0 (exp507d). El juego lo pone al
+        megamergear con Model ZX; si el jugador muere ahí sin que la misión se
+        reporte, la sala queda vacía y la misión no se puede terminar (se
+        recorre D-2 entera sin combate). Mientras Troop sea la misión ACTIVA y
+        NO esté completada, se limpia el bit (vivo + canónica), nunca durante
+        una cutscene de historia."""
+        addr, bit = TROOP_MERGE
+        try:
+            r = await bizhawk.read(ctx.bizhawk_ctx, [
+                (MISSION_STATE_ADDR, 4, DOM), (addr, 1, DOM),
+                (addr + CANON_OFF, 1, DOM), (CUTSCENE_FLAG, 1, DOM)])
+        except bizhawk.RequestFailedError:
+            return
+        if int.from_bytes(r[0], "little") != TROOP_STATE or r[3][0] & 1:
+            return
+        mask = 1 << bit
+        if not ((r[1][0] | r[2][0]) & mask):
+            return
+        done = self._mission_done_bits("Troop Reinforcement")
+        if done:
+            try:
+                vals = await bizhawk.read(ctx.bizhawk_ctx, [(a, 1, DOM) for a, _ in done])
+            except bizhawk.RequestFailedError:
+                return
+            if all(vals[i][0] & (1 << b) for i, (_, b) in enumerate(done)):
+                return       # ya completada: el bit es legítimo, no tocarlo
+        writes = []
+        if r[1][0] & mask:
+            writes.append((addr, bytes([r[1][0] & ~mask]), DOM))
+        if r[2][0] & mask:
+            writes.append((addr + CANON_OFF, bytes([r[2][0] & ~mask]), DOM))
+        if writes and await bizhawk.guarded_write(ctx.bizhawk_ctx, writes, [guard]):
+            from CommonClient import logger
+            logger.info("[mmzx] Troop Reinforcement estaba a medias (megamerge hecho sin reportar): "
+                        "limpiado 0x02104602.1 para que la escena de Giro vuelva a dispararse")
 
     async def _auto_accept_mission(self, ctx, guard) -> None:
         """Open-world: al ENTRAR en la subárea destino de una misión, la

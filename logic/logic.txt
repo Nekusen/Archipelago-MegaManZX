@@ -17,30 +17,49 @@ gates:  # verjas de evento (flag): requisito o 'free' (el cliente la abre)
 
 room A-1 [a01]
   region Main
-    door -> A-4 @(1456,1120)
-    door -> A-3 @(6256,752)  key Yellow Card Key   # puerta Amarilla en lo alto del muro derecho (tile y=47 vs suelo 69): hay que escalar
+  region A-2 Entrance  (4 vértices)
     door -> A-2 @(6368,1104)
     <- A-2 @(6368,1104)
+    conn -> Right Area
+      normal: free
+  region A-3 Entrance  (4 vértices)
+    door -> A-3 @(6256,752)  key Yellow Card Key   # puerta Amarilla en lo alto del muro derecho (tile y=47 vs suelo 69): hay que escalar
     <- A-3 @(6256,752)
+    conn -> Right Area
+      normal: free
+  region A-4 Entrance  (4 vértices)
+    door -> A-4 @(1456,1120)
     <- A-4 @(1456,1120)
+    conn -> Middle Area
+      normal: MODEL
+  region Left Area  (4 vértices)
+    internal -> Left Area Cave @(864,1120)
+    check A-1: E-Crystal L
+    conn -> Upper Area
+      normal: HX
+    conn -> Middle Area
+      normal: MODEL
+  region Left Area Cave  (4 vértices)
+    internal -> Left Area @(6688,352)
+    check A-1: Energy Capsule L (2)
+  region Middle Area  (9 vértices)
     check A-1: Disk O-9
       normal: HU
     conn -> Left Area
       normal: MODEL
     conn -> Upper Area
       normal: HX
-      normal: PX
-  region Left Area  (4 vértices)
-    internal -> Left Area Cave @(864,1120)
-    check A-1: E-Crystal L
-    conn -> Main
+    conn -> A-4 Entrance
       normal: MODEL
-    conn -> Upper Area
-      normal: HX
-      normal: PX
-  region Left Area Cave  (4 vértices)
-    internal -> Left Area @(6688,352)
-    check A-1: Energy Capsule L (2)
+    conn -> Right Area
+      normal: MODEL
+  region Right Area  (6 vértices)
+    conn -> Middle Area
+      normal: MODEL
+    conn -> A-2 Entrance
+      normal: free
+    conn -> A-3 Entrance
+      normal: free
   region Upper Area  (7 vértices)
     internal -> Upper Area Cave @(2160,896)
     check A-1: 1-Up
@@ -51,24 +70,24 @@ room A-1 [a01]
       normal: HX
     conn -> Left Area
       normal: free
-    conn -> Main
+    conn -> Middle Area
+      normal: free
+    conn -> A-4 Entrance
       normal: free
   region Upper Area Cave  (4 vértices)
     internal -> Upper Area @(7200,352)
     check A-1: Disk E-1
       normal: HU
     check A-1: E-Crystal L (2)
-      normal: HX
     check A-1: E-Crystal L (3)
       normal: HX
     check A-1: Energy Capsule L (3)
-      normal: HX
     check A-1: Weapon Energy L
       normal: HU
 
 room A-2 [a02]
   region Main
-    door -> A-1 @(288,912)
+    door -> A-1/A-2 Entrance @(288,912)
     warp -> Hub @(3120,928)
     warp -> Hub @(4672,928)
     door -> B-1 @(5168,688)
@@ -96,7 +115,7 @@ room A-2 [a02]
 room A-3 [a03]
   region Main
     door -> H-1 @(1632,576)
-    door -> A-1 @(288,912)  key Yellow Card Key
+    door -> A-1/A-3 Entrance @(288,912)  key Yellow Card Key
     <- A-1 @(288,912)
     <- H-1 @(1632,576)
     check A-3: Disk E-46
@@ -112,7 +131,7 @@ room A-3 [a03]
 
 room A-4 [a04]
   region Main
-    door -> A-1 @(288,720)
+    door -> A-1/A-4 Entrance @(288,720)
     <- A-1 @(288,720)
     check A-4: Energy Capsule L
     conn -> Behind Narrow Path
@@ -133,8 +152,7 @@ room A-4 [a04]
     conn -> Behind Narrow Path
       normal: MODEL
   region M-1 Entrance  (4 vértices)
-    door -> M-1/A-4 Entrance @(864,320)
-      ? normal: RED   # puerta en la estructura alta (54,20): se sube por escalera y columna; y nada mas entrar en M-1 esta la puerta Roja interna (56,46) + el Orehawk (miniboss)
+    door -> M-1/A-4 Entrance @(864,320)   # puerta en la estructura alta (54,20): se sube por escalera y columna; y nada mas entrar en M-1 esta la puerta Roja interna (56,46) + el Orehawk (miniboss)
     <- M-1 @(864,320)
     check A-4: Disk E-20
       normal: MODEL   # A-4: arriba a la derecha de la estructura alta (escalera + columna vertical)
@@ -253,7 +271,7 @@ room C-1 [c01]
     internal -> A-2 Entrance (Bottom Part) @(1040,912)
     internal -> Main @(1328,912)
     internal -> Main @(1632,912)
-    internal -> Main @(1776,912)  key Green Card Key
+    internal -> Green Card Building @(1776,912)  key Green Card Key
     internal -> Main @(2848,688)
     internal -> Main @(2848,848)
     internal -> Main @(3600,864)
@@ -267,13 +285,10 @@ room C-1 [c01]
     internal -> Main @(7136,672)
     internal -> Main @(7456,336)
     internal -> Main @(7456,704)
-    internal -> Main @(7456,1104)  key Green Card Key
     path -> B-2 @(336,672)
     <- C-3 @(3792,864)
     <- Hub @(336,672)
     <- B-2 @(336,672)
-    check C-1: 1-Up
-      normal: HU
     check C-1: E-Crystal L
       normal: HX
       normal: PX
@@ -286,13 +301,9 @@ room C-1 [c01]
       normal: MODEL
     check C-1: E-Crystal L (8)
       normal: HU
-    check C-1: E-Crystal L (9)
-      normal: HU
     check C-1: Weapon Energy L
       normal: HX
       normal: PX
-    check C-1: Weapon Energy L (4)
-      normal: HU
     conn -> Under the Truck
       normal: HX
     conn -> C-2 Entrance (Top)
@@ -330,6 +341,14 @@ room C-1 [c01]
       normal: free
     conn -> C-2 Entrance (Bottom)
       normal: free
+  region Green Card Building  (4 vértices)
+    internal -> Main @(7456,1104)  key Green Card Key
+    check C-1: 1-Up
+      normal: HU
+    check C-1: E-Crystal L (9)
+      normal: HU
+    check C-1: Weapon Energy L (4)
+      normal: HU
   region Hidden Passage Below Truck  (4 vértices)
     check C-1: E-Crystal L (3)
     check C-1: E-Crystal L (4)
@@ -348,27 +367,19 @@ room C-2 [c02]
     door -> C-1/C-2 Entrance (Bottom) @(288,896)
     internal -> Yellow Card Key Building Interior @(1248,928)  key Yellow Card Key
     internal -> Arcade @(3808,928)
-    warp -> Hub @(4016,928)
-    internal -> Main @(4512,864)
+    pad(save) -> Hub @(4016,928)
+    internal -> Room Next to Fountain @(4512,864)
     internal -> Main @(5024,592)
     door -> E-1/C-2 Entrance @(5024,864)  key Yellow Card Key
-    internal -> Main @(6176,864)
     internal -> Main @(7200,992)
-    path -> C-3 @(4016,928)
     path -> D-1/Hub Entrance @(4016,928)
     <- C-1 @(288,896)
     <- E-1 @(5024,864)
-    <- Hub @(4016,928)
-    <- C-3 @(4016,928)
     <- D-1 @(4016,928)
     check C-2: Disk O-17
       normal: HX
     check C-2: E-Crystal L (2)
       normal: HU
-    check C-2: E-Crystal L (4)
-      normal: MODEL
-    check C-2: Energy Capsule XL
-      normal: MODEL
     check Mission - Pass The Test
       normal: HU   # (hablar + superar)
     conn -> Middle Building Bottom
@@ -381,6 +392,7 @@ room C-2 [c02]
     internal -> Main @(5408,1120)
   region Below Fountain  (4 vértices)
     warp -> Hub @(5056,1088)
+    <- Hub @(5056,1088)
     check C-2: Disk E-30
     conn -> Main
       normal: MODEL
@@ -392,6 +404,12 @@ room C-2 [c02]
     check C-2: Energy Capsule L
     conn -> Main
       normal: free
+  region Room Next to Fountain  (4 vértices)
+    internal -> Main @(6176,864)
+    check C-2: E-Crystal L (4)
+      normal: MODEL
+    check C-2: Energy Capsule XL
+      normal: MODEL
   region Yellow Card Key Building Interior  (4 vértices)
     internal -> Yellow Card Key Building Interior @(6240,480)
     internal -> Yellow Card Key Building Interior @(6800,480)
@@ -409,12 +427,8 @@ room C-3 [c03]
     pad(save) -> Hub @(1408,736)
     door -> K-1/C-3 Entrance @(2224,720)  key Red Card Key
     door -> C-1 @(288,672)  key Yellow Card Key
-    path -> C-2 @(1408,736)
-    path -> D-1/Hub Entrance @(1408,736)
     <- C-1 @(288,672)
     <- K-1 @(2224,720)
-    <- C-2 @(1408,736)
-    <- D-1 @(1408,736)
     conn -> Upper Area
       normal: HX
       normal: PX
@@ -459,9 +473,7 @@ room D-1 [d01]
   region Hub Entrance  (4 vértices)
     pad(save) -> Hub @(352,592)
     path -> C-2 @(352,592)
-    path -> C-3 @(352,592)
     <- C-2 @(352,592)
-    <- C-3 @(352,592)
     conn -> Main
       normal: free
   region Inside Switch Door  (4 vértices)
@@ -514,13 +526,13 @@ room D-3 [d03]
     conn -> Upper Area
       normal: HX
     conn -> G-1 Entrance
-      normal: free
+      normal: YELLOW   # puerta AMARILLA interna (2296,728): parte D-3 en dos mitades y la tabla de puertas no la ve (entidad kind5 subkind18 rol 0x40; exp501)
   region G-1 Entrance  (4 vértices)
     door -> G-1/D-3 Entrance @(3296,736)
     <- G-1 @(3296,736)
     check D-3: Disk E-6
     conn -> Main
-      normal: MODEL
+      normal: MODEL & YELLOW   # misma puerta amarilla: bloquea también de vuelta (exp504)
   region Upper Area  (4 vértices)
     door -> O-1/D-3 Entrance @(2224,544)
     <- O-1 @(2224,544)
@@ -806,7 +818,8 @@ room E-8 [e08]
 
 room F-1 [f01]
   region Main
-    check F-1: Disk E-39   # F-1: repisa en la cueva izquierda (y=34)
+    check F-1: Disk E-39
+      normal: HU   # F-1: repisa en la cueva izquierda (y=34)
     conn -> B-3 Entrance
       normal: MODEL
     conn -> F-2 Entrance
@@ -2229,7 +2242,7 @@ room Hub [z01]
     warp -> A-2 @(288,352)  needs Transerver Access - Area A
     warp -> B-2 @(288,736)  needs Transerver Access - Area B
     warp -> C-1 @(480,736)  needs Transerver Access - Area B
-    warp -> C-2 @(288,1120)  needs Transerver Access - Area C
+    warp -> C-2/Below Fountain @(800,1120)  needs Transerver Access - Area C
     warp -> D-2/Hub Entrance @(288,1504)  needs Transerver Access - Area D
     warp -> E-7/E-8 Entrance @(288,1888)  needs Transerver Access - Area E
     warp -> F-5/Hub Entrance @(288,2272)  needs Transerver Access - Area F
@@ -2242,7 +2255,6 @@ room Hub [z01]
     <- A-2 @(480,352)
     <- B-2 @(288,736)
     <- C-1 @(480,736)
-    <- C-2 @(288,1120)
     <- C-2 @(800,1120)
     <- D-2 @(288,1504)
     <- D-3 @(480,1504)

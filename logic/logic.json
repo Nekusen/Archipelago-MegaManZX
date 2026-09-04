@@ -44,17 +44,6 @@
    },
    "unsure": false
   },
-  "A-1: E-Crystal L (2)": {
-   "note": "",
-   "req": {
-    "normal": [
-     [
-      "HX"
-     ]
-    ]
-   },
-   "unsure": false
-  },
   "A-1: E-Crystal L (3)": {
    "note": "",
    "req": {
@@ -67,17 +56,6 @@
    "unsure": false
   },
   "A-1: Energy Capsule L": {
-   "note": "",
-   "req": {
-    "normal": [
-     [
-      "HX"
-     ]
-    ]
-   },
-   "unsure": false
-  },
-  "A-1: Energy Capsule L (3)": {
    "note": "",
    "req": {
     "normal": [
@@ -645,7 +623,13 @@
   },
   "F-1: Disk E-39": {
    "note": "F-1: repisa en la cueva izquierda (y=34)",
-   "req": null,
+   "req": {
+    "normal": [
+     [
+      "HU"
+     ]
+    ]
+   },
    "unsure": false
   },
   "F-2: Disk E-15": {
@@ -1460,13 +1444,7 @@
    "dst_pos": null,
    "note": "puerta en la estructura alta (54,20): se sube por escalera y columna; y nada mas entrar en M-1 esta la puerta Roja interna (56,46) + el Orehawk (miniboss)",
    "pos": null,
-   "req": {
-    "normal": [
-     [
-      "RED"
-     ]
-    ]
-   },
+   "req": null,
    "unsure": true
   },
   "b02 door (5088,496)": {
@@ -2007,32 +1985,6 @@
   "a01": {
    "conns": [
     {
-     "from": "left-area",
-     "note": "",
-     "req": {
-      "normal": [
-       [
-        "MODEL"
-       ]
-      ]
-     },
-     "to": "main",
-     "unsure": false
-    },
-    {
-     "from": "main",
-     "note": "",
-     "req": {
-      "normal": [
-       [
-        "MODEL"
-       ]
-      ]
-     },
-     "to": "left-area",
-     "unsure": false
-    },
-    {
      "from": "upper-area",
      "note": "",
      "req": {
@@ -2050,9 +2002,45 @@
       "normal": [
        [
         "HX"
-       ],
+       ]
+      ]
+     },
+     "to": "upper-area",
+     "unsure": false
+    },
+    {
+     "from": "middle-area",
+     "note": "",
+     "req": {
+      "normal": [
        [
-        "PX"
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "left-area",
+     "unsure": false
+    },
+    {
+     "from": "left-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "middle-area",
+     "unsure": false
+    },
+    {
+     "from": "middle-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "HX"
        ]
       ]
      },
@@ -2067,29 +2055,189 @@
        []
       ]
      },
-     "to": "main",
+     "to": "middle-area",
      "unsure": false
     },
     {
-     "from": "main",
+     "from": "middle-area",
      "note": "",
      "req": {
       "normal": [
        [
-        "HX"
-       ],
-       [
-        "PX"
+        "MODEL"
        ]
       ]
      },
-     "to": "upper-area",
+     "to": "a-4-entrance",
+     "unsure": false
+    },
+    {
+     "from": "a-4-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "middle-area",
+     "unsure": false
+    },
+    {
+     "from": "upper-area",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "a-4-entrance",
+     "unsure": false
+    },
+    {
+     "from": "right-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "middle-area",
+     "unsure": false
+    },
+    {
+     "from": "middle-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "right-area",
+     "unsure": false
+    },
+    {
+     "from": "a-2-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "right-area",
+     "unsure": false
+    },
+    {
+     "from": "right-area",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "a-2-entrance",
+     "unsure": false
+    },
+    {
+     "from": "a-3-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "right-area",
+     "unsure": false
+    },
+    {
+     "from": "right-area",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "a-3-entrance",
      "unsure": false
     }
    ],
    "members": {},
    "note": "",
    "regions": {
+    "a-2-entrance": {
+     "color": "#f28b82",
+     "name": "A-2 Entrance",
+     "note": "",
+     "poly": [
+      [
+       6218,
+       1027
+      ],
+      [
+       6495,
+       1027
+      ],
+      [
+       6495,
+       1159
+      ],
+      [
+       6181,
+       1168
+      ]
+     ]
+    },
+    "a-3-entrance": {
+     "color": "#ff8bcb",
+     "name": "A-3 Entrance",
+     "note": "",
+     "poly": [
+      [
+       6188,
+       675
+      ],
+      [
+       6194,
+       807
+      ],
+      [
+       6460,
+       809
+      ],
+      [
+       6436,
+       636
+      ]
+     ]
+    },
+    "a-4-entrance": {
+     "color": "#f28b82",
+     "name": "A-4 Entrance",
+     "note": "",
+     "poly": [
+      [
+       1421,
+       1076
+      ],
+      [
+       1505,
+       1076
+      ],
+      [
+       1514,
+       1186
+      ],
+      [
+       1419,
+       1186
+      ]
+     ]
+    },
     "left-area": {
      "color": "#fbbc04",
      "name": "Left Area",
@@ -2141,6 +2289,80 @@
      "name": "Main",
      "note": "",
      "poly": null
+    },
+    "middle-area": {
+     "color": "#fde293",
+     "name": "Middle Area",
+     "note": "",
+     "poly": [
+      [
+       1250,
+       935
+      ],
+      [
+       1240,
+       932
+      ],
+      [
+       4550,
+       935
+      ],
+      [
+       4563,
+       1244
+      ],
+      [
+       1598,
+       1182
+      ],
+      [
+       1600,
+       1039
+      ],
+      [
+       1395,
+       1046
+      ],
+      [
+       1388,
+       1202
+      ],
+      [
+       1257,
+       1208
+      ]
+     ]
+    },
+    "right-area": {
+     "color": "#78d9ec",
+     "name": "Right Area",
+     "note": "",
+     "poly": [
+      [
+       4892,
+       708
+      ],
+      [
+       6120,
+       668
+      ],
+      [
+       6149,
+       1202
+      ],
+      [
+       4937,
+       1211
+      ],
+      [
+       4629,
+       1225
+      ],
+      [
+       4637,
+       705
+      ]
+     ]
     },
     "upper-area": {
      "color": "#81c995",
@@ -3143,6 +3365,29 @@
       ]
      ]
     },
+    "green-card-building": {
+     "color": "#78d9ec",
+     "name": "Green Card Building",
+     "note": "",
+     "poly": [
+      [
+       7404,
+       933
+      ],
+      [
+       8111,
+       938
+      ],
+      [
+       8137,
+       1276
+      ],
+      [
+       7419,
+       1262
+      ]
+     ]
+    },
     "hidden-passage-below-truck": {
      "color": "#fbbc04",
      "name": "Hidden Passage Below Truck",
@@ -3379,6 +3624,29 @@
       [
        2951,
        531
+      ]
+     ]
+    },
+    "region-7": {
+     "color": "#78d9ec",
+     "name": "Room Next to Fountain",
+     "note": "",
+     "poly": [
+      [
+       6100,
+       757
+      ],
+      [
+       6091,
+       1237
+      ],
+      [
+       7091,
+       1269
+      ],
+      [
+       7068,
+       771
       ]
      ]
     },
@@ -3996,11 +4264,12 @@
     },
     {
      "from": "g-1-entrance",
-     "note": "",
+     "note": "misma puerta amarilla: bloquea también de vuelta (exp504)",
      "req": {
       "normal": [
        [
-        "MODEL"
+        "MODEL",
+        "YELLOW"
        ]
       ]
      },
@@ -4009,10 +4278,12 @@
     },
     {
      "from": "main",
-     "note": "",
+     "note": "puerta AMARILLA interna (2296,728): parte D-3 en dos mitades y la tabla de puertas no la ve (entidad kind5 subkind18 rol 0x40; exp501)",
      "req": {
       "normal": [
-       []
+       [
+        "YELLOW"
+       ]
       ]
      },
      "to": "g-1-entrance",

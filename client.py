@@ -157,13 +157,14 @@ CUTSCENE_FLAG = 0x0214F502         # bit0 = cutscene/guion de historia en curso
 # esté completada (ver _troop_unstick).
 TROOP_STATE = 162                  # 0xA2 = estado "Troop Reinforcement aceptada"
 TROOP_MERGE = (0x02104602, 1)      # flag "megamerge de Troop hecho"
-# Flag de INICIO de Troop. El juego REESCRIBE el byte 0x021045E0 entero en el
-# flujo de la misión (verificado exp508b: PC 0x02009D70 al disparar el primer
-# mini-jefe, valor calculado, no un OR) y puede dejar este bit a 0 con la
-# misión aún activa. Sin él la escena de Giro del final de D-2 NO se dispara
-# (exp508 con el estado real del usuario: sin el bit no pasa nada; con él la
-# escena salta en x=7696). El cliente lo re-pone mientras la misión esté
-# aceptada y sin completar.
+# Flag de INICIO de Troop. Sin él la escena de Giro del final de D-2 NO se
+# dispara (exp508 con el estado real del usuario: sin el bit no pasa nada; con
+# él la escena salta en x=7696). Quien lo borraba era el SEGUNDO bucle OAM sin
+# guarda (0x02009D7C, gemelo del ya parcheado): al disparar el primer mini-jefe
+# rociaba la RAM y se llevaba por delante este byte — no era código legítimo
+# (agente exp521/523; `rom.py OAMLOOP2_*` lo arregla). El único borrado
+# legítimo de este bit es el propio report. El cliente lo re-pone mientras la
+# misión esté aceptada y sin completar, como red de seguridad.
 TROOP_START = (0x021045E0, 2)
 # El desatasco solo actúa en las salas del área D (D-1/D-2/D-3), que es donde
 # hace falta armar la escena. Tras vencer al jefe el juego hace el megamerge y
@@ -171,6 +172,14 @@ TROOP_START = (0x021045E0, 2)
 # forma LEGÍTIMA y el cliente no debe tocarlo (playtest 2026-09-04: limpiarlo
 # en X-2 estorba al cierre de la misión).
 TROOP_ROOMS = (15, 16, 17)
+# Objeto del guion de sala de D-2 (0x02020110); +0xB = su estado. El case 10 es
+# el MEGAMERGE (pone 0x02104602.1 y 0x021045D0.0) y el 13 el disparo de la
+# cinemática final. Desde el estado 7 (escena de Giro) en adelante, 602.1 está
+# puesto de forma LEGÍTIMA y el auto-report de X-2 lo EXIGE: si el cliente lo
+# limpia en esos segundos que el jugador sigue en D-2, la misión no se completa
+# (agente exp529/529b).
+TROOP_ROOM_OBJ = 0x0214F3EC
+TROOP_ROOM_MERGED = 7
 STORY_HANDLER_ID = 0x0214F6C0
 STORY_HANDLER_OBJ = 0x0214F6C4     # 0x114 B; +9 = id de cutscene (0xFF = ninguna)
 
@@ -934,6 +943,13 @@ class MMZXClient(BizHawkClient):
             return
         if sub not in TROOP_ROOMS:
             return
+        if sub == 16:
+            try:
+                rs = (await bizhawk.read(ctx.bizhawk_ctx, [(TROOP_ROOM_OBJ + 0xB, 1, DOM)]))[0][0]
+            except bizhawk.RequestFailedError:
+                return
+            if rs >= TROOP_ROOM_MERGED:
+                return   # la escena de Giro ya pasó: 602.1 es legítimo, no tocarlo
         try:
             r = await bizhawk.read(ctx.bizhawk_ctx, [
                 (MISSION_STATE_ADDR, 4, DOM), (addr, 1, DOM),
@@ -1041,7 +1057,29 @@ class MMZXClient(BizHawkClient):
             return
         if cur_state == rec["state"]:
             self.last_accept_sub = key
-            return   # ya es la misión activa
+            # Ya es la misión activa, pero puede faltarle algún bit 'extra' si
+            # se aceptó con una versión anterior del apworld (partidas en
+            # curso): se completan aquí para que se curen solas. Es un OR de
+            # bits que la aceptación habría puesto igualmente.
+            extras = rec.get("extra", [])
+            if extras:
+                try:
+                    cur = await bizhawk.read(ctx.bizhawk_ctx,
+                                             [(a, 1, DOM) for a, _ in extras]
+                                             + [(a + CANON_OFF, 1, DOM) for a, _ in extras])
+                except bizhawk.RequestFailedError:
+                    return
+                w = []
+                for i, (ea, eb) in enumerate(extras):
+                    if not cur[i][0] & (1 << eb):
+                        w.append((ea, bytes([cur[i][0] | (1 << eb)]), DOM))
+                    if not cur[len(extras) + i][0] & (1 << eb):
+                        w.append((ea + CANON_OFF, bytes([cur[len(extras) + i][0] | (1 << eb)]), DOM))
+                if w and await bizhawk.guarded_write(ctx.bizhawk_ctx, w, [guard]):
+                    from CommonClient import logger
+                    logger.info("[mmzx] %s ya estaba aceptada: repuestos %d bits de misión que faltaban"
+                                % (rec["name"], len(w)))
+            return
         addr, bit = rec["flag"]
         canon = addr + (CANON_BLOCK - LIVE_BLOCK)
         act, act_c = MISSION_ACTIVE_BYTE, MISSION_ACTIVE_BYTE + (CANON_BLOCK - LIVE_BLOCK)

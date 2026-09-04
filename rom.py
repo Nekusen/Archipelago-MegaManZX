@@ -86,6 +86,15 @@ CFG_HU_IN_POOL = 0x01                     # byte 0 del config: bit0 = hu_in_pool
 OAMLOOP_BR_RAM = 0x02009C30
 OAMLOOP_BR_ORIG = bytes.fromhex("01d0")   # beq +2
 OAMLOOP_BR_NEW = bytes.fromhex("01d9")    # bls +2
+# GEMELA: FUN_02009c5c tiene el MISMO bucle sin guarda (0x02009D7A `subs r5,#1`
+# / 0x02009D7C `beq`), con los mismos bytes. Sin parchear, al disparar el primer
+# mini-jefe de D-2 (Troop) el bucle da la vuelta y rocía la RAM: se vieron
+# corrompidos 0x021045E0 (se perdía el flag de inicio de la misión, que deja la
+# escena de Giro sin dispararse), 0x021045FC (Card Keys) y 0x02104602. Con el
+# parche, CERO escrituras y cero corrupción (agente exp521 vs exp523).
+OAMLOOP2_BR_RAM = 0x02009D7C
+OAMLOOP2_BR_ORIG = bytes.fromhex("01d0")
+OAMLOOP2_BR_NEW = bytes.fromhex("01d9")
 
 # --- Posesión de biometales "solo item AP" (H/F/L/P) — exp240 (2026-09-02),
 # agente exp380-389, PROGRESIVOS exp444-447c (2026-09-03) ---
@@ -497,6 +506,7 @@ class MMZXPatchExtension(APPatchExtension):
         # 1b) guarda del dibujador OAM (siempre; robustez anti soft-lock):
         #     `beq` -> `bls` al final del bucle de sprites de FUN_02009b74
         poke(OAMLOOP_BR_RAM, OAMLOOP_BR_NEW, OAMLOOP_BR_ORIG)
+        poke(OAMLOOP2_BR_RAM, OAMLOOP2_BR_NEW, OAMLOOP2_BR_ORIG)
         # 1c) posesión de biometales "solo item AP" (siempre): la victoria del
         #     jefe deja de conceder el modelo; cada copia del item progresivo
         #     pone una mitad (lista [mitad 1, mitad 2]; count vanilla = 2)

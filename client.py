@@ -165,6 +165,12 @@ TROOP_MERGE = (0x02104602, 1)      # flag "megamerge de Troop hecho"
 # escena salta en x=7696). El cliente lo re-pone mientras la misión esté
 # aceptada y sin completar.
 TROOP_START = (0x021045E0, 2)
+# El desatasco solo actúa en las salas del área D (D-1/D-2/D-3), que es donde
+# hace falta armar la escena. Tras vencer al jefe el juego hace el megamerge y
+# una cinemática que lleva a la base Guardian: allí 0x02104602.1 está puesto de
+# forma LEGÍTIMA y el cliente no debe tocarlo (playtest 2026-09-04: limpiarlo
+# en X-2 estorba al cierre de la misión).
+TROOP_ROOMS = (15, 16, 17)
 STORY_HANDLER_ID = 0x0214F6C0
 STORY_HANDLER_OBJ = 0x0214F6C4     # 0x114 B; +9 = id de cutscene (0xFF = ninguna)
 
@@ -922,6 +928,12 @@ class MMZXClient(BizHawkClient):
         una cutscene de historia."""
         addr, bit = TROOP_MERGE
         saddr, sbit = TROOP_START
+        try:
+            sub = (await bizhawk.read(ctx.bizhawk_ctx, [(SUBAREA_STABLE, 1, DOM)]))[0][0]
+        except bizhawk.RequestFailedError:
+            return
+        if sub not in TROOP_ROOMS:
+            return
         try:
             r = await bizhawk.read(ctx.bizhawk_ctx, [
                 (MISSION_STATE_ADDR, 4, DOM), (addr, 1, DOM),

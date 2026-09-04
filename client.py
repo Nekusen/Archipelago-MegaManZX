@@ -183,6 +183,33 @@ TROOP_ROOM_MERGED = 7
 STORY_HANDLER_ID = 0x0214F6C0
 STORY_HANDLER_OBJ = 0x0214F6C4     # 0x114 B; +9 = id de cutscene (0xFF = ninguna)
 
+# ---- Final del juego (D-5 / Serpent): vigia del handler de historia ---------
+# El final -- cinematica post-Serpent, CREDITOS, pantalla "CLEARED!!" y vuelta
+# al titulo -- NO lo conduce el guion de la sala D-5 ni la VM de cutscenes: lo
+# conduce el HANDLER DE HISTORIA de la mision 16 "Destroy Model W"
+# (FUN_0201fc90, tabla 0x020CF0F4[16]), que solo corre si STORY_HANDLER_ID vale
+# 16. Su estado 0x0D espera la muerte de Serpent 2 (0x02104602.3), el 0x0E
+# lanza el guion final 0x020D30FC y el 0x13 pone "juego completado"
+# 0x0210462D.0. En vanilla el handler lo instala aceptar la mision en el
+# Transerver y sus estados 0..7 avanzan cruzando D-4 por rectangulos y flags
+# (0x021045FF.4-7 / 0x02104600.0-3).
+# En el randomizer se llega a D-5 sin haber disparado nada de eso (mundo
+# abierto, verjas cambiadas, /mmzx_teleport) o con la mision ya aceptada -- el
+# auto-accept solo escribe el handler CUANDO acepta --, asi que al morir
+# Serpent 2 nadie arranca la cadena final: el guion de sala llega a su estado
+# terminal, la VM termina su guion y la pantalla se queda en el FUNDIDO A
+# BLANCO de la ultima cutscene, para siempre (playtest del usuario en BizHawk
+# 2026-09-04; causa y arreglo verificados por el agente exp530-541 y por el
+# integrador exp550). Ocurre despues del goal y del release: no afecta a la
+# partida de Archipelago, solo al cierre del juego.
+ENDING_SUBAREA = 19                   # D-5
+ENDING_SERPENT = (0x02104602, 0x0C)   # .2 Serpent 1 y .3 Serpent 2 vencidos
+GAME_CLEARED = (0x0210462D, 0)        # "juego completado" (lo pone el estado 0x13)
+D05_ROOM_TERMINAL = 21                # estado terminal del guion de sala de D-5
+ENDING_HANDLER_ID = 16                # mision 16 "Destroy Model W"
+ENDING_HANDLER_STATE = 0x0D           # estado que espera la muerte de Serpent 2
+ENDING_UNSTICK_TICKS = 5              # ticks seguidos con la firma antes de actuar
+
 # Subáreas de JEFE (y de fin de misión) donde NO se auto-acepta al entrar
 # (exp212/213): e07 26, f05 32, g05 37, i03 44, k04 55, l04 60, m03 63,
 # o02 66; h04 41, j05 51, d05 19.
@@ -313,6 +340,7 @@ class MMZXClient(BizHawkClient):
         self.mission_auto_accept = False   # modo open-world (slot_data)
         self.mission_setup = False
         self.last_accept_sub = None        # última subárea auto-aceptada
+        self.ending_ticks = 0              # ticks con la firma del final atascado
         self.force_accept = False          # /mmzx_accept: forzar en el próximo tick
         self._stage_failed: set[str] = set()   # etapas con excepción ya trazada
         self.pending_where = False         # /mmzx_where: volcar posición/estado al log
@@ -391,6 +419,7 @@ class MMZXClient(BizHawkClient):
         ctx.want_slot_data = True
         ctx.watcher_timeout = 0.125
         self.local_checked = set()
+        self.ending_ticks = 0
         self.cons_log = None
         self.cons_key = None
         self.cons_requested = False
@@ -647,6 +676,10 @@ class MMZXClient(BizHawkClient):
                 ctx.finished_game = True
                 await ctx.send_msgs([{"cmd": "StatusUpdate",
                                       "status": ClientStatus.CLIENT_GOAL}])
+
+        # ---- final del juego: si tras Serpent falta el handler de historia,
+        #      la pantalla se queda en blanco; arrancar la cadena de créditos ----
+        await self._stage("final", self._ending_unstick(ctx, guard))
 
     async def _log_where(self, ctx) -> None:
         """/mmzx_where: subárea, posición, estado y misión al log."""
@@ -1035,6 +1068,64 @@ class MMZXClient(BizHawkClient):
             from CommonClient import logger
             logger.info("[mmzx] Troop Reinforcement estaba a medias: %s; la escena de Giro "
                         "puede volver a dispararse" % " y ".join(what))
+
+    async def _ending_unstick(self, ctx, guard) -> None:
+        """Final del juego: si Serpent 2 ha muerto en D-5 y el handler de
+        historia de la mision 16 no esta (o va por debajo de su estado 0x0D),
+        nadie lanza la cinematica final ni los creditos y la pantalla se queda
+        en blanco para siempre. Se instala el handler en el estado 0x0D --
+        exactamente el punto en el que vanilla espera la muerte de Serpent 2 --
+        y el juego sigue solo: cinematica final -> creditos -> "CLEARED!!" ->
+        titulo (agente exp535/540/541, integrador exp550).
+
+        Se dispara UNA vez, con el jefe final ya muerto y despues del release,
+        asi que no puede alterar checks, items ni logica: lo unico que escribe
+        es el area de trabajo del handler de historia. Las guardas (sin
+        cutscene en curso, guion de sala en su estado terminal, 5 ticks
+        seguidos) impiden actuar mientras la escena de muerte de Serpent aun
+        corre, y el flag de "juego completado" impide repetirlo si el jugador
+        vuelve a D-5 con la partida ya terminada."""
+        try:
+            sub = (await bizhawk.read(ctx.bizhawk_ctx, [(SUBAREA_STABLE, 1, DOM)]))[0][0]
+        except bizhawk.RequestFailedError:
+            return
+        if sub != ENDING_SUBAREA:
+            self.ending_ticks = 0
+            return
+        saddr, smask = ENDING_SERPENT
+        caddr, cbit = GAME_CLEARED
+        try:
+            r = await bizhawk.read(ctx.bizhawk_ctx, [
+                (saddr, 1, DOM), (caddr, 1, DOM), (CUTSCENE_FLAG, 1, DOM),
+                (TROOP_ROOM_OBJ + 0xB, 1, DOM),      # guion de sala (de CUALQUIER sala)
+                (STORY_HANDLER_ID, 4, DOM), (STORY_HANDLER_OBJ + 0xB, 1, DOM)])
+        except bizhawk.RequestFailedError:
+            return
+        handler_id = int.from_bytes(r[4], "little")
+        stuck = ((r[0][0] & smask) == smask                  # Serpent 1 y 2 vencidos
+                 and not (r[1][0] & (1 << cbit))             # el juego no se ha cerrado ya
+                 and not (r[2][0] & 1)                       # no hay cutscene en curso
+                 and r[3][0] == D05_ROOM_TERMINAL            # guion de D-5 terminado
+                 and (handler_id != ENDING_HANDLER_ID
+                      or r[5][0] < ENDING_HANDLER_STATE))    # handler ausente o atrasado
+        if not stuck:
+            self.ending_ticks = 0
+            return
+        self.ending_ticks += 1
+        if self.ending_ticks < ENDING_UNSTICK_TICKS:
+            return
+        obj = bytearray(0x114)
+        obj[9] = 0xFF                          # ninguna cutscene pendiente
+        obj[0xB] = ENDING_HANDLER_STATE
+        ok = await bizhawk.guarded_write(ctx.bizhawk_ctx, [
+            (STORY_HANDLER_OBJ, bytes(obj), DOM),
+            (STORY_HANDLER_ID, ENDING_HANDLER_ID.to_bytes(4, "little"), DOM)], [guard])
+        if ok:
+            self.ending_ticks = 0
+            from CommonClient import logger
+            logger.info("[mmzx] el final del juego se habia quedado sin handler de "
+                        "historia (pantalla en blanco tras Serpent): arrancada la "
+                        "cinematica final; siguen los creditos")
 
     async def _auto_accept_mission(self, ctx, guard) -> None:
         """Open-world: al ENTRAR en la subárea destino de una misión, la

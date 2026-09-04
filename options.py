@@ -82,14 +82,17 @@ class BossLogic(OptionDict):
     misión, ni a obtener su biometal (los biometales salen de dos jefes: si
     solo puedes con uno, la lógica cuenta ese camino y no el otro). Los ocho
     Pseudoroids se pelean DOS veces (su área y el boss rush de la torre de
-    D-4): el requisito se aplica a los dos encuentros, así que llegar a
-    Serpent exige poder con los ocho.
+    D-4, que el juego OBLIGA a superar para pasar a D-5): el requisito se
+    aplica a los dos encuentros, así que llegar a Serpent exige poder con los
+    ocho.
 
-    Jefes: Giga Aspis (B-2), Model Z (D-2), Hivolt (E-7), Lurerre (F-5),
+    Jefes: Rayfly (B-2), Model Z (D-2), Hivolt (E-7), Lurerre (F-5),
     Fistleo (G-5), Purprill (H-4), Hurricaune (I-3), Leganchor (J-5),
     Flammole (K-4), Protectos (L-4), Prometheus (X-3), Pandora (M-3),
     Prometheus & Pandora (O-2), Serpent (D-5), Omega Zero (N-1). También vale
     el código de la sala como clave ("E-7"). Los que no pongas no piden nada.
+    (Giga Aspis, el jefe del tutorial, no está: el randomizer salta el
+    tutorial entero y no se pelea nunca.)
 
     Requisitos: modelos (X ZX HX FX LX PX OX; "HX2" o "Model HX (full)" = las
     dos mitades del progresivo, o sea carga de nivel 2), MODEL (cualquiera),

@@ -48,7 +48,7 @@
     Omega Zero: "OX | (ALL6 & SUBTANK>=2)"
   ```
 
-  Bosses: Giga Aspis (B-2), Model Z (D-2), Hivolt (E-7), Lurerre (F-5),
+  Bosses: Rayfly (B-2), Model Z (D-2), Hivolt (E-7), Lurerre (F-5),
   Fistleo (G-5), Purprill (H-4), Hurricaune (I-3), Leganchor (J-5),
   Flammole (K-4), Protectos (L-4), Prometheus (X-3), Pandora (M-3),
   Prometheus & Pandora (O-2), Serpent (D-5), Omega Zero (N-1). The room code
@@ -59,9 +59,10 @@
   level-2 charge), `MODEL` (any), `ALL6`, `Life Up xN`, `Sub Tank xN`,
   ITEM B chips by name, and Card Keys, combined with `&`, `|` and
   parentheses. A required Life Up / Sub Tank / chip is promoted to
-  progression automatically. The eight Pseudoroids are fought twice (their
-  own area and the boss rush in the D-4 tower), and the requirement applies
-  to both — so reaching Serpent means being able to handle all eight.
+  progression automatically. The eight Pseudoroids are fought twice — their
+  own area and the boss rush in the D-4 tower, which the game makes you clear
+  before it lets you through to D-5 — and the requirement applies to both, so
+  reaching Serpent means being able to handle all eight.
 - `hu_in_pool`: human form becomes an item (experimental).
 - `submission_checks` (quests), `level4_victories`.
 - `pickup_checks_1up` / `_energy` / `_weapon` / `_crystals` (default off):

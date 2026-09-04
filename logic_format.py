@@ -110,7 +110,9 @@ _COUNT_RE = re.compile(r"^([A-Z_]+)>=(\d+)$")
 # `index` = orden canónico del Pseudoroid (niveles de victoria
 # 0x02104634..3B y arg del teletransportador del boss rush).
 BOSSES = {
-    "giga_aspis": {"name": "Giga Aspis", "room": "b02", "mission": "Locate Giro"},
+    # Giga Aspis (el jefe del TUTORIAL) no está: el randomizer se salta el
+    # tutorial entero, así que no se pelea nunca (usuario, 2026-09-04).
+    "rayfly": {"name": "Rayfly", "room": "b02", "mission": "Locate Giro"},
     "model_z": {"name": "Model Z", "room": "d02", "mission": "Troop Reinforcement"},
     "hivolt": {"name": "Hivolt", "room": "e07", "mission": "Search The Plant", "index": 0},
     "lurerre": {"name": "Lurerre", "room": "f05", "mission": "Find The Survivors", "index": 1},
@@ -132,8 +134,9 @@ PSEUDOROIDS = [b for b, v in sorted(BOSSES.items(), key=lambda kv: kv[1].get("in
 # Boss rush de D-4 (torre de Slither Inc.): 8 teletransportadores (entidad
 # 5.4B con arg = índice del Pseudoroid, docs/entity_catalog.md §d04) hacia la
 # sala genérica z02. Como z02 no tiene checks, lo que de verdad importa es la
-# SALIDA a D-5: exige los 8 (decisión del usuario 2026-09-04 — vencer a un
-# jefe se exige en sus DOS encuentros).
+# SALIDA a D-5: el JUEGO no deja pasar sin vencer a los ocho (confirmado por
+# el usuario, 2026-09-04), así que se exige siempre — y encaja con que un jefe
+# exigido en `boss_logic` lo sea en sus DOS encuentros.
 BOSS_RUSH_DOORS = {
     "d04 door (288,272)": 0, "d04 door (800,272)": 1,
     "d04 door (288,656)": 2, "d04 door (800,656)": 3,
@@ -144,6 +147,11 @@ BOSS_RUSH_EXIT = "d04 door (992,736)"        # Boss Rush -> D-5 (Serpent)
 # Aristas que SOLO cubren la re-pelea: no valen como anclaje de la pelea
 # de historia de un jefe (ver bosses_anchored).
 BOSS_RUSH_EDGES = set(BOSS_RUSH_DOORS) | {BOSS_RUSH_EXIT}
+
+
+# Ids de jefe renombrados: se migran al normalizar el documento (igual que
+# LEGACY_EDGE_NAMES), para que una etiqueta antigua no quede huérfana.
+LEGACY_BOSS_IDS = {"giga_aspis": "rayfly"}
 
 
 def boss_atom(boss_id: str) -> str:
@@ -672,6 +680,9 @@ def normalize_logic(doc, world=None):
     for r in (world or {}).get("rooms", []):
         doc["rooms"].setdefault(r, empty_room())
     for r in doc["rooms"].values():
+        for reg in (r.get("regions") or {}).values():
+            if reg.get("boss") in LEGACY_BOSS_IDS:
+                reg["boss"] = LEGACY_BOSS_IDS[reg["boss"]]
         r.setdefault("regions", {})
         r["regions"].setdefault("main", empty_room()["regions"]["main"])
         r.setdefault("conns", [])

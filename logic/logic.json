@@ -2877,6 +2877,32 @@
        ]
       ]
      },
+     "to": "boss-arena",
+     "unsure": false
+    },
+    {
+     "from": "boss-arena",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "right-area-before-boss",
+     "unsure": false
+    },
+    {
+     "from": "boss-arena",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
      "to": "right-area-after-boss",
      "unsure": false
     },
@@ -2885,16 +2911,42 @@
      "note": "",
      "req": {
       "normal": [
-       []
+       [
+        "MODEL"
+       ]
       ]
      },
-     "to": "right-area-before-boss",
+     "to": "boss-arena",
      "unsure": false
     }
    ],
    "members": {},
    "note": "",
    "regions": {
+    "boss-arena": {
+     "boss": "rayfly",
+     "color": "#d7aefb",
+     "name": "Boss Arena",
+     "note": "",
+     "poly": [
+      [
+       3529,
+       412
+      ],
+      [
+       3929,
+       406
+      ],
+      [
+       3937,
+       813
+      ],
+      [
+       3526,
+       803
+      ]
+     ]
+    },
     "bottom-of-interior-area": {
      "color": "#fbbc04",
      "name": "Bottom of Interior Area",
@@ -2953,8 +3005,8 @@
      "note": "",
      "poly": [
       [
-       3782,
-       407
+       3955,
+       401
       ],
       [
        4422,
@@ -2965,8 +3017,8 @@
        819
       ],
       [
-       3784,
-       811
+       3954,
+       808
       ]
      ]
     },
@@ -6770,7 +6822,20 @@
   "f05": {
    "conns": [
     {
-     "from": "main",
+     "from": "f-4-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "boss-arena",
+     "unsure": false
+    },
+    {
+     "from": "boss-arena",
      "note": "",
      "req": {
       "normal": [
@@ -6783,19 +6848,6 @@
      "unsure": false
     },
     {
-     "from": "f-4-entrance",
-     "note": "",
-     "req": {
-      "normal": [
-       [
-        "MODEL"
-       ]
-      ]
-     },
-     "to": "main",
-     "unsure": false
-    },
-    {
      "from": "hub-entrance",
      "note": "",
      "req": {
@@ -6805,11 +6857,11 @@
        ]
       ]
      },
-     "to": "main",
+     "to": "boss-arena",
      "unsure": false
     },
     {
-     "from": "main",
+     "from": "boss-arena",
      "note": "",
      "req": {
       "normal": [
@@ -6825,6 +6877,30 @@
    "members": {},
    "note": "",
    "regions": {
+    "boss-arena": {
+     "boss": "lurerre",
+     "color": "#fbbc04",
+     "name": "Boss Arena",
+     "note": "",
+     "poly": [
+      [
+       526,
+       391
+      ],
+      [
+       539,
+       814
+      ],
+      [
+       1026,
+       805
+      ],
+      [
+       1028,
+       393
+      ]
+     ]
+    },
     "f-4-entrance": {
      "color": "#a7ffeb",
      "name": "F-4 Entrance",
@@ -8114,7 +8190,59 @@
   "g05": {
    "conns": [
     {
-     "from": "main",
+     "from": "g-4-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "main-area",
+     "unsure": false
+    },
+    {
+     "from": "main-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "g-4-entrance",
+     "unsure": false
+    },
+    {
+     "from": "main-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "boss-area",
+     "unsure": false
+    },
+    {
+     "from": "boss-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "main-area",
+     "unsure": false
+    },
+    {
+     "from": "boss-area",
      "note": "",
      "req": {
       "normal": [
@@ -8136,39 +8264,37 @@
        ]
       ]
      },
-     "to": "main",
-     "unsure": false
-    },
-    {
-     "from": "g-4-entrance",
-     "note": "",
-     "req": {
-      "normal": [
-       [
-        "MODEL"
-       ]
-      ]
-     },
-     "to": "main",
-     "unsure": false
-    },
-    {
-     "from": "main",
-     "note": "",
-     "req": {
-      "normal": [
-       [
-        "MODEL"
-       ]
-      ]
-     },
-     "to": "g-4-entrance",
+     "to": "boss-area",
      "unsure": false
     }
    ],
    "members": {},
    "note": "",
    "regions": {
+    "boss-area": {
+     "boss": "fistleo",
+     "color": "#fbbc04",
+     "name": "Boss Area",
+     "note": "",
+     "poly": [
+      [
+       2863,
+       383
+      ],
+      [
+       3129,
+       373
+      ],
+      [
+       3136,
+       642
+      ],
+      [
+       2826,
+       614
+      ]
+     ]
+    },
     "g-4-entrance": {
      "color": "#f28b82",
      "name": "G-4 Entrance",
@@ -8189,6 +8315,29 @@
       [
        226,
        622
+      ]
+     ]
+    },
+    "hidden-room": {
+     "color": "#a7ffeb",
+     "name": "Hidden Room",
+     "note": "",
+     "poly": [
+      [
+       3493,
+       316
+      ],
+      [
+       4008,
+       271
+      ],
+      [
+       3996,
+       708
+      ],
+      [
+       3476,
+       693
       ]
      ]
     },
@@ -8220,6 +8369,29 @@
      "name": "Main",
      "note": "",
      "poly": null
+    },
+    "main-area": {
+     "color": "#81c995",
+     "name": "Main Area",
+     "note": "",
+     "poly": [
+      [
+       442,
+       379
+      ],
+      [
+       417,
+       764
+      ],
+      [
+       2560,
+       782
+      ],
+      [
+       2588,
+       332
+      ]
+     ]
     }
    },
    "req": null

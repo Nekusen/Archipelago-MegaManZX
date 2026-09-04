@@ -192,6 +192,13 @@ room B-2 [b02]
     check B-2: Energy Capsule L
     conn -> Right Area (Before Boss)
       normal: MODEL
+  region Boss Arena  (4 vértices)   [ARENA: Rayfly]
+    check Mission - Locate Giro
+      normal: MODEL
+    conn -> Right Area (Before Boss)
+      normal: MODEL
+    conn -> Right Area (After Boss)
+      normal: MODEL
   region Bottom of Interior Area  (4 vértices)
     internal -> Right Area (After Boss) @(4896,736)
     conn -> D-1 Entrance
@@ -208,16 +215,14 @@ room B-2 [b02]
       normal: HX   # B-2: cima de la estructura derecha (y=28)
     check B-2: Energy Capsule L (2)
       normal: MODEL
-    check Mission - Locate Giro
+    conn -> Boss Arena
       normal: MODEL
-    conn -> Right Area (Before Boss)
-      normal: free
   region Right Area (Before Boss)  (4 vértices)
     check B-2: Disk E-17
       normal: HX   # B-2: en lo alto de un pilar (tile y=29)
     conn -> Main
       normal: free
-    conn -> Right Area (After Boss)
+    conn -> Boss Arena
       normal: MODEL
 
 room B-3 [b03]
@@ -951,6 +956,7 @@ room F-4 [f04]
 
 room F-5 [f05]
   region Main
+  region Boss Arena  (4 vértices)   [ARENA: Lurerre]
     check Mission - Find The Survivors
       normal: MODEL
     check Obtain Biometal L   (también en J-5: vale cualquiera)
@@ -962,12 +968,12 @@ room F-5 [f05]
   region F-4 Entrance  (4 vértices)   # POLÍGONO PROVISIONAL (bbox migrado): redibujar. 
     door -> F-4/F-5 Entrance @(288,736)
     <- F-4 @(288,736)
-    conn -> Main
+    conn -> Boss Arena
       normal: MODEL
   region Hub Entrance  (4 vértices)
     warp -> Hub @(1232,736)
     <- Hub @(1232,736)
-    conn -> Main
+    conn -> Boss Arena
       normal: MODEL
 
 room G-1 [g01]
@@ -1167,28 +1173,35 @@ room G-4 [g04]
 
 room G-5 [g05]
   region Main
-    internal -> Main @(1792,688)
-    internal -> Main @(3616,544)
-    check G-5: Disk B-11
-      ? normal: FX   # G-5: sub-sala (puerta (112,43)) tapada por fuego; interordi apunta con flecha
-    check G-5: Disk E-32
+  region Boss Area  (4 vértices)   [ARENA: Fistleo]
     check Mission - Fight The Mavericks
       normal: MODEL   # hablar con NPCs + pelear
     check Obtain Biometal F   (también en K-4: vale cualquiera)
       normal: MODEL
-    conn -> Hub Entrance
+    conn -> Main Area
       normal: MODEL
-    conn -> G-4 Entrance
+    conn -> Hub Entrance
       normal: MODEL
   region G-4 Entrance  (4 vértices)
     door -> G-4/G-5 Entrance @(288,544)
     <- G-4 @(288,544)
-    conn -> Main
+    conn -> Main Area
       normal: MODEL
+  region Hidden Room  (4 vértices)
+    internal -> Main Area @(3616,544)
+    check G-5: Disk B-11
+      ? normal: FX   # G-5: sub-sala (puerta (112,43)) tapada por fuego; interordi apunta con flecha
   region Hub Entrance  (4 vértices)
     warp -> Hub @(3296,544)
     <- Hub @(3296,544)
-    conn -> Main
+    conn -> Boss Area
+      normal: MODEL
+  region Main Area  (4 vértices)
+    internal -> Hidden Room @(1792,688)
+    check G-5: Disk E-32
+    conn -> G-4 Entrance
+      normal: MODEL
+    conn -> Boss Area
       normal: MODEL
 
 room H-1 [h01]

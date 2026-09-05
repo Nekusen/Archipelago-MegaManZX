@@ -68,6 +68,11 @@
 - `pickup_checks_1up` / `_energy` / `_weapon` / `_crystals` (default off):
   the 133 fixed refill pickups become checks (first pickup sends the check;
   the pickup keeps respawning and healing).
+- `notify_received` / `notify_sent` (default `useful`): which item classes
+  pop up on screen (the game's small non-blocking message) when you receive
+  an item / when one of your checks sends an item to another player: `off`,
+  `progression`, `useful` (progression + useful), `all` (also filler such as
+  E-Crystals and 1-Ups). Change it mid-game with `/mmzx_notify`.
 - `death_link`, `goal` (defeat Serpent).
 
 ## How it works (what to expect)
@@ -114,3 +119,11 @@
 - `/mmzx_accept`: force-accept the mission of the current area / hub floor.
 - `/mmzx_where`: log your position and state (for bug reports).
 - `/mmzx_start`: re-apply the YAML starting state.
+- `/mmzx_notify all` (or `off` / `progression` / `useful`): which item
+  classes are announced on screen, for received and sent items at once;
+  `/mmzx_notify received all` / `/mmzx_notify sent off` set one side only.
+  With no arguments it prints the current setting. The starting value comes
+  from the YAML (`notify_received` / `notify_sent`) and the command does
+  not persist across client sessions.
+- `/mmzx_marks on|off`: grey out respawning pickups whose check was
+  already sent.

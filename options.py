@@ -177,6 +177,31 @@ class PickupChecksCrystals(Toggle):
     default = 0
 
 
+class NotifyReceived(Choice):
+    """Avisos en pantalla (popup pequeño del juego) al RECIBIR un item:
+    qué clases se muestran. `off` ninguno; `progression` solo progresión;
+    `useful` progresión + útiles; `all` también el relleno (E-Crystals,
+    1-Up). Se puede cambiar en la partida con `/mmzx_notify`."""
+    display_name = "On-screen Notifications: Received Items"
+    option_off = 0
+    option_progression = 1
+    option_useful = 2
+    option_all = 3
+    default = 2
+
+
+class NotifySent(Choice):
+    """Avisos en pantalla al ENVIAR un item a otro jugador (check tuyo con
+    un item ajeno): qué clases se muestran (`off`, `progression`, `useful`,
+    `all`). Se puede cambiar en la partida con `/mmzx_notify`."""
+    display_name = "On-screen Notifications: Sent Items"
+    option_off = 0
+    option_progression = 1
+    option_useful = 2
+    option_all = 3
+    default = 2
+
+
 @dataclass
 class MMZXOptions(PerGameCommonOptions):
     character: Character
@@ -193,5 +218,7 @@ class MMZXOptions(PerGameCommonOptions):
     pickup_checks_energy: PickupChecksEnergy
     pickup_checks_weapon: PickupChecksWeapon
     pickup_checks_crystals: PickupChecksCrystals
+    notify_received: NotifyReceived
+    notify_sent: NotifySent
     death_link: DeathLink
     start_inventory_from_pool: StartInventoryPool

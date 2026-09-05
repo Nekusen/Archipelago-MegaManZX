@@ -383,6 +383,8 @@ class MMZXClient(BizHawkClient):
         self.notify_queue: collections.deque = collections.deque()
         self.notified_items: int | None = None
         self.notify_cfg = {"received": 2, "sent": 2}      # índices en NOTIFY_LEVELS
+        self.notify_setup = False        # umbrales del YAML ya aplicados
+        self.notify_user_set = False     # /mmzx_notify usado (gana al YAML)
         self.scout_requested: set[int] = set()
         # marcador gris de pickups ya enviados (parche PICKUP_MARK)
         self.marks_enabled = True
@@ -433,6 +435,7 @@ class MMZXClient(BizHawkClient):
         self.pos_last = None
         self.notify_queue.clear()
         self.notified_items = None
+        self.notify_setup = False        # re-aplicar el YAML de la nueva partida
         self.scout_requested = set()
         self.mark_written = None
         return True
@@ -514,6 +517,22 @@ class MMZXClient(BizHawkClient):
         if not self.mission_setup:
             self.mission_setup = True
             self.mission_auto_accept = bool(ctx.slot_data.get("mission_auto_accept", False))
+
+        # Avisos en pantalla: umbrales por defecto del YAML (notify_received /
+        # notify_sent), una vez por conexión y solo si el jugador no los ha
+        # fijado ya con /mmzx_notify (el comando manda; seeds antiguas sin las
+        # claves → useful). Se anuncia la configuración efectiva en el log.
+        if not self.notify_setup:
+            self.notify_setup = True
+            for key in ("received", "sent"):
+                val = str(ctx.slot_data.get("notify_" + key, "")).lower()
+                if not self.notify_user_set and val in NOTIFY_LEVELS:
+                    self.notify_cfg[key] = NOTIFY_LEVELS.index(val)
+            from CommonClient import logger
+            logger.info("[mmzx] avisos en pantalla: received=%s, sent=%s "
+                        "(/mmzx_notify [received|sent] <off|progression|useful|all>)"
+                        % (NOTIFY_LEVELS[self.notify_cfg["received"]],
+                           NOTIFY_LEVELS[self.notify_cfg["sent"]]))
 
         # comandos de cliente (anti-softlock + diagnóstico de flags)
         if not self.added_commands:
@@ -1979,18 +1998,26 @@ def _cmd_dump(self, *args) -> None:
 
 
 def _cmd_notify(self, *args) -> None:
-    """Avisos en pantalla al recibir/enviar items: /mmzx_notify [received|sent]
-    [off|progression|useful|all] ('useful' = progresión + útiles). Sin
-    argumentos muestra la configuración actual."""
+    """Avisos en pantalla al recibir/enviar items. /mmzx_notify <nivel>
+    fija el mismo nivel para recibidos y enviados; /mmzx_notify
+    [received|sent] <nivel> solo uno. Niveles: off, progression, useful
+    (progresión + útiles), all (también relleno: E-Crystals, 1-Up). Sin
+    argumentos muestra la configuración actual. El valor inicial viene del
+    YAML (notify_received / notify_sent) y no se guarda entre sesiones."""
     from CommonClient import logger
     handler = self.ctx.client_handler
     if not isinstance(handler, MMZXClient):
         return
-    if len(args) >= 2 and str(args[0]).lower() in ("received", "sent") \
-            and str(args[1]).lower() in NOTIFY_LEVELS:
-        handler.notify_cfg[str(args[0]).lower()] = NOTIFY_LEVELS.index(str(args[1]).lower())
-    elif args:
-        logger.error("uso: /mmzx_notify [received|sent] [off|progression|useful|all]")
+    words = [str(a).lower() for a in args]
+    if len(words) == 1 and words[0] in NOTIFY_LEVELS:
+        handler.notify_cfg["received"] = handler.notify_cfg["sent"] = NOTIFY_LEVELS.index(words[0])
+        handler.notify_user_set = True
+    elif len(words) == 2 and words[0] in ("received", "sent") and words[1] in NOTIFY_LEVELS:
+        handler.notify_cfg[words[0]] = NOTIFY_LEVELS.index(words[1])
+        handler.notify_user_set = True
+    elif words:
+        logger.error("uso: /mmzx_notify <off|progression|useful|all>  o  "
+                     "/mmzx_notify [received|sent] <off|progression|useful|all>")
         return
     logger.info("[mmzx] avisos en pantalla: received=%s, sent=%s" % (
         NOTIFY_LEVELS[handler.notify_cfg["received"]], NOTIFY_LEVELS[handler.notify_cfg["sent"]]))

@@ -219,5 +219,9 @@ class MMZXWorld(World):
             "pickup_checks_energy": bool(self.options.pickup_checks_energy.value),
             "pickup_checks_weapon": bool(self.options.pickup_checks_weapon.value),
             "pickup_checks_crystals": bool(self.options.pickup_checks_crystals.value),
+            # avisos en pantalla: umbrales por defecto (el cliente los aplica al
+            # conectar salvo que el jugador ya haya usado /mmzx_notify)
+            "notify_received": self.options.notify_received.current_key,
+            "notify_sent": self.options.notify_sent.current_key,
             "version": "0.1.0",
         }

@@ -400,8 +400,6 @@ room C-2 [c02]
     warp -> Hub @(5056,1088)
     <- Hub @(5056,1088)
     check C-2: Disk E-30
-    conn -> Main
-      normal: MODEL
   region Middle Building Bottom  (4 vértices)
     conn -> Main
       normal: HU

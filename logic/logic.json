@@ -3640,19 +3640,6 @@
      "unsure": false
     },
     {
-     "from": "below-fountain",
-     "note": "",
-     "req": {
-      "normal": [
-       [
-        "MODEL"
-       ]
-      ]
-     },
-     "to": "main",
-     "unsure": false
-    },
-    {
      "from": "main",
      "note": "",
      "req": {

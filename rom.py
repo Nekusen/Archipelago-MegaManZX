@@ -174,7 +174,7 @@ PICKUP_FLAG_PATCH = [
 # 0x020CB490-0x020CB9D4 sin lecturas ni escrituras en sesión (exp363).
 PICKUP_MAILBOX_HOOK_RAM = 0x020A30A2
 PICKUP_MAILBOX_HOOK_ORIG = bytes.fromhex("6cf7b3fd")   # bl FUN_0200fc0c
-PICKUP_MAILBOX_HOOK_NEW = bytes.fromhex("28f0adfb")    # bl 0x020CB800 = cave de MARCADO, que llama al del buzón (antes 28f0fdf9 = bl 0x020CB4A0)
+PICKUP_MAILBOX_HOOK_NEW = bytes.fromhex("28f0fdf9")    # bl 0x020CB4A0 (cave del buzón). 2026-09-04..05 apuntó al cave de MARCADO gris 0x020CB800 (PICKUP_MARK, agente exp483-491), retirado al llegar los iconos de item (§2c)
 PICKUP_MAILBOX_CAVE_RAM = 0x020CB4A0                   # tras SKIP_CAVE (0x020CB460+48)
 # push{r4,lr}; bl FUN_0200fc0c; ldr r0,[r5,#0x94]; lsrs #3; bcc done;
 # ldr r0,[r5,#0xC0]; beq done; r1=[0x021081F4]; loop: beq done; [r1+4]==r5?
@@ -187,28 +187,6 @@ PICKUP_MAILBOX_CAVE = bytes.fromhex(
     "a400e41862600130186010bdf48110022882100200b50c02")
 PICKUP_MAILBOX_RAM = 0x020CB500          # = data.PICKUP_MAILBOX_ADDR (gen_ap_data)
 PICKUP_MAILBOX_SLOTS = 8
-
-# --- Marcador visual "pickup ya enviado" (agente exp483-491, 2026-09-04;
-# docs/v02_notes.md §2a) ---
-# El hook del buzón (0x020A30A2) apunta ahora al cave de marcado, que llama al
-# cave del buzón (0x020CB4A0 -> FUN_0200fc0c) y después, para los refills
-# (role 0..7) cuyo índice de coords esté en el bitmap de la TABLA (misma
-# subárea que 0x02108228), pone la paleta FIJA (ent+0xB bit6, +0x2B = slot)
-# y regenera cada frame el slot 15 de la sombra de paletas OBJ (0x020F5C08)
-# como copia desaturada de la paleta origen (+0x2A): el pickup se ve GRIS.
-# El slot 15 no lo carga ninguna de las 42 subáreas con pickups (exp485).
-# Tabla: u8 sub, u8 slot (0 = apagado, el cliente escribe 15), u16 pad, 32 B
-# bitmap (bit = idx). Verificado en RAM y en frío (exp486-490, 488b).
-PICKUP_MARK_CAVE_RAM = 0x020CB800                       # zona 0x020CB800-0x020CB97F
-PICKUP_MARK_CAVE = bytes.fromhex(
-    "f0b5fff74dfe287d082847d2244c6278002a43d0e87a410620d420782149097888423bd1"
-    "20490968002937d04b68ab4201d00968f8e70b89d8080019007907211940c840400829d3"
-    "2b21685c0139685401316a54e87a40210843e87213492a23e85c0f2318404001081852018918"
-    "00260e800226825bd306db0e5709ff06ff0edb19970aff06ff0edb199b085f013b437f01"
-    "3b438b530236202eebd3f0bd0000"
-    "00b90c02" "28821002" "f4811002" "085c0f02")           # pool: TABLA, 0x02108228, 0x021081F4, 0x020F5C08
-PICKUP_MARK_TABLE_RAM = 0x020CB900   # = data.PICKUP_MARK_TABLE_ADDR (36 B)
-PICKUP_MARK_SLOT = 15
 
 # --- Avisos en pantalla del cliente AP ("NOTIFY"; agente exp473-480,
 # 2026-09-04; docs/v02_notes.md §2a) ---
@@ -361,6 +339,118 @@ DISK_LOGO_NEW = bytes.fromhex(   # logo OFICIAL de Archipelago (sprite 16x16 del
     "f05555f5f05555f5f05555af005ff5aa00f0ffaa0000f0aa000000af000000f0"
     "f04444f4ff4444f4aa4f44f4aafa440faafaff00aafa0000aa0f0000ff000000")
 
+
+# --- ICONOS DE ITEM EN EL MUNDO (2026-09-05, exp560-569; docs/v02_notes.md §2c) ---
+# Cada pickup físico (94 discos, 8 Life Up/Sub Tank, 133 refills) se dibuja con el
+# icono del ITEM que el randomizer ha puesto ahí: un SET de gráficos propio ("AP",
+# worlds/mmzx/gfx/ap_set_*.bin, generado por tools/gen_icon_set.py: 3 logos de
+# Archipelago useful/progression/filler, Life Up, Sub Tank, 8 chips, 8 badges de
+# modelo del menú STATUS, 6 Card Keys del menú ITEM C; 4bpp, 1 paleta de 16) se
+# INSERTA como set ICON_SET (vacío en vanilla) en obj_fnt.bin/obj_dat.bin (los
+# offsets de los sets siguientes se desplazan; ambos ficheros se reubican al padding
+# final de la ROM reescribiendo la FAT, receta exp551d/552b) y se hace RESIDENTE
+# como el set 58: la lista de sets globales [0,1,58] de FUN_0200bd04 (u16[3]
+# @0x020C9C30, con hueco de alineación) pasa a [0,1,58,ICON_SET] y sus dos
+# `movs r2,#3` a #4; el cave de arranque (en lugar del `bl FUN_02006164` del set 58)
+# registra ranura VRAM estática + slot de paleta (FUN_02006a88(mgr, fnt[set], set,
+# 3,1,1) + FUN_02006164(mgr, set, 0,0,0,0,1,0)). Verificado (exp567b/569b): ranura
+# VRAM 3 y paleta OBJ 2 constantes en las 69 salas + jefe; VRAM máx 123/128 KB.
+# El CLIENTE escribe por subárea la TABLA (ICON_TABLE_RAM, RAM libre entre el slot
+# de overlays 0x02184000 y 0x02194000, nunca leída ni escrita por el juego: exp560):
+#   +0 u8 sub, +1 u8 flags (bit0 = válida), +4 u8 code[128] (índice de coords de la
+#   entidad -> anim+1 del set AP; 0 = sin cambio), +0x84 u8 checked[32] (bitmap por
+#   idx: "ya enviado" -> aspecto vanilla; los refills respawnean como lo que son).
+# Caves (Thumb, HOLE_C8150 = tramo a cero del arm9 sin accesos, exp560): LOOKUP(ent)
+# busca la entidad en la lista de spawns 0x021081F4 ([+4] = ent, u16[+8] = idx;
+# exp566: ya está registrada en los tres inits) y devuelve anim o -1; ATTACH
+# sustituye los 3 `bl FUN_02010624` (disco 0x020A3BC4, Life Up/Sub Tank 0x020A3EEE,
+# refill 0x020A36F4) -> con override llama FUN_02010624(ent, ICON_SET) limpiando
+# +0xB.3 (dinámico) y +0xC.0 (paleta de otro set); ANIM sustituye los 3
+# `bl FUN_0200fe64` siguientes (0x020A3BCC / 0x020A3EF6 / 0x020A3706) -> si
+# u16[ent+0x22] == ICON_SET usa la anim del LOOKUP. La recogida no cambia (exp568c).
+# Reemplaza al marcador gris PICKUP_MARK (el cave se retiró; su hueco queda libre).
+ICON_SET = 261
+ICON_FNT_FILE_ID, ICON_DAT_FILE_ID = 235, 234     # obj_fnt.bin / obj_dat.bin (NitroFS)
+DISK_LOGO_FNT_OFF = 0x5620C                       # = DISK_LOGO_ROM - inicio vanilla de obj_fnt (0x00F09000)
+ICON_TABLE_RAM = 0x02191460
+ICON_TABLE_SIZE = 0xA4
+ICON_RESIDENT_LIST_PATCH = [
+    (0x020C9C36, "0000", "0501"),     # 4ª entrada u16 de la lista [0,1,58] (hueco de alineación)
+    (0x0200BD16, "0322", "0422"),     # FUN_0200bd04: movs r2,#3 -> #4 (fnt)
+    (0x0200BDB6, "0322", "0422"),     # FUN_0200bd04: movs r2,#3 -> #4 (dat)
+]
+ICON_BOOT_HOOK_RAM = 0x0200BDA8                   # bl FUN_02006164 (subida VRAM del set 58) -> cave
+ICON_BOOT_HOOK_ORIG = "faf7dcf9"
+ICON_BOOT_CAVE_RAM = 0x020C8150                   # HOLE_C8150 (0x020C8150-0x020C8394 a cero y sin accesos, exp560)
+ICON_BOOT_CAVE = bytes.fromhex("10b584b000240094019401240294002403940f483a21002200230e4ca0470124009401940c480d4909680d4a03230d4ca047002400940194012402940024039409480a4900220023094ca04704b010bd40571002656100024057100234390f0205010000896a0002405710020501000065610002")
+ICON_CAVES_RAM = 0x020C81C4                       # lookup / attach / anim (tras el cave de arranque)
+ICON_CAVES = bytes.fromhex("30b5264c2178264a127891421cd16178c90719d023490968002915d04a68824201d00968f8e70a89802a0dd2d3088433e35c07251540eb40db0705d1231d985c002801d0013830bd0020c04330bd30b504000d00fff7d4ff002808dbe17a08229143e172217b0122914321730e4d200029000e4a904730bd30b504000d00428c0b4b9a4204d1fff7bbff002800db050020002900074a904730bd00bf6014190228821002f481100205010000250601020501000065fe0002")
+ICON_ATTACH_CAVE_RAM = 0x020C8212
+ICON_ANIM_CAVE_RAM = 0x020C823C
+ICON_ATTACH_HOOKS = [(0x020A3BC4, "6cf72efd"), (0x020A3EEE, "6cf799fb"), (0x020A36F4, "6cf796ff")]
+ICON_ANIM_HOOKS = [(0x020A3BCC, "6cf74af9"), (0x020A3EF6, "6bf7b5ff"), (0x020A3706, "6cf7adfb")]
+
+
+def _thumb_bl(src: int, dst: int) -> bytes:
+    """Codifica un `bl dst` Thumb (4 B) situado en src."""
+    import struct
+    off = dst - (src + 4)
+    return struct.pack("<HH", 0xF000 | ((off >> 12) & 0x7FF), 0xF800 | ((off >> 1) & 0x7FF))
+
+
+def _gfx_data(name: str) -> bytes:
+    """Bloque binario de worlds/mmzx/gfx/ (también dentro del .apworld)."""
+    import os
+    import pkgutil
+    try:
+        data = pkgutil.get_data(__name__.rsplit(".", 1)[0], "gfx/" + name)
+    except Exception:
+        data = None
+    if data is None:
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "gfx", name), "rb") as f:
+            data = f.read()
+    return data
+
+
+def _insert_set(blob: bytes, setno: int, block: bytes) -> bytes:
+    """Inserta `block` como set `setno` (hoy vacío) en un fichero obj_fnt/obj_dat
+    (u32 count + u32 offset[count+1]; tamaño del set i = off[i+1]-off[i])."""
+    import struct
+    n = struct.unpack_from("<I", blob, 0)[0]
+    offs = [struct.unpack_from("<I", blob, 4 + i * 4)[0] for i in range(n + 1)]
+    if offs[n] != len(blob):
+        raise ValueError("MMZX: tabla de offsets del fichero de sets inesperada")
+    if offs[setno] != offs[setno + 1]:
+        raise ValueError("MMZX: el set %d no está vacío" % setno)
+    block = block + bytes((-len(block)) % 4)
+    new = bytearray(blob[:4])
+    for i in range(n + 1):
+        new += struct.pack("<I", offs[i] + (len(block) if i > setno else 0))
+    new += blob[4 + (n + 1) * 4:offs[setno]] + block + blob[offs[setno]:]
+    return bytes(new)
+
+
+def _install_icon_set(d: bytearray) -> int:
+    """Inserta el set AP en obj_dat/obj_fnt y reubica ambos ficheros al padding final
+    de la ROM (FAT + tamaño usado 0x80). Devuelve el nuevo inicio de obj_fnt.bin."""
+    import struct
+    fat = struct.unpack_from("<I", d, 0x48)[0]
+    fatsize = struct.unpack_from("<I", d, 0x4C)[0]
+    used = max(struct.unpack_from("<II", d, fat + k * 8)[1] for k in range(fatsize // 8))
+    cur = (used + 0x1FF) & ~0x1FF
+    fnt_start = None
+    for fid, name in ((ICON_DAT_FILE_ID, "ap_set_dat.bin"), (ICON_FNT_FILE_ID, "ap_set_fnt.bin")):
+        s0, e0 = struct.unpack_from("<II", d, fat + fid * 8)
+        newfile = _insert_set(bytes(d[s0:e0]), ICON_SET, _gfx_data(name))
+        if cur + len(newfile) > len(d) or any(d[cur:cur + len(newfile)]):
+            raise ValueError("MMZX: no hay padding libre para reubicar el fichero %d" % fid)
+        d[cur:cur + len(newfile)] = newfile
+        struct.pack_into("<II", d, fat + fid * 8, cur, cur + len(newfile))
+        if fid == ICON_FNT_FILE_ID:
+            fnt_start = cur
+        cur = (cur + len(newfile) + 0x1FF) & ~0x1FF
+    struct.pack_into("<I", d, 0x80, cur)          # "used ROM size"
+    return fnt_start
 
 # --- Compresor BLZ con parse ÓPTIMO (agente exp360-369, exp367) ---
 # El arm9 recomprimido debe caber en su slot de la ROM (0x8F400 B). El greedy
@@ -523,10 +613,6 @@ class MMZXPatchExtension(APPatchExtension):
         poke(PICKUP_MAILBOX_CAVE_RAM, PICKUP_MAILBOX_CAVE,
              bytes(len(PICKUP_MAILBOX_CAVE)))
         poke(PICKUP_MAILBOX_HOOK_RAM, PICKUP_MAILBOX_HOOK_NEW, PICKUP_MAILBOX_HOOK_ORIG)
-        #     + marcador visual de pickups ya enviados (el hook de arriba
-        #     apunta al cave de marcado, que encadena al del buzón); tabla a 0
-        assert len(PICKUP_MARK_CAVE) <= PICKUP_MARK_TABLE_RAM - PICKUP_MARK_CAVE_RAM
-        poke(PICKUP_MARK_CAVE_RAM, PICKUP_MARK_CAVE, bytes(len(PICKUP_MARK_CAVE)))
         # 1f) iconos de biometal del DATA SELECT = posesión del randomizer
         #     (siempre): H/F/L/P por 0x02104627.0-3 y X oculto si no se posee
         for ram, orig, new in DATASELECT_ICON_PATCH:
@@ -548,6 +634,19 @@ class MMZXPatchExtension(APPatchExtension):
         poke(CUTSCENE_SKIP_CAVE_RAM, CUTSCENE_SKIP_CAVE, bytes(len(CUTSCENE_SKIP_CAVE)))
         for ram, orig, new in CUTSCENE_SKIP_PATCH:
             poke(ram, bytes.fromhex(new), bytes.fromhex(orig))
+        # 1j) iconos de item en el mundo (siempre): set AP residente + caves
+        for ram, orig, new in ICON_RESIDENT_LIST_PATCH:
+            poke(ram, bytes.fromhex(new), bytes.fromhex(orig))
+        assert ICON_BOOT_CAVE_RAM + len(ICON_BOOT_CAVE) <= ICON_CAVES_RAM
+        assert ICON_CAVES_RAM + len(ICON_CAVES) <= 0x020C8394
+        poke(ICON_BOOT_CAVE_RAM, ICON_BOOT_CAVE, bytes(len(ICON_BOOT_CAVE)))
+        poke(ICON_BOOT_HOOK_RAM, _thumb_bl(ICON_BOOT_HOOK_RAM, ICON_BOOT_CAVE_RAM),
+             bytes.fromhex(ICON_BOOT_HOOK_ORIG))
+        poke(ICON_CAVES_RAM, ICON_CAVES, bytes(len(ICON_CAVES)))
+        for ram, orig in ICON_ATTACH_HOOKS:
+            poke(ram, _thumb_bl(ram, ICON_ATTACH_CAVE_RAM), bytes.fromhex(orig))
+        for ram, orig in ICON_ANIM_HOOKS:
+            poke(ram, _thumb_bl(ram, ICON_ANIM_CAVE_RAM), bytes.fromhex(orig))
         # 2) Hu-gate (opcional)
         if hu_in_pool:
             poke(HUGATE_ARRAY_RAM, HUGATE_FLAG_INDEX.to_bytes(4, "little"))
@@ -572,6 +671,9 @@ class MMZXPatchExtension(APPatchExtension):
         d[end + len(post):slot_end] = b"\x00" * (slot_end - end - len(post))
         struct.pack_into("<I", d, 0x2C, len(blob))
 
+        # set AP insertado en obj_dat/obj_fnt y ambos ficheros reubicados al padding
+        fnt_start = _install_icon_set(d)
+
         # textos de ayuda de la pestaña MISSION (NitroFS in-place, misma longitud)
         for off in MENU_WARP_TEXT_OFFS:
             o = MENU_WARP_TEXT_ROM + off
@@ -582,12 +684,14 @@ class MMZXPatchExtension(APPatchExtension):
                 raise ValueError("MMZX: texto inesperado en m_sub_en.bin+0x%X (%s)" % (off, cur.hex()))
             d[o:o + len(MENU_WARP_TEXT_NEW)] = MENU_WARP_TEXT_NEW
 
-        # sprite del Secret Disk = logo de Archipelago (NitroFS in-place, 128 B)
-        cur = bytes(d[DISK_LOGO_ROM:DISK_LOGO_ROM + len(DISK_LOGO_NEW)])
+        # sprite del Secret Disk = logo de Archipelago (128 B in-place dentro del
+        # obj_fnt.bin ya reubicado: el set 58 está antes del set AP, mismo offset)
+        logo_off = fnt_start + DISK_LOGO_FNT_OFF
+        cur = bytes(d[logo_off:logo_off + len(DISK_LOGO_NEW)])
         if cur != DISK_LOGO_NEW:
             if cur != DISK_LOGO_OLD:
-                raise ValueError("MMZX: tile del disco inesperado en ROM 0x%X (%s)" % (DISK_LOGO_ROM, cur[:8].hex()))
-            d[DISK_LOGO_ROM:DISK_LOGO_ROM + len(DISK_LOGO_NEW)] = DISK_LOGO_NEW
+                raise ValueError("MMZX: tile del disco inesperado en ROM 0x%X (%s)" % (logo_off, cur[:8].hex()))
+            d[logo_off:logo_off + len(DISK_LOGO_NEW)] = DISK_LOGO_NEW
 
         # CRC16 de cabecera (CRC-16/MODBUS sobre [0:0x15E])
         crc = 0xFFFF

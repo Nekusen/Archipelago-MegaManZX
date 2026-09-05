@@ -125,5 +125,10 @@
   With no arguments it prints the current setting. The starting value comes
   from the YAML (`notify_received` / `notify_sent`) and the command does
   not persist across client sessions.
-- `/mmzx_marks on|off`: grey out respawning pickups whose check was
-  already sent.
+- `/mmzx_icons on|off`: draw every pickup in the world (Secret Disks, Life
+  Ups, Sub Tanks and the optional respawning pickups) as the item it holds:
+  Life Up, Sub Tank, chips, biometal badges and Card Keys use their own
+  in-game icons; everything else shows the Archipelago logo, coloured by
+  class (arrow = progression, cross = useful, grey = filler). Items are
+  revealed as the client scouts them; a respawning pickup whose check was
+  already sent shows its normal appearance again. Default: on.

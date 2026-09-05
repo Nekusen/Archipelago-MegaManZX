@@ -19,8 +19,25 @@ from .data import (LOCATIONS, ITEMS, GOAL_BITS, GOAL_BITS_ALT, MISSION_ACCEPT,
 from .data import EVENT_GATES, EVENT_GATES_OPEN, EVENT_GATES_ALL6
 from .data import HUB_FLOOR_BOSS, HUB_FLOOR_DOOR_X, HUB_FLOOR_Y, WARP_DESTINATIONS
 from .data import PICKUP_MAILBOX_ADDR, PICKUP_MAILBOX_SLOTS
-from .data import PICKUP_MARK_TABLE_ADDR, PICKUP_MARK_SLOT, NOTIFY_ADDR, NOTIFY_BUF_MAX, NOTIFY_POPUP_GLYPHS
+from .data import ICON_TABLE_ADDR, ICON_TABLE_SIZE, ICON_CODES, NOTIFY_ADDR, NOTIFY_BUF_MAX, NOTIFY_POPUP_GLYPHS
 from .golden import GOLDEN_IMAGE, GOLDEN_IMAGE_ADDR, build_image
+ITEM_ID_TO_NAME = {v["id"]: n for n, v in ITEMS.items()}
+# item de este juego -> icono del set AP (worlds/mmzx/gfx/ap_set_meta.json). Lo que no
+# está aquí (Transerver Access, Model X/Hu sin sprite propio..., fillers) va por
+# clasificación: progression = logo con flecha, useful = logo con cruz, filler = gris.
+ICON_BY_ITEM = {
+    "Life Up": "lifeup", "Sub Tank": "subtank",
+    "Absorber Chip": "chip_Absorber", "Eraser Chip": "chip_Eraser", "Featherweight Chip": "chip_Featherweight",
+    "Extender Chip": "chip_Extender", "Quick Charger Chip": "chip_QuickCharger", "Ice Boots Chip": "chip_IceBoots",
+    "Wind Boots Chip": "chip_WindBoots", "Frog Chip": "chip_Frog",
+    "Model Hu": "model_Hu", "Model X": "model_X", "Model ZX": "model_ZX", "Model OX": "model_OX",
+    "Progressive Model HX": "model_HX", "Progressive Model FX": "model_FX",
+    "Progressive Model LX": "model_LX", "Progressive Model PX": "model_PX",
+    "Model HX": "model_HX", "Model FX": "model_FX", "Model LX": "model_LX", "Model PX": "model_PX",
+    "Yellow Card Key": "card_Amarilla", "Green Card Key": "card_Verde", "Red Card Key": "card_Roja",
+    "Blue Card Key": "card_Azul", "White Card Key": "card_Blanca", "Purple Card Key": "card_Purpura",
+}
+
 
 if TYPE_CHECKING:
     from worlds._bizhawk.context import BizHawkClientContext
@@ -386,10 +403,10 @@ class MMZXClient(BizHawkClient):
         self.notify_setup = False        # umbrales del YAML ya aplicados
         self.notify_user_set = False     # /mmzx_notify usado (gana al YAML)
         self.scout_requested: set[int] = set()
-        # marcador gris de pickups ya enviados (parche PICKUP_MARK)
-        self.marks_enabled = True
-        self.mark_written: tuple[int, bytes] | None = None
-        self.mark_by_sub: dict[int, dict[int, int]] | None = None
+        # iconos de item en el mundo (parche ICON_*: tabla por subárea)
+        self.icons_enabled = True
+        self.icon_written: tuple[int, bytes] | None = None
+        self.icon_by_sub: dict[int, list[tuple[int, int, bool]]] | None = None
 
     async def validate_rom(self, ctx: "BizHawkClientContext") -> bool:
         from CommonClient import logger
@@ -437,7 +454,7 @@ class MMZXClient(BizHawkClient):
         self.notified_items = None
         self.notify_setup = False        # re-aplicar el YAML de la nueva partida
         self.scout_requested = set()
-        self.mark_written = None
+        self.icon_written = None
         return True
 
     async def set_auth(self, ctx: "BizHawkClientContext") -> None:
@@ -544,7 +561,7 @@ class MMZXClient(BizHawkClient):
             ctx.command_processor.commands["mmzx_accept"] = _cmd_accept
             ctx.command_processor.commands["mmzx_where"] = _cmd_where
             ctx.command_processor.commands["mmzx_notify"] = _cmd_notify
-            ctx.command_processor.commands["mmzx_marks"] = _cmd_marks
+            ctx.command_processor.commands["mmzx_icons"] = _cmd_icons
 
         # ---- tutorial-skip: estado one-shot (datastore) + imagen dorada ----
         # Resolver PRONTO (también en menús) la máquina one-shot del modelo
@@ -636,8 +653,8 @@ class MMZXClient(BizHawkClient):
                 self._notify_sent(ctx, newly)
             self.local_checked = checked
 
-        # ---- marcador gris de pickups ya enviados (parche PICKUP_MARK) ----
-        await self._stage("marcas de pickups", self._sync_pickup_marks(ctx))
+        # ---- iconos de item en el mundo (parche ICON_*: tabla por subárea) ----
+        await self._stage("iconos de items", self._sync_icon_table(ctx))
 
         # ---- Troop: desatascar la escena de Giro si quedó a medias ----
         await self._stage("troop", self._troop_unstick(ctx, guard))
@@ -800,43 +817,68 @@ class MMZXClient(BizHawkClient):
                     names.append(str(i))
             logger.info("[mmzx] pickup recogido: %s" % ", ".join(names))
 
-    async def _sync_pickup_marks(self, ctx) -> None:
-        """Escribe en la ROM (tabla PICKUP_MARK) el bitmap de pickups
-        respawneables YA ENVIADOS de la subárea actual: el cave los pinta en
-        gris al spawnear (o en <= 2 frames si la sala ya está cargada). Se
-        reescribe al cambiar de sub, al enviar un check de pickup, al recibir
-        checked_locations del servidor y si la ROM perdió la tabla (reset:
-        slot 0). Con /mmzx_marks off se apaga (slot 0)."""
-        if not self.mailbox_enabled:
-            return
-        if self.mark_by_sub is None:
-            self.mark_by_sub = {}
+    def _icon_code(self, ctx, loc_id: int) -> int:
+        """Código de icono (anim+1 del set AP) del item que hay en la location, según
+        los LocationScouts recibidos: items de este juego con sprite propio (Life Up,
+        Sub Tank, chips, modelos, Card Keys) -> su icono; el resto por clasificación
+        (progression -> logo con flecha, useful -> logo con cruz, filler/trap -> logo
+        gris). 0 = aún sin scout (aspecto vanilla: el disco es el logo liso)."""
+        info = (getattr(ctx, "locations_info", None) or {}).get(loc_id)
+        if info is None:
+            return 0
+        flags = int(getattr(info, "flags", 0) or 0)
+        if getattr(info, "player", None) == ctx.slot:
+            name = ITEM_ID_TO_NAME.get(int(info.item))
+            icon = ICON_BY_ITEM.get(name)
+            if icon:
+                return ICON_CODES[icon]
+        if flags & 0b001:
+            return ICON_CODES["logo_progression"]
+        if flags & 0b010:
+            return ICON_CODES["logo_useful"]
+        return ICON_CODES["logo_filler"]
+
+    async def _sync_icon_table(self, ctx) -> None:
+        """Escribe en RAM (ICON_TABLE_ADDR) la tabla de iconos de la subárea actual:
+        para cada location física de la sala (discos, Life Up/Sub Tank, refills) el
+        código del item que contiene, y el bitmap de refills YA ENVIADOS (se ven como
+        el refill vanilla). El cave de la ROM la consulta al crear cada entidad. Se
+        reescribe al cambiar de sub, al llegar scouts, al enviar checks y si la ROM
+        perdió la tabla (reset). /mmzx_icons off la apaga (flags = 0)."""
+        if self.icon_by_sub is None:
+            self.icon_by_sub = {}
             for v in LOCATIONS.values():
-                det = v.get("detect")
-                if det and det[0] == "mailbox" and int(det[2]) < 256:
-                    self.mark_by_sub.setdefault(int(det[1]), {})[v["id"]] = int(det[2])
+                ic = v.get("icon")
+                if ic and int(ic[1]) < 128:
+                    det = v.get("detect") or [None]
+                    self.icon_by_sub.setdefault(int(ic[0]), []).append((v["id"], int(ic[1]), det[0] == "mailbox"))
         try:
-            r = await bizhawk.read(ctx.bizhawk_ctx, [(SUBAREA_STABLE, 1, DOM),
-                                                     (PICKUP_MARK_TABLE_ADDR, 4, DOM)])
+            r = await bizhawk.read(ctx.bizhawk_ctx, [(SUBAREA_STABLE, 1, DOM), (ICON_TABLE_ADDR, 2, DOM)])
         except bizhawk.RequestFailedError:
             return
         sub, head = r[0][0], r[1]
-        if not self.marks_enabled:
+        if not self.icons_enabled:
             if head[1] != 0:
-                await bizhawk.write(ctx.bizhawk_ctx, [(PICKUP_MARK_TABLE_ADDR, bytes(36), DOM)])
-                self.mark_written = None
+                await bizhawk.write(ctx.bizhawk_ctx, [(ICON_TABLE_ADDR, bytes(ICON_TABLE_SIZE), DOM)])
+                self.icon_written = None
             return
+        msgs = self._ensure_scouts(ctx)
+        if msgs:
+            await ctx.send_msgs(msgs)
         done = set(ctx.checked_locations) | self.mailbox_checked
-        bm = bytearray(32)
-        for loc_id, idx in self.mark_by_sub.get(sub, {}).items():
+        table = bytearray(ICON_TABLE_SIZE)
+        table[0], table[1] = sub, 1
+        for loc_id, idx, respawns in self.icon_by_sub.get(sub, ()):
             if loc_id in done:
-                bm[idx >> 3] |= 1 << (idx & 7)
-        want = (sub, bytes(bm))
-        if want == self.mark_written and head[0] == sub and head[1] == PICKUP_MARK_SLOT:
+                if respawns:
+                    table[0x84 + (idx >> 3)] |= 1 << (idx & 7)
+                continue
+            table[4 + idx] = self._icon_code(ctx, loc_id)
+        want = (sub, bytes(table))
+        if want == self.icon_written and head[0] == sub and head[1] == 1:
             return
-        await bizhawk.write(ctx.bizhawk_ctx, [
-            (PICKUP_MARK_TABLE_ADDR, bytes([sub, PICKUP_MARK_SLOT, 0, 0]) + bytes(bm), DOM)])
-        self.mark_written = want
+        await bizhawk.write(ctx.bizhawk_ctx, [(ICON_TABLE_ADDR, bytes(table), DOM)])
+        self.icon_written = want
 
     def _ensure_scouts(self, ctx) -> list:
         """Pide LocationScouts (sin crear hints) de las locations pendientes
@@ -2023,16 +2065,16 @@ def _cmd_notify(self, *args) -> None:
         NOTIFY_LEVELS[handler.notify_cfg["received"]], NOTIFY_LEVELS[handler.notify_cfg["sent"]]))
 
 
-def _cmd_marks(self, *args) -> None:
-    """Marcador gris de los pickups respawneables ya enviados: /mmzx_marks [on|off]."""
+def _cmd_icons(self, *args) -> None:
+    """Iconos de item en los pickups del mundo: /mmzx_icons [on|off]."""
     from CommonClient import logger
     handler = self.ctx.client_handler
     if not isinstance(handler, MMZXClient):
         return
     if args and str(args[0]).lower() in ("on", "off"):
-        handler.marks_enabled = str(args[0]).lower() == "on"
-        handler.mark_written = None
+        handler.icons_enabled = str(args[0]).lower() == "on"
+        handler.icon_written = None
     elif args:
-        logger.error("uso: /mmzx_marks [on|off]")
+        logger.error("uso: /mmzx_icons [on|off]")
         return
-    logger.info("[mmzx] marcador de pickups enviados: %s" % ("on" if handler.marks_enabled else "off"))
+    logger.info("[mmzx] iconos de item en el mundo: %s" % ("on" if handler.icons_enabled else "off"))

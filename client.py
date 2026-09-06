@@ -1860,15 +1860,26 @@ class MMZXClient(BizHawkClient):
         # 2ª mitad (progresivos): solo con 2 copias recibidas
         full = {m: counts.get(ITEMS.get(MODEL_POSSESSION[m][0], {}).get("id"), 0) >= 2
                 for m in MODEL_PART2}
-        owned[0] = True   # Hu: hardcoded (o gateada por su propio parche Hu-gate)
+        # Hu: en vanilla está hardcoded, pero con hu_in_pool el parche Hu-gate
+        # la ata al item "Model Hu" -> entonces es una forma NO poseída más y
+        # hay que revertirla. Quedarse en Hu sin el item es un SOFTLOCK
+        # (exp595-601): `can_transform` (0x020377A8) exige DOS categorías de
+        # modelo poseídas (`cmp r0,#2` en 0x020377C8 sobre el contador
+        # FUN_02045064) y, gateada, Hu ya no cuenta; con un solo biometal el
+        # total es 1 y el juego rechaza TODA transformación ("Cannot transform
+        # now"). Varias escenas te dejan en Hu al acabar — la del sello de M-1
+        # (misión 14, exp601) es la que reportó el usuario.
+        owned[0] = (not (ctx.slot_data or {}).get("hu_in_pool")
+                    or counts.get(ITEMS.get("Model Hu", {}).get("id"), 0) >= 1)
         writes: list[tuple[int, bytes, str]] = []
         notes: list[str] = []
         if owned.get(active, False):
             self.last_legit_model = active   # Hu, o forma poseída por AP: legítima
         else:
             fallback = self._fallback_model(ctx, owned)
-            writes.append((MODEL, bytes([fallback]), DOM))
-            notes.append("modelo %d no poseído -> revierto a %d" % (active, fallback))
+            if fallback != active:   # sin nada mejor (Hu gateada y 0 biometales) no se toca
+                writes.append((MODEL, bytes([fallback]), DOM))
+                notes.append("modelo %d no poseído -> revierto a %d" % (active, fallback))
         # bits de posesión sin item -> limpiar (vivo + canónica); ídem la 2ª
         # mitad sin la 2ª copia (p.ej. re-derivada por la tienda de niveles)
         addrs = sorted({a for _i, a, _b in MODEL_POSSESSION.values()}

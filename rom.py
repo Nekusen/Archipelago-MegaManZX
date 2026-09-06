@@ -69,6 +69,20 @@ HUGATE_LISTS0_ORIG = b"\x00\x00\x00\x00"
 
 CFG_HU_IN_POOL = 0x01                     # byte 0 del config: bit0 = hu_in_pool
 
+# --- Diálogo de la YELLOW CARD KEY en bucle (playtest del usuario 2026-09-06) ---
+# `FUN_02093b4c` (despachador de la consola del Operator), case 1: si *Troop
+# Reinforcement* está informada (0x021045E1.1) y NO se tiene la llave amarilla
+# (0x021045FD.1), arranca el guion 0x12 (`FUN_02094288`: sfx + msg 1129 "YELLOW CARD
+# KEY" + `orr` que la concede). En el randomizer la llave es un ITEM del pool y el
+# cliente impone la posesión, así que el bit nunca se queda puesto -> el diálogo se
+# repetía en CADA entrada al Transerver. La llave amarilla NO es una location (no se
+# pierde ningún check), así que el guion se desactiva: el `beq` que salta al flujo
+# normal (el mismo camino que toma el juego cuando ya la tienes) pasa a incondicional.
+#   0x02093BE4: beq (D00C) -> b (E00C)
+YELLOWKEY_BR_RAM = 0x02093BE4
+YELLOWKEY_BR_ORIG = bytes.fromhex("0cd0")
+YELLOWKEY_BR_NEW = bytes.fromhex("0ce0")
+
 # --- Guarda del dibujador de sprites OAM (exp214-225, 2026-09-02) ---
 # FUN_02009b74 (Thumb, 208 B + pool de 24 B) construye las entradas OAM de un
 # drawable: hace UN bounds-check antes del bucle y sale del bucle solo con
@@ -627,6 +641,8 @@ class MMZXPatchExtension(APPatchExtension):
         #     `beq` -> `bls` al final del bucle de sprites de FUN_02009b74
         poke(OAMLOOP_BR_RAM, OAMLOOP_BR_NEW, OAMLOOP_BR_ORIG)
         poke(OAMLOOP2_BR_RAM, OAMLOOP2_BR_NEW, OAMLOOP2_BR_ORIG)
+        # 1c bis) el diálogo de la llave amarilla del Operator ya no se repite
+        poke(YELLOWKEY_BR_RAM, YELLOWKEY_BR_NEW, YELLOWKEY_BR_ORIG)
         # 1c) posesión de biometales "solo item AP" (siempre): la victoria del
         #     jefe deja de conceder el modelo; cada copia del item progresivo
         #     pone una mitad (lista [mitad 1, mitad 2]; count vanilla = 2)

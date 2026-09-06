@@ -202,6 +202,18 @@ class NotifySent(Choice):
     default = 2
 
 
+class NotifyStyle(Choice):
+    """Formato del aviso en pantalla. `short`: una sola línea de 30 caracteres
+    (si no cabe se quita el jugador y se recorta el nombre del item). `full`:
+    el texto completo ("Got <item> from <jugador>") partido por palabras en
+    páginas que el mismo popup muestra una tras otra sin cerrarse. Se puede
+    cambiar en la partida con `/mmzx_notify short|full`."""
+    display_name = "On-screen Notifications: Style"
+    option_short = 0
+    option_full = 1
+    default = 1
+
+
 @dataclass
 class MMZXOptions(PerGameCommonOptions):
     character: Character
@@ -220,5 +232,6 @@ class MMZXOptions(PerGameCommonOptions):
     pickup_checks_crystals: PickupChecksCrystals
     notify_received: NotifyReceived
     notify_sent: NotifySent
+    notify_style: NotifyStyle
     death_link: DeathLink
     start_inventory_from_pool: StartInventoryPool

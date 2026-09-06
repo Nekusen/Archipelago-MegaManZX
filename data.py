@@ -356,11 +356,15 @@ PICKUP_MAILBOX_SLOTS = 8
 # Iconos de item en el mundo (rom.py ICON_*, set AP 261; exp560-569): tabla
 # por subárea que escribe el cliente: u8 sub, u8 flags (bit0 válida), u16 pad,
 # u8 code[128] (índice de coords -> ICON_CODES[nombre] = anim+1; 0 = sin
-# cambio), 32 B bitmap 'ya enviado' (bit = idx -> aspecto vanilla). Cada
+# cambio), 32 B bitmap 'ya enviado' (bit = idx -> aspecto vanilla) y, desde
+# 2026-09-07 (rom.py PICKUP_AP), en +0xA4 32 B bitmap 'present' (bit = idx ->
+# location del multiworld aún no enviada: el pickup NO aplica su efecto
+# vanilla; se escribe aunque los iconos estén apagados). Cada
 # location física lleva 'icon': [sub, idx] (su índice en la tabla de coords
 # de la sala = el que el cave lee de la lista de spawns 0x021081F4).
 ICON_TABLE_ADDR = 0x02191460
-ICON_TABLE_SIZE = 0xA4
+ICON_TABLE_SIZE = 0xC4
+ICON_TABLE_PRESENT_OFF = 0xA4
 ICON_SET = 261
 ICON_CODES = {'logo_useful': 1, 'logo_progression': 2, 'logo_filler': 3, 'lifeup': 4, 'subtank': 5, 'chip_Absorber': 6, 'chip_Eraser': 7, 'chip_Featherweight': 8, 'chip_Extender': 9, 'chip_QuickCharger': 10, 'chip_IceBoots': 11, 'chip_WindBoots': 12, 'chip_Frog': 13, 'model_Hu': 14, 'model_X': 15, 'model_ZX': 16, 'model_HX': 17, 'model_FX': 18, 'model_LX': 19, 'model_PX': 20, 'model_OX': 21, 'card_Roja': 22, 'card_Azul': 23, 'card_Purpura': 24, 'card_Verde': 25, 'card_Amarilla': 26, 'card_Blanca': 27}
 # Avisos en pantalla (rom.py NOTIFY_*; agente exp473-480): u8 REQ (1 =

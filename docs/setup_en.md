@@ -73,6 +73,10 @@
   an item / when one of your checks sends an item to another player: `off`,
   `progression`, `useful` (progression + useful), `all` (also filler such as
   E-Crystals and 1-Ups). Change it mid-game with `/mmzx_notify`.
+- `notify_style` (default `full`): `full` shows the whole message ("Got
+  Progressive Model HX from Alice") as consecutive pages of the same popup;
+  `short` keeps a single 30-character line (the player name is dropped and
+  the item name cut if it does not fit). Change it with `/mmzx_notify short|full`.
 - `death_link`, `goal` (defeat Serpent).
 
 ## How it works (what to expect)
@@ -93,6 +97,12 @@
   away on the next client tick.
 - **Life Ups / Sub Tanks / Data Disks** are checks; the items give the
   capacity. Card Keys and Transerver Access are progression.
+- **Picking up a check** (a Disk, Life Up, Sub Tank or one of the optional
+  respawning pickups) plays the Disk chime and nothing else: no healing, no
+  extra life, no "Found a Life Up!" popup and no "E-04" label, because the
+  object has been replaced by an Archipelago item. The client then announces
+  what was found/sent. A respawning pickup whose check was already sent
+  comes back as the normal refill and heals as usual.
 - **ITEM B chips** (Absorber, Featherweight, Extender, Quick Charger, Ice
   Boots, Wind Boots, Frog, Eraser) are useful items: when received they
   appear in the ITEM B tab of the pause menu, where you activate them.
@@ -121,10 +131,11 @@
 - `/mmzx_start`: re-apply the YAML starting state.
 - `/mmzx_notify all` (or `off` / `progression` / `useful`): which item
   classes are announced on screen, for received and sent items at once;
-  `/mmzx_notify received all` / `/mmzx_notify sent off` set one side only.
-  With no arguments it prints the current setting. The starting value comes
-  from the YAML (`notify_received` / `notify_sent`) and the command does
-  not persist across client sessions.
+  `/mmzx_notify received all` / `/mmzx_notify sent off` set one side only;
+  `/mmzx_notify short|full` picks between one cut line and the full text in
+  pages. With no arguments it prints the current setting. The starting value
+  comes from the YAML (`notify_received` / `notify_sent` / `notify_style`)
+  and the command does not persist across client sessions.
 - `/mmzx_icons on|off`: draw every pickup in the world (Secret Disks, Life
   Ups, Sub Tanks and the optional respawning pickups) as the item it holds:
   Life Up, Sub Tank, chips, biometal badges and Card Keys use their own

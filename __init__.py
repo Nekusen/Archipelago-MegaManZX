@@ -223,5 +223,6 @@ class MMZXWorld(World):
             # conectar salvo que el jugador ya haya usado /mmzx_notify)
             "notify_received": self.options.notify_received.current_key,
             "notify_sent": self.options.notify_sent.current_key,
+            "notify_style": self.options.notify_style.current_key,
             "version": "0.1.0",
         }

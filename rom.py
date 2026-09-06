@@ -253,6 +253,40 @@ NOTIFY_RAM = 0x020CB700        # = data.NOTIFY_ADDR
 NOTIFY_BUF_MAX = 0xFC
 NOTIFY_POPUP_GLYPHS = 30
 
+# --- Pickups REEMPLAZADOS por items AP: sin efecto vanilla (2026-09-07, exp603-604;
+# playtest del usuario; docs/v02_notes.md §2m) ---
+# Al recoger un pickup que es una location AP pendiente el juego seguía aplicando
+# el efecto del objeto original (energía/WE/E-Crystals/1-Up, el popup "Found a
+# Life Up!"/"Found a Sub Tank!" y la etiqueta "E-04" sobre el jugador al coger un
+# disco). `apgate(ent)` (Thumb, +0x00) devuelve 1 si la entidad es una location
+# AP pendiente según la TABLA del cliente (ICON_TABLE: misma sub 0x02108228, flags
+# bit0, entidad en la lista de spawns 0x021081F4 -> índice de coords, bit del
+# bitmap NUEVO `present` en +0xA4 = "location del multiworld aún no enviada";
+# el cliente lo escribe siempre, con /mmzx_icons off también). Ganchos:
+#   refill  0x020A30F4 (FUN_020a309c, r5 = ent): si AP -> chime 0x1A y salto al
+#           epílogo 0x020A31AC (sin HP/WE/EC/1-Up/flag/popup); si no, repite
+#           `ldrb r0,[r5,#0x14]; cmp r0,#0` y vuelve con los flags intactos.
+#   disk    0x020A3ADE `bl FUN_020a3a38` (etiqueta "E-04" + sfx 0x1A): si AP ->
+#           chime y estado 4 (liberar, tabla 0x020EB8B0[kind][4]) como cuando la
+#           etiqueta se crea; el handler del estado 2 del disco ES FUN_020a3a38
+#           (reintenta la etiqueta cada frame), por eso no basta con no llamarla.
+#           El flag del disco (FUN_02009370) se conserva (detección).
+#   lifeup  0x020A3CD4 (14 B: sfx 0x24 + popup 1065) y subtank 0x020A3CEE (sfx
+#           0x18 + popup 1066): `movs r0,r4; bl cave; 4 nops`; si AP -> chime; si
+#           no, lo vanilla. grant_* (nibble alto, PICKUP_FLAG_PATCH) se conserva.
+# El buzón (hook del prólogo) y los iconos no cambian. Sonido AP = chime del disco.
+PICKUP_AP_CAVE_RAM = 0x020CB800          # hueco libre (antiguo PICKUP_MARK) hasta DATASELECT_CAVE_RAM
+PICKUP_AP_CAVE = bytes.fromhex(
+    "10b5104c2178104a1278914217d16178c90714d00d490968002910d04a68824201d00968f8e70a89802a08d2d308a433e35c07211140cb400120184010bd002010bd00bf6014190228821002f48110021a203af743f810bd00b52800fff7d0ff002805d01a203af739f801bc0248004702bc287d00280847ad310a0210b50400fff7beff002803d12000d8f7d5f810bd04202061607a810003484158206980000858a061d4e700bfb0b80e0210b50400fff7a6ff0028cbd124203af70ff802485a2146f707fd10bd2904000010b50400fff796ff0028bbd1182039f7ffff02485a2146f7f7fc10bd2a040000")
+PICKUP_AP_ENTRIES = {'apgate': 0, 'ap_tail': 80, 'refill': 88, 'disk': 124, 'lifeup': 172, 'subtank': 204}
+PICKUP_AP_HOOKS = [   # (RAM, bytes originales, entrada, prefijo, sufijo): prefijo + bl(entrada) + sufijo
+    (0x020A30F4, "287d0028", "refill", "", ""),
+    (0x020A3ADE, "fff7abff", "disk", "", ""),
+    (0x020A3CD4, "242061f701fe39485a216ef7f9fa", "lifeup", "201c", "c046" * 4),
+    (0x020A3CEE, "182061f7f4fd33485a216ef7ecfa", "subtank", "201c", "c046" * 4),
+]
+ICON_TABLE_PRESENT_OFF = 0xA4            # bitmap `present` (32 B) que lee apgate
+
 # --- Cutscenes SIEMPRE saltables (agente exp453-462, 2026-09-04;
 # docs/v02_notes.md §2a) ---
 # Vanilla: START solo salta una cutscene si su evento único (bitfield de 96
@@ -409,7 +443,7 @@ ICON_SET = 261
 ICON_FNT_FILE_ID, ICON_DAT_FILE_ID = 235, 234     # obj_fnt.bin / obj_dat.bin (NitroFS)
 DISK_LOGO_FNT_OFF = 0x5620C                       # = DISK_LOGO_ROM - inicio vanilla de obj_fnt (0x00F09000)
 ICON_TABLE_RAM = 0x02191460
-ICON_TABLE_SIZE = 0xA4
+ICON_TABLE_SIZE = 0xC4                            # +0xA4 bitmap `present` (PICKUP_AP, 2026-09-07)
 ICON_RESIDENT_LIST_PATCH = [
     (0x020C9C36, "0000", "0501"),     # 4ª entrada u16 de la lista [0,1,58] (hueco de alineación)
     (0x0200BD16, "0322", "0422"),     # FUN_0200bd04: movs r2,#3 -> #4 (fnt)
@@ -703,6 +737,15 @@ class MMZXPatchExtension(APPatchExtension):
         poke(SPRITEGUARD_CAVE_RAM, SPRITEGUARD_CAVE, bytes(len(SPRITEGUARD_CAVE)))
         for ram in SPRITEGUARD_SITES:
             poke(ram, _thumb_bl(ram, SPRITEGUARD_CAVE_RAM), SPRITEGUARD_ORIG)
+        # 1k) pickups reemplazados por items AP: sin efecto/popup/etiqueta vanilla
+        #     (siempre; decide la tabla del cliente, bitmap `present`)
+        assert PICKUP_AP_CAVE_RAM + len(PICKUP_AP_CAVE) <= DATASELECT_CAVE_RAM
+        poke(PICKUP_AP_CAVE_RAM, PICKUP_AP_CAVE, bytes(len(PICKUP_AP_CAVE)))
+        for ram, orig, entry, pre, post in PICKUP_AP_HOOKS:
+            new = (bytes.fromhex(pre) + _thumb_bl(ram + len(pre) // 2, PICKUP_AP_CAVE_RAM + PICKUP_AP_ENTRIES[entry])
+                   + bytes.fromhex(post))
+            assert len(new) == len(orig) // 2
+            poke(ram, new, bytes.fromhex(orig))
         # 2) Hu-gate (opcional)
         if hu_in_pool:
             poke(HUGATE_ARRAY_RAM, HUGATE_FLAG_INDEX.to_bytes(4, "little"))

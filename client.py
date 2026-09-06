@@ -19,7 +19,7 @@ from .data import (LOCATIONS, ITEMS, GOAL_BITS, GOAL_BITS_ALT, MISSION_ACCEPT,
 from .data import EVENT_GATES, EVENT_GATES_OPEN, EVENT_GATES_ALL6
 from .data import HUB_FLOOR_BOSS, HUB_FLOOR_DOOR_X, HUB_FLOOR_Y, WARP_DESTINATIONS
 from .data import PICKUP_MAILBOX_ADDR, PICKUP_MAILBOX_SLOTS
-from .data import ICON_TABLE_ADDR, ICON_TABLE_SIZE, ICON_CODES, NOTIFY_ADDR, NOTIFY_BUF_MAX, NOTIFY_POPUP_GLYPHS
+from .data import ICON_TABLE_ADDR, ICON_TABLE_SIZE, ICON_TABLE_PRESENT_OFF, ICON_CODES, NOTIFY_ADDR, NOTIFY_BUF_MAX, NOTIFY_POPUP_GLYPHS
 from .golden import GOLDEN_IMAGE, GOLDEN_IMAGE_ADDR, build_image
 ITEM_ID_TO_NAME = {v["id"]: n for n, v in ITEMS.items()}
 # item de este juego -> icono del set AP (worlds/mmzx/gfx/ap_set_meta.json). Lo que no
@@ -290,9 +290,18 @@ PICKUP_OPTION_KEYS = ("pickup_checks_1up", "pickup_checks_energy",
 # /mmzx_notify (received/sent: off, progression, useful = progresión+útil, all).
 NOTIFY_DUR = 90
 NOTIFY_LEVELS = ("off", "progression", "useful", "all")
-NOTIFY_PUNCT = {"!": 0x01, "'": 0x07, ",": 0x0C, "-": 0x0D, ".": 0x0E, ":": 0x1A, "?": 0x1F}
+# puntuación de la fuente (ASCII-0x20): 0x01-0x0F `!"#$%&'()*+,-./` y 0x1A `:` vistos
+# en pantalla (exp475/479); `?` (0x1F) por extrapolación
+NOTIFY_PUNCT = {ch: ord(ch) - 0x20 for ch in "!\"#$%&'()*+,-./:"}
+NOTIFY_PUNCT["?"] = 0x1F
 NOTIFY_GREEN, NOTIFY_WHITE = b"\xf1\x03", b"\xf1\x00"
 NOTIFY_QUEUE_MAX = 16
+# Estilo del aviso: `short` = una línea de NOTIFY_POPUP_GLYPHS glifos (se recorta);
+# `full` = el texto entero partido por palabras en PÁGINAS separadas por 0xFD:
+# el handler del popup (FUN_02010f50, fase 5) encadena las páginas reescribiendo
+# el texto SIN cerrar la ventana (verificado exp604). Opción YAML notify_style.
+NOTIFY_STYLES = ("short", "full")
+NOTIFY_PAGE = b"\xfd"
 
 
 def encode_text(text: str, terminate: bool = True) -> bytes:
@@ -317,10 +326,61 @@ def encode_text(text: str, terminate: bool = True) -> bytes:
     return bytes(out)
 
 
-def notify_bytes(head: str, item: str, tail: str) -> bytes:
-    """head + item (en verde) + tail, en una línea de NOTIFY_POPUP_GLYPHS glifos:
-    si no cabe se sacrifica primero tail (' from Alice') y luego se recorta el item."""
+def notify_pages(head: str, item: str, tail: str, n: int = NOTIFY_POPUP_GLYPHS) -> list[bytes]:
+    """Parte head + item (en verde) + tail por palabras en páginas de <= n glifos
+    (los controles de color no cuentan). Cada página empieza con su control de
+    color para no depender del estado que deje la anterior; una palabra más larga
+    que la línea se trocea. Devuelve las páginas codificadas, sin 0xFD ni 0xFE."""
+    # la cola (' from Alice' / ' to Bob') va entera si cabe en una línea, para no
+    # dejar un "from" colgado al final de la página anterior
+    tail_words = [tail.strip()] if 0 < len(tail.strip()) <= n else tail.split()
+    words = ([(w, False) for w in head.split()] + [(w, True) for w in item.split()]
+             + [(w, False) for w in tail_words])
+    pages: list[list[tuple[str, bool]]] = []
+    line: list[tuple[str, bool]] = []
+    used = 0
+    for w, green in words:
+        while len(w) > n:
+            if line:
+                pages.append(line)
+                line, used = [], 0
+            pages.append([(w[:n], green)])
+            w = w[n:]
+        need = len(w) + (1 if line else 0)
+        if used + need > n:
+            pages.append(line)
+            line, used = [], 0
+            need = len(w)
+        line.append((w, green))
+        used += need
+    if line:
+        pages.append(line)
+    out = []
+    for pg in pages:
+        buf = bytearray()
+        color = None
+        for j, (w, green) in enumerate(pg):
+            if j:
+                buf.append(0x00)
+            if green != color:
+                buf += NOTIFY_GREEN if green else NOTIFY_WHITE
+                color = green
+            buf += encode_text(w, False)
+        out.append(bytes(buf))
+    return out
+
+
+def notify_bytes(head: str, item: str, tail: str, style: str = "short") -> bytes:
+    """head + item (en verde) + tail. `short`: una línea de NOTIFY_POPUP_GLYPHS
+    glifos (si no cabe se sacrifica primero tail, ' from Alice', y luego se recorta
+    el item). `full`: el texto entero en páginas encadenadas del mismo popup
+    (notify_pages + 0xFD); si no cabe en el búfer se descartan páginas finales."""
     n = NOTIFY_POPUP_GLYPHS
+    if style == "full":
+        pages = notify_pages(head, item, tail, n)
+        while len(pages) > 1 and sum(len(p) + 1 for p in pages) > NOTIFY_BUF_MAX:
+            pages.pop()
+        return NOTIFY_PAGE.join(pages) + b"\xfe"
     if len(head) + len(item) + len(tail) > n:
         tail = ""
     if len(head) + len(item) > n:
@@ -402,6 +462,8 @@ class MMZXClient(BizHawkClient):
         self.notify_cfg = {"received": 2, "sent": 2}      # índices en NOTIFY_LEVELS
         self.notify_setup = False        # umbrales del YAML ya aplicados
         self.notify_user_set = False     # /mmzx_notify usado (gana al YAML)
+        self.notify_style = "full"       # NOTIFY_STYLES; el YAML (notify_style) lo fija al conectar
+        self.notify_style_user = False   # /mmzx_notify short|full usado (gana al YAML)
         self.scout_requested: set[int] = set()
         # iconos de item en el mundo (parche ICON_*: tabla por subárea)
         self.icons_enabled = True
@@ -545,11 +607,14 @@ class MMZXClient(BizHawkClient):
                 val = str(ctx.slot_data.get("notify_" + key, "")).lower()
                 if not self.notify_user_set and val in NOTIFY_LEVELS:
                     self.notify_cfg[key] = NOTIFY_LEVELS.index(val)
+            style = str(ctx.slot_data.get("notify_style", "")).lower()
+            if not self.notify_style_user and style in NOTIFY_STYLES:
+                self.notify_style = style
             from CommonClient import logger
-            logger.info("[mmzx] avisos en pantalla: received=%s, sent=%s "
-                        "(/mmzx_notify [received|sent] <off|progression|useful|all>)"
+            logger.info("[mmzx] avisos en pantalla: received=%s, sent=%s, style=%s "
+                        "(/mmzx_notify [received|sent] <off|progression|useful|all> | <short|full>)"
                         % (NOTIFY_LEVELS[self.notify_cfg["received"]],
-                           NOTIFY_LEVELS[self.notify_cfg["sent"]]))
+                           NOTIFY_LEVELS[self.notify_cfg["sent"]], self.notify_style))
 
         # comandos de cliente (anti-softlock + diagnóstico de flags)
         if not self.added_commands:
@@ -839,12 +904,18 @@ class MMZXClient(BizHawkClient):
         return ICON_CODES["logo_filler"]
 
     async def _sync_icon_table(self, ctx) -> None:
-        """Escribe en RAM (ICON_TABLE_ADDR) la tabla de iconos de la subárea actual:
+        """Escribe en RAM (ICON_TABLE_ADDR) la tabla de pickups de la subárea actual:
         para cada location física de la sala (discos, Life Up/Sub Tank, refills) el
-        código del item que contiene, y el bitmap de refills YA ENVIADOS (se ven como
-        el refill vanilla). El cave de la ROM la consulta al crear cada entidad. Se
-        reescribe al cambiar de sub, al llegar scouts, al enviar checks y si la ROM
-        perdió la tabla (reset). /mmzx_icons off la apaga (flags = 0)."""
+        código del item que contiene (solo con los iconos encendidos), el bitmap de
+        refills YA ENVIADOS (+0x84: se ven como el refill vanilla) y el bitmap
+        `present` (+0xA4, rom.py PICKUP_AP): locations del multiworld cuyo pickup
+        NO debe aplicar su efecto vanilla (energía/1-Up/popup/etiqueta del disco):
+        los refills solo mientras no se hayan enviado (después reaparecen y curan
+        como siempre); discos/Life Up/Sub Tank siempre (no reaparecen; tras un
+        !collect el pickup físico sigue ahí y solo suena el chime). El cave de la
+        ROM la consulta al crear cada entidad y al recogerla. Se reescribe al
+        cambiar de sub, al llegar scouts, al enviar checks y si la ROM perdió la
+        tabla (reset). /mmzx_icons off solo quita los códigos de icono."""
         if self.icon_by_sub is None:
             self.icon_by_sub = {}
             for v in LOCATIONS.values():
@@ -857,23 +928,22 @@ class MMZXClient(BizHawkClient):
         except bizhawk.RequestFailedError:
             return
         sub, head = r[0][0], r[1]
-        if not self.icons_enabled:
-            if head[1] != 0:
-                await bizhawk.write(ctx.bizhawk_ctx, [(ICON_TABLE_ADDR, bytes(ICON_TABLE_SIZE), DOM)])
-                self.icon_written = None
-            return
         msgs = self._ensure_scouts(ctx)
         if msgs:
             await ctx.send_msgs(msgs)
         done = set(ctx.checked_locations) | self.mailbox_checked
+        in_seed = getattr(ctx, "server_locations", None) or set()
         table = bytearray(ICON_TABLE_SIZE)
         table[0], table[1] = sub, 1
         for loc_id, idx, respawns in self.icon_by_sub.get(sub, ()):
+            if loc_id in in_seed and not (respawns and loc_id in done):
+                table[ICON_TABLE_PRESENT_OFF + (idx >> 3)] |= 1 << (idx & 7)
             if loc_id in done:
                 if respawns:
                     table[0x84 + (idx >> 3)] |= 1 << (idx & 7)
                 continue
-            table[4 + idx] = self._icon_code(ctx, loc_id)
+            if self.icons_enabled:
+                table[4 + idx] = self._icon_code(ctx, loc_id)
         want = (sub, bytes(table))
         if want == self.icon_written and head[0] == sub and head[1] == 1:
             return
@@ -913,7 +983,7 @@ class MMZXClient(BizHawkClient):
             except Exception:
                 item = str(info.item)
             who = names.get(info.player, str(info.player))
-            self.notify_queue.append(notify_bytes("Sent ", item, " to " + who))
+            self.notify_queue.append(notify_bytes("Sent ", item, " to " + who, self.notify_style))
 
     async def _notify_tick(self, ctx) -> None:
         """Encola 'Got <item> [from <jugador>]' por cada item recibido nuevo
@@ -938,7 +1008,7 @@ class MMZXClient(BizHawkClient):
             tail = ""
             if net.player != ctx.slot:
                 tail = " from " + getattr(ctx, "player_names", {}).get(net.player, str(net.player))
-            self.notify_queue.append(notify_bytes("Got ", item, tail))
+            self.notify_queue.append(notify_bytes("Got ", item, tail, self.notify_style))
         if not self.notify_queue:
             return
         try:
@@ -2054,9 +2124,11 @@ def _cmd_notify(self, *args) -> None:
     """Avisos en pantalla al recibir/enviar items. /mmzx_notify <nivel>
     fija el mismo nivel para recibidos y enviados; /mmzx_notify
     [received|sent] <nivel> solo uno. Niveles: off, progression, useful
-    (progresión + útiles), all (también relleno: E-Crystals, 1-Up). Sin
-    argumentos muestra la configuración actual. El valor inicial viene del
-    YAML (notify_received / notify_sent) y no se guarda entre sesiones."""
+    (progresión + útiles), all (también relleno: E-Crystals, 1-Up).
+    /mmzx_notify short|full fija el estilo: una línea recortada o el texto
+    entero en páginas encadenadas del mismo popup. Sin argumentos muestra la
+    configuración actual. El valor inicial viene del YAML (notify_received /
+    notify_sent / notify_style) y no se guarda entre sesiones."""
     from CommonClient import logger
     handler = self.ctx.client_handler
     if not isinstance(handler, MMZXClient):
@@ -2065,15 +2137,20 @@ def _cmd_notify(self, *args) -> None:
     if len(words) == 1 and words[0] in NOTIFY_LEVELS:
         handler.notify_cfg["received"] = handler.notify_cfg["sent"] = NOTIFY_LEVELS.index(words[0])
         handler.notify_user_set = True
+    elif len(words) == 1 and words[0] in NOTIFY_STYLES:
+        handler.notify_style = words[0]
+        handler.notify_style_user = True
     elif len(words) == 2 and words[0] in ("received", "sent") and words[1] in NOTIFY_LEVELS:
         handler.notify_cfg[words[0]] = NOTIFY_LEVELS.index(words[1])
         handler.notify_user_set = True
     elif words:
         logger.error("uso: /mmzx_notify <off|progression|useful|all>  o  "
-                     "/mmzx_notify [received|sent] <off|progression|useful|all>")
+                     "/mmzx_notify [received|sent] <off|progression|useful|all>  o  "
+                     "/mmzx_notify <short|full>")
         return
-    logger.info("[mmzx] avisos en pantalla: received=%s, sent=%s" % (
-        NOTIFY_LEVELS[handler.notify_cfg["received"]], NOTIFY_LEVELS[handler.notify_cfg["sent"]]))
+    logger.info("[mmzx] avisos en pantalla: received=%s, sent=%s, style=%s" % (
+        NOTIFY_LEVELS[handler.notify_cfg["received"]], NOTIFY_LEVELS[handler.notify_cfg["sent"]],
+        handler.notify_style))
 
 
 def _cmd_icons(self, *args) -> None:

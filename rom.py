@@ -96,6 +96,28 @@ OAMLOOP2_BR_RAM = 0x02009D7C
 OAMLOOP2_BR_ORIG = bytes.fromhex("01d0")
 OAMLOOP2_BR_NEW = bytes.fromhex("01d9")
 
+# --- Guarda del dibujador de sprites: SET SIN RANURA DE VRAM (exp585, 2026-09-06) ---
+# El registrador de sets `FUN_02006b1c` RECHAZA un set cuando (paletas ya asignadas +
+# las que pide el set) > 0x0F (0x02006B86 pantalla 0 / 0x02006B92 pantalla 1) o cuando
+# el cursor de tiles no cabe (0x02006B66): deja 0x02105C94[set] = 0xFF. Los DIEZ
+# dibujadores de sprites resuelven entonces el registro de la ranura como NULL y
+# leen igualmente:
+#     movs r0,#0 ; ldrh r0,[r0,#2] ; movs r3,#1
+# es decir, LEEN LA DIRECCIÓN 0x00000002 -> data abort (pc = 0xFFFF0108) -> pantalla
+# gris y juego muerto. Es un bug LATENTE del juego (varias salas ya llegan al tope de
+# 15 paletas OBJ en vanilla) que el set AP de los iconos destapa: al ocupar una paleta
+# de forma permanente, en F-5 el efecto de impacto (set 124) se queda sin registrar y
+# el primer golpe al jefe mata el juego (playtest del usuario 2026-09-06; repro y
+# diagnóstico con SU savestate en BizHawk: exp585, docs/v02_notes.md §2k).
+# Parche: en cada sitio, `ldrh r0,[r0,#2] ; movs r3,#1` -> `bl cave`; el cave sólo lee
+# si r0 != 0. Un sprite sin ranura no se dibuja en vez de colgar la consola.
+SPRITEGUARD_CAVE_RAM = 0x020C827C          # tras ICON_CAVES (0x020C81C4 + 184)
+SPRITEGUARD_CAVE = bytes.fromhex("002800d0408801237047")   # cmp r0,#0; beq +; ldrh r0,[r0,#2]; movs r3,#1; bx lr
+SPRITEGUARD_ORIG = bytes.fromhex("40880123")
+SPRITEGUARD_SITES = [0x0200F0D4, 0x0200F244, 0x0200F424, 0x0200F85A, 0x0200FA5A,
+                     0x0200FC96, 0x0200FFA2, 0x02010236, 0x020104CA, 0x02010756]
+
+
 # --- Posesión de biometales "solo item AP" (H/F/L/P) — exp240 (2026-09-02),
 # agente exp380-389, PROGRESIVOS exp444-447c (2026-09-03) ---
 # La posesión de un modelo la resuelve FUN_0203e414 sobre tablas de categoría
@@ -382,7 +404,15 @@ ICON_RESIDENT_LIST_PATCH = [
 ICON_BOOT_HOOK_RAM = 0x0200BDA8                   # bl FUN_02006164 (subida VRAM del set 58) -> cave
 ICON_BOOT_HOOK_ORIG = "faf7dcf9"
 ICON_BOOT_CAVE_RAM = 0x020C8150                   # HOLE_C8150 (0x020C8150-0x020C8394 a cero y sin accesos, exp560)
-ICON_BOOT_CAVE = bytes.fromhex("10b584b000240094019401240294002403940f483a21002200230e4ca0470124009401940c480d4909680d4a03230d4ca047002400940194012402940024039409480a4900220023094ca04704b010bd40571002656100024057100234390f0205010000896a0002405710020501000065610002")
+ICON_BOOT_CAVE = bytes.fromhex("10b584b000240094019401240294002403940f483a21002200230e4ca04701240094c0460c480d4909680d4a03230d4ca047002400940194012402940024039409480a4900220023094ca04700f074f840571002656100024057100234390f0205010000896a0002405710020501000065610002")
+# El set AP NO pide paleta propia (`str r4,[sp,#4]` -> nop en el cave de arranque) y
+# comparte la del set 58 (residente, siempre cargado): PALSHARE escribe
+# 0x02105EE4[261] = 0x02105EE4[58] y devuelve por el epílogo del cave. Si pidiera una,
+# el juego se quedaría con 15 de 15 paletas OBJ en las salas pesadas y el siguiente set
+# dinámico (p.ej. el efecto de impacto de F-5) no se registraría -> puntero NULL en el
+# dibujador -> data abort (crash del usuario; exp585-589, docs/v02_notes.md §2k).
+PALSHARE_CAVE_RAM = 0x020C8288             # tras SPRITEGUARD_CAVE (0x020C827C + 10)
+PALSHARE_CAVE = bytes.fromhex("03483a21415c0348017004b010bdc046e45e1002e95f1002")
 ICON_CAVES_RAM = 0x020C81C4                       # lookup / attach / anim (tras el cave de arranque)
 ICON_CAVES = bytes.fromhex("30b5264c2178264a127891421cd16178c90719d023490968002915d04a68824201d00968f8e70a89802a0dd2d3088433e35c07251540eb40db0705d1231d985c002801d0013830bd0020c04330bd30b504000d00fff7d4ff002808dbe17a08229143e172217b0122914321730e4d200029000e4a904730bd30b504000d00428c0b4b9a4204d1fff7bbff002800db050020002900074a904730bd00bf6014190228821002f481100205010000250601020501000065fe0002")
 ICON_ATTACH_CAVE_RAM = 0x020C8212
@@ -643,10 +673,20 @@ class MMZXPatchExtension(APPatchExtension):
         poke(ICON_BOOT_HOOK_RAM, _thumb_bl(ICON_BOOT_HOOK_RAM, ICON_BOOT_CAVE_RAM),
              bytes.fromhex(ICON_BOOT_HOOK_ORIG))
         poke(ICON_CAVES_RAM, ICON_CAVES, bytes(len(ICON_CAVES)))
+        assert PALSHARE_CAVE_RAM + len(PALSHARE_CAVE) <= 0x020C8394
+        poke(PALSHARE_CAVE_RAM, PALSHARE_CAVE, bytes(len(PALSHARE_CAVE)))
         for ram, orig in ICON_ATTACH_HOOKS:
             poke(ram, _thumb_bl(ram, ICON_ATTACH_CAVE_RAM), bytes.fromhex(orig))
         for ram, orig in ICON_ANIM_HOOKS:
             poke(ram, _thumb_bl(ram, ICON_ANIM_CAVE_RAM), bytes.fromhex(orig))
+
+        # 1j) guarda del dibujador: un set sin ranura de VRAM ya no lee la dirección 2
+        #     (data abort). Bug latente del juego que el set AP destapa (exp585).
+        assert SPRITEGUARD_CAVE_RAM + len(SPRITEGUARD_CAVE) <= 0x020C8394
+        assert SPRITEGUARD_CAVE_RAM >= ICON_CAVES_RAM + len(ICON_CAVES)
+        poke(SPRITEGUARD_CAVE_RAM, SPRITEGUARD_CAVE, bytes(len(SPRITEGUARD_CAVE)))
+        for ram in SPRITEGUARD_SITES:
+            poke(ram, _thumb_bl(ram, SPRITEGUARD_CAVE_RAM), SPRITEGUARD_ORIG)
         # 2) Hu-gate (opcional)
         if hu_in_pool:
             poke(HUGATE_ARRAY_RAM, HUGATE_FLAG_INDEX.to_bytes(4, "little"))

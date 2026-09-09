@@ -111,8 +111,15 @@ def create_regions(world) -> None:
     # aristas del grafo estático
     gates = doc.get("gates", {})
     edge_ov = doc.get("edges", {})
+    # QoL `skip_boss_rush`: la torre de D-4 se cruza sin re-pelear a los 8
+    # Pseudoroids (el cliente marca cada par como vencido al llegar a su
+    # parada): la salida a D-5 pierde su requisito BOSS_* y los 8
+    # teletransportadores hacia z02 quedan apagados (arista inexistente).
+    skip_rush = bool(world.options.skip_boss_rush.value)
     for d in ALL_EDGES:
         if d["kind"] in F.NON_TRANSITION_KINDS:
+            continue
+        if skip_rush and d["name"] in F.BOSS_RUSH_DOORS:
             continue
         src_rid = members[d["src"]].get(d["name"], "main")
         dst_rid = members[d["dst"]].get(d["name"] + "@in", "main")
@@ -120,8 +127,10 @@ def create_regions(world) -> None:
             continue                       # puerta interna dentro de la misma región
         gate_req = gates.get(str(d["gate"]), {}).get("req") if d.get("gate") is not None else None
         entry_req = doc["rooms"][d["dst"]].get("req") if d["src"] != d["dst"] else None
-        r = and_rules(door_rule(d, player), rule(entry_req),
-                      rule(edge_ov.get(d["name"], {}).get("req")),
+        edge_req = edge_ov.get(d["name"], {}).get("req")
+        if skip_rush and d["name"] == F.BOSS_RUSH_EXIT:
+            edge_req = None
+        r = and_rules(door_rule(d, player), rule(entry_req), rule(edge_req),
                       transerver_rule(d, player), rule(gate_req),
                       arena_rule(d["dst"], dst_rid))
         regions[F.region_name(d["src"], src_rid)].connect(

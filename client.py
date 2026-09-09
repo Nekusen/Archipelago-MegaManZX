@@ -21,6 +21,7 @@ from .data import HUB_FLOOR_BOSS, HUB_FLOOR_DOOR_X, HUB_FLOOR_Y, WARP_DESTINATIO
 from .data import PICKUP_MAILBOX_ADDR, PICKUP_MAILBOX_SLOTS
 from .data import ICON_TABLE_ADDR, ICON_TABLE_SIZE, ICON_TABLE_PRESENT_OFF, ICON_CODES, NOTIFY_ADDR, NOTIFY_BUF_MAX, NOTIFY_POPUP_GLYPHS
 from .golden import GOLDEN_IMAGE, GOLDEN_IMAGE_ADDR, build_image
+from . import bossrush as BR
 ITEM_ID_TO_NAME = {v["id"]: n for n, v in ITEMS.items()}
 # item de este juego -> icono del set AP (worlds/mmzx/gfx/ap_set_meta.json). Lo que no
 # está aquí (Transerver Access, Model X/Hu sin sprite propio..., fillers) va por
@@ -227,6 +228,14 @@ ENDING_HANDLER_ID = 16                # mision 16 "Destroy Model W"
 ENDING_HANDLER_STATE = 0x0D           # estado que espera la muerte de Serpent 2
 ENDING_UNSTICK_TICKS = 5              # ticks seguidos con la firma antes de actuar
 
+# ---- QoL skip_boss_rush (torre de Slither D-4): ver bossrush.py ----------
+# El cliente marca cada par de Pseudoroids como "vencido en el boss rush" solo
+# cuando el ascensor ya esta parado en la parada del par (o el jugador dentro
+# de la sala del par), repinta sus capsulas y hace el COMMIT del checkpoint
+# (posicion + bloque + handler) como FUN_0201b384. exp614-618 (2026-09-09).
+PLAYER_OBJ = 0x0214FB08              # objeto del jugador (+0x5C/+0x60 pos, +0xA.4 facing, +0x15C escena)
+PLAYER_PERSIST = 0x0214FC5C          # bloque persistente del jugador (0x6C B; +0 spawn x, +4 y, +0x11.0 facing)
+
 # Subáreas de JEFE (y de fin de misión) donde NO se auto-acepta al entrar
 # (exp212/213): e07 26, f05 32, g05 37, i03 44, k04 55, l04 60, m03 63,
 # o02 66; h04 41, j05 51, d05 19.
@@ -415,6 +424,7 @@ class MMZXClient(BizHawkClient):
         self.death_link_enabled = False
         self.death_link_setup = False
         self.mission_auto_accept = False   # modo open-world (slot_data)
+        self.skip_boss_rush = False        # QoL: saltar el boss rush de D-4 (slot_data)
         self.mission_setup = False
         self.last_accept_sub = None        # última subárea auto-aceptada
         self.ending_ticks = 0              # ticks con la firma del final atascado
@@ -596,6 +606,11 @@ class MMZXClient(BizHawkClient):
         if not self.mission_setup:
             self.mission_setup = True
             self.mission_auto_accept = bool(ctx.slot_data.get("mission_auto_accept", False))
+            self.skip_boss_rush = bool(ctx.slot_data.get("skip_boss_rush", False))
+            if self.skip_boss_rush:
+                from CommonClient import logger
+                logger.info("[mmzx] QoL: boss rush de D-4 saltado (los pares de Pseudoroids se "
+                            "marcan vencidos al llegar a su parada del ascensor)")
 
         # Avisos en pantalla: umbrales por defecto del YAML (notify_received /
         # notify_sent), una vez por conexión y solo si el jugador no los ha
@@ -752,6 +767,10 @@ class MMZXClient(BizHawkClient):
         # ---- open-world: auto-aceptar la misión de la zona actual ----
         if self.mission_auto_accept:
             await self._stage("auto-accept", self._auto_accept_mission(ctx, guard))
+
+        # ---- QoL: saltar el boss rush de la torre de Slither (D-4) ----
+        if self.skip_boss_rush:
+            await self._stage("boss rush", self._boss_rush_skip_tick(ctx, guard))
 
         # ---- DeathLink ----
         if self.death_link_enabled:
@@ -1257,6 +1276,71 @@ class MMZXClient(BizHawkClient):
             logger.info("[mmzx] el final del juego se habia quedado sin handler de "
                         "historia (pantalla en blanco tras Serpent): arrancada la "
                         "cinematica final; siguen los creditos")
+
+    async def _boss_rush_skip_tick(self, ctx, guard) -> None:
+        """QoL `skip_boss_rush`: cruzar la torre de Slither (D-4) sin volver a
+        vencer a los 8 Pseudoroids. Cada par se marca como vencido en el boss
+        rush (flags 0x021045FF.4+k / 0x02104600.k) SOLO cuando el ascensor ya
+        esta parado en la parada del par con el jugador encima, o el jugador
+        dentro de la sala del par: antes de tiempo el ascensor salta de golpe
+        a la parada y el jugador cae al pozo (bossrush.py, exp614-618). Con el
+        par puesto el handler de la mision 16 encadena solo la cinematica y la
+        subida siguientes, las capsulas quedan inertes, sus puertas se abren y
+        los tiles se repintan como usados (replica de FUN_02013328).
+        Ademas se hace el COMMIT del checkpoint (posicion -> bloque persistente
+        del jugador -> descriptor de escena; bloque vivo -> canonica; bloque de
+        historia -> cola 1), como FUN_0201b384: las puertas de fundido solo
+        actualizan la posicion de reaparicion y una muerte reaparecia con el
+        handler desfasado y el ascensor muerto (exp617)."""
+        try:
+            r = await bizhawk.read(ctx.bizhawk_ctx, [
+                (SUBAREA_STABLE, 1, DOM), (CUTSCENE_FLAG, 1, DOM),
+                (STORY_HANDLER_ID, 4, DOM), (STORY_HANDLER_OBJ + 0xB, 1, DOM),
+                (BR.STAGE, 1, DOM), (PLAYER_POS, 8, DOM),
+                (BR.FLAG_LEFT, 1, DOM), (BR.FLAG_RIGHT, 1, DOM)])
+        except bizhawk.RequestFailedError:
+            return
+        if r[0][0] != BR.SUBAREA or (r[1][0] & 1) or int.from_bytes(r[2], "little") != BR.HANDLER_ID:
+            return
+        x = int.from_bytes(r[5][0:4], "little") >> 8
+        y = int.from_bytes(r[5][4:8], "little") >> 8
+        pairs = BR.pairs_to_set(x, y, r[3][0], r[4][0], r[6][0], r[7][0])
+        if not pairs:
+            return
+        # lecturas para el commit y el repintado (todo en una tanda)
+        reads = [(LIVE_BLOCK, LIVE_BLOCK_LEN, DOM), (STORY_BLOCK, STORY_BLOCK_LEN, DOM),
+                 (PLAYER_PERSIST, SCENE_DESC_LEN, DOM), (PLAYER_OBJ + 0xA, 1, DOM),
+                 (PLAYER_OBJ + 0x15C, 4, DOM)]
+        patch_addrs = [src for k in pairs for (_tx, _ty, src) in BR.PATCHES[k]]
+        reads += [(a, 4 + BR.PATCH_W * BR.PATCH_H * 2, DOM) for a in patch_addrs]
+        try:
+            q = await bizhawk.read(ctx.bizhawk_ctx, reads)
+        except bizhawk.RequestFailedError:
+            return
+        live = bytearray(q[0])
+        fl, fr = BR.apply_pairs(r[6][0], r[7][0], pairs)
+        live[BR.FLAG_LEFT - LIVE_BLOCK] = fl
+        live[BR.FLAG_RIGHT - LIVE_BLOCK] = fr
+        persist = bytearray(q[2])
+        persist[0:4] = (x << 8).to_bytes(4, "little")       # spawn sin fraccion, como las puertas
+        persist[4:8] = (y << 8).to_bytes(4, "little")
+        persist[0x11] = (persist[0x11] & 0xFE) | (1 if q[3][0] & 0x10 else 0)
+        desc = bytes(persist[:8]) + q[4] + bytes(persist[12:])   # +8 = palabra de escena del jugador
+        patches = {a: q[5 + i] for i, a in enumerate(patch_addrs)}
+        writes = [(BR.FLAG_LEFT, bytes([fl]), DOM), (BR.FLAG_RIGHT, bytes([fr]), DOM),
+                  (PLAYER_PERSIST, bytes(persist), DOM), (SCENE_DESC, desc, DOM),
+                  (CANON_BLOCK, bytes(live), DOM), (STORY_BLOCK_CANON, q[1], DOM)]
+        for k in pairs:
+            writes += [(a, b, DOM) for a, b in BR.paint_writes(k, patches.get)]
+        try:
+            ok = await bizhawk.guarded_write(ctx.bizhawk_ctx, writes, [guard])
+        except bizhawk.RequestFailedError:
+            return
+        if ok:
+            from CommonClient import logger
+            for k in pairs:
+                logger.info("[mmzx] boss rush saltado: %s dados por vencidos (jugador en %d,%d); "
+                            "checkpoint guardado" % (BR.PAIR_NAMES[k], x, y))
 
     async def _auto_accept_mission(self, ctx, guard) -> None:
         """Open-world: al ENTRAR en la subárea destino de una misión, la

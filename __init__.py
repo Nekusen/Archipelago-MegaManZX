@@ -213,6 +213,10 @@ class MMZXWorld(World):
             "hu_in_pool": bool(self.options.hu_in_pool.value),
             "logic_difficulty": self.options.logic_difficulty.current_key,
             "boss_logic": bosses.describe(boss_requirements(self)),
+            # QoL: boss rush de D-4 saltado (el cliente pone los flags de "vencido en
+            # el boss rush" por pares en los puntos seguros de la torre; regions.py
+            # deja de exigir a los 8 Pseudoroids para pasar a D-5)
+            "skip_boss_rush": bool(self.options.skip_boss_rush.value),
             # pickups respawneables como checks (v0.2): el cliente sondea el
             # buzón solo si alguna categoría está activa
             "pickup_checks_1up": bool(self.options.pickup_checks_1up.value),

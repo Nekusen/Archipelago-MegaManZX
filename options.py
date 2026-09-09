@@ -112,6 +112,20 @@ class BossLogic(OptionDict):
     default = {}
 
 
+class SkipBossRush(Toggle):
+    """(QoL) Salta el BOSS RUSH de la torre de Slither Inc. (D-4): no hay que
+    volver a vencer a los 8 Pseudoroids antes de Serpent. Al avanzar por la
+    torre, las salas de cada par de jefes aparecen como si ya los hubieras
+    derrotado (cápsulas usadas, teletransportadores apagados, puertas abiertas)
+    y el ascensor sube con normalidad hasta D-5. Las cinemáticas de la torre se
+    ven igual (saltables con START).
+    Lógica: con ON, los requisitos de `boss_logic` de los ocho Pseudoroids ya
+    no se exigen para llegar a Serpent (solo cuentan en su pelea de historia).
+    """
+    display_name = "Skip Boss Rush"
+    default = 0
+
+
 class HuInPool(Toggle):
     """(v0.2 EXPERIMENTAL) Convierte la forma humana (Hu) en un item de la
     pool en vez de estar siempre disponible. Aplica un parche de ROM que
@@ -223,6 +237,7 @@ class MMZXOptions(PerGameCommonOptions):
     hu_in_pool: HuInPool
     logic_difficulty: LogicDifficulty
     boss_logic: BossLogic
+    skip_boss_rush: SkipBossRush
     level4_victories: Level4Victories
     submission_checks: SubmissionChecks
     mission_auto_accept: MissionAutoAccept

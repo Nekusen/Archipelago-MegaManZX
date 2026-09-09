@@ -63,6 +63,13 @@
   own area and the boss rush in the D-4 tower, which the game makes you clear
   before it lets you through to D-5 — and the requirement applies to both, so
   reaching Serpent means being able to handle all eight.
+- `skip_boss_rush` (default off): skips the boss rush of the Slither Inc.
+  tower (D-4). As you climb the tower each pair of Pseudoroid capsules shows
+  up as already cleared (capsules off, doors open) and the elevator keeps
+  going up to D-5, so you never refight the eight bosses. The tower cutscenes
+  still play (skippable with START). With it on, `boss_logic` requirements
+  for the eight Pseudoroids only apply to their story fight, not to reaching
+  Serpent.
 - `hu_in_pool`: human form becomes an item (experimental).
 - `submission_checks` (quests), `level4_victories`.
 - `pickup_checks_1up` / `_energy` / `_weapon` / `_crystals` (default off):

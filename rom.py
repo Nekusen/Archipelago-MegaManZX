@@ -461,6 +461,23 @@ ICON_BOOT_CAVE = bytes.fromhex("10b584b000240094019401240294002403940f483a210022
 # dibujador -> data abort (crash del usuario; exp585-589, docs/v02_notes.md §2k).
 PALSHARE_CAVE_RAM = 0x020C8288             # tras SPRITEGUARD_CAVE (0x020C827C + 10)
 PALSHARE_CAVE = bytes.fromhex("03483a21415c0348017004b010bdc046e45e1002e95f1002")
+# RETRY (2026-09-09, exp606-607; reporte del usuario: "a veces el pickup salía con el
+# logo genérico en vez del icono useful/progression/filler"): ATTACH/ANIM deciden el
+# aspecto UNA sola vez, en el init de la entidad, y el spawner instancia por proximidad:
+# un pickup cerca de la entrada de la sala nace ANTES de que el cliente (sondeo cada
+# 125 ms) escriba la tabla de la nueva sub, o antes de que lleguen los LocationScouts
+# (código 0), y se queda con su set vanilla, cuyo tile en el disco es el logo genérico
+# (DISK_LOGO_NEW). RETRY sustituye al `bl FUN_0200fc0c` (avance de animación, cada
+# frame) de los tres think handlers (refill: vía el cave del buzón, disco 0x020A3A7E,
+# Life Up/Sub Tank 0x020A3CAA): si u16[ent+0x22] != 261 y LOOKUP(ent) >= 0 repite el attach del
+# init (limpia +0xB.3/+0xC.0, FUN_02010624(ent,261), FUN_0200fe64(ent,anim)) y siempre
+# llama a FUN_0200fc0c(ent). Nunca degrada (un pickup enviado desaparece o respawnea).
+ICON_RETRY_CAVE_RAM = 0x020C82A0           # tras PALSHARE_CAVE (0x020C8288 + 24)
+ICON_RETRY_CAVE = bytes.fromhex("30b50400628c0e4b9a4214d0fff78aff002810db0500e17a08229143e172217b0122914321732000064948f7abf92000290047f7c7fd200047f798fc30bd00bf0501000005010000")
+# refill: el sitio 0x020A30A2 ya es del cave del BUZÓN (PICKUP_MAILBOX), así que RETRY se
+# encadena en el `bl FUN_0200fc0c` de ESE cave (0x020CB4A2, r0 = r5 = ent); disco y Life
+# Up/Sub Tank en su think. Se instala después del buzón (orden de patch_arm9).
+ICON_RETRY_HOOKS = [(0x020CB4A2, "44f7b3fb"), (0x020A3A7E, "6cf7c5f8"), (0x020A3CAA, "6bf7afff")]
 ICON_CAVES_RAM = 0x020C81C4                       # lookup / attach / anim (tras el cave de arranque)
 ICON_CAVES = bytes.fromhex("30b5264c2178264a127891421cd16178c90719d023490968002915d04a68824201d00968f8e70a89802a0dd2d3088433e35c07251540eb40db0705d1231d985c002801d0013830bd0020c04330bd30b504000d00fff7d4ff002808dbe17a08229143e172217b0122914321730e4d200029000e4a904730bd30b504000d00428c0b4b9a4204d1fff7bbff002800db050020002900074a904730bd00bf6014190228821002f481100205010000250601020501000065fe0002")
 ICON_ATTACH_CAVE_RAM = 0x020C8212
@@ -725,6 +742,11 @@ class MMZXPatchExtension(APPatchExtension):
         poke(ICON_CAVES_RAM, ICON_CAVES, bytes(len(ICON_CAVES)))
         assert PALSHARE_CAVE_RAM + len(PALSHARE_CAVE) <= 0x020C8394
         poke(PALSHARE_CAVE_RAM, PALSHARE_CAVE, bytes(len(PALSHARE_CAVE)))
+        assert ICON_RETRY_CAVE_RAM >= PALSHARE_CAVE_RAM + len(PALSHARE_CAVE)
+        assert ICON_RETRY_CAVE_RAM + len(ICON_RETRY_CAVE) <= 0x020C8394
+        poke(ICON_RETRY_CAVE_RAM, ICON_RETRY_CAVE, bytes(len(ICON_RETRY_CAVE)))
+        for ram, orig in ICON_RETRY_HOOKS:
+            poke(ram, _thumb_bl(ram, ICON_RETRY_CAVE_RAM), bytes.fromhex(orig))
         for ram, orig in ICON_ATTACH_HOOKS:
             poke(ram, _thumb_bl(ram, ICON_ATTACH_CAVE_RAM), bytes.fromhex(orig))
         for ram, orig in ICON_ANIM_HOOKS:

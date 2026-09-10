@@ -479,6 +479,7 @@ class MMZXClient(BizHawkClient):
         self.scout_requested: set[int] = set()
         # iconos de item en el mundo (parche ICON_*: tabla por subárea)
         self.icons_enabled = True
+        self.debug_log = False           # /mmzx_debug on: diagnostic messages at INFO level
         self.icon_written: tuple[int, bytes] | None = None
         self.icon_by_sub: dict[int, list[tuple[int, int, bool]]] | None = None
 
@@ -578,6 +579,12 @@ class MMZXClient(BizHawkClient):
         launched = reads[3][0] == 6
         return (launched and sub != 0 and hp > 0 and state == STATE_INGAME), state_bytes
 
+    def _debug(self, msg: str) -> None:
+        """Diagnostic message. Shown only after /mmzx_debug on; otherwise it is
+        logged at DEBUG level, which the Archipelago client does not display."""
+        from CommonClient import logger
+        (logger.info if self.debug_log else logger.debug)(msg)
+
     async def _stage(self, name: str, coro) -> None:
         """Ejecuta una etapa del watcher capturando cualquier excepción: el
         framework de BizHawk no las captura y una sola mataría el bucle en
@@ -645,6 +652,7 @@ class MMZXClient(BizHawkClient):
             ctx.command_processor.commands["mmzx_where"] = _cmd_where
             ctx.command_processor.commands["mmzx_notify"] = _cmd_notify
             ctx.command_processor.commands["mmzx_icons"] = _cmd_icons
+            ctx.command_processor.commands["mmzx_debug"] = _cmd_debug
 
         # ---- tutorial-skip: estado one-shot (datastore) + imagen dorada ----
         # Resolver PRONTO (también en menús) la máquina one-shot del modelo
@@ -902,7 +910,7 @@ class MMZXClient(BizHawkClient):
                     names.append(ctx.location_names.lookup_in_game(i, "Mega Man ZX"))
                 except Exception:
                     names.append(str(i))
-            logger.info("[mmzx] pickup collected: %s" % ", ".join(names))
+            self._debug("[mmzx] pickup collected: %s" % ", ".join(names))
 
     def _icon_code(self, ctx, loc_id: int) -> int:
         """Código de icono (anim+1 del set AP) del item que hay en la location, según
@@ -1150,7 +1158,7 @@ class MMZXClient(BizHawkClient):
                 writes.append((ea + CANON_OFF, bytes([cur[n + i][0] | (1 << eb)]), DOM))
         if writes and await bizhawk.guarded_write(ctx.bizhawk_ctx, writes, [guard]):
             from CommonClient import logger
-            logger.info("[mmzx] %s: restored %d mission bits that something had cleared"
+            self._debug("[mmzx] %s: restored %d mission bits that something had cleared"
                         % (rec["name"], len(writes)))
 
     async def _troop_unstick(self, ctx, guard) -> None:
@@ -1219,7 +1227,7 @@ class MMZXClient(BizHawkClient):
             what.append("restored the mission start flag 0x021045E0.2 (the game itself clears it)")
         if writes and await bizhawk.guarded_write(ctx.bizhawk_ctx, writes, [guard]):
             from CommonClient import logger
-            logger.info("[mmzx] Troop Reinforcement was half done: %s; the Giro scene "
+            self._debug("[mmzx] Troop Reinforcement was half done: %s; the Giro scene "
                         "can trigger again" % " and ".join(what))
 
     async def _ending_unstick(self, ctx, guard) -> None:
@@ -1341,7 +1349,7 @@ class MMZXClient(BizHawkClient):
         if ok:
             from CommonClient import logger
             for k in pairs:
-                logger.info("[mmzx] boss rush skipped: %s marked as beaten (player at %d,%d); "
+                self._debug("[mmzx] boss rush skipped: %s marked as beaten (player at %d,%d); "
                             "checkpoint saved" % (BR.PAIR_NAMES[k], x, y))
 
     async def _auto_accept_mission(self, ctx, guard) -> None:
@@ -1379,7 +1387,7 @@ class MMZXClient(BizHawkClient):
             key = ("hub", floor)
             rec = MISSION_ACCEPT.get(HUB_FLOOR_BOSS[floor])
             from CommonClient import logger
-            logger.info("[mmzx] hub floor y=%d (player at %d,%d): mission %s"
+            self._debug("[mmzx] hub floor y=%d (player at %d,%d): mission %s"
                         % (floor, x, y, rec["name"] if rec else "?"))
         else:
             if sub == self.last_accept_sub and not self.force_accept:
@@ -1403,7 +1411,7 @@ class MMZXClient(BizHawkClient):
             if all(vals[i][0] & (1 << b) for i, (_, b) in enumerate(done_bits)):
                 self.last_accept_sub = key
                 from CommonClient import logger
-                logger.info("[mmzx] %s already completed: not accepted again" % rec["name"])
+                self._debug("[mmzx] %s already completed: not accepted again" % rec["name"])
                 return
         try:
             cur_state = int.from_bytes((await bizhawk.read(
@@ -1432,7 +1440,7 @@ class MMZXClient(BizHawkClient):
                         w.append((ea + CANON_OFF, bytes([cur[len(extras) + i][0] | (1 << eb)]), DOM))
                 if w and await bizhawk.guarded_write(ctx.bizhawk_ctx, w, [guard]):
                     from CommonClient import logger
-                    logger.info("[mmzx] %s was already accepted: restored %d missing mission bits"
+                    self._debug("[mmzx] %s was already accepted: restored %d missing mission bits"
                                 % (rec["name"], len(w)))
             return
         addr, bit = rec["flag"]
@@ -1489,9 +1497,9 @@ class MMZXClient(BizHawkClient):
             except bizhawk.RequestFailedError:
                 pass
             self.last_accept_sub = key      # solo se marca si la escritura entró
-            logger.info("[mmzx] open world: mission auto-accepted -> %s" % rec["name"])
+            self._debug("[mmzx] open world: mission auto-accepted -> %s" % rec["name"])
         else:
-            logger.info("[mmzx] acceptance of %s not applied (game state guard); retrying" % rec["name"])
+            self._debug("[mmzx] acceptance of %s not applied (game state guard); retrying" % rec["name"])
 
     async def _start_state_resolve(self, ctx) -> None:
         """Avanza la máquina one-shot del skip usando el datastore del
@@ -1716,10 +1724,10 @@ class MMZXClient(BizHawkClient):
                 y = HUB_FLOOR_Y.get(letter)
                 if y is not None:
                     self.pending_teleport = (HUB_SUBAREA, HUB_X, y - HUB_PAD_DY)
-                    logger.info("[mmzx] Go to Transerver -> Area %s (hub floor %s)"
+                    self._debug("[mmzx] Go to Transerver -> Area %s (hub floor %s)"
                                 % (STATION_ROOMS[sel][0].upper() + "-" + STATION_ROOMS[sel][1:].lstrip("0"), letter))
             else:
-                logger.info("[mmzx] Go to Transerver: list cancelled")
+                self._debug("[mmzx] Go to Transerver: list cancelled")
             return
         if req != 1:
             return
@@ -1734,7 +1742,7 @@ class MMZXClient(BizHawkClient):
         ], [guard])
         if ok:
             self.transport_wait = True
-            logger.info("[mmzx] Go to Transerver: opening the Target Area list")
+            self._debug("[mmzx] Go to Transerver: opening the Target Area list")
 
     async def _teleport(self, ctx, sub, x, y, guard) -> None:
         """Teleport limpio (7 escrituras; docs/client_integration.md §6).
@@ -2074,7 +2082,7 @@ class MMZXClient(BizHawkClient):
         if ok:
             from CommonClient import logger
             for n in notes:
-                logger.info("[mmzx] %s" % n)
+                self._debug("[mmzx] %s" % n)
 
     async def _handle_death_link(self, ctx, guard) -> None:
         """SEND: observa la muerte del juego (HP >0 → 0) y la envía (salvo que
@@ -2278,3 +2286,19 @@ def _cmd_icons(self, *args) -> None:
         logger.error("usage: /mmzx_icons [on|off]")
         return
     logger.info("[mmzx] in-game item icons: %s" % ("on" if handler.icons_enabled else "off"))
+
+
+def _cmd_debug(self, *args) -> None:
+    """Show the client's diagnostic messages (auto-accepted missions, restored
+    flags, model reverts...): /mmzx_debug [on|off]. Off by default; turn it on
+    before reproducing a problem you want to report."""
+    from CommonClient import logger
+    handler = self.ctx.client_handler
+    if not isinstance(handler, MMZXClient):
+        return
+    if args and str(args[0]).lower() in ("on", "off"):
+        handler.debug_log = str(args[0]).lower() == "on"
+    elif args:
+        logger.error("usage: /mmzx_debug [on|off]")
+        return
+    logger.info("[mmzx] diagnostic messages: %s" % ("on" if handler.debug_log else "off"))

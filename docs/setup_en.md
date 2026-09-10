@@ -150,3 +150,6 @@
   class (arrow = progression, cross = useful, grey = filler). Items are
   revealed as the client scouts them; a respawning pickup whose check was
   already sent shows its normal appearance again. Default: on.
+- `/mmzx_debug on|off`: show the client's diagnostic messages (missions
+  auto-accepted, flags restored, model reverts...). Off by default; turn it
+  on before reproducing a problem you want to report, and include the log.

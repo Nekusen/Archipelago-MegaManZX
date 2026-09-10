@@ -5,6 +5,9 @@
 - Everything the player sees is now in English: option descriptions (the
   YAML template), client log messages and command help, generation errors
   (`boss_logic`), patching errors and the DeathLink message.
+- The client's diagnostic messages (auto-accepted missions, restored flags,
+  model reverts, teleport bookkeeping) are hidden by default; `/mmzx_debug on`
+  shows them.
 - Repository split: the world now lives in its own repository, mounted as a
   submodule of the private development toolkit. Game-derived assets
   (tracker map images, in-game icon set) are no longer tracked; they are

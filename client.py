@@ -235,6 +235,7 @@ ENDING_UNSTICK_TICKS = 5              # ticks seguidos con la firma antes de act
 # (posicion + bloque + handler) como FUN_0201b384. exp614-618 (2026-09-09).
 PLAYER_OBJ = 0x0214FB08              # objeto del jugador (+0x5C/+0x60 pos, +0xA.4 facing, +0x15C escena)
 PLAYER_PERSIST = 0x0214FC5C          # bloque persistente del jugador (0x6C B; +0 spawn x, +4 y, +0x11.0 facing)
+DEATH_STATE = 0x0A                   # player+0x11: "muriendo"; con +0x12 = 2 arranca la muerte completa (exp620/621)
 
 # Subáreas de JEFE (y de fin de misión) donde NO se auto-acepta al entrar
 # (exp212/213): e07 26, f05 32, g05 37, i03 44, k04 55, l04 60, m03 63,
@@ -434,6 +435,7 @@ class MMZXClient(BizHawkClient):
         self.prev_hp = None
         self.prev_death_link = None
         self.pending_death = False
+        self.death_induced = False       # la última muerte la provocó un DeathLink recibido (no reenviar)
         self.pending_teleport = None   # (subárea, x, y) o None
         self.transport_wait = False    # lista "Target Area" abierta por el cliente: leer la selección al volver
         self.added_commands = False
@@ -518,6 +520,7 @@ class MMZXClient(BizHawkClient):
         self.prev_hp = None
         self.prev_death_link = None
         self.pending_death = False
+        self.death_induced = False       # la última muerte la provocó un DeathLink recibido (no reenviar)
         self.mailbox_count = None
         self.mailbox_checked = set()
         self.mailbox_enabled = None
@@ -2075,23 +2078,38 @@ class MMZXClient(BizHawkClient):
                 logger.info("[mmzx] %s" % n)
 
     async def _handle_death_link(self, ctx, guard) -> None:
-        """SEND: observa la muerte del juego (HP >0 → 0) y la envía.
+        """SEND: observa la muerte del juego (HP >0 → 0) y la envía (salvo que
+        la haya provocado un DeathLink recibido: sin eco).
         RECEIVE: poll de ctx.last_death_link (lo actualiza CommonContext al
-        recibir un DeathLink) → best-effort pone HP=0. ⚠️ El poke a 0 puede
-        no matar al instante (exp105/106: el disparador de muerte real está
-        en el think del jugador, RE pendiente); mata en el siguiente daño.
-        """
+        recibir un DeathLink) → mata al jugador COMO EL JUEGO. Escribir HP=0
+        no mata (exp619E): la muerte la decide el tick del jugador
+        (FUN_0203d680) al ver un golpe letal, y lo que hace es poner el estado
+        del objeto del jugador a 0x0A ("muriendo") con sub-estado 2 (exp620);
+        replicar esas escrituras (+0x11=0x0A, +0x12=2, +0x13=0) más HP=0 da la
+        muerte completa: animación, vida menos, recarga en el checkpoint
+        (exp621 variante E; validado en hub, sala de jefe ya vencido, Troop en
+        pleno combate y tras Model Z, torre de D-4 y D-5). Guardas: en juego
+        (guarda de estado), sin cutscene ni diálogo en curso, jugador vivo y en
+        el estado normal (+0x11 = 0; 0x0A = herido/muriendo, 0x0B = interacción,
+        0x0D = cutscene); si no se cumplen, la muerte queda pendiente hasta el
+        primer tick en que el jugador tenga el control."""
         try:
-            hp = (await bizhawk.read(ctx.bizhawk_ctx, [(HP, 1, DOM)]))[0][0]
+            r = await bizhawk.read(ctx.bizhawk_ctx, [
+                (HP, 1, DOM), (CUTSCENE_FLAG, 1, DOM), (PLAYER_OBJ + 0x11, 1, DOM)])
         except bizhawk.RequestFailedError:
             return
+        hp, cut, state = r[0][0], r[1][0], r[2][0]
 
         if self.prev_death_link is None:
             self.prev_death_link = ctx.last_death_link
 
-        # SEND: transición >0 -> 0 (muerte real del juego)
+        # SEND: transición >0 -> 0 (muerte real del juego), salvo la que
+        # acabamos de provocar nosotros (evita el eco entre jugadores)
         if self.prev_hp is not None and self.prev_hp > 0 and hp == 0:
-            await ctx.send_death(f"{ctx.player_names[ctx.slot]} se quedó sin energía.")
+            if self.death_induced:
+                self.death_induced = False
+            else:
+                await ctx.send_death(f"{ctx.player_names[ctx.slot]} se quedó sin energía.")
             self.prev_death_link = ctx.last_death_link  # no auto-recibir el propio
         self.prev_hp = hp
 
@@ -2100,9 +2118,21 @@ class MMZXClient(BizHawkClient):
             self.prev_death_link = ctx.last_death_link
             self.pending_death = True
 
-        if self.pending_death and hp > 0:
+        if not self.pending_death:
+            return
+        if hp == 0 or (cut & 1) or state != 0:
+            return                      # sin control: se reintenta en el próximo tick
+        writes = [(HP, b"\x00", DOM),
+                  (PLAYER_OBJ + 0x11, bytes([DEATH_STATE, 2, 0]), DOM)]
+        try:
+            ok = await bizhawk.guarded_write(ctx.bizhawk_ctx, writes, [guard])
+        except bizhawk.RequestFailedError:
+            return
+        if ok:
             self.pending_death = False
-            await bizhawk.guarded_write(ctx.bizhawk_ctx, [(HP, b"\x00", DOM)], [guard])
+            self.death_induced = True
+            from CommonClient import logger
+            logger.info("[mmzx] DeathLink recibido: muerte aplicada")
 
 
 def _cmd_teleport(self, *args) -> None:

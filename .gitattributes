@@ -1,0 +1,5 @@
+# Line endings: LF everywhere (the generated logic.txt / JSON files are written with LF).
+* text=auto eol=lf
+*.png binary
+*.bin binary
+*.apworld binary

@@ -1,0 +1,12 @@
+# Files that must not be packaged into mmzx.apworld (gitignore syntax).
+README.md
+CHANGELOG.md
+.gitignore
+.apignore
+.gitmodules
+.github/
+tools/
+test/
+build/
+__pycache__/
+*.pyc

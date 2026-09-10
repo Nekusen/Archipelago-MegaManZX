@@ -1,0 +1,21 @@
+# Changelog
+
+## Unreleased
+
+- Repository split: the world now lives in its own repository, mounted as a
+  submodule of the private development toolkit. Game-derived assets
+  (tracker map images, in-game icon set) are no longer tracked; they are
+  generated locally and will be replaced by clean-room equivalents.
+- Added README, LICENSE (MIT), CREDITS, `archipelago.json`, `.apignore`.
+- `tools/` now holds the logic editor, the logic validator and probe and the
+  apworld packager; `test/` the logic tests.
+
+## 0.2 (2026-09, private)
+
+- Playable end to end on BizHawk: 274 locations, 45 items, hybrid Transerver
+  network, event gates, progressive biometals, respawning pickups as
+  optional checks, in-game item icons and notifications, pause-menu
+  "Go to Transerver", `boss_logic`, `skip_boss_rush`, DeathLink, Universal
+  Tracker map pack.
+- Logic v0.3: drawn in the visual editor (`logic/logic.json`), levels
+  normal / expert.

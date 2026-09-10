@@ -654,7 +654,7 @@ class MMZXPatchExtension(APPatchExtension):
         el CRC16 0x15E). ⚠️ NO usar el reempaquetado completo de ndspy
         (nds.save()): compacta la ROM a ~44 MB y desplaza el layout, y
         melonDS/BizHawk revienta con std::bad_alloc al cargarla (verificado
-        en BizHawk real, exp205). ndspy vendorizado (MIT) solo para el BLZ."""
+        en BizHawk real, exp205). ndspy vendorizado (GPL-3.0-or-later, ver ndspy/LICENSE; se sustituira por apnds) solo para el BLZ."""
         import struct
 
         from . import ndspy  # noqa: F401  (paquete vendorizado)

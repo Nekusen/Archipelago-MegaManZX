@@ -13,6 +13,8 @@ Layout en 0x1000:
   +0x50  seed name (32 B)
 """
 
+import hashlib
+
 from settings import get_settings
 from worlds.Files import (APProcedurePatch, APTokenMixin, APTokenTypes,
                           APPatchExtension)
@@ -378,7 +380,9 @@ MENU_WARP_HOOKS = [
     (0x02023240, "fff764fc", "a8f0faf8"),   # FUN_0202323c: bl FUN_02022b0c -> bl CAVE_B
 ]
 MENU_WARP_TEXT_ROM = 0xDFB200        # m_sub_en.bin (NitroFS, sin comprimir; verificado byte a byte)
-MENU_WARP_TEXT_OLD = bytes.fromhex("e0e1234f4e54524f4c003041441a3343414e0021524541002d4150")  # <pad>Control Pad:Scan Area Map
+# SHA-256 of the 27 vanilla bytes ("<pad>Control Pad:Scan Area Map"); the
+# game text itself is not kept in the repository.
+MENU_WARP_TEXT_SHA256 = "86da91168288b97f4ace3c34a86eba342e97e9afec9bb70949110693930c65a0"
 MENU_WARP_TEXT_NEW = bytes.fromhex("3900225554544f4e1a274f00544f003452414e5345525645520000")  # Y Button:Go to Transerver
 MENU_WARP_TEXT_OFFS = (0xB14, 0xB4B, 0xB85)   # 3 variantes (sin/1/varios servers en el área)
 
@@ -394,11 +398,9 @@ MENU_WARP_TEXT_OFFS = (0xB14, 0xB4B, 0xB85)   # 3 variantes (sin/1/varios server
 # logo oficial adaptado (exp495; ver DISK_LOGO_NEW).
 # Verificado en frío: VRAM = logo, el disco de A-2/E-1 se ve y se recoge.
 DISK_LOGO_ROM = 0x00F5F20C   # obj_fnt.bin + 0x5620C
-DISK_LOGO_OLD = bytes.fromhex(
-    "000044f40040458f0054f48800ff8f88f088888884884844dc44848844887800"
-    "ff0f000088f8000088880f008888f8008888880f44848848884844cd00878844"
-    "dc88780084ff8f88dc88f8ff4088888800848888004088880000847700004047"
-    "008788cd88f8ff48ff8f88cd8888880488884800888804007748000074040000")
+# SHA-256 of the 128 vanilla bytes of the disk body tile (the game's
+# graphics are not kept in the repository, only their digest).
+DISK_LOGO_SHA256 = "0cf5040681e341af0f130f438c12989c4747f7b7c531792025e6e8f9d9f8c65c"
 DISK_LOGO_NEW = bytes.fromhex(   # logo OFICIAL de Archipelago (sprite 16x16 del apworld de
     # Metroid Zero Mission, mzm/patcher/data/item_sprites/ap_logo.gfx frame 0) con sus 6
     # "islas" remapeadas a la paleta 1 del disco: granate 9, naranja C, verdes 1-3, azul 5,
@@ -870,7 +872,7 @@ class MMZXPatchExtension(APPatchExtension):
             cur = bytes(d[o:o + len(MENU_WARP_TEXT_NEW)])
             if cur == MENU_WARP_TEXT_NEW:
                 continue
-            if cur != MENU_WARP_TEXT_OLD:
+            if hashlib.sha256(cur).hexdigest() != MENU_WARP_TEXT_SHA256:
                 raise ValueError("MMZX: unexpected text at m_sub_en.bin+0x%X (%s)" % (off, cur.hex()))
             d[o:o + len(MENU_WARP_TEXT_NEW)] = MENU_WARP_TEXT_NEW
 
@@ -879,7 +881,7 @@ class MMZXPatchExtension(APPatchExtension):
         logo_off = fnt_start + DISK_LOGO_FNT_OFF
         cur = bytes(d[logo_off:logo_off + len(DISK_LOGO_NEW)])
         if cur != DISK_LOGO_NEW:
-            if cur != DISK_LOGO_OLD:
+            if hashlib.sha256(cur).hexdigest() != DISK_LOGO_SHA256:
                 raise ValueError("MMZX: unexpected disk tile at ROM 0x%X (%s)" % (logo_off, cur[:8].hex()))
             d[logo_off:logo_off + len(DISK_LOGO_NEW)] = DISK_LOGO_NEW
 

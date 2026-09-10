@@ -7,6 +7,9 @@
   compressed by an original BLZ encoder with optimal parsing; the patched
   ROM is byte-identical to the previous one. The `.apworld` is MIT
   throughout.
+- The patcher no longer embeds any bytes of the game as guards: the two
+  remaining ones (the Secret Disk tile and the pause-menu help text) are
+  now SHA-256 digests.
 - Everything the player sees is now in English: option descriptions (the
   YAML template), client log messages and command help, generation errors
   (`boss_logic`), patching errors and the DeathLink message.

@@ -40,8 +40,8 @@ def load_document():
     if _DOC is None:
         raw = pkgutil.get_data(__name__, "logic/logic.json")
         if raw is None:
-            raise FileNotFoundError("worlds/mmzx/logic/logic.json no encontrado: "
-                                    "genera la lógica con tools/logic_editor/")
+            raise FileNotFoundError("logic/logic.json not found: "
+                                    "create the logic with tools/logic_editor/")
         _DOC = F.normalize_logic(json.loads(raw.decode("utf-8")), WORLD)
     return _DOC
 

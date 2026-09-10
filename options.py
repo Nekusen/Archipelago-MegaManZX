@@ -1,4 +1,4 @@
-"""Opciones YAML del mundo Mega Man ZX. Decisiones en docs/DISENO_CHECKS.md."""
+"""YAML options of the Mega Man ZX world."""
 
 from dataclasses import dataclass
 
@@ -7,7 +7,7 @@ from Options import (Choice, DeathLink, DefaultOnToggle, OptionDict,
 
 
 class Character(Choice):
-    """Personaje jugable: Vent o Aile (misma ROM, cambia sprites/diálogo)."""
+    """Playable character: Vent or Aile (same ROM; only sprites and dialogue change)."""
     display_name = "Character"
     option_vent = 0
     option_aile = 1
@@ -15,38 +15,33 @@ class Character(Choice):
 
 
 class Goal(Choice):
-    """Objetivo de la seed. v0.1: derrotar a Serpent."""
+    """Goal of the seed. Currently: defeat Serpent."""
     display_name = "Goal"
     option_defeat_serpent = 0
     default = 0
 
 
 class Level4Victories(Toggle):
-    """Añade como checks las 'Level 4 Victory' de cada Pseudoroid
-    (derrotarlos con rango máximo). ⚠️ v0.1: aún SIN EFECTO — la
-    detección de Level 4 no está implementada todavía (llega en una
-    actualización)."""
+    """Adds the "Level 4 Victory" of each Pseudoroid (beating it with the top
+    rank) as checks. NOT IMPLEMENTED YET: this option has no effect for now;
+    Level 4 detection will arrive in a later version."""
     display_name = "Level 4 Victory Checks"
 
 
 class SubmissionChecks(Toggle):
-    """Incluye las submisiones de NPCs (quests) como checks. ⚠️ v0.1: aún
-    SIN EFECTO — la detección de 'quest completada' no está validada, así
-    que las quests se excluyen del seed por ahora (se añadirán cuando su
-    detección esté lista, sin romper seeds antiguas)."""
+    """Includes the NPC side quests as checks. NOT IMPLEMENTED YET: quest
+    completion detection is not validated, so quests are excluded from the
+    seed for now (they will be added without breaking old seeds)."""
     display_name = "Submission Checks"
     default = 0
 
 
 class StartingModel(Choice):
-    """Modelo con el que empiezas (v0.2, tutorial-skip). El arranque salta el
-    tutorial y te deja en el Transerver con este modelo (o ninguno = forma
-    humana, sin biometal, hasta que encuentres uno). El modelo elegido se
-    pre-concede (start inventory) y no ocupa sitio en el pool; Model X se
-    convierte en item encontrable salvo que empieces con él. Puedes poner
-    'random' en el YAML para uno aleatorio.
-    ⚠️ Hasta que el parche de ROM del arranque esté listo, el cliente aplica
-    el modelo al llegar al hub post-tutorial."""
+    """Model you start with. The tutorial is skipped and you start at the
+    Guardian Transerver with this model (or none = human form, without a
+    biometal, until you find one). The chosen model is pre-granted (start
+    inventory) and takes no slot in the pool; Model X becomes a findable item
+    unless you start with it. "random" picks one at random."""
     display_name = "Starting Model"
     option_model_x = 0
     option_none = 1
@@ -56,15 +51,15 @@ class StartingModel(Choice):
     option_model_lx = 5
     option_model_px = 6
     option_model_ox = 7
-    option_model_hu = 8   # solo con hu_in_pool ON (si no, = none)
+    option_model_hu = 8   # only with hu_in_pool on (otherwise = none)
     default = 0
 
 
 class LogicDifficulty(Choice):
-    """Nivel de la lógica de acceso (worlds/mmzx/logic/logic.json).
-    normal: solo rutas seguras. expert: además las alternativas marcadas
-    como expert en el editor (trucos, damage boost, saltos justos); es
-    ACUMULATIVO, todo lo válido en normal sigue valiendo en expert."""
+    """Level of the access logic. normal: safe routes only. expert: also the
+    alternatives marked as expert in the logic (tricks, damage boosts, tight
+    jumps). It is cumulative: everything allowed in normal is still allowed
+    in expert."""
     display_name = "Logic Difficulty"
     option_normal = 0
     option_expert = 1
@@ -72,36 +67,36 @@ class LogicDifficulty(Choice):
 
 
 class BossLogic(OptionDict):
-    """(v0.3) Dificultad de los jefes A TU GUSTO: qué tienes que llevar para
-    que la LÓGICA te considere capaz de vencer a cada jefe de la historia.
+    """Per-boss difficulty, your call: what you must be carrying before the
+    LOGIC considers you able to beat each story boss.
 
-    Es una restricción solo de lógica — en el juego puedes pelear con lo que
-    quieras. Lo que garantiza es que la seed nunca te OBLIGUE a pasar por un
-    jefe para el que no tienes lo que tú mismo has pedido: ni a cruzar su
-    arena hacia el otro lado, ni a coger lo que hay dentro, ni a completar su
-    misión, ni a obtener su biometal (los biometales salen de dos jefes: si
-    solo puedes con uno, la lógica cuenta ese camino y no el otro). Los ocho
-    Pseudoroids se pelean DOS veces (su área y el boss rush de la torre de
-    D-4, que el juego OBLIGA a superar para pasar a D-5): el requisito se
-    aplica a los dos encuentros, así que llegar a Serpent exige poder con los
-    ocho.
+    It only restricts the logic: in game you can fight with whatever you
+    have. What it guarantees is that the seed never FORCES you through a boss
+    you are not equipped for by your own standard: not crossing its arena to
+    the other side, not collecting what lies inside, not completing its
+    mission, not obtaining its biometal (biometals come from two bosses: if
+    you can only handle one, the logic counts that path and not the other).
+    The eight Pseudoroids are fought TWICE (their own area and the boss rush
+    of the D-4 tower, which the game requires before D-5): the requirement
+    applies to both encounters, so reaching Serpent means being able to
+    handle all eight (unless skip_boss_rush is on).
 
-    Jefes: Rayfly (B-2), Model Z (D-2), Hivolt (E-7), Lurerre (F-5),
+    Bosses: Rayfly (B-2), Model Z (D-2), Hivolt (E-7), Lurerre (F-5),
     Fistleo (G-5), Purprill (H-4), Hurricaune (I-3), Leganchor (J-5),
     Flammole (K-4), Protectos (L-4), Prometheus (X-3), Pandora (M-3),
-    Prometheus & Pandora (O-2), Serpent (D-5), Omega Zero (N-1). También vale
-    el código de la sala como clave ("E-7"). Los que no pongas no piden nada.
-    (Giga Aspis, el jefe del tutorial, no está: el randomizer salta el
-    tutorial entero y no se pelea nunca.)
+    Prometheus & Pandora (O-2), Serpent (D-5), Omega Zero (N-1). The room
+    code works as a key too ("E-7"). Bosses you leave out ask for nothing.
+    (Giga Aspis, the tutorial boss, is not listed: the randomizer skips the
+    whole tutorial.)
 
-    Requisitos: modelos (X ZX HX FX LX PX OX; "HX2" o "Model HX (full)" = las
-    dos mitades del progresivo, o sea carga de nivel 2), MODEL (cualquiera),
-    ALL6 (los seis biometales), "Life Up x2" (o LIFEUP>=2), "Sub Tank x1" (o
-    SUBTANK>=1), chips de ITEM B por su nombre ("Absorber Chip") y Card Keys.
-    Se combinan con & (Y) y | (O) y paréntesis. Un chip exigido pasa de
-    `useful` a progresión automáticamente.
+    Requirements: models (X ZX HX FX LX PX OX; "HX2" or "Model HX (full)" =
+    both halves of the progressive item, i.e. the level-2 charge), MODEL (any
+    model), ALL6 (the six biometals), "Life Up x2" (or LIFEUP>=2), "Sub Tank
+    x1" (or SUBTANK>=1), ITEM B chips by name ("Absorber Chip") and Card
+    Keys, combined with & (and), | (or) and parentheses. A required chip is
+    promoted from useful to progression automatically.
 
-    Ejemplo:
+    Example:
       boss_logic:
         Hivolt: "HX & Life Up x2"
         Flammole: "Model FX (full) & Absorber Chip"
@@ -113,89 +108,85 @@ class BossLogic(OptionDict):
 
 
 class SkipBossRush(Toggle):
-    """(QoL) Salta el BOSS RUSH de la torre de Slither Inc. (D-4): no hay que
-    volver a vencer a los 8 Pseudoroids antes de Serpent. Al avanzar por la
-    torre, las salas de cada par de jefes aparecen como si ya los hubieras
-    derrotado (cápsulas usadas, teletransportadores apagados, puertas abiertas)
-    y el ascensor sube con normalidad hasta D-5. Las cinemáticas de la torre se
-    ven igual (saltables con START).
-    Lógica: con ON, los requisitos de `boss_logic` de los ocho Pseudoroids ya
-    no se exigen para llegar a Serpent (solo cuentan en su pelea de historia).
+    """(Quality of life) Skips the boss rush of the Slither Inc. tower (D-4):
+    you do not have to beat the 8 Pseudoroids again before Serpent. As you
+    climb the tower, the rooms of each pair of bosses appear as already
+    cleared (capsules used, teleporters off, doors open) and the elevator
+    keeps going up to D-5. The tower cutscenes still play (skippable with
+    START).
+    Logic: when on, the boss_logic requirements of the eight Pseudoroids are
+    not needed to reach Serpent (they only apply to their story fight).
     """
     display_name = "Skip Boss Rush"
     default = 0
 
 
 class HuInPool(Toggle):
-    """(v0.2 EXPERIMENTAL) Convierte la forma humana (Hu) en un item de la
-    pool en vez de estar siempre disponible. Aplica un parche de ROM que
-    'gatea' Hu tras un flag (como los biometales). ⚠️ RIESGO DE SOFTLOCK:
-    algunas misiones EXIGEN forma humana (p.ej. Pass The Test) — sin la
-    lógica de regiones cableada, puedes quedar atascado si te toca ese
-    contenido antes de recibir Model Hu. Úsalo solo para pruebas."""
+    """(EXPERIMENTAL) The human form (Hu) becomes an item of the pool instead
+    of being always available: a ROM patch locks it behind a flag, like the
+    biometals. Some missions require the human form (e.g. Pass The Test) and
+    the transform menu needs two owned forms; the logic and the client cover
+    the known cases, but treat this option as experimental."""
     display_name = "Human Form (Hu) In Pool"
     default = 0
 
 
 class StartingTranserver(Choice):
-    """Transerver donde empiezas (v0.2). Por ahora solo el hub de la base
-    Guardian (el punto post-tutorial natural); se añadirán Transervers de
-    área cuando la lógica de regiones esté cableada."""
+    """Transerver where you start. Only the Guardian base hub for now."""
     display_name = "Starting Transerver"
     option_guardian_hub = 0
     default = 0
 
 
 class MissionAutoAccept(DefaultOnToggle):
-    """Modo 'open world' de misiones (v0.2). Con ON, el cliente ACEPTA
-    automáticamente la misión de la zona en la que entras (sin pasar por el
-    Transerver), para poder hacerlas en cualquier orden. Las misiones que el
-    juego lanza solas por historia (Model ZX en la base Guardian, y Protect
-    HQ) se disparan igual, no se auto-aceptan. Con OFF, aceptación manual en
-    el Transerver (vanilla) — ⚠️ la lógica de regiones ASUME auto-accept: en
-    manual, la disponibilidad de misiones sigue la secuencia de historia del
-    juego (N→N+4), que la lógica no modela."""
+    """Open-world missions. When on, the client accepts the mission of the
+    area you enter automatically (no trip to the Transerver), so missions can
+    be done in any order. Missions the game launches by itself (Model ZX in
+    the Guardian base, Protect HQ) still trigger on their own. Turning it off
+    (manual acceptance at the Transerver, as in vanilla) is NOT supported by
+    the logic: mission availability would follow the game's story sequence,
+    which the logic does not model."""
     display_name = "Mission Auto-Accept (Open World)"
 
 
 class PickupChecks1Up(Toggle):
-    """(v0.2) Los 1-Up colocados en el mapa (7) cuentan como checks: la
-    PRIMERA vez que recoges cada uno envía su location; después siguen
-    reapareciendo y dando vida como siempre. Añade 7 locations (y otros
-    tantos items de relleno al pool)."""
+    """The 1-Ups placed in the world (7) count as checks: the FIRST time you
+    pick each one up it sends its location; afterwards it keeps respawning
+    and giving a life as usual. Adds 7 locations (and as many filler items to
+    the pool)."""
     display_name = "Pickup Checks: 1-Ups"
     default = 0
 
 
 class PickupChecksEnergy(Toggle):
-    """(v0.2) Las cápsulas de energía (Energy Capsule L/XL) colocadas en el
-    mapa (45) cuentan como checks: la PRIMERA recogida de cada una envía su
-    location; después siguen reapareciendo y curando. Añade 45 locations."""
+    """The energy capsules (Energy Capsule L/XL) placed in the world (45) count
+    as checks: the FIRST pickup of each one sends its location; afterwards
+    they keep respawning and healing. Adds 45 locations."""
     display_name = "Pickup Checks: Energy Capsules"
     default = 0
 
 
 class PickupChecksWeapon(Toggle):
-    """(v0.2) Las recargas de arma (Weapon Energy L) colocadas en el mapa
-    (25) cuentan como checks: la PRIMERA recogida de cada una envía su
-    location; después siguen reapareciendo. Añade 25 locations."""
+    """The weapon energy refills (Weapon Energy L) placed in the world (25)
+    count as checks: the FIRST pickup of each one sends its location;
+    afterwards they keep respawning. Adds 25 locations."""
     display_name = "Pickup Checks: Weapon Energy"
     default = 0
 
 
 class PickupChecksCrystals(Toggle):
-    """(v0.2) Los E-Crystal L colocados en el mapa (56) cuentan como checks:
-    la PRIMERA recogida de cada uno envía su location; después siguen
-    reapareciendo y dando cristales. Añade 56 locations."""
+    """The E-Crystal L pickups placed in the world (56) count as checks: the
+    FIRST pickup of each one sends its location; afterwards they keep
+    respawning and giving crystals. Adds 56 locations."""
     display_name = "Pickup Checks: E-Crystals"
     default = 0
 
 
 class NotifyReceived(Choice):
-    """Avisos en pantalla (popup pequeño del juego) al RECIBIR un item:
-    qué clases se muestran. `off` ninguno; `progression` solo progresión;
-    `useful` progresión + útiles; `all` también el relleno (E-Crystals,
-    1-Up). Se puede cambiar en la partida con `/mmzx_notify`."""
+    """On-screen notifications (the game's small popup) when you RECEIVE an
+    item: which item classes are shown. off: none; progression: progression
+    only; useful: progression and useful; all: also filler (E-Crystals,
+    1-Up). Can be changed in game with /mmzx_notify."""
     display_name = "On-screen Notifications: Received Items"
     option_off = 0
     option_progression = 1
@@ -205,9 +196,9 @@ class NotifyReceived(Choice):
 
 
 class NotifySent(Choice):
-    """Avisos en pantalla al ENVIAR un item a otro jugador (check tuyo con
-    un item ajeno): qué clases se muestran (`off`, `progression`, `useful`,
-    `all`). Se puede cambiar en la partida con `/mmzx_notify`."""
+    """On-screen notifications when you SEND an item to another player (one of
+    your checks holds their item): which classes are shown (off,
+    progression, useful, all). Can be changed in game with /mmzx_notify."""
     display_name = "On-screen Notifications: Sent Items"
     option_off = 0
     option_progression = 1
@@ -217,11 +208,11 @@ class NotifySent(Choice):
 
 
 class NotifyStyle(Choice):
-    """Formato del aviso en pantalla. `short`: una sola línea de 30 caracteres
-    (si no cabe se quita el jugador y se recorta el nombre del item). `full`:
-    el texto completo ("Got <item> from <jugador>") partido por palabras en
-    páginas que el mismo popup muestra una tras otra sin cerrarse. Se puede
-    cambiar en la partida con `/mmzx_notify short|full`."""
+    """Format of the on-screen notification. short: a single line of 30
+    characters (the player name is dropped and the item name cut if it does
+    not fit). full: the whole text ("Got <item> from <player>") split by
+    words into pages the same popup shows one after another. Can be changed
+    in game with /mmzx_notify short|full."""
     display_name = "On-screen Notifications: Style"
     option_short = 0
     option_full = 1

@@ -514,9 +514,9 @@ def _insert_set(blob: bytes, setno: int, block: bytes) -> bytes:
     n = struct.unpack_from("<I", blob, 0)[0]
     offs = [struct.unpack_from("<I", blob, 4 + i * 4)[0] for i in range(n + 1)]
     if offs[n] != len(blob):
-        raise ValueError("MMZX: tabla de offsets del fichero de sets inesperada")
+        raise ValueError("MMZX: unexpected offset table in the sprite set file")
     if offs[setno] != offs[setno + 1]:
-        raise ValueError("MMZX: el set %d no está vacío" % setno)
+        raise ValueError("MMZX: sprite set %d is not empty" % setno)
     block = block + bytes((-len(block)) % 4)
     new = bytearray(blob[:4])
     for i in range(n + 1):
@@ -538,7 +538,7 @@ def _install_icon_set(d: bytearray) -> int:
         s0, e0 = struct.unpack_from("<II", d, fat + fid * 8)
         newfile = _insert_set(bytes(d[s0:e0]), ICON_SET, _gfx_data(name))
         if cur + len(newfile) > len(d) or any(d[cur:cur + len(newfile)]):
-            raise ValueError("MMZX: no hay padding libre para reubicar el fichero %d" % fid)
+            raise ValueError("MMZX: no free padding to relocate file %d" % fid)
         d[cur:cur + len(newfile)] = newfile
         struct.pack_into("<II", d, fat + fid * 8, cur, cur + len(newfile))
         if fid == ICON_FNT_FILE_ID:
@@ -676,13 +676,13 @@ class MMZXPatchExtension(APPatchExtension):
                         return  # idempotente
                     if orig is not None and cur != orig:
                         raise ValueError(
-                            "MMZX: bytes inesperados en 0x%08X (%s, esperado "
-                            "%s). ¿ROM incorrecta?" % (ram, cur.hex(), orig.hex()))
+                            "MMZX: unexpected bytes at 0x%08X (%s, expected "
+                            "%s). Wrong ROM?" % (ram, cur.hex(), orig.hex()))
                     buf = bytearray(sec.data)
                     buf[off:off + len(data)] = data
                     sec.data = bytes(buf)
                     return
-            raise ValueError("MMZX: 0x%08X fuera de las secciones ARM9" % ram)
+            raise ValueError("MMZX: 0x%08X is outside the ARM9 sections" % ram)
 
         # 1) tutorial-skip (siempre): entry (con guarda de bytes originales)
         #    + code-cave condicional por game_state
@@ -784,7 +784,7 @@ class MMZXPatchExtension(APPatchExtension):
         slot_end = min(x for x in others if x > arm9_off)
         if len(blob) + len(post) > slot_end - arm9_off:
             raise ValueError(
-                "MMZX: el arm9 recomprimido (0x%X+%d) no cabe en su slot "
+                "MMZX: the recompressed ARM9 (0x%X+%d) does not fit in its slot "
                 "(0x%X)" % (len(blob), len(post), slot_end - arm9_off))
         d[arm9_off:arm9_off + len(blob)] = blob
         end = arm9_off + len(blob)
@@ -802,7 +802,7 @@ class MMZXPatchExtension(APPatchExtension):
             if cur == MENU_WARP_TEXT_NEW:
                 continue
             if cur != MENU_WARP_TEXT_OLD:
-                raise ValueError("MMZX: texto inesperado en m_sub_en.bin+0x%X (%s)" % (off, cur.hex()))
+                raise ValueError("MMZX: unexpected text at m_sub_en.bin+0x%X (%s)" % (off, cur.hex()))
             d[o:o + len(MENU_WARP_TEXT_NEW)] = MENU_WARP_TEXT_NEW
 
         # sprite del Secret Disk = logo de Archipelago (128 B in-place dentro del
@@ -811,7 +811,7 @@ class MMZXPatchExtension(APPatchExtension):
         cur = bytes(d[logo_off:logo_off + len(DISK_LOGO_NEW)])
         if cur != DISK_LOGO_NEW:
             if cur != DISK_LOGO_OLD:
-                raise ValueError("MMZX: tile del disco inesperado en ROM 0x%X (%s)" % (logo_off, cur[:8].hex()))
+                raise ValueError("MMZX: unexpected disk tile at ROM 0x%X (%s)" % (logo_off, cur[:8].hex()))
             d[logo_off:logo_off + len(DISK_LOGO_NEW)] = DISK_LOGO_NEW
 
         # CRC16 de cabecera (CRC-16/MODBUS sobre [0:0x15E])

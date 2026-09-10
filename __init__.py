@@ -38,13 +38,15 @@ class MMZXWebWorld(WebWorld):
     theme = "ice"
     tutorials = [Tutorial(
         "Multiworld Setup Guide",
-        "Guía para jugar Mega Man ZX con Archipelago.",
-        "English", "setup_en.md", "setup/en", ["proyecto MMZX"],
+        "A guide to setting up and playing Mega Man ZX with Archipelago.",
+        "English", "setup_en.md", "setup/en", ["Nekusen"],
     )]
 
 
 class MMZXWorld(World):
-    """Mega Man ZX: metroidvania de Inti Creates/Capcom para Nintendo DS."""
+    """Mega Man ZX is a 2006 Nintendo DS action platformer by Inti Creates and
+    Capcom. Explore the interconnected areas, collect biometals, Card Keys and
+    upgrades, complete missions and defeat Serpent."""
 
     game = "Mega Man ZX"
     web = MMZXWebWorld()
@@ -90,9 +92,9 @@ class MMZXWorld(World):
             # Un jefe sin arena etiquetada en logic/logic.json no puede recibir
             # el requisito: fallar es más seguro que aplicarlo a nada.
             raise OptionError(
-                "[%s] boss_logic: %s no está(n) anclado(s) en la lógica todavía, así que su "
-                "requisito no se aplicaría a nada. Quítalo(s) del YAML o dibuja su arena en "
-                "tools/logic_editor/." % (self.player_name, ", ".join(loose)))
+                "[%s] boss_logic: %s has no arena anchored in the logic yet, so the "
+                "requirement would apply to nothing. Remove it from the YAML or draw the "
+                "arena in tools/logic_editor/." % (self.player_name, ", ".join(loose)))
 
     def create_regions(self) -> None:
         create_regions(self)
@@ -188,10 +190,10 @@ class MMZXWorld(World):
         blocked = [F.BOSSES[b]["name"] for b in sorted(reqs)
                    if not rules.get(F.boss_atom(b), lambda s: True)(state)]
         raise OptionError(
-            "[%s] boss_logic: la seed no se puede terminar ni teniendo TODOS los items. "
-            "Jefes cuyo requisito no se cumple ni así: %s. Revisa que no pidas más Life Up / "
-            "Sub Tank de los que existen (4 de cada) ni un item fuera del pool."
-            % (self.player_name, ", ".join(blocked) or "ninguno (mira el resto de la lógica)"))
+            "[%s] boss_logic: the seed cannot be completed even with EVERY item. "
+            "Bosses whose requirement is still unmet: %s. Check that you do not ask for more "
+            "Life Ups / Sub Tanks than exist (4 of each) or for an item outside the pool."
+            % (self.player_name, ", ".join(blocked) or "none (check the rest of the logic)"))
 
     def generate_output(self, output_directory: str) -> None:
         patch = MMZXPatch(player=self.player, player_name=self.player_name)

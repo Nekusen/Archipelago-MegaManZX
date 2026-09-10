@@ -83,7 +83,7 @@ def resolve_boss(key: str) -> str:
     """Clave del YAML -> id de jefe. ValueError si no existe."""
     bid = BOSS_BY_KEY.get(_norm(key))
     if bid is None:
-        raise ValueError("jefe desconocido %r. Válidos: %s" % (key, ", ".join(BOSS_NAMES)))
+        raise ValueError("unknown boss %r. Valid names: %s" % (key, ", ".join(BOSS_NAMES)))
     return bid
 
 
@@ -94,7 +94,7 @@ def parse_boss_logic(value) -> dict:
     for key, expr in dict(value or {}).items():
         bid = resolve_boss(key)
         if bid in seen:
-            raise ValueError("el jefe %s aparece dos veces en boss_logic (%r y %r)"
+            raise ValueError("boss %s appears twice in boss_logic (%r and %r)"
                              % (F.BOSSES[bid]["name"], seen[bid], key))
         seen[bid] = key
         if expr is None or (isinstance(expr, str) and not expr.strip()):
@@ -108,7 +108,7 @@ def parse_boss_logic(value) -> dict:
         req = {"normal": dnf}
         bad = sorted(a for a in F.req_atoms(req) if a in _FORBIDDEN)
         if bad:
-            raise ValueError("boss_logic[%s]: no se puede exigir %s (ni otro jefe ni una misión)"
+            raise ValueError("boss_logic[%s]: %s cannot be required (neither another boss nor a mission)"
                              % (key, ", ".join(bad)))
         if F.req_is_free(req):
             continue

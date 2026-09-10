@@ -292,7 +292,7 @@ def _tokens(expr: str):
     while pos < len(expr):
         m = _TOK.match(expr, pos)
         if not m:
-            raise ValueError("expresión inválida %r en la posición %d" % (expr, pos))
+            raise ValueError("invalid expression %r at position %d" % (expr, pos))
         out.append(m.group(1).replace(" ", ""))
         pos = m.end()
     return out
@@ -308,7 +308,7 @@ def parse_expr(expr: str):
         return DNF_TRUE
     dnf, i = _parse_or(toks, 0)
     if i != len(toks):
-        raise ValueError("tokens sobrantes en %r" % expr)
+        raise ValueError("unexpected trailing tokens in %r" % expr)
     return dnf
 
 
@@ -338,12 +338,12 @@ def _parse_and(toks, i):
 
 def _parse_atom(toks, i):
     if i >= len(toks):
-        raise ValueError("expresión incompleta")
+        raise ValueError("incomplete expression")
     t = toks[i]
     if t == "(":
         node, i = _parse_or(toks, i + 1)
         if i >= len(toks) or toks[i] != ")":
-            raise ValueError("falta ')'")
+            raise ValueError("missing ')'")
         return node, i + 1
     up = t.upper()
     if up in CONST_TRUE:
@@ -352,7 +352,7 @@ def _parse_atom(toks, i):
         return DNF_FALSE, i + 1
     a = canonical_atom(t)
     if a is None:
-        raise ValueError("átomo desconocido %r" % t)
+        raise ValueError("unknown atom %r" % t)
     return [[a]], i + 1
 
 
@@ -538,7 +538,7 @@ def atom_predicate(atom, player, hu_in_pool=False, extra_atoms=None):
     if m and m.group(1) in LIST_COUNT_ATOMS:
         names, n = list(LIST_COUNT_ATOMS[m.group(1)][0]), int(m.group(2))
         return lambda state: state.has_from_list(names, player, n)
-    raise ValueError("átomo desconocido %r" % atom)
+    raise ValueError("unknown atom %r" % atom)
 
 
 # --------------------------------------------------------------------------

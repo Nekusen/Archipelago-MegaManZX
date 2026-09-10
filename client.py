@@ -495,9 +495,9 @@ class MMZXClient(BizHawkClient):
         if reads[0] != ROM_GAME_CODE:
             return False
         if reads[1] != b"MZXAP\x00":
-            logger.info("ERROR: esta ROM de Mega Man ZX no está parcheada "
-                        "para Archipelago. Genera el parche .apmmzx y ábrelo "
-                        "con el launcher para crear la ROM parcheada.")
+            logger.info("ERROR: this Mega Man ZX ROM is not patched for "
+                        "Archipelago. Generate the .apmmzx patch and open it "
+                        "with the launcher to create the patched ROM.")
             return False
         raw = reads[2]
         end = raw.find(b"\x00")
@@ -592,7 +592,7 @@ class MMZXClient(BizHawkClient):
             if name not in self._stage_failed:
                 self._stage_failed.add(name)
                 from CommonClient import logger
-                logger.exception("[mmzx] etapa '%s' falló (se sigue con el resto)" % name)
+                logger.exception("[mmzx] stage '%s' failed (continuing with the rest)" % name)
 
     async def game_watcher(self, ctx: "BizHawkClientContext") -> None:
         if ctx.server is None or ctx.slot_data is None:
@@ -612,8 +612,8 @@ class MMZXClient(BizHawkClient):
             self.skip_boss_rush = bool(ctx.slot_data.get("skip_boss_rush", False))
             if self.skip_boss_rush:
                 from CommonClient import logger
-                logger.info("[mmzx] QoL: boss rush de D-4 saltado (los pares de Pseudoroids se "
-                            "marcan vencidos al llegar a su parada del ascensor)")
+                logger.info("[mmzx] skip_boss_rush: the D-4 boss rush is skipped (each pair of "
+                            "Pseudoroids is marked as beaten when the elevator reaches its stop)")
 
         # Avisos en pantalla: umbrales por defecto del YAML (notify_received /
         # notify_sent), una vez por conexión y solo si el jugador no los ha
@@ -629,7 +629,7 @@ class MMZXClient(BizHawkClient):
             if not self.notify_style_user and style in NOTIFY_STYLES:
                 self.notify_style = style
             from CommonClient import logger
-            logger.info("[mmzx] avisos en pantalla: received=%s, sent=%s, style=%s "
+            logger.info("[mmzx] on-screen notifications: received=%s, sent=%s, style=%s "
                         "(/mmzx_notify [received|sent] <off|progression|useful|all> | <short|full>)"
                         % (NOTIFY_LEVELS[self.notify_cfg["received"]],
                            NOTIFY_LEVELS[self.notify_cfg["sent"]], self.notify_style))
@@ -683,7 +683,7 @@ class MMZXClient(BizHawkClient):
             await self._stage("where", self._log_where(ctx))
 
         # ---- posición del jugador -> almacén de datos (UT: auto-tab e icono) ----
-        await self._stage("posicion", self._send_position(ctx))
+        await self._stage("position", self._send_position(ctx))
 
         # ---- detectar checks ----
         # Ventana de lectura calculada de TODAS las direcciones de detect
@@ -726,7 +726,7 @@ class MMZXClient(BizHawkClient):
 
         # ---- pickups respawneables: sondear el buzón (solo si el slot los
         #      activa); los ids ya vistos persisten en mailbox_checked ----
-        await self._stage("buzon de pickups", self._poll_pickup_mailbox(ctx))
+        await self._stage("pickup mailbox", self._poll_pickup_mailbox(ctx))
         checked |= self.mailbox_checked
 
         if checked != self.local_checked:
@@ -737,14 +737,14 @@ class MMZXClient(BizHawkClient):
             self.local_checked = checked
 
         # ---- iconos de item en el mundo (parche ICON_*: tabla por subárea) ----
-        await self._stage("iconos de items", self._sync_icon_table(ctx))
+        await self._stage("item icons", self._sync_icon_table(ctx))
 
         # ---- Troop: desatascar la escena de Giro si quedó a medias ----
         await self._stage("troop", self._troop_unstick(ctx, guard))
 
         # ---- misión activa: reponer sus bits 'extra' si algo los borra ----
         if self.mission_auto_accept:
-            await self._stage("bits de misión", self._mission_bits_tick(ctx, guard))
+            await self._stage("mission bits", self._mission_bits_tick(ctx, guard))
 
         # ---- diagnóstico: trazar bits que cambian (mapear misión completada) ----
         if self.flag_watch:
@@ -756,16 +756,16 @@ class MMZXClient(BizHawkClient):
             await self._stage("dump", self._dump_transerver(ctx))
 
         # ---- tutorial-skip: aplicar el estado inicial (one-shot) ----
-        await self._stage("estado inicial", self._start_state_tick(ctx, guard))
+        await self._stage("starting state", self._start_state_tick(ctx, guard))
 
         # ---- conceder items recibidos (idempotente, re-aplicar todo) ----
         await self._stage("items", self._grant_items(ctx, guard))
 
         # ---- avisos en pantalla: items recibidos nuevos + bomba de la cola ----
-        await self._stage("avisos", self._notify_tick(ctx))
+        await self._stage("notifications", self._notify_tick(ctx))
 
         # ---- #5: revertir formas de jefe / Troop no poseídas por item AP ----
-        await self._stage("modelos", self._revert_unowned_models(ctx, guard))
+        await self._stage("models", self._revert_unowned_models(ctx, guard))
 
         # ---- open-world: auto-aceptar la misión de la zona actual ----
         if self.mission_auto_accept:
@@ -802,7 +802,7 @@ class MMZXClient(BizHawkClient):
 
         # ---- final del juego: si tras Serpent falta el handler de historia,
         #      la pantalla se queda en blanco; arrancar la cadena de créditos ----
-        await self._stage("final", self._ending_unstick(ctx, guard))
+        await self._stage("ending", self._ending_unstick(ctx, guard))
 
     async def _log_where(self, ctx) -> None:
         """/mmzx_where: subárea, posición, estado y misión al log."""
@@ -814,11 +814,11 @@ class MMZXClient(BizHawkClient):
             (0x0214F6CF, 1, DOM), (TROOP_MERGE[0], 1, DOM), (CUTSCENE_FLAG, 1, DOM)])
         x = int.from_bytes(r[1][0:4], "little") >> 8
         y = int.from_bytes(r[1][4:8], "little") >> 8
-        logger.info("[mmzx] where: sub=%d pos=(%d,%d) gs=%06X hp=%d paso=%d mision(estado)=%d 462B=%02X handler=%d modelo=%d auto_accept=%s items=%d"
+        logger.info("[mmzx] where: sub=%d pos=(%d,%d) gs=%06X hp=%d step=%d mission(state)=%d 462B=%02X handler=%d model=%d auto_accept=%s items=%d"
                     % (r[0][0], x, y, int.from_bytes(r[2], "little"), r[3][0], r[4][0],
                        int.from_bytes(r[5], "little"), r[6][0], int.from_bytes(r[7], "little"), r[8][0],
                        self.mission_auto_accept, len(ctx.items_received)))
-        logger.info("[mmzx] where+: handler_estado=%02X megamerge(0x02104602.1)=%d cutscene=%d"
+        logger.info("[mmzx] where+: handler_state=%02X megamerge(0x02104602.1)=%d cutscene=%d"
                     % (r[9][0], (r[10][0] >> TROOP_MERGE[1]) & 1, r[11][0] & 1))
 
     async def _send_position(self, ctx) -> None:
@@ -902,7 +902,7 @@ class MMZXClient(BizHawkClient):
                     names.append(ctx.location_names.lookup_in_game(i, "Mega Man ZX"))
                 except Exception:
                     names.append(str(i))
-            logger.info("[mmzx] pickup recogido: %s" % ", ".join(names))
+            logger.info("[mmzx] pickup collected: %s" % ", ".join(names))
 
     def _icon_code(self, ctx, loc_id: int) -> int:
         """Código de icono (anim+1 del set AP) del item que hay en la location, según
@@ -1069,7 +1069,7 @@ class MMZXClient(BizHawkClient):
                         changes.append("0x%08X.%d %s" % (
                             FLAG_WATCH_BASE + i, b, "ON" if on else "off"))
         if changes:
-            logger.info("[mmzx_flags] cambios: " + ", ".join(changes))
+            logger.info("[mmzx_flags] changes: " + ", ".join(changes))
             self.flag_snap = cur
 
     async def _dump_transerver(self, ctx) -> None:
@@ -1101,12 +1101,12 @@ class MMZXClient(BizHawkClient):
             return bool(mis_region[addr - base] & (1 << bit)) if 0 <= addr - base < len(mis_region) else False
 
         started = [name for (a, b, name) in MISSIONS if bit_of(a, b)]
-        logger.info("[mmzx_dump] mision(0x021045DE): " + mis_region.hex(" "))
+        logger.info("[mmzx_dump] mission(0x021045DE): " + mis_region.hex(" "))
         logger.info("[mmzx_dump] transerver(0x02104620): " + ts_region.hex(" "))
-        logger.info("[mmzx_dump] idx 0x02104630 = 0x%02X | acceso 0x02104627/28 = %02X %02X" % (
+        logger.info("[mmzx_dump] idx 0x02104630 = 0x%02X | access 0x02104627/28 = %02X %02X" % (
             ts_region[0x10], ts_region[0x07], ts_region[0x08]))
-        logger.info("[mmzx_dump] misiones con FLAG de inicio puesto: "
-                    + (", ".join(started) if started else "ninguna"))
+        logger.info("[mmzx_dump] missions with their start flag set: "
+                    + (", ".join(started) if started else "none"))
 
     @staticmethod
     def _mission_done_bits(name: str):
@@ -1150,7 +1150,7 @@ class MMZXClient(BizHawkClient):
                 writes.append((ea + CANON_OFF, bytes([cur[n + i][0] | (1 << eb)]), DOM))
         if writes and await bizhawk.guarded_write(ctx.bizhawk_ctx, writes, [guard]):
             from CommonClient import logger
-            logger.info("[mmzx] %s: repuestos %d bits de misión que algo había borrado"
+            logger.info("[mmzx] %s: restored %d mission bits that something had cleared"
                         % (rec["name"], len(writes)))
 
     async def _troop_unstick(self, ctx, guard) -> None:
@@ -1210,17 +1210,17 @@ class MMZXClient(BizHawkClient):
             if r[2][0] & mask:
                 writes.append((addr + CANON_OFF, bytes([r[2][0] & ~mask]), DOM))
             if writes:
-                what.append("limpiado el flag de megamerge 0x02104602.1")
+                what.append("cleared the megamerge flag 0x02104602.1")
         if not (r[4][0] & smask):
             writes.append((saddr, bytes([r[4][0] | smask]), DOM))
         if not (r[5][0] & smask):
             writes.append((saddr + CANON_OFF, bytes([r[5][0] | smask]), DOM))
         if not (r[4][0] & r[5][0] & smask):
-            what.append("repuesto el flag de inicio 0x021045E0.2 (lo borra el propio juego)")
+            what.append("restored the mission start flag 0x021045E0.2 (the game itself clears it)")
         if writes and await bizhawk.guarded_write(ctx.bizhawk_ctx, writes, [guard]):
             from CommonClient import logger
-            logger.info("[mmzx] Troop Reinforcement estaba a medias: %s; la escena de Giro "
-                        "puede volver a dispararse" % " y ".join(what))
+            logger.info("[mmzx] Troop Reinforcement was half done: %s; the Giro scene "
+                        "can trigger again" % " and ".join(what))
 
     async def _ending_unstick(self, ctx, guard) -> None:
         """Final del juego: si Serpent 2 ha muerto en D-5 y el handler de
@@ -1276,9 +1276,8 @@ class MMZXClient(BizHawkClient):
         if ok:
             self.ending_ticks = 0
             from CommonClient import logger
-            logger.info("[mmzx] el final del juego se habia quedado sin handler de "
-                        "historia (pantalla en blanco tras Serpent): arrancada la "
-                        "cinematica final; siguen los creditos")
+            logger.info("[mmzx] the ending had no story handler (white screen after "
+                        "Serpent): final cutscene started; the credits follow")
 
     async def _boss_rush_skip_tick(self, ctx, guard) -> None:
         """QoL `skip_boss_rush`: cruzar la torre de Slither (D-4) sin volver a
@@ -1342,8 +1341,8 @@ class MMZXClient(BizHawkClient):
         if ok:
             from CommonClient import logger
             for k in pairs:
-                logger.info("[mmzx] boss rush saltado: %s dados por vencidos (jugador en %d,%d); "
-                            "checkpoint guardado" % (BR.PAIR_NAMES[k], x, y))
+                logger.info("[mmzx] boss rush skipped: %s marked as beaten (player at %d,%d); "
+                            "checkpoint saved" % (BR.PAIR_NAMES[k], x, y))
 
     async def _auto_accept_mission(self, ctx, guard) -> None:
         """Open-world: al ENTRAR en la subárea destino de una misión, la
@@ -1380,7 +1379,7 @@ class MMZXClient(BizHawkClient):
             key = ("hub", floor)
             rec = MISSION_ACCEPT.get(HUB_FLOOR_BOSS[floor])
             from CommonClient import logger
-            logger.info("[mmzx] piso del hub y=%d (jugador %d,%d): misión %s"
+            logger.info("[mmzx] hub floor y=%d (player at %d,%d): mission %s"
                         % (floor, x, y, rec["name"] if rec else "?"))
         else:
             if sub == self.last_accept_sub and not self.force_accept:
@@ -1404,7 +1403,7 @@ class MMZXClient(BizHawkClient):
             if all(vals[i][0] & (1 << b) for i, (_, b) in enumerate(done_bits)):
                 self.last_accept_sub = key
                 from CommonClient import logger
-                logger.info("[mmzx] %s ya completada: no se re-acepta" % rec["name"])
+                logger.info("[mmzx] %s already completed: not accepted again" % rec["name"])
                 return
         try:
             cur_state = int.from_bytes((await bizhawk.read(
@@ -1433,7 +1432,7 @@ class MMZXClient(BizHawkClient):
                         w.append((ea + CANON_OFF, bytes([cur[len(extras) + i][0] | (1 << eb)]), DOM))
                 if w and await bizhawk.guarded_write(ctx.bizhawk_ctx, w, [guard]):
                     from CommonClient import logger
-                    logger.info("[mmzx] %s ya estaba aceptada: repuestos %d bits de misión que faltaban"
+                    logger.info("[mmzx] %s was already accepted: restored %d missing mission bits"
                                 % (rec["name"], len(w)))
             return
         addr, bit = rec["flag"]
@@ -1490,9 +1489,9 @@ class MMZXClient(BizHawkClient):
             except bizhawk.RequestFailedError:
                 pass
             self.last_accept_sub = key      # solo se marca si la escritura entró
-            logger.info("[mmzx] open-world: misión auto-aceptada → %s" % rec["name"])
+            logger.info("[mmzx] open world: mission auto-accepted -> %s" % rec["name"])
         else:
-            logger.info("[mmzx] aceptación de %s no aplicada (guarda de estado); se reintenta" % rec["name"])
+            logger.info("[mmzx] acceptance of %s not applied (game state guard); retrying" % rec["name"])
 
     async def _start_state_resolve(self, ctx) -> None:
         """Avanza la máquina one-shot del skip usando el datastore del
@@ -1608,7 +1607,7 @@ class MMZXClient(BizHawkClient):
                         return
                     if (cf[0][0] & (1 << xb)) and cf[1][0] == HUB_SUBAREA:
                         from CommonClient import logger
-                        logger.info("[mmzx] partida nueva detectada (Model X del estado dorado): re-aplicando el estado inicial")
+                        logger.info("[mmzx] new save detected (seeded Model X): re-applying the starting state")
                         self.start_state = 2
                         self.start_confirm = 0
                         self.start_retries = 0
@@ -1653,7 +1652,7 @@ class MMZXClient(BizHawkClient):
         key = str(ctx.slot_data.get("starting_model", "model_x"))
         rec = STARTING_MODELS.get(key)
         if rec is None:
-            logger.info("[mmzx] starting_model desconocido: %r (ignorado)" % key)
+            logger.info("[mmzx] unknown starting_model: %r (ignored)" % key)
             return -1   # nada que confirmar; se dará por hecho
 
         # posesiones: revocar X si toca + conceder las del modelo elegido
@@ -1693,7 +1692,7 @@ class MMZXClient(BizHawkClient):
             await self._teleport(ctx, dest[0], dest[1], dest[2], guard)
 
         if self.start_confirm == 0 and self.start_retries == 0:
-            logger.info("[mmzx] estado inicial aplicado: modelo=%s, transerver=%s"
+            logger.info("[mmzx] starting state applied: model=%s, transerver=%s"
                         % (key, ts_key))
         return rec["active"]
 
@@ -1717,10 +1716,10 @@ class MMZXClient(BizHawkClient):
                 y = HUB_FLOOR_Y.get(letter)
                 if y is not None:
                     self.pending_teleport = (HUB_SUBAREA, HUB_X, y - HUB_PAD_DY)
-                    logger.info("[mmzx] Go to Transerver → Area %s (piso %s del hub)"
+                    logger.info("[mmzx] Go to Transerver -> Area %s (hub floor %s)"
                                 % (STATION_ROOMS[sel][0].upper() + "-" + STATION_ROOMS[sel][1:].lstrip("0"), letter))
             else:
-                logger.info("[mmzx] Go to Transerver: lista cancelada")
+                logger.info("[mmzx] Go to Transerver: list cancelled")
             return
         if req != 1:
             return
@@ -1735,7 +1734,7 @@ class MMZXClient(BizHawkClient):
         ], [guard])
         if ok:
             self.transport_wait = True
-            logger.info("[mmzx] Go to Transerver: abriendo la lista Target Area")
+            logger.info("[mmzx] Go to Transerver: opening the Target Area list")
 
     async def _teleport(self, ctx, sub, x, y, guard) -> None:
         """Teleport limpio (7 escrituras; docs/client_integration.md §6).
@@ -2036,7 +2035,7 @@ class MMZXClient(BizHawkClient):
             fallback = self._fallback_model(ctx, owned)
             if fallback != active:   # sin nada mejor (Hu gateada y 0 biometales) no se toca
                 writes.append((MODEL, bytes([fallback]), DOM))
-                notes.append("modelo %d no poseído -> revierto a %d" % (active, fallback))
+                notes.append("model %d not owned -> reverting to %d" % (active, fallback))
         # bits de posesión sin item -> limpiar (vivo + canónica); ídem la 2ª
         # mitad sin la 2ª copia (p.ej. re-derivada por la tienda de niveles)
         addrs = sorted({a for _i, a, _b in MODEL_POSSESSION.values()}
@@ -2054,16 +2053,16 @@ class MMZXClient(BizHawkClient):
             for k in (0, 1):
                 if vals[a][k] & (1 << bit):
                     vals[a][k] &= ~(1 << bit) & 0xFF
-                    notes.append("posesión de %s sin item -> limpio 0x%08X.%d%s"
-                                 % (item, a, bit, "" if k == 0 else " (canónica)"))
+                    notes.append("%s owned without its item -> clearing 0x%08X.%d%s"
+                                 % (item, a, bit, "" if k == 0 else " (canonical)"))
         for m, (a, bit) in MODEL_PART2.items():
             if full.get(m, False):
                 continue
             for k in (0, 1):
                 if vals[a][k] & (1 << bit):
                     vals[a][k] &= ~(1 << bit) & 0xFF
-                    notes.append("2ª mitad de %s sin 2ª copia -> limpio 0x%08X.%d%s"
-                                 % (MODEL_POSSESSION[m][0], a, bit, "" if k == 0 else " (canónica)"))
+                    notes.append("second half of %s without its second copy -> clearing 0x%08X.%d%s"
+                                 % (MODEL_POSSESSION[m][0], a, bit, "" if k == 0 else " (canonical)"))
         for i, a in enumerate(addrs):
             if vals[a][0] != cur[i][0]:
                 writes.append((a, bytes([vals[a][0]]), DOM))
@@ -2109,7 +2108,7 @@ class MMZXClient(BizHawkClient):
             if self.death_induced:
                 self.death_induced = False
             else:
-                await ctx.send_death(f"{ctx.player_names[ctx.slot]} se quedó sin energía.")
+                await ctx.send_death(f"{ctx.player_names[ctx.slot]} ran out of energy.")
             self.prev_death_link = ctx.last_death_link  # no auto-recibir el propio
         self.prev_hp = hp
 
@@ -2132,13 +2131,13 @@ class MMZXClient(BizHawkClient):
             self.pending_death = False
             self.death_induced = True
             from CommonClient import logger
-            logger.info("[mmzx] DeathLink recibido: muerte aplicada")
+            logger.info("[mmzx] DeathLink received: death applied")
 
 
 def _cmd_teleport(self, *args) -> None:
-    """Anti-softlock: teletransporta a una subárea. Sin argumentos → hub
-    (z01). Uso: /mmzx_teleport [subárea] [x_px] [y_px]  ·  /mmzx_teleport K
-    (letra de área → piso de esa área en el hub, junto a la consola)"""
+    """Anti-softlock teleport. No arguments: the Guardian hub. /mmzx_teleport K
+    (area letter): that area's floor of the hub, next to the console.
+    /mmzx_teleport <subarea> <x_px> <y_px>: an exact position."""
     from CommonClient import logger
     handler = self.ctx.client_handler
     if not isinstance(handler, MMZXClient):
@@ -2151,45 +2150,45 @@ def _cmd_teleport(self, *args) -> None:
         # del piso y caía al de abajo (exp451: piso M → piso O).
         y = HUB_FLOOR_Y[letter] - HUB_PAD_DY
         handler.pending_teleport = (HUB_SUBAREA, HUB_X, y)
-        logger.info(f"Teleport encolado → hub, piso {letter} ({HUB_X},{y}).")
+        logger.info(f"Teleport queued -> hub, floor {letter} ({HUB_X},{y}).")
         return
     try:
         sub = int(args[0]) if len(args) >= 1 else HUB_SUBAREA
         x = int(args[1]) if len(args) >= 2 else HUB_X
         y = int(args[2]) if len(args) >= 3 else HUB_Y
     except ValueError:
-        logger.error("mmzx_teleport: argumentos no numéricos (o letra de área A..X)")
+        logger.error("mmzx_teleport: arguments must be numbers (or an area letter A..X)")
         return
     handler.pending_teleport = (sub, x, y)
-    logger.info(f"Teleport encolado → subárea {sub} ({x},{y}).")
+    logger.info(f"Teleport queued -> subarea {sub} ({x},{y}).")
 
 
 def _cmd_where(self, *args) -> None:
-    """Diagnóstico: escribe en el log la subárea, posición y estado actuales."""
+    """Diagnostic: log the current subarea, position and state."""
     from CommonClient import logger
     handler = self.ctx.client_handler
     if not isinstance(handler, MMZXClient):
         return
     handler.pending_where = True
-    logger.info("mmzx_where: encolado (se vuelca en el próximo tick en juego).")
+    logger.info("mmzx_where: queued (logged on the next in-game tick).")
 
 
 def _cmd_accept(self, *args) -> None:
-    """Fuerza la aceptación de la misión de la zona actual (o del piso del hub
-    en el que estás) en el próximo tick, aunque ya se hubiera intentado."""
+    """Force-accept the mission of the current area (or of the hub floor you
+    are on) on the next tick, even if it was already attempted."""
     from CommonClient import logger
     handler = self.ctx.client_handler
     if not isinstance(handler, MMZXClient):
         return
     handler.force_accept = True
     handler.last_accept_sub = None
-    logger.info("mmzx_accept: encolado (se aplica en el próximo tick en juego).")
+    logger.info("mmzx_accept: queued (applied on the next in-game tick).")
 
 
 def _cmd_start(self, *args) -> None:
-    """Tutorial-skip: fuerza la (re)aplicación del estado inicial del YAML
-    (modelo + Transerver). Úsalo si reinicias la partida del cartucho a mitad
-    de seed (la aplicación automática es one-shot por seed)."""
+    """Re-apply the YAML starting state (model and Transerver). Use it if you
+    restart the save mid-seed (the automatic application happens once per
+    seed)."""
     from CommonClient import logger
     handler = self.ctx.client_handler
     if not isinstance(handler, MMZXClient):
@@ -2197,14 +2196,14 @@ def _cmd_start(self, *args) -> None:
     handler.start_state = 2   # aplicar en el próximo tick elegible
     handler.start_confirm = 0
     handler.start_retries = 0
-    logger.info("mmzx_start: encolado (se aplica al estar en el hub, en juego).")
+    logger.info("mmzx_start: queued (applied once you are in the hub, in game).")
 
 
 def _cmd_flags(self, *args) -> None:
-    """Diagnóstico: traza los bits del bloque de progreso que cambian.
-    Uso: /mmzx_flags on  (toma snapshot y empieza a trazar) · /mmzx_flags off.
-    Para mapear 'misión completada': /mmzx_flags on ANTES de entregar en el
-    Transerver; entrega la misión; los bits que salgan 'ON' son la firma."""
+    """Diagnostic: trace the progress-block bits that change.
+    /mmzx_flags on takes a snapshot and starts tracing; /mmzx_flags off stops.
+    To map a mission completion: /mmzx_flags on BEFORE reporting at the
+    Transerver, report the mission, and the bits logged as ON are the signature."""
     from CommonClient import logger
     handler = self.ctx.client_handler
     if not isinstance(handler, MMZXClient):
@@ -2217,32 +2216,31 @@ def _cmd_flags(self, *args) -> None:
     else:
         handler.flag_watch = True
         handler.flag_snap = None   # se re-toma en el próximo tick
-        logger.info("mmzx_flags: ON (snapshot en el próximo frame de juego; "
-                    "ahora entrega la misión y observa los bits 'ON')")
+        logger.info("mmzx_flags: ON (snapshot on the next in-game frame; "
+                    "now report the mission and watch the bits logged as ON)")
 
 
 def _cmd_dump(self, *args) -> None:
-    """Diagnóstico: vuelca el estado del Transerver (flags de misión +
-    índice de disponibilidad 0x02104630). Úsalo EN el menú del Transerver,
-    con la lista de misiones a la vista, y dime qué misiones salen ofertadas
-    para correlacionar el gating del listado."""
+    """Diagnostic: dump the Transerver state (mission flags and the
+    availability index 0x02104630). Use it IN the Transerver menu with the
+    mission list on screen, to correlate which missions are offered."""
     from CommonClient import logger
     handler = self.ctx.client_handler
     if not isinstance(handler, MMZXClient):
         return
     handler.pending_dump = True
-    logger.info("mmzx_dump: encolado (se vuelca en el próximo frame de juego).")
+    logger.info("mmzx_dump: queued (dumped on the next in-game frame).")
 
 
 def _cmd_notify(self, *args) -> None:
-    """Avisos en pantalla al recibir/enviar items. /mmzx_notify <nivel>
-    fija el mismo nivel para recibidos y enviados; /mmzx_notify
-    [received|sent] <nivel> solo uno. Niveles: off, progression, useful
-    (progresión + útiles), all (también relleno: E-Crystals, 1-Up).
-    /mmzx_notify short|full fija el estilo: una línea recortada o el texto
-    entero en páginas encadenadas del mismo popup. Sin argumentos muestra la
-    configuración actual. El valor inicial viene del YAML (notify_received /
-    notify_sent / notify_style) y no se guarda entre sesiones."""
+    """On-screen notifications for received and sent items. /mmzx_notify <level>
+    sets the same level for both; /mmzx_notify [received|sent] <level> sets
+    one side. Levels: off, progression, useful (progression + useful), all
+    (also filler: E-Crystals, 1-Up). /mmzx_notify short|full picks the style:
+    one cut line, or the full text in chained pages of the same popup. With no
+    arguments it prints the current setting. The initial value comes from the
+    YAML (notify_received / notify_sent / notify_style) and is not kept
+    between sessions."""
     from CommonClient import logger
     handler = self.ctx.client_handler
     if not isinstance(handler, MMZXClient):
@@ -2258,17 +2256,17 @@ def _cmd_notify(self, *args) -> None:
         handler.notify_cfg[words[0]] = NOTIFY_LEVELS.index(words[1])
         handler.notify_user_set = True
     elif words:
-        logger.error("uso: /mmzx_notify <off|progression|useful|all>  o  "
-                     "/mmzx_notify [received|sent] <off|progression|useful|all>  o  "
+        logger.error("usage: /mmzx_notify <off|progression|useful|all>  or  "
+                     "/mmzx_notify [received|sent] <off|progression|useful|all>  or  "
                      "/mmzx_notify <short|full>")
         return
-    logger.info("[mmzx] avisos en pantalla: received=%s, sent=%s, style=%s" % (
+    logger.info("[mmzx] on-screen notifications: received=%s, sent=%s, style=%s" % (
         NOTIFY_LEVELS[handler.notify_cfg["received"]], NOTIFY_LEVELS[handler.notify_cfg["sent"]],
         handler.notify_style))
 
 
 def _cmd_icons(self, *args) -> None:
-    """Iconos de item en los pickups del mundo: /mmzx_icons [on|off]."""
+    """Draw each pickup in the world as the item it holds: /mmzx_icons [on|off]."""
     from CommonClient import logger
     handler = self.ctx.client_handler
     if not isinstance(handler, MMZXClient):
@@ -2277,6 +2275,6 @@ def _cmd_icons(self, *args) -> None:
         handler.icons_enabled = str(args[0]).lower() == "on"
         handler.icon_written = None
     elif args:
-        logger.error("uso: /mmzx_icons [on|off]")
+        logger.error("usage: /mmzx_icons [on|off]")
         return
-    logger.info("[mmzx] iconos de item en el mundo: %s" % ("on" if handler.icons_enabled else "off"))
+    logger.info("[mmzx] in-game item icons: %s" % ("on" if handler.icons_enabled else "off"))

@@ -499,7 +499,7 @@
    "req": {
     "normal": [
      [
-      "HX"
+      "PX"
      ]
     ]
    },
@@ -521,7 +521,7 @@
    "req": {
     "normal": [
      [
-      "HX"
+      "MODEL"
      ]
     ]
    },
@@ -532,7 +532,7 @@
    "req": {
     "normal": [
      [
-      "HX"
+      "PX"
      ]
     ]
    },
@@ -742,6 +742,9 @@
     "normal": [
      [
       "HX"
+     ],
+     [
+      "LX"
      ]
     ]
    },
@@ -869,6 +872,17 @@
    "unsure": false
   },
   "H-3: E-Crystal L (3)": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "I-1: Disk E-3": {
    "note": "",
    "req": {
     "normal": [
@@ -3850,9 +3864,6 @@
       "normal": [
        [
         "HX"
-       ],
-       [
-        "PX"
        ]
       ]
      },
@@ -5053,6 +5064,32 @@
      },
      "to": "e-4-entrance",
      "unsure": false
+    },
+    {
+     "from": "upper-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "electric-rods",
+     "unsure": false
+    },
+    {
+     "from": "electric-rods",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "upper-area",
+     "unsure": false
     }
    ],
    "members": {},
@@ -5640,7 +5677,9 @@
      "note": "",
      "req": {
       "normal": [
-       []
+       [
+        "MODEL"
+       ]
       ]
      },
      "to": "e-4-entrance-bottom-area",
@@ -5657,16 +5696,7 @@
       ],
       "normal": [
        [
-        "X"
-       ],
-       [
-        "ZX"
-       ],
-       [
-        "FX"
-       ],
-       [
-        "OX"
+        "MODEL"
        ]
       ]
      },
@@ -5678,7 +5708,9 @@
      "note": "",
      "req": {
       "normal": [
-       []
+       [
+        "MODEL"
+       ]
       ]
      },
      "to": "e-4-entrance-after-mini-boss",
@@ -5695,16 +5727,7 @@
       ],
       "normal": [
        [
-        "X"
-       ],
-       [
-        "ZX"
-       ],
-       [
-        "FX"
-       ],
-       [
-        "OX"
+        "MODEL"
        ]
       ]
      },
@@ -6356,7 +6379,7 @@
      "req": {
       "normal": [
        [
-        "FX"
+        "FX2"
        ]
       ]
      },
@@ -8567,9 +8590,6 @@
      "from": "h-4-entrance",
      "note": "",
      "req": {
-      "expert": [
-       []
-      ],
       "normal": [
        [
         "MODEL"
@@ -8583,9 +8603,6 @@
      "from": "blimps",
      "note": "",
      "req": {
-      "expert": [
-       []
-      ],
       "normal": [
        [
         "MODEL"
@@ -8599,9 +8616,6 @@
      "from": "blimps",
      "note": "",
      "req": {
-      "expert": [
-       []
-      ],
       "normal": [
        [
         "MODEL"
@@ -8615,9 +8629,6 @@
      "from": "left-area",
      "note": "",
      "req": {
-      "expert": [
-       []
-      ],
       "normal": [
        [
         "MODEL"
@@ -9128,8 +9139,15 @@
      "from": "dark-room-1",
      "note": "",
      "req": {
+      "expert": [
+       [
+        "MODEL"
+       ]
+      ],
       "normal": [
-       []
+       [
+        "PX"
+       ]
       ]
      },
      "to": "tower-interior",
@@ -9147,9 +9165,6 @@
       "normal": [
        [
         "PX"
-       ],
-       [
-        "LX"
        ]
       ]
      },
@@ -9168,9 +9183,6 @@
       "normal": [
        [
         "PX"
-       ],
-       [
-        "LX"
        ]
       ]
      },
@@ -9184,9 +9196,6 @@
       "normal": [
        [
         "PX"
-       ],
-       [
-        "LX"
        ]
       ]
      },
@@ -9205,13 +9214,23 @@
       "normal": [
        [
         "PX"
-       ],
-       [
-        "LX"
        ]
       ]
      },
      "to": "dark-room-2",
+     "unsure": false
+    },
+    {
+     "from": "i-2-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "FX"
+       ]
+      ]
+     },
+     "to": "tower-interior",
      "unsure": false
     }
    ],
@@ -9422,9 +9441,6 @@
       "normal": [
        [
         "PX"
-       ],
-       [
-        "LX"
        ]
       ]
      },
@@ -9441,9 +9457,6 @@
       "normal": [
        [
         "PX"
-       ],
-       [
-        "LX"
        ]
       ]
      },
@@ -9460,9 +9473,6 @@
       "normal": [
        [
         "PX"
-       ],
-       [
-        "LX"
        ]
       ]
      },
@@ -9479,9 +9489,6 @@
       "normal": [
        [
         "PX"
-       ],
-       [
-        "LX"
        ]
       ]
      },

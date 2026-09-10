@@ -435,7 +435,6 @@ room C-3 [c03]
     <- K-1 @(2224,720)
     conn -> Upper Area
       normal: HX
-      normal: PX
   region Upper Area  (4 vértices)
     check C-3: Disk E-49
       ? normal: MODEL   # C-3: repisa alta a la izquierda (y=34)
@@ -603,9 +602,9 @@ room D-4 [d04]
       normal: MODEL
     internal -> Boss Rush @(1664,2463)
     check D-4: E-Crystal L (2)
-      normal: HX
+      normal: PX
     check D-4: Weapon Energy L
-      normal: HX
+      normal: PX
     conn -> D-2 Entrance
       normal: free
   region Elevator 2  (4 vértices)
@@ -614,7 +613,7 @@ room D-4 [d04]
     check D-4: 1-Up
       normal: HX
     check D-4: Energy Capsule L (2)
-      normal: HX
+      normal: MODEL
     conn -> After Boss Rush
       normal: MODEL
 
@@ -681,10 +680,14 @@ room E-2 [e02]
   region Electric Rods  (4 vértices)
     conn -> E-4 Entrance
       normal: MODEL
+    conn -> Upper Area
+      normal: MODEL
   region Upper Area  (4 vértices)
     check E-2: Weapon Energy L
       normal: MODEL
     conn -> E-1 Entrance
+      normal: MODEL
+    conn -> Electric Rods
       normal: MODEL
 
 room E-3 [e03]
@@ -771,25 +774,19 @@ room E-6 [e06]
     door -> E-4/After Mini-Boss Room @(704,352)
     <- E-4 @(704,352)
     conn -> Mini-Boss Room
-      normal: X
-      normal: ZX
-      normal: FX
-      normal: OX
+      normal: MODEL
       expert: MODEL
   region E-4 Entrance (Bottom Area)  (4 vértices)
     door -> E-4/Lower Area @(320,352)
     <- E-4 @(320,352)
     conn -> Mini-Boss Room
-      normal: X
-      normal: ZX
-      normal: FX
-      normal: OX
+      normal: MODEL
       expert: MODEL
   region Mini-Boss Room  (4 vértices)
     conn -> E-4 Entrance (Bottom Area)
-      normal: free
+      normal: MODEL
     conn -> E-4 Entrance (After Mini-Boss)
-      normal: free
+      normal: MODEL
 
 room E-7 [e07]
   region Main
@@ -926,7 +923,7 @@ room F-3 [f03]
     conn -> Top Door
       normal: MODEL
     conn -> Ice Cube Room
-      normal: FX
+      normal: FX2
     conn -> Lower Area
       normal: MODEL
 
@@ -1121,6 +1118,7 @@ room G-2 [g02]
     <- G-4 @(656,432)
     check G-2: Disk E-16
       normal: HX
+      normal: LX
     conn -> 7th Floor
       normal: free
   region Basement  (4 vértices)
@@ -1259,10 +1257,8 @@ room H-3 [h03]
     check H-3: Energy Capsule L
     conn -> H-4 Entrance
       normal: MODEL
-      expert: free
     conn -> Left Area
       normal: MODEL
-      expert: free
   region H-2 Entrance  (4 vértices)
     door -> H-2/H-3 Entrance @(288,896)
     <- H-2 @(288,896)
@@ -1273,7 +1269,6 @@ room H-3 [h03]
     <- H-4 @(3808,368)
     conn -> Blimps
       normal: MODEL
-      expert: free
   region Hidden Room  (4 vértices)
     check H-3: Disk M-8
     check H-3: Energy Capsule XL
@@ -1286,7 +1281,6 @@ room H-3 [h03]
       normal: FX & HU
     conn -> Blimps
       normal: MODEL
-      expert: free
     conn -> H-2 Entrance
       normal: free
 
@@ -1339,21 +1333,20 @@ room I-1 [i01]
     check I-1: Energy Capsule L
       normal: MODEL
     conn -> Tower Interior
-      normal: free
+      normal: PX
+      expert: MODEL
     conn -> Dark Room 2
       normal: PX
-      normal: LX
       expert: MODEL
   region Dark Room 2  (4 vértices)
     internal -> Dark Room 1 @(2592,736)
     check I-1: Disk E-3
+      normal: MODEL
     conn -> Dark Room 1
       normal: PX
-      normal: LX
       expert: MODEL
     conn -> I-3 Entrance
       normal: PX
-      normal: LX
   region Hub Entrance  (4 vértices)
     warp -> Hub @(288,912)
     path -> E-7/E-8 Entrance @(288,912)
@@ -1366,6 +1359,8 @@ room I-1 [i01]
     <- I-2 @(1920,544)
     conn -> Left Area
       normal: free
+    conn -> Tower Interior
+      normal: FX
   region I-3 Entrance  (4 vértices)
     door -> I-3/I-1 Entrance @(3488,736)
     <- I-3 @(3488,736)
@@ -1373,7 +1368,6 @@ room I-1 [i01]
       normal: MODEL
     conn -> Dark Room 2
       normal: PX
-      normal: LX
       expert: MODEL
   region Left Area  (4 vértices)
     check I-1: E-Crystal L
@@ -1399,11 +1393,9 @@ room I-2 [i02]
       normal: MODEL
     conn -> Upper Area
       normal: PX
-      normal: LX
       expert: free
     conn -> I-4 Entrance
       normal: PX
-      normal: LX
       expert: free
   region I-1 Entrance  (4 vértices)
     door -> I-1/I-2 Entrance @(288,352)
@@ -1416,7 +1408,6 @@ room I-2 [i02]
     <- I-4 @(2208,1120)
     conn -> Dark Area
       normal: PX
-      normal: LX
       expert: free
   region I-5 Entrance  (4 vértices)
     door -> I-5/I-2 Entrance @(2208,736)   # Steephinx (miniboss) nada mas entrar en I-5
@@ -1431,7 +1422,6 @@ room I-2 [i02]
       normal: free
     conn -> Dark Area
       normal: PX
-      normal: LX
       expert: free
     conn -> Spikes
       normal: HX

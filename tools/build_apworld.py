@@ -17,7 +17,7 @@ import zipfile
 from pathlib import Path
 
 PKG = Path(__file__).resolve().parents[1]
-EXCLUDE_DIRS = {"tools", "test", "build", ".git", ".github", "__pycache__"}
+EXCLUDE_DIRS = {"tools", "test", "build", ".git", ".github", "__pycache__", "tracker/images"}
 EXCLUDE_FILES = {"README.md", "CHANGELOG.md", ".gitignore", ".apignore", ".gitmodules", ".git"}
 
 
@@ -25,7 +25,10 @@ def wanted(p: Path) -> bool:
     if not p.is_file() or p.suffix == ".pyc":
         return False
     rel = p.relative_to(PKG)
-    if any(part in EXCLUDE_DIRS for part in rel.parts[:-1]):
+    dirs = rel.parts[:-1]
+    if any(part in EXCLUDE_DIRS for part in dirs):
+        return False
+    if any("/".join(dirs[:n]) in EXCLUDE_DIRS for n in range(2, len(dirs) + 1)):
         return False
     if len(rel.parts) == 1 and rel.name in EXCLUDE_FILES:
         return False

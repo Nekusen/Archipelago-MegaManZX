@@ -5,10 +5,13 @@
 - **Archipelago** 0.6.x (`ArchipelagoLauncher`).
 - **BizHawk 2.9+** with the NDS (melonDS) core.
 - Your own **Mega Man ZX (USA)** ROM (`ARZE`). It is never distributed.
-- Optional: **Universal Tracker** (the world ships an embedded map pack:
-  overall map with a counter per room (missions/biometals/quests on each
-  area badge), one map per area and one per room,
-  auto-tab and a player position icon).
+- Optional: **Universal Tracker** plus the
+  [Mega Man ZX tracker pack](https://github.com/Nekusen/MegaManZX-Tracker/releases)
+  (`mmzx_tracker.zip`, keep it zipped). The world ships the map layout (one
+  map per area and one per room, with auto-tab and a player position icon)
+  and loads the map images from that pack: the first time you open the map
+  tab UT asks for the zip; you can also set its path in `host.yaml`
+  (`mmzx_settings` → `ut_pack_path`).
 
 ## One-time setup
 

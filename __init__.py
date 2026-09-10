@@ -33,6 +33,16 @@ class MMZXSettings(settings.Group):
 
     rom_file: RomFile = RomFile(RomFile.copy_to)
 
+    class UTPackPath(settings.FilePath):
+        """Path to the Mega Man ZX tracker pack (mmzx_tracker.zip): Universal
+        Tracker loads the map images from it. Leave it empty and UT will ask
+        for the file the first time it needs it."""
+        description = "Mega Man ZX Tracker Pack (zip)"
+        required = False
+        ut_dialog_name = "Select the Mega Man ZX tracker pack (mmzx_tracker.zip)"
+
+    ut_pack_path: UTPackPath | str = UTPackPath()
+
 
 class MMZXWebWorld(WebWorld):
     theme = "ice"
@@ -65,13 +75,16 @@ class MMZXWorld(World):
 
     origin_region_name = "Menu"
 
-    # Universal Tracker: pestaña de mapa con el pack PopTracker embebido en
-    # worlds/mmzx/tracker/ (tools/gen_tracker_pack.py; la lógica la pone UT
-    # desde este mismo mundo). UT ignora el atributo si no está instalado.
-    # Auto-tab + icono de posición: el cliente escribe mmzx_pos_<slot> =
-    # [subárea, x, y] en el almacén de datos; ver tracker_pos.py.
+    # Universal Tracker map tab, "hybrid" mode: the JSON (maps, marker
+    # coordinates) ships in worlds/mmzx/tracker/ and the map images come from
+    # the external tracker pack (github.com/Nekusen/MegaManZX-Tracker), whose
+    # path the player gives once (ut_pack_path). The access logic is this very
+    # world, run by UT. UT ignores the attribute when it is not installed.
+    # Auto-tab and position icon: the client writes mmzx_pos_<slot> =
+    # [subarea, x, y] to the data storage; see tracker_pos.py.
     tracker_world = {
         "map_page_folder": "tracker",
+        "external_pack_key": "ut_pack_path",
         "map_page_maps": "maps.json",
         "map_page_locations": "locations.json",
         "map_page_setting_key": "mmzx_pos_{player}",

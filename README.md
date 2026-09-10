@@ -21,8 +21,9 @@ end and is being polished before a first public release. Expect rough edges.
 - In-game item icons on every pickup, on-screen notifications for items sent
   and received, "Go to Transerver" from the pause menu, optional boss rush
   skip, per-boss logic requirements written in your YAML, DeathLink.
-- A Universal Tracker map pack (overall map, one map per area and per room,
-  auto-tab and player position).
+- A Universal Tracker map tab (one map per area and per room, auto-tab and
+  player position); the map images come from the separate
+  [tracker pack](https://github.com/Nekusen/MegaManZX-Tracker).
 
 ## Playing
 
@@ -44,21 +45,18 @@ or use the "Build APWorlds" component of the Archipelago launcher with this
 repository checked out (or symlinked) as `worlds/mmzx` in an Archipelago
 source tree. `.apignore` keeps the development files out of the package.
 
-## Local assets (not in the repository)
+## Assets
 
-The in-game item icons are not stored anywhere: the patcher cuts them out of
-the player's own ROM (`icons.py` holds the recipe) and only the three
-Archipelago logos in `gfx/` (MIT, see `CREDITS.md`) ship with the world.
+Nothing derived from the game is stored in this repository or packaged into
+the `.apworld`:
 
-One kind of file is still deliberately absent from git because it is derived
-from the game and is generated on your machine (git ignores it):
-
-- `tracker/images/` — the map images of the tracker pack. Until the
-  schematic map generator lands, they are produced by the development
-  toolkit from your ROM (see "Development" below).
-
-The `.apworld` you build locally includes whatever of these you have on
-disk.
+- The in-game item icons are cut out of the player's own ROM at patch time
+  (`icons.py` holds the recipe); only the three Archipelago logos in `gfx/`
+  (MIT, see `CREDITS.md`) ship with the world.
+- The tracker map images live in the separate
+  [MegaManZX-Tracker](https://github.com/Nekusen/MegaManZX-Tracker) pack,
+  which Universal Tracker loads from a zip the player downloads once. This
+  repository only holds the map layout JSON in `tracker/`.
 
 ## Development
 

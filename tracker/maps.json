@@ -1,11 +1,5 @@
 [
   {
-    "name": "overall",
-    "img": "images/overall.png",
-    "location_size": 26,
-    "location_border_thickness": 3
-  },
-  {
     "name": "area_a",
     "img": "images/area_a.png",
     "location_size": 22,
@@ -392,12 +386,6 @@
   {
     "name": "room_k01",
     "img": "images/room_k01.png",
-    "location_size": 22,
-    "location_border_thickness": 2
-  },
-  {
-    "name": "room_k02",
-    "img": "images/room_k02.png",
     "location_size": 22,
     "location_border_thickness": 2
   },

@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Universal Tracker maps now work in "hybrid" mode: the map layout stays in
+  the world and the images come from the separate
+  [MegaManZX-Tracker](https://github.com/Nekusen/MegaManZX-Tracker) pack
+  (`mmzx_tracker.zip`), which UT asks for once (`ut_pack_path` in
+  `host.yaml`). The `.apworld` no longer carries any map image and drops
+  from 11 MB to under 1 MB. The overall map (which was a third-party fan
+  map) is gone until a schematic one of our own is drawn; the hub shows its
+  own room maps meanwhile.
 - ROM patching no longer uses ndspy (GPL-3). The ARM9 is split and repacked
   with [apnds](https://github.com/ljtpetersen/apnds) 0.2.5 (MIT) and
   compressed by an original BLZ encoder with optimal parsing; the patched

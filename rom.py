@@ -547,99 +547,144 @@ def _install_icon_set(d: bytearray) -> int:
     struct.pack_into("<I", d, 0x80, cur)          # "used ROM size"
     return fnt_start
 
-# --- Compresor BLZ con parse ÓPTIMO (agente exp360-369, exp367) ---
-# El arm9 recomprimido debe caber en su slot de la ROM (0x8F400 B). El greedy
-# de ndspy dejaba 76 B de margen y el cave del buzón ya no cabía. Mismo
-# formato (LZ hacia atrás: literal 9 bits, match 17 bits con len 3..18 y
-# disp 0..0xFFF, sin solapamiento, igual que ndspy) pero eligiendo los tokens
-# por programación dinámica: 0x8DB04 B frente a 0x8F3A8 B del greedy (6.3 KB
-# de margen; 5.6 s frente a 3.2 s). Round-trip verificado con
-# ndspy.codeCompression.decompress y arranque real (exp366). Se inyecta en
-# ndspy por monkeypatch de _lzCommon.compress SOLO durante arm9.save().
-def _lz_compress_optimal(data, posSubtract, maxMatchDiff, maxMatchLen, zerosAtEnd,
-                         searchReverse):
-    """Misma firma/retorno que ndspy._lzCommon.compress:
-    (stream, ignorableDataAmount, ignorableCompressedAmount)."""
-    n = len(data)
-    data = bytes(data)
-    maxlen = [0] * (n + 1)
-    mpos = [0] * (n + 1)
-    find = data.rfind if searchReverse else data.find
-    for pos in range(n):
-        start = pos - maxMatchDiff
-        if start < 0:
-            start = 0
-        if find(data[pos:pos + 3], start, pos) == -1:
+# --- BLZ (DS code compression) with an optimal parse ---------------------------
+# The recompressed ARM9 must fit back into its slot of the ROM (0x8F400 bytes).
+# A greedy encoder leaves 76 bytes of headroom and the pickup mailbox cave no
+# longer fits, so the tokens are chosen by dynamic programming instead:
+# 0x8DB04 bytes instead of 0x8F3A8 (6.3 KB of headroom, ~6 s).
+#
+# Format, as executed by the game's C runtime (apnds.lz.decompress_code is the
+# reference decoder): the data after the 0x4000-byte uncompressed header is
+# encoded BACKWARDS. Read from its end, the stream is a sequence of groups:
+# one flag byte (MSB first) followed by up to eight tokens. Flag 0 = a literal
+# byte; flag 1 = a two-byte reference ((len-3) << 4 | disp >> 8, disp & 0xFF)
+# that copies `len` (3..18) bytes from `disp + 3` (3..0x1002) bytes AHEAD of
+# the byte being written. The stream is decoded in place, top-down, so the
+# start of the region stays uncompressed ("raw prefix") wherever compressing
+# it would make the decoder overwrite input it has not read yet. A 12-byte-
+# aligned footer closes the region: u24 compressed size including the footer,
+# u8 footer size (8 + 0xFF padding), u32 bytes gained by decompressing.
+BLZ_HEADER_LEN = 0x4000        # ARM9 bytes never compressed (secure area + crt0)
+BLZ_MIN_MATCH = 3
+BLZ_MAX_MATCH = 18
+BLZ_MAX_DIST = 0x1002          # encoded displacement 0xFFF + 3
+
+
+def _blz_longest_matches(r):
+    """For each position q of `r` (the data reversed, so references point
+    backwards), the longest block r[q:q+L], 3 <= L <= 18, that also occurs
+    entirely before q and at most 0x1002 bytes back, together with the nearest
+    such occurrence. Returns two lists (lengths, positions); length 0 = none."""
+    n = len(r)
+    lengths = [0] * n
+    where = [0] * n
+    rfind = r.rfind
+    for q in range(n - BLZ_MIN_MATCH + 1):
+        lo = q - BLZ_MAX_DIST
+        if lo < 0:
+            lo = 0
+        p = rfind(r[q:q + BLZ_MIN_MATCH], lo, q)
+        if p < 0:
             continue
-        lower, upper = 3, min(maxMatchLen, n - pos)
-        rec_p = rec_l = 0
-        while lower <= upper:
-            length = (lower + upper) >> 1
-            p = find(data[pos:pos + length], start, pos)
-            if p == -1:
-                upper = length - 1
+        best_len, best_pos = BLZ_MIN_MATCH, p
+        # A longer block matches only if every shorter one does, so the
+        # feasible lengths form a prefix of 3..top: bisect it.
+        low, high = BLZ_MIN_MATCH + 1, min(BLZ_MAX_MATCH, n - q)
+        while low <= high:
+            mid = (low + high) >> 1
+            p = rfind(r[q:q + mid], lo, q)
+            if p < 0:
+                high = mid - 1
             else:
-                if length > rec_l:
-                    rec_p, rec_l = p, length
-                lower = length + 1
-        maxlen[pos] = rec_l
-        mpos[pos] = rec_p
-    best = [0] * (n + 2)
-    choice = [0] * (n + 1)      # 0 = literal, L>=3 = match de longitud L
+                best_len, best_pos = mid, p
+                low = mid + 1
+        lengths[q] = best_len
+        where[q] = best_pos
+    return lengths, where
+
+
+def _blz_parse(r, lengths):
+    """Optimal parse: for every position the token (0 = literal, L = reference
+    of L bytes) that minimises the size of the rest of the stream, counting a
+    literal as 9 bits and a reference as 17 (their bytes plus the flag bit)."""
+    n = len(r)
+    cost = [0] * (n + 1)
+    pick = [0] * n
     for i in range(n - 1, -1, -1):
-        b = 9 + best[i + 1]
-        c = 0
-        for length in range(3, maxlen[i] + 1):
-            v = 17 + best[i + length]
-            if v < b:
-                b, c = v, length
-        best[i] = b
-        choice[i] = c
-    result = bytearray()
-    current = 0
-    ignorable_d = ignorable_c = 0
-    best_savings = 0
-    while current < n:
+        best, tok = cost[i + 1] + 9, 0
+        for ln in range(BLZ_MIN_MATCH, lengths[i] + 1):
+            c = cost[i + ln] + 17
+            if c < best:
+                best, tok = c, ln
+        cost[i] = best
+        pick[i] = tok
+    return pick
+
+
+def _blz_compress(data):
+    """Compress `data` (the ARM9 minus its BLZ_HEADER_LEN header) into a BLZ
+    region: raw prefix + backwards stream + footer. Returns None if the region
+    would not be smaller than the data."""
+    r = data[::-1]                       # encode the reversed data forwards
+    n = len(r)
+    lengths, where = _blz_longest_matches(r)
+    pick = _blz_parse(r, lengths)
+
+    # Tokens in decoding order; `stream` grows in decoding order too, so the
+    # bytes the decoder reads first come first. `gain` tracks how many bytes
+    # the decoder is ahead by after each token (output produced minus stream
+    # consumed, flag bytes included). The in-place decoder is safe exactly
+    # when every remaining part of the stream still has a non-negative gain,
+    # i.e. when the stream is cut at a point where `gain` reaches its maximum;
+    # the first such point gives the smallest region.
+    stream = bytearray()
+    i = 0
+    tokens = 0
+    gain = 0
+    best_gain = 0
+    cut_stream = 0                       # stream bytes kept
+    cut_data = 0                         # reversed-data bytes covered by them
+    while i < n:
+        flag_at = len(stream)
+        stream.append(0)
+        gain -= 1
         flags = 0
-        flags_off = len(result)
-        result.append(0)
-        ignorable_c += 1
-        for i in range(8):
-            if current >= n:
-                if zerosAtEnd:
-                    result.append(0)
-                continue
-            length = choice[current]
-            if length >= 3:
-                disp = current - mpos[current] - posSubtract
-                flags |= 1 << (7 - i)
-                result.append((((length - 3) & 0xF) << 4) | ((disp >> 8) & 0xF))
-                result.append(disp & 0xFF)
-                current += length
-                ignorable_d += length
-                ignorable_c += 2
+        for bit in range(7, -1, -1):
+            if i >= n:
+                break
+            ln = pick[i]
+            if ln:
+                disp = i - where[i] - BLZ_MIN_MATCH
+                flags |= 1 << bit
+                stream.append(((ln - BLZ_MIN_MATCH) << 4) | (disp >> 8))
+                stream.append(disp & 0xFF)
+                i += ln
+                gain += ln - 2
             else:
-                result.append(data[current])
-                current += 1
-                ignorable_d += 1
-                ignorable_c += 1
-            savings = current - len(result)
-            if savings > best_savings:
-                ignorable_d = ignorable_c = 0
-                best_savings = savings
-        result[flags_off] = flags
-    return bytes(result), ignorable_d, ignorable_c
+                stream.append(r[i])
+                i += 1
+            tokens += 1
+            if gain > best_gain:
+                best_gain = gain
+                cut_stream = len(stream)
+                cut_data = i
+        stream[flag_at] = flags
+    if best_gain <= 0:
+        return None
 
-
-def _save_arm9_compressed(arm9) -> bytes:
-    """arm9.save(compress=True) usando el compresor óptimo."""
-    from .ndspy import codeCompression
-    orig = codeCompression._lzCommon.compress
-    codeCompression._lzCommon.compress = _lz_compress_optimal
-    try:
-        return arm9.save(compress=True)
-    finally:
-        codeCompression._lzCommon.compress = orig
+    raw = data[:n - cut_data]            # forward order: the uncut start
+    body = bytes(stream[:cut_stream])[::-1]
+    padding = (-(len(raw) + len(body))) & 3
+    footer_len = 8 + padding
+    total = len(raw) + len(body) + footer_len
+    if total >= n:
+        return None
+    return b"".join((
+        raw, body, b"\xFF" * padding,
+        (len(body) + footer_len).to_bytes(3, "little"),
+        bytes([footer_len]),
+        (n - total).to_bytes(4, "little"),
+    ))
 
 
 class MMZXPatchExtension(APPatchExtension):
@@ -647,40 +692,54 @@ class MMZXPatchExtension(APPatchExtension):
 
     @staticmethod
     def patch_arm9(caller: APProcedurePatch, rom: bytes, cfg_file: str) -> bytes:
-        """Descomprime el ARM9 (BLZ), aplica el redirect del tutorial-skip
-        (siempre) y el Hu-gate (si hu_in_pool), recomprime y recoloca el
-        arm9 IN-PLACE en su slot original: el resto de la imagen de 64 MiB
-        queda byte-idéntico (solo cambian arm9, su tamaño en cabecera 0x2C y
-        el CRC16 0x15E). ⚠️ NO usar el reempaquetado completo de ndspy
-        (nds.save()): compacta la ROM a ~44 MB y desplaza el layout, y
-        melonDS/BizHawk revienta con std::bad_alloc al cargarla (verificado
-        en BizHawk real, exp205). ndspy vendorizado (GPL-3.0-or-later, ver ndspy/LICENSE; se sustituira por apnds) solo para el BLZ."""
+        """Decompress the ARM9 (BLZ), apply the code patches (everything that
+        is always on, plus the Hu gate when hu_in_pool), recompress it and put
+        it back IN PLACE in its original slot: the rest of the 64 MiB image
+        stays byte-identical (only the ARM9, its size in the header at 0x2C
+        and the header CRC16 at 0x15E change). Never rebuild the whole ROM
+        with a library (apnds Rom.to_bytes and the like): a repacked ~44 MB
+        image shifts the layout and melonDS/BizHawk dies with std::bad_alloc
+        when loading it (verified on real BizHawk, exp205). apnds (MIT, see
+        apnds/LICENSE) is used only to split the ARM9 into its autoload
+        sections and to write the start parameters back."""
         import struct
 
-        from . import ndspy  # noqa: F401  (paquete vendorizado)
-        from .ndspy import rom as ndsrom
+        from .apnds.code import CodeStartParams, START_INFO_SIGNATURE_DS
 
         cfg = caller.get_file(cfg_file)
         hu_in_pool = bool(cfg[0] & CFG_HU_IN_POOL) if cfg else False
 
         d = bytearray(rom)
-        nds = ndsrom.NintendoDSRom(bytes(rom))
-        arm9 = nds.loadArm9()
+        arm9_off, _entry, arm9_ram, arm9_len = struct.unpack_from("<4I", d, 0x20)
+        code = bytes(d[arm9_off:arm9_off + arm9_len])
+        params = CodeStartParams.from_code(code, arm9_ram)
+        if params is None or params.compressed_end is None:
+            raise ValueError("MMZX: ARM9 start parameters not found. Wrong ROM?")
+        if code.find(START_INFO_SIGNATURE_DS) >= BLZ_HEADER_LEN:
+            raise ValueError("MMZX: ARM9 start parameters outside the uncompressed header")
+        split, rem = params.get_sections(code, arm9_ram)
+        if rem:
+            raise ValueError("MMZX: unexpected data after the compressed ARM9")
+        # (RAM address, data) per piece: the main code, every autoload section
+        # at its destination (ITCM / DTCM) and the autoload table after them
+        sections = []
+        pos = arm9_ram
+        for data, info in split:
+            sections.append((info.destination if info else pos, bytearray(data)))
+            pos += len(data)
 
         def poke(ram, data, orig=None):
-            for sec in arm9.sections:
-                if sec.ramAddress <= ram < sec.ramAddress + len(sec.data):
-                    off = ram - sec.ramAddress
-                    cur = bytes(sec.data[off:off + len(data)])
+            for base, buf in sections:
+                if base <= ram < base + len(buf):
+                    off = ram - base
+                    cur = bytes(buf[off:off + len(data)])
                     if cur == data:
-                        return  # idempotente
+                        return  # idempotent
                     if orig is not None and cur != orig:
                         raise ValueError(
                             "MMZX: unexpected bytes at 0x%08X (%s, expected "
                             "%s). Wrong ROM?" % (ram, cur.hex(), orig.hex()))
-                    buf = bytearray(sec.data)
                     buf[off:off + len(data)] = data
-                    sec.data = bytes(buf)
                     return
             raise ValueError("MMZX: 0x%08X is outside the ARM9 sections" % ram)
 
@@ -774,11 +833,21 @@ class MMZXPatchExtension(APPatchExtension):
             poke(HUGATE_LISTS0_RAM, HUGATE_ARRAY_RAM.to_bytes(4, "little"),
                  HUGATE_LISTS0_ORIG)
 
-        # recomprimir (parse óptimo: el greedy de ndspy ya no cabía en el
-        # slot con el cave del buzón) y recolocar in-place en el slot original
-        blob = _save_arm9_compressed(arm9)
-        post = bytes(nds.arm9PostData)         # footer nitrocode (12 B)
-        arm9_off = struct.unpack_from("<I", d, 0x20)[0]
+        # recompress (optimal parse: a greedy encoder no longer fits in the
+        # slot once the mailbox cave is in) and put it back in the original slot
+        pieces = [(bytes(buf), info) for (_, buf), (_, info) in zip(sections, split)]
+        packed = params.pack_code_from_sections((pieces, rem), arm9_ram, "9",
+                                                try_compress=False)
+        body = _blz_compress(packed[BLZ_HEADER_LEN:])
+        if body is None:
+            raise ValueError("MMZX: the ARM9 did not compress")
+        params.compressed_end = arm9_ram + BLZ_HEADER_LEN + len(body)
+        blob = params.write_start_info(packed, arm9_ram)[:BLZ_HEADER_LEN] + body
+        # the 12-byte "nitrocode" footer(s) that follow the ARM9 in the ROM
+        post_off = post_end = arm9_off + arm9_len
+        while bytes(d[post_end:post_end + 4]) == b"\x21\x06\xC0\xDE":
+            post_end += 12
+        post = bytes(d[post_off:post_end])
         others = [struct.unpack_from("<I", d, o)[0]
                   for o in (0x30, 0x40, 0x48, 0x50, 0x68)]
         slot_end = min(x for x in others if x > arm9_off)

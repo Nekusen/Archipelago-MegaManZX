@@ -42,8 +42,8 @@ LOGIC_TXT = LOGIC_DIR / "logic.txt"
 
 
 def _load_logic_format():
-    """logic_format.py del apworld sin meter el paquete en sys.path (ahí
-    vive un ndspy vendorizado que haría sombra al del venv)."""
+    """logic_format.py of the world without putting the package on sys.path
+    (its vendored third-party packages would shadow the venv ones)."""
     spec = importlib.util.spec_from_file_location("mmzx_logic_format", ROOT / "logic_format.py")
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)  # type: ignore[union-attr]

@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-sys.path.append(str(ROOT))   # al final: no hacer sombra al ndspy del venv
+sys.path.append(str(ROOT))   # appended last: vendored packages must not shadow the venv
 import logic_format as F  # noqa: E402
 
 

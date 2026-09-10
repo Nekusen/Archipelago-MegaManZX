@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- ROM patching no longer uses ndspy (GPL-3). The ARM9 is split and repacked
+  with [apnds](https://github.com/ljtpetersen/apnds) 0.2.5 (MIT) and
+  compressed by an original BLZ encoder with optimal parsing; the patched
+  ROM is byte-identical to the previous one. The `.apworld` is MIT
+  throughout.
 - Everything the player sees is now in English: option descriptions (the
   YAML template), client log messages and command help, generation errors
   (`boss_logic`), patching errors and the DeathLink message.

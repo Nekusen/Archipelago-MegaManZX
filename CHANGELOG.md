@@ -10,6 +10,11 @@
 - The patcher no longer embeds any bytes of the game as guards: the two
   remaining ones (the Secret Disk tile and the pause-menu help text) are
   now SHA-256 digests.
+- The in-game item icons are no longer stored in the world: at patch time
+  they are cut out of the player's own ROM (Life Up, Sub Tank, chips, biometal
+  badges and Card Keys from the game's own sprite sets, `icons.py`), so
+  `gfx/` only holds the three Archipelago logos. The Sub Tank and Card Key
+  icons are now the game's actual sprites instead of screenshot crops.
 - Everything the player sees is now in English: option descriptions (the
   YAML template), client log messages and command help, generation errors
   (`boss_logic`), patching errors and the DeathLink message.

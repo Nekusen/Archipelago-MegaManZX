@@ -415,7 +415,7 @@ DISK_LOGO_NEW = bytes.fromhex(   # logo OFICIAL de Archipelago (sprite 16x16 del
 # --- ICONOS DE ITEM EN EL MUNDO (2026-09-05, exp560-569; docs/v02_notes.md §2c) ---
 # Cada pickup físico (94 discos, 8 Life Up/Sub Tank, 133 refills) se dibuja con el
 # icono del ITEM que el randomizer ha puesto ahí: un SET de gráficos propio ("AP",
-# worlds/mmzx/gfx/ap_set_*.bin, generado por tools/gen_icon_set.py: 3 logos de
+# construido al parchear por icons.py desde la ROM del jugador: 3 logos de
 # Archipelago useful/progression/filler, Life Up, Sub Tank, 8 chips, 8 badges de
 # modelo del menú STATUS, 6 Card Keys del menú ITEM C; 4bpp, 1 paleta de 16) se
 # INSERTA como set ICON_SET (vacío en vanilla) en obj_fnt.bin/obj_dat.bin (los
@@ -496,6 +496,8 @@ def _thumb_bl(src: int, dst: int) -> bytes:
 
 
 def _gfx_data(name: str) -> bytes:
+    """Bytes of a file of gfx/ (the Archipelago logo sprites), whether the world
+    runs from a directory or from a zipped .apworld."""
     """Bloque binario de worlds/mmzx/gfx/ (también dentro del .apworld)."""
     import os
     import pkgutil
@@ -528,17 +530,25 @@ def _insert_set(blob: bytes, setno: int, block: bytes) -> bytes:
 
 
 def _install_icon_set(d: bytearray) -> int:
-    """Inserta el set AP en obj_dat/obj_fnt y reubica ambos ficheros al padding final
-    de la ROM (FAT + tamaño usado 0x80). Devuelve el nuevo inicio de obj_fnt.bin."""
+    """Build the AP icon set from the player's own sprite sets (icons.py), insert
+    it into obj_dat / obj_fnt and relocate both files to the free padding at the
+    end of the ROM (FAT + "used size" at 0x80). Returns the new start of
+    obj_fnt.bin."""
     import struct
+
+    from . import icons
     fat = struct.unpack_from("<I", d, 0x48)[0]
     fatsize = struct.unpack_from("<I", d, 0x4C)[0]
     used = max(struct.unpack_from("<II", d, fat + k * 8)[1] for k in range(fatsize // 8))
     cur = (used + 0x1FF) & ~0x1FF
-    fnt_start = None
-    for fid, name in ((ICON_DAT_FILE_ID, "ap_set_dat.bin"), (ICON_FNT_FILE_ID, "ap_set_fnt.bin")):
+    files = {}
+    for fid in (ICON_DAT_FILE_ID, ICON_FNT_FILE_ID):
         s0, e0 = struct.unpack_from("<II", d, fat + fid * 8)
-        newfile = _insert_set(bytes(d[s0:e0]), ICON_SET, _gfx_data(name))
+        files[fid] = bytes(d[s0:e0])
+    fnt_block, dat_block = icons.build_icon_set(files[ICON_FNT_FILE_ID], files[ICON_DAT_FILE_ID], _gfx_data)
+    fnt_start = None
+    for fid, block in ((ICON_DAT_FILE_ID, dat_block), (ICON_FNT_FILE_ID, fnt_block)):
+        newfile = _insert_set(files[fid], ICON_SET, block)
         if cur + len(newfile) > len(d) or any(d[cur:cur + len(newfile)]):
             raise ValueError("MMZX: no free padding to relocate file %d" % fid)
         d[cur:cur + len(newfile)] = newfile

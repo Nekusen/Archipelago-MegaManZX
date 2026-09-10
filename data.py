@@ -366,7 +366,7 @@ ICON_TABLE_ADDR = 0x02191460
 ICON_TABLE_SIZE = 0xC4
 ICON_TABLE_PRESENT_OFF = 0xA4
 ICON_SET = 261
-ICON_CODES = {'logo_useful': 1, 'logo_progression': 2, 'logo_filler': 3, 'lifeup': 4, 'subtank': 5, 'chip_Absorber': 6, 'chip_Eraser': 7, 'chip_Featherweight': 8, 'chip_Extender': 9, 'chip_QuickCharger': 10, 'chip_IceBoots': 11, 'chip_WindBoots': 12, 'chip_Frog': 13, 'model_Hu': 14, 'model_X': 15, 'model_ZX': 16, 'model_HX': 17, 'model_FX': 18, 'model_LX': 19, 'model_PX': 20, 'model_OX': 21, 'card_Roja': 22, 'card_Azul': 23, 'card_Purpura': 24, 'card_Verde': 25, 'card_Amarilla': 26, 'card_Blanca': 27}
+ICON_CODES = {'logo_useful': 1, 'logo_progression': 2, 'logo_filler': 3, 'lifeup': 4, 'subtank': 5, 'chip_Absorber': 6, 'chip_Eraser': 7, 'chip_Featherweight': 8, 'chip_Extender': 9, 'chip_QuickCharger': 10, 'chip_IceBoots': 11, 'chip_WindBoots': 12, 'chip_Frog': 13, 'model_Hu': 14, 'model_X': 15, 'model_ZX': 16, 'model_HX': 17, 'model_FX': 18, 'model_LX': 19, 'model_PX': 20, 'model_OX': 21, 'card_Red': 22, 'card_Blue': 23, 'card_Purple': 24, 'card_Green': 25, 'card_Yellow': 26, 'card_White': 27}
 # Avisos en pantalla (rom.py NOTIFY_*; agente exp473-480): u8 REQ (1 =
 # texto en BUF; el cave lo borra al cerrarse el popup), u8 STATE, u16 DUR
 # (frames), +4 BUF (fuente = ASCII-0x20, fin 0xFE; 1 linea de 30 glifos).

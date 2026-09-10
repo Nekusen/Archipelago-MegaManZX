@@ -46,14 +46,16 @@ source tree. `.apignore` keeps the development files out of the package.
 
 ## Local assets (not in the repository)
 
-Two kinds of files are deliberately absent from git because they are derived
-from the game. They are generated on your machine and git ignores them:
+The in-game item icons are not stored anywhere: the patcher cuts them out of
+the player's own ROM (`icons.py` holds the recipe) and only the three
+Archipelago logos in `gfx/` (MIT, see `CREDITS.md`) ship with the world.
+
+One kind of file is still deliberately absent from git because it is derived
+from the game and is generated on your machine (git ignores it):
 
 - `tracker/images/` — the map images of the tracker pack. Until the
   schematic map generator lands, they are produced by the development
   toolkit from your ROM (see "Development" below).
-- `gfx/` — the in-game item icon set. It is being replaced by an extraction
-  from the player's ROM at patch time.
 
 The `.apworld` you build locally includes whatever of these you have on
 disk.

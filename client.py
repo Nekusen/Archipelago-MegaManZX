@@ -23,9 +23,9 @@ from .data import ICON_TABLE_ADDR, ICON_TABLE_SIZE, ICON_TABLE_PRESENT_OFF, ICON
 from .golden import GOLDEN_IMAGE, GOLDEN_IMAGE_ADDR, build_image
 from . import bossrush as BR
 ITEM_ID_TO_NAME = {v["id"]: n for n, v in ITEMS.items()}
-# item de este juego -> icono del set AP (worlds/mmzx/gfx/ap_set_meta.json). Lo que no
-# está aquí (Transerver Access, Model X/Hu sin sprite propio..., fillers) va por
-# clasificación: progression = logo con flecha, useful = logo con cruz, filler = gris.
+# item of this game -> icon of the AP set (icons.ICONS, codes in data.ICON_CODES).
+# Anything not listed here (Transerver Access, fillers...) goes by classification:
+# progression = logo with the arrow, useful = logo with the cross, filler = grey.
 ICON_BY_ITEM = {
     "Life Up": "lifeup", "Sub Tank": "subtank",
     "Absorber Chip": "chip_Absorber", "Eraser Chip": "chip_Eraser", "Featherweight Chip": "chip_Featherweight",
@@ -35,8 +35,8 @@ ICON_BY_ITEM = {
     "Progressive Model HX": "model_HX", "Progressive Model FX": "model_FX",
     "Progressive Model LX": "model_LX", "Progressive Model PX": "model_PX",
     "Model HX": "model_HX", "Model FX": "model_FX", "Model LX": "model_LX", "Model PX": "model_PX",
-    "Yellow Card Key": "card_Amarilla", "Green Card Key": "card_Verde", "Red Card Key": "card_Roja",
-    "Blue Card Key": "card_Azul", "White Card Key": "card_Blanca", "Purple Card Key": "card_Purpura",
+    "Yellow Card Key": "card_Yellow", "Green Card Key": "card_Green", "Red Card Key": "card_Red",
+    "Blue Card Key": "card_Blue", "White Card Key": "card_White", "Purple Card Key": "card_Purple",
 }
 
 

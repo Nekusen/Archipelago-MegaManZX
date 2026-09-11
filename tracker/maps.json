@@ -390,6 +390,12 @@
     "location_border_thickness": 2
   },
   {
+    "name": "room_k02",
+    "img": "images/room_k02.png",
+    "location_size": 22,
+    "location_border_thickness": 2
+  },
+  {
     "name": "room_k03",
     "img": "images/room_k03.png",
     "location_size": 22,

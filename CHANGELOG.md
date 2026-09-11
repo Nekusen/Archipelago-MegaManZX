@@ -5,8 +5,8 @@
 - Universal Tracker maps now work in "hybrid" mode: the map layout stays in
   the world and the images come from the separate
   [MegaManZX-Tracker](https://github.com/Nekusen/MegaManZX-Tracker) pack
-  (`mmzx_tracker.zip` with collision silhouettes or `mmzx_tracker_renders.zip`
-  with the game's level art), which UT asks for once (`ut_pack_path` in
+  (`mmzx_tracker.zip`, one map per area and one per room drawn with the
+  game's own level art), which UT asks for once (`ut_pack_path` in
   `host.yaml`). The `.apworld` no longer carries any map image and drops
   from 11 MB to under 1 MB. The overall map (which was a third-party fan
   map) is gone until a schematic one of our own is drawn; the hub shows its

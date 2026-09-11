@@ -7,8 +7,7 @@
 - Your own **Mega Man ZX (USA)** ROM (`ARZE`). It is never distributed.
 - Optional: **Universal Tracker** plus the
   [Mega Man ZX tracker pack](https://github.com/Nekusen/MegaManZX-Tracker/releases)
-  (`mmzx_tracker.zip` with collision silhouettes, or `mmzx_tracker_renders.zip`
-  with the game's own level art; keep it zipped). The world ships the map layout (one
+  (`mmzx_tracker.zip`; keep it zipped). The world ships the map layout (one
   map per area and one per room, with auto-tab and a player position icon)
   and loads the map images from that pack: the first time you open the map
   tab UT asks for the zip; you can also set its path in `host.yaml`

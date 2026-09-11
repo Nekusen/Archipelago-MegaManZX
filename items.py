@@ -1,4 +1,4 @@
-"""Items del mundo Mega Man ZX."""
+"""Items of the Mega Man ZX world."""
 
 from BaseClasses import Item, ItemClassification
 
@@ -23,7 +23,7 @@ def get_classification(name: str) -> ItemClassification:
     return CLASSIFICATION[ITEMS[name]["classification"]]
 
 
-# Grupos para hints/plando
+# Groups for hints/plando
 ITEM_GROUPS = {
     "Biometals": {n for n in ITEMS if "Model " in n},
     "Card Keys": {n for n in ITEMS if n.endswith("Card Key")},

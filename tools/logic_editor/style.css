@@ -1,4 +1,4 @@
-/* Editor de lógica de Mega Man ZX — tema oscuro compacto */
+/* Mega Man ZX logic editor - compact dark theme */
 :root {
   --bg: #17171a;
   --bg2: #1f1f24;
@@ -99,7 +99,7 @@ code, .mono { font-family: var(--mono); font-size: 11px; }
 .boot { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--fg2); font-size: 14px; }
 .boot.error { color: #ffb4b0; white-space: pre-wrap; padding: 20px; user-select: text; }
 
-/* ------------------------------------------------------------ búsqueda */
+/* ------------------------------------------------------------ search */
 .search-wrap { position: relative; }
 .search-wrap input { width: 250px; }
 .dropdown { position: absolute; top: 100%; left: 0; min-width: 380px; max-height: 60vh; overflow: auto; background: var(--bg3); border: 1px solid var(--line); border-radius: 4px; z-index: 20; box-shadow: 0 6px 20px rgba(0,0,0,.5); }
@@ -109,7 +109,7 @@ code, .mono { font-family: var(--mono); font-size: 11px; }
 .dropdown .item .r { color: var(--fg2); margin-left: auto; font-size: 11px; }
 .dropdown .empty { padding: 6px 8px; color: var(--fg3); }
 
-/* ------------------------------------------------------------ árbol */
+/* ------------------------------------------------------------ tree */
 #tree { padding: 6px 4px; }
 .tree-region { margin-bottom: 4px; }
 .tree-head { display: flex; align-items: center; gap: 4px; padding: 2px 4px; border-radius: 4px; cursor: pointer; }
@@ -160,7 +160,7 @@ code, .mono { font-family: var(--mono); font-size: 11px; }
 .list .row-item .unsure { color: var(--warn); }
 a.link { color: var(--accent); cursor: pointer; text-decoration: underline dotted; }
 
-/* editor de requisitos */
+/* requirement editor */
 .req { border: 1px solid var(--line); border-radius: 4px; padding: 6px; background: var(--bg3); margin: 4px 0; }
 .req .req-null { display: block; margin-bottom: 4px; }
 .req .tier { margin: 6px 0; padding: 4px; border-radius: 4px; background: var(--bg2); }
@@ -175,10 +175,10 @@ a.link { color: var(--accent); cursor: pointer; text-decoration: underline dotte
 .req .chip .x { cursor: pointer; padding: 0 3px; color: var(--fg2); border-radius: 50%; }
 .req .chip .x:hover { color: #fff; background: rgba(255,255,255,.15); }
 .req .chip.free { font-style: italic; color: var(--ok); padding-right: 7px; }
-.req .chip.g-modelo { background: #4b3a63; border-color: #6b4f8c; }
-.req .chip.g-llave { background: #5a4a1e; border-color: #806a2a; }
-.req .chip.g-vida { background: #5a2f2f; border-color: #7f4040; }
-.req .chip.g-misión { background: #2f5138; border-color: #3f7a50; }
+.req .chip.g-model { background: #4b3a63; border-color: #6b4f8c; }
+.req .chip.g-key { background: #5a4a1e; border-color: #806a2a; }
+.req .chip.g-life { background: #5a2f2f; border-color: #7f4040; }
+.req .chip.g-mission { background: #2f5138; border-color: #3f7a50; }
 .req .chip.g-transerver { background: #2b4360; border-color: #3b5f8c; }
 .req .add-atom { padding: 0 3px; font-size: 11px; max-width: 110px; background: var(--bg4); }
 .req .alt .rm { color: var(--fg3); cursor: pointer; padding: 0 4px; }
@@ -191,7 +191,7 @@ a.link { color: var(--accent); cursor: pointer; text-decoration: underline dotte
 .req .summary { margin-top: 6px; font-family: var(--mono); font-size: 11px; color: var(--fg2); border-top: 1px solid var(--line); padding-top: 4px; }
 .req .summary .hint { font-family: system-ui, sans-serif; color: var(--fg3); font-size: 10px; margin-top: 2px; }
 
-/* ------------------------------------------------------------ informe */
+/* ------------------------------------------------------------ report */
 #report { background: var(--bg2); border-top: 1px solid var(--line); }
 .report-head { display: flex; align-items: center; gap: 8px; padding: 2px 8px; cursor: pointer; min-height: 24px; }
 .report-head .e { color: var(--err); }
@@ -205,7 +205,7 @@ a.link { color: var(--accent); cursor: pointer; text-decoration: underline dotte
 .report-body .it.jump:hover { background: rgba(255,255,255,.1); }
 .report-body .ok { color: var(--ok); }
 
-/* ------------------------------------------------------------ paneles */
+/* ------------------------------------------------------------ panels */
 .panel { position: fixed; top: 64px; right: 8px; width: 520px; max-width: calc(100vw - 16px); max-height: calc(100vh - 80px); background: var(--bg2); border: 1px solid var(--line); border-radius: 6px; box-shadow: 0 10px 40px rgba(0,0,0,.6); display: flex; flex-direction: column; z-index: 30; }
 .panel-head { display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-bottom: 1px solid var(--line); font-weight: 600; }
 .panel-close { padding: 0 8px; }

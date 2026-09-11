@@ -1,22 +1,22 @@
-"""Regiones del mundo Mega Man ZX — v0.3: lógica desde logic/logic.json.
+"""Regions of the Mega Man ZX world - v0.3: logic from logic/logic.json.
 
-Una región de Archipelago por SALA (`a01`, región 'main') y una más por
-cada sub-región dibujada en el editor visual (`a01/cueva-e1`). Aristas:
-  - data.DOORS (puertas, warps, pasillos, curadas): de la región donde
-    está su SALIDA a la región donde ATERRIZA (pertenencia geométrica
-    resuelta por logic_format.resolve_members); regla = llave ∧ verja de
-    evento ∧ requisito de entrada de la sala destino ∧ coste extra de la
-    arista ∧ regla de Transerver. Las puertas internas (src == dst) solo
-    crean transición si unen regiones distintas.
-  - conexiones curadas región→región (rooms[sala].conns) con su requisito.
-Locations: en la región de su posición (data.pos o colocada a mano);
-las que aún no tienen sala van a "Field" con la regla de etiqueta de
-área (logic.label_rule). Eventos "Cleared: <misión>" con la misma regla
-que el check de la misión. Nivel de lógica: opción logic_difficulty
-(normal / expert acumulativo).
+One Archipelago region per ROOM (`a01`, region 'main') plus one per
+sub-region drawn in the visual editor (`a01/cueva-e1`). Edges:
+  - data.DOORS (doors, warps, corridors, curated ones): from the region
+    holding their EXIT to the region where they LAND (geometric membership
+    resolved by logic_format.resolve_members); rule = key AND event gate
+    AND entry requirement of the destination room AND extra cost of the
+    edge AND Transerver rule. Internal doors (src == dst) only create a
+    transition if they join different regions.
+  - curated region->region connections (rooms[room].conns) with their requirement.
+Locations: in the region of their position (data.pos or placed by hand);
+those without a room yet go to "Field" with the area-label rule
+(logic.label_rule). "Cleared: <mission>" events with the same rule as the
+mission's check. Logic tier: logic_difficulty option (normal / cumulative
+expert).
 
-Preparado para randomizar transiciones en el futuro: cada entrance lleva
-el nombre estable de su puerta física (data.DOORS[i].name).
+Ready for transition randomization in the future: each entrance carries
+the stable name of its physical door (data.DOORS[i].name).
 """
 
 import json
@@ -35,7 +35,7 @@ _DOC = None
 
 
 def load_document():
-    """logic/logic.json (empaquetado en el apworld) normalizado; cacheado."""
+    """logic/logic.json (bundled in the apworld), normalized; cached."""
     global _DOC
     if _DOC is None:
         raw = pkgutil.get_data(__name__, "logic/logic.json")
@@ -47,8 +47,8 @@ def load_document():
 
 
 def boss_requirements(world) -> dict:
-    """{id de jefe: REQ} de la opción boss_logic del jugador; cacheado en el
-    mundo porque lo consultan create_regions, create_item y fill_slot_data."""
+    """{boss id: REQ} from the player's boss_logic option; cached on the
+    world because create_regions, create_item and fill_slot_data query it."""
     reqs = getattr(world, "_mmzx_boss_reqs", None)
     if reqs is None:
         reqs = B.parse_boss_logic(world.options.boss_logic.value)
@@ -57,9 +57,9 @@ def boss_requirements(world) -> dict:
 
 
 def progression_overrides(world) -> set:
-    """Items 'useful' que la lógica convierte en progresión: los que exige el
-    documento (LIFEUP>=n / SUBTANK>=n / CHIP_x) y los que exige el YAML de
-    jefes del jugador."""
+    """'useful' items that the logic turns into progression: those required
+    by the document (LIFEUP>=n / SUBTANK>=n / CHIP_x) and those required by
+    the player's boss YAML."""
     return F.count_items_used(load_document()) | B.items_used(boss_requirements(world))
 
 
@@ -70,10 +70,10 @@ def create_regions(world) -> None:
     doc = load_document()
     members = F.resolve_members(WORLD, doc)
 
-    # Dificultad de jefes del YAML: {BOSS_<ID>: callable}. Se inyecta como
-    # átomo (las 8 puertas del boss rush lo usan explícitamente) Y se hace AND
-    # en toda arista que aterriza en una región etiquetada como su arena, así
-    # que es imposible entrar, cruzarla o coger nada de dentro sin cumplirlo.
+    # Boss difficulty from the YAML: {BOSS_<ID>: callable}. Injected as an
+    # atom (the 8 boss rush doors use it explicitly) AND ANDed into every
+    # edge that lands in a region tagged as its arena, so it is impossible to
+    # enter it, cross it or pick anything inside without meeting it.
     boss_reqs = boss_requirements(world)
     boss_rules = B.compile_rules(boss_reqs, tier, player, hu_in_pool)
     boss_of = F.boss_regions(doc)
@@ -82,12 +82,12 @@ def create_regions(world) -> None:
         return F.compile_req(req, tier, player, hu_in_pool, boss_rules)
 
     def arena_rule(room, rid):
-        """Requisito del jefe cuya arena es esta región (o None)."""
+        """Requirement of the boss whose arena is this region (or None)."""
         bid = boss_of.get((room, rid))
         return boss_rules.get(F.boss_atom(bid)) if bid else None
 
     menu = Region("Menu", player, mw)
-    field = Region("Field", player, mw)   # misiones/quests sin colocar
+    field = Region("Field", player, mw)   # unplaced missions/quests
     regions = {}
     for room, rl in doc["rooms"].items():
         for rid in rl["regions"]:
@@ -100,7 +100,7 @@ def create_regions(world) -> None:
                  and_rules(rule(doc["rooms"][start].get("req")), arena_rule(start, "main")))
     menu.connect(field, "Field access")
 
-    # conexiones curadas región -> región (dentro de una sala)
+    # curated region -> region connections (inside a room)
     for room, rl in doc["rooms"].items():
         for c in rl.get("conns", []):
             src = regions[F.region_name(room, c["from"])]
@@ -108,13 +108,13 @@ def create_regions(world) -> None:
             src.connect(dst, "%s: %s -> %s" % (room, c["from"], c["to"]),
                         and_rules(rule(c.get("req")), arena_rule(room, c["to"])))
 
-    # aristas del grafo estático
+    # edges of the static graph
     gates = doc.get("gates", {})
     edge_ov = doc.get("edges", {})
-    # QoL `skip_boss_rush`: la torre de D-4 se cruza sin re-pelear a los 8
-    # Pseudoroids (el cliente marca cada par como vencido al llegar a su
-    # parada): la salida a D-5 pierde su requisito BOSS_* y los 8
-    # teletransportadores hacia z02 quedan apagados (arista inexistente).
+    # QoL `skip_boss_rush`: the D-4 tower is crossed without re-fighting the
+    # 8 Pseudoroids (the client marks each pair as defeated on reaching its
+    # stop): the exit to D-5 loses its BOSS_* requirement and the 8
+    # teleporters towards z02 are switched off (nonexistent edge).
     skip_rush = bool(world.options.skip_boss_rush.value)
     for d in ALL_EDGES:
         if d["kind"] in F.NON_TRANSITION_KINDS:
@@ -124,7 +124,7 @@ def create_regions(world) -> None:
         src_rid = members[d["src"]].get(d["name"], "main")
         dst_rid = members[d["dst"]].get(d["name"] + "@in", "main")
         if d["src"] == d["dst"] and src_rid == dst_rid:
-            continue                       # puerta interna dentro de la misma región
+            continue                       # internal door within the same region
         gate_req = gates.get(str(d["gate"]), {}).get("req") if d.get("gate") is not None else None
         entry_req = doc["rooms"][d["dst"]].get("req") if d["src"] != d["dst"] else None
         edge_req = edge_ov.get(d["name"], {}).get("req")
@@ -140,9 +140,9 @@ def create_regions(world) -> None:
     checks = doc.get("checks", {})
 
     def place(name, v):
-        """(región padre, regla base). Una colocación: la región de su punto.
-        Varias (biometales: dos jefes): región Field + OR de alcanzar
-        cualquiera de sus regiones. Ninguna: Field + regla de etiqueta."""
+        """(parent region, base rule). One placement: the region of its point.
+        Several (biometals: two bosses): Field region + OR of reaching any
+        of their regions. None: Field + label rule."""
         pl = F.check_placements(WORLD, doc, name)
         if len(pl) == 1:
             room = pl[0][0]
@@ -165,9 +165,9 @@ def create_regions(world) -> None:
             loc.access_rule = r
         parent.locations.append(loc)
 
-    # eventos "Cleared: <misión>" (una por misión, esté o no activa como
-    # check): misma regla de acceso que la location de la misión. Los exigen
-    # los átomos de misión (p.ej. la puerta E-7 -> E-8 exige SEARCH_THE_PLANT).
+    # "Cleared: <mission>" events (one per mission, whether or not it is
+    # active as a check): same access rule as the mission's location. The
+    # mission atoms require them (e.g. the E-7 -> E-8 door requires SEARCH_THE_PLANT).
     for name, v in LOCATIONS.items():
         if v.get("category") != "mission":
             continue
@@ -180,15 +180,15 @@ def create_regions(world) -> None:
             ev.access_rule = r
         parent.locations.append(ev)
 
-    # objetivo: evento Victory anclado a la misión final
+    # goal: Victory event anchored to the final mission
     victory = MMZXLocation(player, "Defeat Serpent", None, field)
     victory.place_locked_item(world.create_event("Victory"))
     final = "Mission - Destroy Model W"
     parent, base = place(final, LOCATIONS.get(final, {"room": "D-4D-5"}))
-    # Serpent aparece en D-5 SIN misión ni checks de biometal (agente
-    # exp290-299): físicamente basta d02 --Green Key--> d04 -> d05. Como
-    # requisito de DISEÑO del goal (equivalente al sello de M-1 / "los 6
-    # biometales" de vanilla) se exige además ALL6.
+    # Serpent shows up in D-5 with NO mission nor biometal checks (agent
+    # exp290-299): physically d02 --Green Key--> d04 -> d05 is enough. As a
+    # DESIGN requirement of the goal (equivalent to the M-1 seal / vanilla's
+    # "the 6 biometals") ALL6 is required as well.
     if base is None:
         pname = parent.name
         base = lambda state, _p=pname: state.can_reach_region(_p, player)  # noqa: E731

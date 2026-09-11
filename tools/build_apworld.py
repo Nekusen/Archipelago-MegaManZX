@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""build_apworld.py — empaqueta este apworld en un fichero `mmzx.apworld`
-(un zip con el paquete bajo `mmzx/`), listo para la carpeta `custom_worlds/`
-de una instalación de Archipelago.
+"""build_apworld.py - packs this apworld into a `mmzx.apworld` file
+(a zip with the package under `mmzx/`), ready for the `custom_worlds/` folder
+of an Archipelago installation.
 
-Entra todo el árbol del paquete salvo lo que no debe viajar (los mismos
-patrones que `.apignore`: tools/, test/, build/, README, CHANGELOG y los
-metadatos de git). Los assets locales que git ignora (tracker/images/,
-gfx/, generados o extraídos en tu máquina) SÍ entran si están en disco.
+The whole package tree goes in except what must not travel (the same
+patterns as `.apignore`: tools/, test/, build/, README, CHANGELOG and the
+git metadata). Local assets ignored by git (tracker/images/, gfx/,
+generated or extracted on your machine) DO go in if they are on disk.
 
-Uso (desde cualquier sitio):
+Usage (from anywhere):
     python tools/build_apworld.py [--out build/mmzx.apworld]
 """
 
@@ -46,7 +46,7 @@ def main():
     with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
         for f in files:
             z.write(f, "mmzx/" + f.relative_to(PKG).as_posix())
-    print("[build_apworld] %d ficheros -> %s" % (len(files), out))
+    print("[build_apworld] %d files -> %s" % (len(files), out))
     for f in files:
         print("   mmzx/" + f.relative_to(PKG).as_posix())
 

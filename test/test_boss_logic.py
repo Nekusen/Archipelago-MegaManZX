@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
-"""test_boss_logic.py — prueba de HERMETICIDAD de la opción `boss_logic`.
+"""test_boss_logic.py - HERMETICITY test of the `boss_logic` option.
 
-Comprueba, jefe por jefe, que un requisito puesto en el YAML de verdad cierra
-todo lo que está detrás de ese jefe y NADA más:
+Checks, boss by boss, that a requirement set in the YAML really closes
+everything behind that boss and NOTHING else:
 
-  1. Escenario por jefe: solo ese jefe pide un item "testigo" (un chip que no
-     hace falta para ninguna otra cosa) y el inventario lo tiene TODO menos el
-     testigo. Se exige que su arena quede fuera de lógica y se informa de qué
-     regiones y locations pierde (lo que el jefe gatea de verdad).
-  2. Control positivo: con el testigo en la mano, ese mismo escenario tiene
-     que dar exactamente lo mismo que la lógica sin `boss_logic` (el requisito
-     es un AÑADIDO: nunca puede abrir ni cerrar nada por su cuenta).
-  3. Escenario duro: los 15 jefes piden el testigo a la vez y no se tiene ->
-     nada que esté detrás de un jefe está en lógica y la meta es inalcanzable.
-  4. Los ocho Pseudoroids se pelean dos veces: sin poder con uno de ellos, la
-     salida del boss rush de D-4 a Serpent tiene que estar cerrada.
+  1. Per-boss scenario: only that boss asks for a "witness" item (a chip not
+     needed for anything else) and the inventory has EVERYTHING but the
+     witness. Its arena must end up out of logic, and the regions and
+     locations it loses are reported (what the boss really gates).
+  2. Positive control: with the witness in hand, that same scenario must
+     give exactly the same as the logic without `boss_logic` (the requirement
+     is an ADDITION: it can never open or close anything on its own).
+  3. Hard scenario: all 15 bosses ask for the witness at once and it is not
+     owned -> nothing behind a boss is in logic and the goal is unreachable.
+  4. The eight Pseudoroids are fought twice: unable to beat one of them, the
+     exit of the D-4 boss rush to Serpent must be closed.
 
-Uso (desde la raíz del apworld):
+Usage (from the apworld root):
   python test/test_boss_logic.py [--verbose]
 """
 import argparse
@@ -29,8 +29,8 @@ _spec = importlib.util.spec_from_file_location("mmzx_logic_probe", ROOT / "tools
 _probe = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_probe)  # type: ignore[union-attr]
 
-WITNESS = "Absorber Chip"       # item testigo: ninguna otra regla lo usa
-WITNESS_ATOM = "Absorber Chip"  # se escribe igual en el YAML
+WITNESS = "Absorber Chip"       # witness item: no other rule uses it
+WITNESS_ATOM = "Absorber Chip"  # written the same way in the YAML
 
 
 class Harness:
@@ -42,7 +42,7 @@ class Harness:
         self.F = sys.modules["worlds.mmzx"].logic_format
 
     def run(self, boss_logic, without=(), options=None):
-        """Alcanzabilidad con TODO el pool salvo los items de `without`."""
+        """Reachability with the WHOLE pool except the items in `without`."""
         opts = dict(options or {})
         opts["boss_logic"] = boss_logic
         mw = self._setup(self.world_type, options=opts)
@@ -78,15 +78,15 @@ def main():
     tagged = sorted(arenas)
     fails, notes = [], []
 
-    # referencia: sin boss_logic y con todo
+    # reference: without boss_logic and with everything
     base = H.run({})
     if not base["victory"]:
-        fails.append("la referencia sin boss_logic no gana con todos los items")
-    print("referencia (sin boss_logic, todo el pool): %d regiones, %d locations, victoria=%s"
+        fails.append("the reference without boss_logic does not win with all the items")
+    print("reference (without boss_logic, whole pool): %d regions, %d locations, victory=%s"
           % (len(base["regions"]), len(base["locs"]), base["victory"]))
 
-    # 1 + 2: un jefe cada vez
-    print("\n== por jefe (solo ese pide %r; inventario = todo menos el testigo)" % WITNESS)
+    # 1 + 2: one boss at a time
+    print("\n== per boss (only that one asks for %r; inventory = everything but the witness)" % WITNESS)
     for bid in tagged:
         name = F.BOSSES[bid]["name"]
         room, rid = arenas[bid]
@@ -96,84 +96,84 @@ def main():
         on = H.run(cfg)
 
         if arena in off["regions"]:
-            fails.append("%s: su arena %s SIGUE en lógica sin cumplir el requisito" % (name, arena))
+            fails.append("%s: its arena %s is STILL in logic without meeting the requirement" % (name, arena))
         lost_r = sorted(base["regions"] - off["regions"])
         lost_l = sorted(base["locs"] - off["locs"])
         if arena not in lost_r:
-            fails.append("%s: la arena %s no aparece como perdida" % (name, arena))
-        # control positivo: con el testigo, idéntico a la referencia
+            fails.append("%s: arena %s does not show up as lost" % (name, arena))
+        # positive control: with the witness, identical to the reference
         for key in ("regions", "locs"):
             if on[key] != base[key]:
                 d = (base[key] ^ on[key])
-                fails.append("%s: con el requisito cumplido la lógica NO es igual a la de "
-                             "referencia (%d de diferencia: %s)" % (name, len(d), sorted(d)[:5]))
+                fails.append("%s: with the requirement met the logic is NOT equal to the "
+                             "reference (%d different: %s)" % (name, len(d), sorted(d)[:5]))
         if on["victory"] != base["victory"]:
-            fails.append("%s: con el requisito cumplido cambia la victoria" % name)
-        print("   %-22s cierra %3d regiones, %3d locations%s  victoria=%s"
+            fails.append("%s: with the requirement met the victory changes" % name)
+        print("   %-22s closes %3d regions, %3d locations%s  victory=%s"
               % (name, len(lost_r), len(lost_l), "", off["victory"]))
         if a.verbose:
-            print("        regiones:  " + ", ".join(lost_r))
+            print("        regions:   " + ", ".join(lost_r))
             print("        locations: " + ", ".join(lost_l))
-        # 4: los Pseudoroids también cierran el boss rush -> Serpent
+        # 4: the Pseudoroids also close the boss rush -> Serpent
         if "index" in F.BOSSES[bid]:
             if off["victory"]:
-                fails.append("%s: es un Pseudoroid y la meta sigue alcanzable sin poder con él "
-                             "(el boss rush de D-4 debería cerrar el paso a D-5)" % name)
+                fails.append("%s: is a Pseudoroid and the goal is still reachable without beating it "
+                             "(the D-4 boss rush should close the way to D-5)" % name)
             if "d05" in off["regions"] or any(r.startswith("d05/") for r in off["regions"]):
-                fails.append("%s: D-5 sigue alcanzable sin poder con él" % name)
+                fails.append("%s: D-5 is still reachable without beating it" % name)
         else:
-            notes.append("%s: no es Pseudoroid; victoria sin él = %s" % (name, off["victory"]))
+            notes.append("%s: not a Pseudoroid; victory without it = %s" % (name, off["victory"]))
 
-    # 3: todos a la vez
-    print("\n== todos los jefes exigen el testigo y no se tiene")
+    # 3: all at once
+    print("\n== all bosses require the witness and it is not owned")
     cfg_all = {F.BOSSES[b]["name"]: WITNESS_ATOM for b in tagged}
     off_all = H.run(cfg_all, without=[WITNESS])
     on_all = H.run(cfg_all)
     for bid in tagged:
         arena = F.region_name(*arenas[bid])
         if arena in off_all["regions"]:
-            fails.append("todos: la arena %s (%s) sigue en lógica" % (arena, F.BOSSES[bid]["name"]))
+            fails.append("all: arena %s (%s) is still in logic" % (arena, F.BOSSES[bid]["name"]))
     if off_all["victory"]:
-        fails.append("todos: la meta sigue alcanzable sin poder con ningún jefe")
+        fails.append("all: the goal is still reachable without beating any boss")
     if on_all["regions"] != base["regions"] or on_all["locs"] != base["locs"]:
-        fails.append("todos: con el requisito cumplido la lógica no coincide con la de referencia")
-    print("   sin el testigo: %d regiones (%d menos), %d locations (%d menos), victoria=%s"
+        fails.append("all: with the requirement met the logic does not match the reference")
+    print("   without the witness: %d regions (%d fewer), %d locations (%d fewer), victory=%s"
           % (len(off_all["regions"]), len(base["regions"]) - len(off_all["regions"]),
              len(off_all["locs"]), len(base["locs"]) - len(off_all["locs"]), off_all["victory"]))
-    print("   con el testigo: idéntico a la referencia = %s"
+    print("   with the witness: identical to the reference = %s"
           % (on_all["regions"] == base["regions"] and on_all["locs"] == base["locs"]))
 
-    # 5: biometales de par (cada uno sale de DOS jefes). Con uno bloqueado
-    # tiene que seguir en lógica por el otro; con los dos, fuera.
-    print("\n== biometales: cada uno sale de dos jefes")
+    # 5: paired biometals (each one comes from TWO bosses). With one blocked
+    # it must stay in logic through the other; with both, out.
+    print("\n== biometals: each one comes from two bosses")
     for letter, pair in (("H", ("hivolt", "hurricaune")), ("L", ("lurerre", "leganchor")),
                          ("F", ("fistleo", "flammole")), ("P", ("purprill", "protectos"))):
         loc = "Obtain Biometal " + letter
         if loc not in base["locs"]:
-            fails.append("%s no está en lógica ni en la referencia" % loc)
+            fails.append("%s is not in logic even in the reference" % loc)
             continue
         if not all(b in arenas for b in pair):
-            notes.append("%s: par sin anclar del todo (%s)" % (loc, ", ".join(pair)))
+            notes.append("%s: pair not fully anchored (%s)" % (loc, ", ".join(pair)))
             continue
         for b in pair:
             other = pair[0] if b == pair[1] else pair[1]
             r = H.run({F.BOSSES[b]["name"]: WITNESS_ATOM}, without=[WITNESS])
             if loc not in r["locs"]:
-                fails.append("%s: bloqueando solo a %s deja de estar en lógica, pero %s sigue "
-                             "disponible" % (loc, F.BOSSES[b]["name"], F.BOSSES[other]["name"]))
+                fails.append("%s: blocking only %s takes it out of logic, but %s is still "
+                             "available" % (loc, F.BOSSES[b]["name"], F.BOSSES[other]["name"]))
         both = H.run({F.BOSSES[b]["name"]: WITNESS_ATOM for b in pair}, without=[WITNESS])
         if loc in both["locs"]:
-            fails.append("%s: sigue en lógica con los DOS jefes (%s) bloqueados"
+            fails.append("%s: still in logic with BOTH bosses (%s) blocked"
                          % (loc, ", ".join(F.BOSSES[b]["name"] for b in pair)))
-        print("   %-20s uno bloqueado: en lógica · los dos: %s"
-              % (loc, "FUERA (ok)" if loc not in both["locs"] else "EN LÓGICA (mal)"))
+        print("   %-20s one blocked: in logic | both: %s"
+              % (loc, "OUT (ok)" if loc not in both["locs"] else "IN LOGIC (bad)"))
 
     print()
     for n in notes:
-        print("nota:", n)
+        print("note:", n)
     for f in fails:
-        print("FALLO:", f)
-    print("[test_boss_logic] %d jefes anclados, %d fallos" % (len(tagged), len(fails)))
+        print("FAIL:", f)
+    print("[test_boss_logic] %d bosses anchored, %d failures" % (len(tagged), len(fails)))
     sys.exit(1 if fails else 0)
 
 

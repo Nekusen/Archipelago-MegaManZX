@@ -1,24 +1,24 @@
 #!/usr/bin/env python3
-"""serve.py — servidor local del EDITOR VISUAL DE LÓGICA de Mega Man ZX.
+"""serve.py - local server of the Mega Man ZX VISUAL LOGIC EDITOR.
 
-Sirve la aplicación (index.html/app.js/style.css de esta carpeta), los
-renders 1:1 de las salas (tools/logic_editor/local/renders/<sala>.png,
-locales y fuera de git; --renders para otra carpeta), los datos del mundo
-(data.py + tools/logic_editor/data/gimmicks.json) y lee/escribe el
-documento de lógica logic/logic.json, regenerando en cada guardado su
-gemelo legible logic.txt y devolviendo el informe de validación
-(logic_format.py). Sin dependencias externas.
+Serves the application (index.html/app.js/style.css from this folder), the
+1:1 room renders (tools/logic_editor/local/renders/<room>.png, local and
+outside git; --renders for another folder), the world data (data.py +
+tools/logic_editor/data/gimmicks.json) and reads/writes the logic document
+logic/logic.json, regenerating on every save its readable twin logic.txt
+and returning the validation report (logic_format.py). No external
+dependencies.
 
-Uso (desde la raíz del apworld):
-    python tools/logic_editor/serve.py [--port 8765] [--no-browser] [--renders DIR] [--gimmicks FICHERO]
+Usage (from the apworld root):
+    python tools/logic_editor/serve.py [--port 8765] [--no-browser] [--renders DIR] [--gimmicks FILE]
 
 API (JSON):
-    GET  /api/world      datos estáticos: salas, locations, aristas, gimmicks, átomos
-    GET  /api/logic      documento actual (o esqueleto vacío)
-    POST /api/logic      guarda el documento; respuesta = informe de validación
-    POST /api/validate   valida sin guardar
-    GET  /renders/<sala>.png
-Especificación del documento: docs/logic_format.md.
+    GET  /api/world      static data: rooms, locations, edges, gimmicks, atoms
+    GET  /api/logic      current document (or an empty skeleton)
+    POST /api/logic      saves the document; response = validation report
+    POST /api/validate   validates without saving
+    GET  /renders/<room>.png
+Document specification: docs/logic_format.md.
 """
 
 import argparse
@@ -31,10 +31,10 @@ import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]          # raíz del apworld (paquete mmzx)
+ROOT = Path(__file__).resolve().parents[2]          # apworld root (mmzx package)
 STATIC = Path(__file__).resolve().parent
-RENDERS = STATIC / "local" / "renders"              # renders 1:1 (locales, gitignored); --renders
-GIMMICKS = STATIC / "data" / "gimmicks.json"        # gimmicks con nombre (tools/gen_editor_gimmicks.py del laboratorio); --gimmicks
+RENDERS = STATIC / "local" / "renders"              # 1:1 renders (local, gitignored); --renders
+GIMMICKS = STATIC / "data" / "gimmicks.json"        # named gimmicks (tools/gen_editor_gimmicks.py from the lab); --gimmicks
 LOGIC_DIR = ROOT / "logic"
 LOGIC_JSON = LOGIC_DIR / "logic.json"
 LOGIC_TXT = LOGIC_DIR / "logic.txt"
@@ -69,14 +69,14 @@ def png_size(path: Path):
 
 
 def load_gimmicks(rooms):
-    """{sala: [{name, kind, sub, role, mod, pos, layer}]} (sin puertas), del
-    JSON derivado tools/logic_editor/data/gimmicks.json (lo genera el
-    laboratorio con tools/gen_editor_gimmicks.py a partir de las tablas de
-    entidades y la nomenclatura del Mega Man ZX Editor). Si falta, el editor
-    funciona sin la capa de gimmicks."""
+    """{room: [{name, kind, sub, role, mod, pos, layer}]} (without doors), from
+    the derived JSON tools/logic_editor/data/gimmicks.json (the lab generates
+    it with tools/gen_editor_gimmicks.py from the entity tables and the Mega
+    Man ZX Editor nomenclature). If it is missing, the editor works without
+    the gimmicks layer."""
     out = {r: [] for r in rooms}
     if not GIMMICKS.exists():
-        print("[serve] sin gimmicks: falta %s" % GIMMICKS)
+        print("[serve] no gimmicks: missing %s" % GIMMICKS)
         return out
     data = json.load(open(GIMMICKS, encoding="utf-8"))
     for room, items in data.items():
@@ -131,9 +131,9 @@ class WorldCache:
             "transerver_access": world["transerver_access"],
             "event_gates_open": world["event_gates_open"],
             "gate_edges": gate_edges,
-            # roster de jefes: etiqueta de arena en el panel de región. El
-            # requisito no se dibuja aquí, lo pone el jugador en su YAML
-            # (opción boss_logic); esto solo dice DÓNDE está cada jefe.
+            # boss roster: arena tag in the region panel. The requirement
+            # is not drawn here, the player sets it in their YAML
+            # (boss_logic option); this only says WHERE each boss is.
             "bosses": [{"id": b, "name": v["name"], "room": v["room"],
                         "room_label": F.room_label(v["room"]),
                         "pseudoroid": "index" in v}
@@ -202,7 +202,7 @@ class Handler(BaseHTTPRequestHandler):
                     return self._send(404, {"error": "not found"})
                 p = RENDERS / name
                 if not p.exists():
-                    return self._send(404, {"error": "render no encontrado"})
+                    return self._send(404, {"error": "render not found"})
                 return self._send(200, p.read_bytes(), "image/png")
             return self._send(404, {"error": "not found"})
         except Exception as ex:  # noqa: BLE001
@@ -213,7 +213,7 @@ class Handler(BaseHTTPRequestHandler):
     def _static(self, name, ctype):
         p = STATIC / name
         if not p.exists():
-            return self._send(404, "falta %s" % name, "text/plain; charset=utf-8")
+            return self._send(404, "missing %s" % name, "text/plain; charset=utf-8")
         return self._send(200, p.read_bytes(), ctype)
 
     def do_POST(self):
@@ -243,9 +243,9 @@ def main():
     ap.add_argument("--port", type=int, default=8765)
     ap.add_argument("--no-browser", action="store_true")
     ap.add_argument("--renders", default=None,
-                    help="carpeta con los renders 1:1 <sala>.png (por defecto tools/logic_editor/local/renders)")
+                    help="folder with the 1:1 renders <room>.png (default tools/logic_editor/local/renders)")
     ap.add_argument("--gimmicks", default=None,
-                    help="JSON de gimmicks con nombre (por defecto tools/logic_editor/data/gimmicks.json)")
+                    help="JSON of named gimmicks (default tools/logic_editor/data/gimmicks.json)")
     a = ap.parse_args()
     global RENDERS, GIMMICKS
     if a.renders:
@@ -254,14 +254,14 @@ def main():
         GIMMICKS = Path(a.gimmicks).resolve()
     D, world, payload = CACHE.get()
     missing = [r for r, v in payload["rooms"].items() if not v["render"]]
-    print("[serve] %d salas, %d locations, %d aristas; renders que faltan: %s" % (
-        len(world["rooms"]), len(world["locations"]), len(world["edges"]), missing or "ninguno"))
+    print("[serve] %d rooms, %d locations, %d edges; missing renders: %s" % (
+        len(world["rooms"]), len(world["locations"]), len(world["edges"]), missing or "none"))
     if missing:
-        print("[serve] renders en %s (ver README: se generan de TU ROM con el Mega Man ZX Editor; no van al repo)"
+        print("[serve] renders in %s (see README: they are generated from YOUR ROM with the Mega Man ZX Editor; not in the repo)"
               % RENDERS)
-    print("[serve] documento: %s (%s)" % (LOGIC_JSON, "existe" if LOGIC_JSON.exists() else "nuevo"))
+    print("[serve] document: %s (%s)" % (LOGIC_JSON, "exists" if LOGIC_JSON.exists() else "new"))
     url = "http://127.0.0.1:%d/" % a.port
-    print("[serve] " + url + "  (Ctrl+C para parar)")
+    print("[serve] " + url + "  (Ctrl+C to stop)")
     httpd = ThreadingHTTPServer(("127.0.0.1", a.port), Handler)
     if not a.no_browser:
         threading.Timer(0.5, lambda: webbrowser.open(url)).start()

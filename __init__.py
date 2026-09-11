@@ -1,6 +1,6 @@
-"""Mega Man ZX (Nintendo DS) — mundo de Archipelago. v0.3: lógica desde logic/logic.json.
+"""Mega Man ZX (Nintendo DS) - Archipelago world. v0.3: logic from logic/logic.json.
 
-RE completo en docs/client_integration.md; puente en worlds/mmzx/data.py.
+Full RE in docs/client_integration.md; bridge in worlds/mmzx/data.py.
 """
 
 import os
@@ -20,13 +20,13 @@ from .options import MMZXOptions
 from .regions import (boss_requirements, create_regions, load_document,
                       progression_overrides)
 from .rom import MMZXPatch, write_patch_tokens, MMZX_US_MD5
-from . import client  # registra el BizHawkClient  # noqa: F401
-from . import tracker_pos  # auto-tab / icono de posición para Universal Tracker
+from . import client  # registers the BizHawkClient  # noqa: F401
+from . import tracker_pos  # auto-tab / position icon for Universal Tracker
 
 
 class MMZXSettings(settings.Group):
     class RomFile(settings.UserFilePath):
-        """Ruta a la ROM de Mega Man ZX (USA)."""
+        """Path to the Mega Man ZX (USA) ROM."""
         description = "Mega Man ZX (USA) ROM File"
         copy_to = "mmzx_us.nds"
         md5s = [MMZX_US_MD5]
@@ -94,16 +94,16 @@ class MMZXWorld(World):
     }
 
     def generate_early(self) -> None:
-        # boss_logic: se parsea y valida ANTES de construir nada, para que un
-        # error del YAML salga con un mensaje claro y no a medio generar.
+        # boss_logic: parsed and validated BEFORE building anything, so that a
+        # YAML error comes out with a clear message and not halfway through generation.
         try:
             reqs = boss_requirements(self)
         except ValueError as e:
             raise OptionError("[%s] boss_logic: %s" % (self.player_name, e)) from None
         loose = bosses.unanchored(load_document(), reqs)
         if loose:
-            # Un jefe sin arena etiquetada en logic/logic.json no puede recibir
-            # el requisito: fallar es más seguro que aplicarlo a nada.
+            # A boss with no arena tagged in logic/logic.json cannot receive
+            # the requirement: failing is safer than applying it to nothing.
             raise OptionError(
                 "[%s] boss_logic: %s has no arena anchored in the logic yet, so the "
                 "requirement would apply to nothing. Remove it from the YAML or draw the "
@@ -114,9 +114,9 @@ class MMZXWorld(World):
 
     def create_item(self, name: str) -> MMZXItem:
         cls = get_classification(name)
-        # Life Up / Sub Tank / chips de ITEM B pasan a progresión si algún
-        # requisito los exige (logic/logic.json o la opción boss_logic): el
-        # estado de AP solo cuenta items de progresión.
+        # Life Up / Sub Tank / ITEM B chips become progression if some
+        # requirement demands them (logic/logic.json or the boss_logic
+        # option): the AP state only counts progression items.
         if name in progression_overrides(self):
             cls = ItemClassification.progression
         return MMZXItem(name, cls, self.item_name_to_id[name], self.player)
@@ -133,35 +133,35 @@ class MMZXWorld(World):
             include_level4=bool(self.options.level4_victories.value),
             pickups=pickup_flags_from_options(self.options),
         )
-        n_locations = len(active_locs)  # sin contar el evento Victory
+        n_locations = len(active_locs)  # not counting the Victory event
 
-        # progresión + useful fijos (solo los "pooled", tantas copias como
-        # `count`: los biometales H/F/L/P son progresivos x2); resto filler
+        # fixed progression + useful (only the "pooled" ones, as many copies as
+        # `count`: the H/F/L/P biometals are progressive x2); the rest is filler
         pool: list[MMZXItem] = []
         fixed: list[str] = []
         for n, v in ITEMS.items():
             if v["classification"] != "filler" and v.get("pooled", True):
                 fixed += [n] * int(v.get("count", 1))
 
-        # Model Hu: solo entra al pool si hu_in_pool (el parche Hu-gate lo
-        # convierte en item). Sin la opción, Hu es hardcoded (no es item).
+        # Model Hu: only enters the pool with hu_in_pool (the Hu-gate patch
+        # turns it into an item). Without the option, Hu is hardcoded (not an item).
         if self.options.hu_in_pool.value:
             fixed.append("Model Hu")
 
-        # Modelo inicial (tutorial-skip): el item equivalente se pre-concede
-        # (start inventory) y sale del pool. Con 'none' no se pre-concede
-        # nada y Model X queda en el pool como item encontrable.
+        # Starting model (tutorial-skip): the equivalent item is pre-granted
+        # (start inventory) and leaves the pool. With 'none' nothing is
+        # pre-granted and Model X stays in the pool as a findable item.
         start_key = self.options.starting_model.current_key
         if start_key == "model_hu" and not self.options.hu_in_pool.value:
-            start_key = "none"   # Hu no gateada: 'model_hu' == 'none'
+            start_key = "none"   # Hu not gated: 'model_hu' == 'none'
         start_item = STARTING_MODEL_ITEM.get(start_key)
         if start_item and start_item in fixed:
-            fixed.remove(start_item)   # una copia (la 1ª mitad de un progresivo)
+            fixed.remove(start_item)   # one copy (the 1st half of a progressive item)
             self.multiworld.push_precollected(self.create_item(start_item))
 
-        # Red de Transervers (modelo híbrido): el acceso del área donde
-        # arranca el skip (piso del hub = A-2) se pre-concede; el resto de
-        # "Transerver Access - Area X" van a la pool como progresión.
+        # Transerver network (hybrid model): the access of the area where the
+        # skip starts (hub floor = A-2) is pre-granted; the remaining
+        # "Transerver Access - Area X" go to the pool as progression.
         start_ts = "Transerver Access - Area %s" % START_TRANSERVER_AREA
         if start_ts in fixed:
             fixed.remove(start_ts)
@@ -172,8 +172,8 @@ class MMZXWorld(World):
 
         remaining = n_locations - len(pool)
         if remaining < 0:
-            # más items fijos que locations: recorta filler-first (no debería
-            # pasar en v0.1; los progresión siempre caben)
+            # more fixed items than locations: trim filler-first (should not
+            # happen in v0.1; progression items always fit)
             pool = pool[:n_locations]
             remaining = 0
         for _ in range(remaining):
@@ -182,15 +182,15 @@ class MMZXWorld(World):
         self.multiworld.itempool += pool
 
     def set_rules(self) -> None:
-        # no-logic: todo accesible. Solo la condición de victoria.
+        # no-logic: everything accessible. Only the victory condition.
         self.multiworld.completion_condition[self.player] = \
             lambda state: state.has("Victory", self.player)
 
     def pre_fill(self) -> None:
-        # Con boss_logic puesto es fácil pedir algo imposible (un biometal que
-        # solo sueltan los dos jefes a los que se le exige, más Life Ups de los
-        # que existen...). Se comprueba con TODO el pool en la mano: si ni así
-        # se llega, el mensaje dice qué jefe lo impide.
+        # With boss_logic set it is easy to ask for something impossible (a
+        # biometal dropped only by the two bosses it is required for, more Life
+        # Ups than exist...). Checked with the WHOLE pool in hand: if even then
+        # it is unreachable, the message says which boss blocks it.
         reqs = boss_requirements(self)
         if not reqs:
             return
@@ -228,18 +228,18 @@ class MMZXWorld(World):
             "hu_in_pool": bool(self.options.hu_in_pool.value),
             "logic_difficulty": self.options.logic_difficulty.current_key,
             "boss_logic": bosses.describe(boss_requirements(self)),
-            # QoL: boss rush de D-4 saltado (el cliente pone los flags de "vencido en
-            # el boss rush" por pares en los puntos seguros de la torre; regions.py
-            # deja de exigir a los 8 Pseudoroids para pasar a D-5)
+            # QoL: D-4 boss rush skipped (the client sets the "defeated in the
+            # boss rush" flags by pairs at the safe points of the tower; regions.py
+            # stops requiring the 8 Pseudoroids to get to D-5)
             "skip_boss_rush": bool(self.options.skip_boss_rush.value),
-            # pickups respawneables como checks (v0.2): el cliente sondea el
-            # buzón solo si alguna categoría está activa
+            # respawnable pickups as checks (v0.2): the client polls the
+            # mailbox only if some category is active
             "pickup_checks_1up": bool(self.options.pickup_checks_1up.value),
             "pickup_checks_energy": bool(self.options.pickup_checks_energy.value),
             "pickup_checks_weapon": bool(self.options.pickup_checks_weapon.value),
             "pickup_checks_crystals": bool(self.options.pickup_checks_crystals.value),
-            # avisos en pantalla: umbrales por defecto (el cliente los aplica al
-            # conectar salvo que el jugador ya haya usado /mmzx_notify)
+            # on-screen notifications: default thresholds (the client applies them
+            # on connect unless the player already used /mmzx_notify)
             "notify_received": self.options.notify_received.current_key,
             "notify_sent": self.options.notify_sent.current_key,
             "notify_style": self.options.notify_style.current_key,

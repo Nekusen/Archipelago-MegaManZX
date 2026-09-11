@@ -1,27 +1,27 @@
 #!/usr/bin/env python3
-"""logic_probe.py — sonda LOCAL de la lógica del apworld (sin generar seed).
+"""logic_probe.py - LOCAL probe of the apworld's logic (without generating a seed).
 
-Carga el core de Archipelago desde un checkout de fuentes (0.6.7; por
-defecto $AP_SRC, o ../ArchipelagoDW junto al laboratorio) con el Python del venv, registra
-este apworld tal cual está en el árbol de trabajo y construye un multiworld
-de 1 jugador con las opciones dadas. Después, con un inventario concreto,
-calcula qué salas/regiones y qué locations están EN LÓGICA y cuál es la
-FRONTERA: aristas que salen de una región alcanzable hacia una no
-alcanzable, con la regla (llave / entrada de sala / coste de arista /
-verja / conexión curada / Transerver, leídas de logic/
-logic.json) que las bloquea. Responde a "¿por qué no puedo ir a F-5 con
-HX?" sin abrir el tracker. Opciones útiles: --opt logic_difficulty=expert,
---world <carpeta de otro apworld>, --json <salida> (comparaciones).
+Loads the Archipelago core from a source checkout (0.6.7; by default
+$AP_SRC, or ../ArchipelagoDW next to the lab) with the venv's Python, registers
+this apworld as it is in the working tree and builds a 1-player multiworld
+with the given options. Then, with a concrete inventory, it computes which
+rooms/regions and which locations are IN LOGIC and what the FRONTIER is:
+edges leaving a reachable region towards an unreachable one, with the rule
+(key / room entrance / edge cost / gate / curated connection / Transerver,
+read from logic/logic.json) that blocks them. Answers "why can't I go to
+F-5 with HX?" without opening the tracker. Useful options:
+--opt logic_difficulty=expert, --world <folder of another apworld>,
+--json <output> (comparisons).
 
-Uso (desde la raíz del workspace):
+Usage (from the workspace root):
   .venv/Scripts/python.exe tools/logic_probe.py \
       --opt starting_model=model_hx --opt hu_in_pool=true \
       --items "Blue Card Key" "Transerver Access - Area C" \
       [--all-keys] [--all-models] [--all-access] [--loc "Mission - Find The Survivors"] \
-      [--rooms] [--locs] [--frontier] [--ap CHECKOUT_DE_AP]
+      [--rooms] [--locs] [--frontier] [--ap AP_CHECKOUT]
 
-Sin --rooms/--locs/--frontier se imprime todo. --loc explica una location
-concreta (región, regla, salas de su etiqueta que faltan).
+Without --rooms/--locs/--frontier everything is printed. --loc explains one
+specific location (region, rule, rooms of its label that are missing).
 """
 import argparse
 import contextlib
@@ -32,12 +32,12 @@ import os
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent      # raíz del apworld (paquete mmzx)
+ROOT = Path(__file__).resolve().parent.parent      # apworld root (mmzx package)
 
 
 def _default_ap() -> str:
-    """Checkout de fuentes de Archipelago: $AP_SRC; si no, ArchipelagoDW
-    hermano de la raíz del laboratorio (worlds/mmzx/tools → 4 niveles)."""
+    """Archipelago source checkout: $AP_SRC; otherwise, ArchipelagoDW as a
+    sibling of the lab root (worlds/mmzx/tools -> 4 levels up)."""
     if os.environ.get("AP_SRC"):
         return os.environ["AP_SRC"]
     try:
@@ -54,42 +54,42 @@ DEFAULT_AP = _default_ap()
 
 def parse_args():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--ap", default=DEFAULT_AP, help="checkout de fuentes de Archipelago (0.6.7)")
+    ap.add_argument("--ap", default=DEFAULT_AP, help="Archipelago source checkout (0.6.7)")
     ap.add_argument("--opt", action="append", default=[], metavar="KEY=VALUE",
-                    help="opción del YAML (p.ej. starting_model=model_hx, hu_in_pool=true)")
-    ap.add_argument("--items", nargs="*", default=[], help="items recibidos (nombres exactos)")
-    ap.add_argument("--all-keys", action="store_true", help="añade todas las Card Keys")
-    ap.add_argument("--all-models", action="store_true", help="añade todos los modelos/biometales")
-    ap.add_argument("--all-access", action="store_true", help="añade todos los Transerver Access")
-    ap.add_argument("--loc", action="append", default=[], help="explica esta location")
+                    help="YAML option (e.g. starting_model=model_hx, hu_in_pool=true)")
+    ap.add_argument("--items", nargs="*", default=[], help="received items (exact names)")
+    ap.add_argument("--all-keys", action="store_true", help="add all the Card Keys")
+    ap.add_argument("--all-models", action="store_true", help="add all the models/biometals")
+    ap.add_argument("--all-access", action="store_true", help="add all the Transerver Access items")
+    ap.add_argument("--loc", action="append", default=[], help="explain this location")
     ap.add_argument("--rooms", action="store_true")
     ap.add_argument("--locs", action="store_true")
     ap.add_argument("--frontier", action="store_true")
-    ap.add_argument("--world", default=None, help="carpeta del apworld a cargar (por defecto este mismo paquete)")
-    ap.add_argument("--json", default=None, help="volcar {salas, locations en lógica} como JSON a este fichero (comparaciones)")
+    ap.add_argument("--world", default=None, help="apworld folder to load (by default this very package)")
+    ap.add_argument("--json", default=None, help="dump {rooms, locations in logic} as JSON to this file (comparisons)")
     return ap.parse_args()
 
 
 def load_core(ap_src: str, world_dir=None):
-    """Importa el core de AP y registra worlds.mmzx desde el árbol de trabajo.
-    El cargador de mundos de AP intenta importar TODOS los mundos del
-    checkout (ruido: mundos con deps no instaladas); se silencia.
+    """Imports the AP core and registers worlds.mmzx from the working tree.
+    AP's world loader tries to import ALL the worlds of the checkout (noise:
+    worlds with uninstalled deps); it is silenced.
 
-    El cwd del proceso se cambia al checkout de AP SOLO durante los imports y
-    se restaura SIEMPRE al salir. Dejar el proceso "aparcado" dentro de otro
-    repo hizo que una salida relativa (--out work/...) cayera en
-    ArchipelagoDW/work/ y que la limpieza posterior borrara ese work/ entero
-    (incidente 2026-09-03). Las rutas de salida se resuelven ANTES de llamar.
+    The process cwd is changed to the AP checkout ONLY during the imports and
+    is ALWAYS restored on exit. Leaving the process "parked" inside another
+    repo made a relative output (--out work/...) land in ArchipelagoDW/work/
+    and the later cleanup delete that whole work/ (incident 2026-09-03).
+    Output paths are resolved BEFORE calling.
     """
     if not ap_src:
-        raise SystemExit("hace falta un checkout de fuentes de Archipelago: --ap RUTA o la variable AP_SRC")
+        raise SystemExit("an Archipelago source checkout is needed: --ap PATH or the AP_SRC variable")
     ap_src = str(Path(ap_src).resolve())
-    world_dir = str(Path(world_dir).resolve()) if world_dir else None   # antes del chdir
+    world_dir = str(Path(world_dir).resolve()) if world_dir else None   # before the chdir
     sys.path.insert(0, ap_src)
     logging.disable(logging.CRITICAL)
-    # worlds/__init__.py importa TODOS los mundos del checkout (75, minutos y
-    # ruido por deps ausentes): se filtra os.scandir durante ese import para
-    # que solo vea 'generic' (Archipelago core). Se restaura después.
+    # worlds/__init__.py imports ALL the worlds of the checkout (75, minutes and
+    # noise from missing deps): os.scandir is filtered during that import so
+    # that it only sees 'generic' (Archipelago core). Restored afterwards.
     real_scandir = os.scandir
     worlds_dir = os.path.normcase(os.path.join(ap_src, "worlds"))
 
@@ -100,7 +100,7 @@ def load_core(ap_src: str, world_dir=None):
         return iter([e for e in it if e.name == "generic"])
 
     prev_cwd = os.getcwd()
-    os.chdir(ap_src)   # AP resuelve rutas relativas (host.yaml, data/) desde cwd durante el import
+    os.chdir(ap_src)   # AP resolves relative paths (host.yaml, data/) from cwd during the import
     os.scandir = scandir_only_generic
     try:
         with contextlib.redirect_stderr(io.StringIO()), contextlib.redirect_stdout(io.StringIO()):
@@ -117,7 +117,7 @@ def load_core(ap_src: str, world_dir=None):
             spec.loader.exec_module(m)
     finally:
         os.scandir = real_scandir
-        os.chdir(prev_cwd)   # nunca dejar el proceso dentro del checkout de AP
+        os.chdir(prev_cwd)   # never leave the process inside the AP checkout
     logging.disable(logging.NOTSET)
     return AutoWorldRegister.world_types["Mega Man ZX"]
 
@@ -149,7 +149,7 @@ def main():
     world = mw.worlds[1]
     player = 1
 
-    # datos crudos para describir reglas (mismo árbol de trabajo)
+    # raw data to describe rules (same working tree)
     mm = sys.modules["worlds.mmzx"]
     data = mm.data
     logic = mm.logic
@@ -167,79 +167,79 @@ def main():
     if a.all_models:
         for n, v in data.ITEMS.items():
             if "Model " in n:
-                items += [n] * int(v.get("count", 1))   # progresivos: las 2 mitades
+                items += [n] * int(v.get("count", 1))   # progressive: both halves
     if a.all_access:
         items += [n for n in data.ITEMS if n.startswith("Transerver Access")]
 
     state = CollectionState(mw)
     for name in items:
         if name not in world.item_name_to_id:
-            print("!! item desconocido:", name)
+            print("!! unknown item:", name)
             continue
         state.collect(world.create_item(name), prevent_sweep=True)
-    state.sweep_for_advancements()       # recoge eventos ("Cleared: ...") alcanzables
+    state.sweep_for_advancements()       # collects reachable events ("Cleared: ...")
     state.update_reachable_regions(player)
     reach = {r.name for r in state.reachable_regions[player]}
 
     precollected = [i.name for i in mw.precollected_items[player]]
-    print("== opciones:", {k: getattr(world.options, k).current_key
+    print("== options:", {k: getattr(world.options, k).current_key
                           if hasattr(getattr(world.options, k), "current_key") else getattr(world.options, k).value
-                          for k in opts} or "(por defecto)")
-    print("== inventario:", precollected + items)
+                          for k in opts} or "(default)")
+    print("== inventory:", precollected + items)
     events = sorted(i for i in state.prog_items[player] if i.startswith("Cleared: ") or i == "Victory")
     if events:
-        print("== eventos alcanzados:", events)
+        print("== reached events:", events)
 
-    # sala alcanzable = alguna de sus regiones alcanzable (Main puede estar
-    # vacía si todo está en polígonos)
+    # reachable room = any of its regions reachable (Main may be empty if
+    # everything is in polygons)
     rooms = sorted(r for r in logic.ROOM_NAMES if r in reach or any(x.startswith(r + "/") for x in reach))
     subs = sorted(r for r in reach if "/" in r)
     if show_all or a.rooms:
-        print("\n== salas alcanzables (%d/%d):" % (len(rooms), len(logic.ROOM_NAMES)))
+        print("\n== reachable rooms (%d/%d):" % (len(rooms), len(logic.ROOM_NAMES)))
         print("   " + " ".join(rooms))
         if subs:
-            print("   sub-regiones: " + " ".join(subs))
+            print("   sub-regions: " + " ".join(subs))
         missing = sorted(set(logic.ROOM_NAMES) - set(rooms))
-        print("== salas NO alcanzables (%d): %s" % (len(missing), " ".join(missing)))
+        print("== rooms NOT reachable (%d): %s" % (len(missing), " ".join(missing)))
 
     def describe_edge(ent):
-        """Texto de la regla de una entrance del grafo de regiones."""
+        """Rule text of an entrance of the region graph."""
         name = ent.name
         parts = []
         for d in data.DOORS:
             if d["name"] == name:
                 if d.get("key"):
-                    parts.append("llave %s" % d["key"])
+                    parts.append("key %s" % d["key"])
                 rr = doc["rooms"][d["dst"]].get("req")
                 if rr:
-                    parts.append("sala %s: %s" % (d["dst"], req_txt(rr)))
+                    parts.append("room %s: %s" % (d["dst"], req_txt(rr)))
                 ov = doc.get("edges", {}).get(name, {})
                 if ov.get("req") and not F.req_is_free(ov["req"], tier):
-                    parts.append("arista: %s" % req_txt(ov["req"]))
+                    parts.append("edge: %s" % req_txt(ov["req"]))
                 if d.get("gate") is not None:
                     g = doc.get("gates", {}).get(str(d["gate"]), {}).get("req")
-                    parts.append("verja de evento %d: %s" % (d["gate"], req_txt(g) if g else "libre (el cliente pone el flag)"))
+                    parts.append("event gate %d: %s" % (d["gate"], req_txt(g) if g else "free (the client sets the flag)"))
                 if d["kind"] == "warp" and d["src"] == data.HUB_ROOM:
                     if d["dst"] in data.TRANSERVER_ALWAYS:
-                        parts.append("warp libre")
+                        parts.append("free warp")
                     else:
                         it = data.TRANSERVER_ACCESS.get(d["dst"])
-                        parts.append("warp: %s" % (it or "SIN destino de Transport"))
+                        parts.append("warp: %s" % (it or "NO Transport destination"))
                 break
         else:
-            # conexión curada "<sala>: <from> -> <to>", o "Start"
+            # curated connection "<room>: <from> -> <to>", or "Start"
             if ": " in name and " -> " in name:
                 room, rest = name.split(": ", 1)
                 a_, b_ = rest.split(" -> ", 1)
                 for c in doc["rooms"].get(room, {}).get("conns", []):
                     if c["from"] == a_ and c["to"] == b_:
-                        parts.append("conexión: %s%s" % (req_txt(c.get("req")), " (?)" if c.get("unsure") else ""))
+                        parts.append("connection: %s%s" % (req_txt(c.get("req")), " (?)" if c.get("unsure") else ""))
             if name == "Start":
-                parts.append("sala inicial: %s" % req_txt(doc["rooms"][ent.connected_region.name.split("/")[0]].get("req")))
-        return "; ".join(parts) or "(sin regla; ¿evento?)"
+                parts.append("starting room: %s" % req_txt(doc["rooms"][ent.connected_region.name.split("/")[0]].get("req")))
+        return "; ".join(parts) or "(no rule; event?)"
 
     if show_all or a.frontier:
-        print("\n== FRONTERA (arista alcanzable -> destino no alcanzable):")
+        print("\n== FRONTIER (reachable edge -> unreachable destination):")
         seen = set()
         for reg in sorted(state.reachable_regions[player], key=lambda r: r.name):
             for ent in reg.exits:
@@ -255,36 +255,36 @@ def main():
     locs_in = [l for l in mw.get_locations(player) if l.address is not None and l.can_reach(state)]
     locs_out = [l for l in mw.get_locations(player) if l.address is not None and not l.can_reach(state)]
     if show_all or a.locs:
-        print("\n== locations EN LÓGICA (%d):" % len(locs_in))
+        print("\n== locations IN LOGIC (%d):" % len(locs_in))
         for l in sorted(locs_in, key=lambda l: l.name):
             print("   " + l.name)
-        print("\n== locations FUERA de lógica (%d):" % len(locs_out))
+        print("\n== locations OUT of logic (%d):" % len(locs_out))
         for l in sorted(locs_out, key=lambda l: l.name):
             print("   " + l.name)
 
     for name in a.loc:
         loc = next((l for l in mw.get_locations(player) if l.name == name), None)
         if loc is None:
-            print("\n?? location no encontrada:", name)
+            print("\n?? location not found:", name)
             continue
         v = data.LOCATIONS.get(name, {})
-        print("\n== %s: %s" % (name, "EN LÓGICA" if loc.can_reach(state) else "FUERA"))
-        print("   región: %s (%s)" % (loc.parent_region.name,
-                                     "alcanzable" if loc.parent_region.name in reach else "NO alcanzable"))
+        print("\n== %s: %s" % (name, "IN LOGIC" if loc.can_reach(state) else "OUT"))
+        print("   region: %s (%s)" % (loc.parent_region.name,
+                                     "reachable" if loc.parent_region.name in reach else "NOT reachable"))
         ch = doc.get("checks", {}).get(name, {})
-        print("   regla curada: %s%s" % (req_txt(ch.get("req")) if ch.get("req") else "free",
+        print("   curated rule: %s%s" % (req_txt(ch.get("req")) if ch.get("req") else "free",
                                           " (?)" if ch.get("unsure") else ""))
         room, pos = F.check_position(logic.WORLD, doc, name)
         if room:
             rid = members[room].get(name, "main")
-            print("   sala: %s (%s), región %s (%s)" % (
-                room, "alcanzable" if room in reach else "NO alcanzable",
-                F.region_name(room, rid), "alcanzable" if F.region_name(room, rid) in reach else "NO alcanzable"))
+            print("   room: %s (%s), region %s (%s)" % (
+                room, "reachable" if room in reach else "NOT reachable",
+                F.region_name(room, rid), "reachable" if F.region_name(room, rid) in reach else "NOT reachable"))
         else:
             label = v.get("room")
             for g in logic.label_room_groups(label):
                 lack = [r for r in g if r not in reach]
-                print("   SIN COLOCAR; etiqueta %r -> salas %s; faltan: %s" % (label, g, lack or "ninguna"))
+                print("   UNPLACED; label %r -> rooms %s; missing: %s" % (label, g, lack or "none"))
 
     if a.json:
         import json

@@ -1,26 +1,26 @@
 #!/usr/bin/env python3
-"""normalize_names.py — normaliza los NOMBRES (y rids) de las regiones de
-logic/logic.json a un estándar fijo SIN cambiar la lógica:
-polígonos, conexiones, requisitos, checks y colocaciones quedan igual; solo
-cambian `regions[rid].name`, los `rid` (slug del nombre nuevo) y las
-referencias a rids (conns from/to, members). Decisión del usuario
-(2026-09-04): "prefiero un estándar fijo aunque yo sea un desastre con los
-nombres". Estándar (docs/logic_editor.md §Nombres):
+"""normalize_names.py - normalizes the region NAMES (and rids) of
+logic/logic.json to a fixed standard WITHOUT changing the logic:
+polygons, connections, requirements, checks and placements stay the same;
+only `regions[rid].name`, the `rid` (slug of the new name) and the rid
+references (conns from/to, members) change. User decision (2026-09-04):
+"I prefer a fixed standard even if I am a mess with names". Standard
+(docs/logic_editor.md, Names section):
 
-  <Sala> Entrance      región cuyas puertas a OTRAS salas van todas a la
-                       misma sala (p. ej. "E-5 Entrance"); si dos regiones
-                       de la sala llevan a la misma, se conserva el nombre
-                       original entre paréntesis: "E-4 Entrance (Bottom Area)"
-  Hub Entrance         región con el pad de Transerver (warp al hub)
-  Save Pad             región con un pad solo de guardado (sin Transport)
+  <Room> Entrance      region whose doors to OTHER rooms all lead to the
+                       same room (e.g. "E-5 Entrance"); if two regions of
+                       the room lead to the same one, the original name is
+                       kept in parentheses: "E-4 Entrance (Bottom Area)"
+  Hub Entrance         region with the Transerver pad (warp to the hub)
+  Save Pad             region with a save-only pad (no Transport)
   Boss Room / Mini-Boss Room / Before Boss Room / After Boss Room
-  Middle Area          zona de paso entre entradas ("Middle Part")
-  Upper/Lower/Left/Right Area (y combinaciones: "Upper Right Area")
+  Middle Area          passage zone between entrances ("Middle Part")
+  Upper/Lower/Left/Right Area (and combinations: "Upper Right Area")
   Nth Floor / Nth Floor Room / Nth Floor Room (Outside) / Basement Room
-  Nombres descriptivos: Title Case, códigos de sala con guion ("A-2")
+  Descriptive names: Title Case, room codes with a hyphen ("A-2")
 
-Uso: python tools/logic_editor/normalize_names.py [--dry-run] [--json ruta]
-Imprime la tabla de renombrados. Con --dry-run no escribe.
+Usage: python tools/logic_editor/normalize_names.py [--dry-run] [--json path]
+Prints the rename table. With --dry-run nothing is written.
 """
 import argparse
 import importlib.util
@@ -61,9 +61,9 @@ def slugify(name):
 
 
 def door_targets(world, doc, members, room, rid):
-    """Salas destino de las puertas/warps que SALEN de la región (sin internas)."""
+    """Destination rooms of the doors/warps that LEAVE the region (no internal ones)."""
     out, hub_warp, save_pad = set(), False, False
-    hubish = lambda e: e["kind"] in ("warp", "save") or "corridor" in e["name"]   # pad + pasillos de piso
+    hubish = lambda e: e["kind"] in ("warp", "save") or "corridor" in e["name"]   # pad + floor corridors
     for e in world["edges"]:
         if e["src"] != room or members[room].get(e["name"], "main") != rid:
             continue
@@ -74,7 +74,7 @@ def door_targets(world, doc, members, room, rid):
             save_pad = save_pad or e["kind"] == "save"
         else:
             out.add(e["dst"])
-    for e in world["edges"]:   # llegadas desde otras salas (para vestíbulos solo de llegada)
+    for e in world["edges"]:   # arrivals from other rooms (for arrival-only lobbies)
         if e["dst"] != room or e["src"] == room:
             continue
         if members[room].get(e["name"] + "@in", "main") == rid:
@@ -109,11 +109,11 @@ def normalize(world, doc):
                     name = re.sub(pat, rep_, name, flags=re.I)
                     break
             targets, hub_warp, save_pad = door_targets(world, doc, members, room, rid)
-            # entrada: por nombre, o por estructura (sin checks y solo puertas a una sala / al hub)
+            # entrance: by name, or by structure (no checks and only doors to one room / to the hub)
             is_entrance_like = bool(DIRECTIONAL.match(name)) or name.endswith("Entrance") or name in ("Hub Entrance", "Save Pad")
             if name == "I-5" and room == "i02":
                 is_entrance_like = True
-            series = bool(re.match(r"^(\d+(st|nd|rd|th) Floor|Basement)", name))   # nombres de serie: se respetan
+            series = bool(re.match(r"^(\d+(st|nd|rd|th) Floor|Basement)", name))   # series names: kept as they are
             only_doors = (not series and not region_has_checks(world, doc, members, room, rid)
                           and (targets or hub_warp or save_pad))
             if is_entrance_like or only_doors:
@@ -123,9 +123,9 @@ def normalize(world, doc):
                 elif not targets and (hub_warp or save_pad):
                     name = "Hub Entrance"
             new_names[rid] = name
-        # colisiones dentro de la sala: conservar el nombre original entre paréntesis
-        # colisiones por nombre BASE (sin el paréntesis final): "A-2 Entrance" y
-        # "A-2 Entrance (Top Part)" forman grupo -> todas con etiqueta
+        # collisions inside the room: keep the original name in parentheses
+        # collisions by BASE name (without the trailing parenthesis): "A-2 Entrance" and
+        # "A-2 Entrance (Top Part)" form a group -> all of them get a tag
         base_of = lambda n: re.sub(r"\s*\([^()]*\)$", "", n).strip()
         seen = {}
         for rid, name in new_names.items():
@@ -140,7 +140,7 @@ def normalize(world, doc):
                         tag = orig[len(base):].strip(" ()") if orig.startswith(base) else orig
                         tag = re.sub(r"\s*Entrance$", "", tag).strip()   # "After Mini-Boss Entrance" -> "After Mini-Boss"
                     new_names[rid] = "%s (%s)" % (base, tag) if tag and tag != base else "%s (%s)" % (base, rid)
-        # rids nuevos únicos
+        # new unique rids
         rid_map = {}
         used = {"main"}
         for rid in regs:
@@ -153,7 +153,7 @@ def normalize(world, doc):
                 k += 1
             used.add(cand)
             rid_map[rid] = cand
-        # aplicar
+        # apply
         new_regs = OrderedDict()
         for rid, reg in regs.items():
             if rid == "main":
@@ -185,20 +185,20 @@ def main():
     before = F.resolve_members(W, doc)
     changes = normalize(W, doc)
     after = F.resolve_members(W, doc)
-    # comprobación: la pertenencia (traducida) no cambia
+    # check: the (translated) membership does not change
     for room in W["rooms"]:
         names_b = {n: doc["rooms"][room]["regions"].get(r, {}).get("name", r) for n, r in after[room].items()}
         if set(before[room]) != set(after[room]):
-            print("!! %s: cambió el conjunto de nodos" % room)
-    print("%d regiones renombradas:" % len(changes))
+            print("!! %s: the node set changed" % room)
+    print("%d regions renamed:" % len(changes))
     for room, rid, old, nrid, new in changes:
         print("  %-4s %-34s -> %-34s  [%s -> %s]" % (room, old, new, rid, nrid))
     rep = F.validate(W, doc, D.HUB_ROOM, F.unavailable_atoms(D))
-    print("validación: %d errores, %d avisos" % (len(rep["errors"]), len(rep["warnings"])))
+    print("validation: %d errors, %d warnings" % (len(rep["errors"]), len(rep["warnings"])))
     if not a.dry_run and not rep["errors"]:
         F.save_logic(a.json, doc)
         Path(a.json).with_suffix(".txt").write_text(F.export_txt(W, doc, D.HUB_ROOM), encoding="utf-8", newline="\n")
-        print("guardado", a.json)
+        print("saved", a.json)
 
 
 if __name__ == "__main__":

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""check_logic.py — valida logic/logic.json del apworld contra data.py
-(regiones, conexiones, átomos, colocaciones, regiones sin entrada) y
-regenera logic.txt si no hay errores.
-Uso (desde la raíz del apworld): python tools/check_logic.py [--no-txt]"""
+"""check_logic.py - validates the apworld's logic/logic.json against data.py
+(regions, connections, atoms, placements, regions without an entrance) and
+regenerates logic.txt if there are no errors.
+Usage (from the apworld root): python tools/check_logic.py [--no-txt]"""
 import argparse
 import importlib.util
 import sys
@@ -29,11 +29,11 @@ def main():
         print("ERROR:", e)
     if not a.quiet:
         for w in rep["warnings"]:
-            print("aviso:", w)
+            print("warning:", w)
     n_regions = sum(len(r["regions"]) - 1 for r in doc["rooms"].values())
     n_conns = sum(len(r["conns"]) for r in doc["rooms"].values())
-    print("[check_logic] %d salas, %d regiones, %d conexiones, %d checks con regla, %d aristas con coste; "
-          "%d errores, %d avisos, %d sin confirmar, %d sin colocar" % (
+    print("[check_logic] %d rooms, %d regions, %d connections, %d checks with a rule, %d edges with a cost; "
+          "%d errors, %d warnings, %d unsure, %d unplaced" % (
               len(doc["rooms"]), n_regions, n_conns, len(doc["checks"]), len(doc["edges"]),
               len(rep["errors"]), len(rep["warnings"]), rep["unsure"], rep["unplaced"]))
     if not rep["errors"] and not a.no_txt:

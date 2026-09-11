@@ -1,15 +1,15 @@
-"""Dificultad de jefes configurable desde el YAML (opción `boss_logic`).
+"""Boss difficulty configurable from the YAML (`boss_logic` option).
 
-El jugador decide qué necesita tener para que la lógica lo considere capaz
-de vencer a cada jefe de la historia. Es una restricción SOLO de lógica: en
-el juego puede pelear con lo que quiera; lo que se garantiza es que la seed
-nunca le OBLIGUE a pasar por un jefe para el que no tiene lo que él mismo ha
-pedido — ni a cruzar su arena, ni a coger lo que hay dentro, ni a completar
-su misión, ni a obtener su biometal (los biometales salen de dos jefes: si
-solo se puede con uno, la lógica cuenta ese camino y no el otro).
+The player decides what they need to have for the logic to consider them
+able to beat each story boss. It is a LOGIC-only restriction: in the game
+they can fight with whatever they want; what is guaranteed is that the seed
+never FORCES them through a boss for which they lack what they themselves
+asked for - neither crossing its arena, nor picking what is inside, nor
+completing its mission, nor obtaining its biometal (biometals come from two
+bosses: if only one is possible, the logic counts that path and not the other).
 
-El requisito se escribe con la MISMA sintaxis del editor de lógica
-(docs/logic_format.md), más unos alias en castellano/inglés natural:
+The requirement is written with the SAME syntax as the logic editor
+(docs/logic_format.md), plus some natural Spanish/English aliases:
 
     Mega Man ZX:
       boss_logic:
@@ -18,8 +18,8 @@ El requisito se escribe con la MISMA sintaxis del editor de lógica
         Omega Zero: "OX | (ALL6 & SUBTANK>=2)"
         Flammole: "Model FX (full) & Absorber Chip"
 
-El anclaje de cada jefe en el grafo vive en el documento de lógica
-(logic_format.BOSSES, etiqueta `boss` de la región o átomo BOSS_<ID>).
+Where each boss is anchored in the graph lives in the logic document
+(logic_format.BOSSES, `boss` tag of the region or BOSS_<ID> atom).
 """
 
 import re
@@ -27,8 +27,8 @@ import re
 from . import logic_format as F
 
 # --------------------------------------------------------------------------
-# Nombres aceptados como clave del YAML: nombre del jefe, id, sala ("O-2",
-# "o02"). Se comparan sin mayúsculas, espacios ni puntuación.
+# Names accepted as YAML key: boss name, id, room ("O-2",
+# "o02"). Compared ignoring case, spaces and punctuation.
 # --------------------------------------------------------------------------
 
 
@@ -45,7 +45,7 @@ VALID_KEYS = frozenset(
     [b["name"] for b in F.BOSSES.values()] + list(F.BOSSES)
     + [F.room_label(b["room"]) for b in F.BOSSES.values()])
 
-# Alias "en cristiano" -> átomos del DSL, aplicados antes de parsear.
+# Plain-language aliases -> DSL atoms, applied before parsing.
 _CHIP_BY_WORD = {_n.split(" Chip")[0].lower(): _a for _a, _n in F.CHIP_ATOMS.items()}
 _CHIP_NOSPACE = {k.replace(" ", ""): v for k, v in _CHIP_BY_WORD.items()}
 _KEY_COLORS = "yellow|green|red|blue|purple|white"
@@ -54,7 +54,7 @@ _SUBS = [
     (r"\blos\s+seis\s+biometales\b", lambda m: "ALL6"),
     (r"\bany\s+model\b", lambda m: "MODEL"),
     (r"\bcualquier\s+modelo\b", lambda m: "MODEL"),
-    # "Model HX (full)" / "HX completo" = las dos mitades del progresivo
+    # "Model HX (full)" / "HX completo" = both halves of the progressive item
     (r"\b(?:model\s+)?([hflp])x?\s*\(?\s*(?:full|complete|completo|entero)\s*\)?",
      lambda m: m.group(1).upper() + "X2"),
     (r"\bmodel\s+(x|zx|ox|hu|hx|fx|lx|px)\b", lambda m: m.group(1).upper()),
@@ -66,9 +66,9 @@ _SUBS = [
     (r"\b(%s)\s+card\s*key\b" % _KEY_COLORS, lambda m: m.group(1).upper()),
 ]
 
-# Átomos prohibidos dentro de un requisito de jefe: otro jefe (recursión) y
-# los eventos de misión (dependen de alcanzar regiones que este mismo
-# requisito puede estar cerrando; la lógica se vuelve ilegible).
+# Atoms forbidden inside a boss requirement: another boss (recursion) and
+# the mission events (they depend on reaching regions that this very
+# requirement may be closing off; the logic becomes unreadable).
 _FORBIDDEN = set(F.BOSS_ATOMS) | set(F.MISSION_EVENT)
 
 
@@ -80,7 +80,7 @@ def friendly_to_dsl(expr: str) -> str:
 
 
 def resolve_boss(key: str) -> str:
-    """Clave del YAML -> id de jefe. ValueError si no existe."""
+    """YAML key -> boss id. ValueError if it does not exist."""
     bid = BOSS_BY_KEY.get(_norm(key))
     if bid is None:
         raise ValueError("unknown boss %r. Valid names: %s" % (key, ", ".join(BOSS_NAMES)))
@@ -88,8 +88,8 @@ def resolve_boss(key: str) -> str:
 
 
 def parse_boss_logic(value) -> dict:
-    """{clave del YAML: expresión} -> {id de jefe: REQ}. Las entradas vacías
-    ('', None, 'free') se ignoran: ese jefe no pide nada."""
+    """{YAML key: expression} -> {boss id: REQ}. Empty entries
+    ('', None, 'free') are ignored: that boss requires nothing."""
     out, seen = {}, {}
     for key, expr in dict(value or {}).items():
         bid = resolve_boss(key)
@@ -99,7 +99,7 @@ def parse_boss_logic(value) -> dict:
         seen[bid] = key
         if expr is None or (isinstance(expr, str) and not expr.strip()):
             continue
-        if isinstance(expr, (list, tuple)):        # lista = AND de requisitos
+        if isinstance(expr, (list, tuple)):        # list = AND of requirements
             expr = " & ".join(str(x) for x in expr)
         try:
             dnf = F.parse_expr(friendly_to_dsl(str(expr)))
@@ -117,8 +117,8 @@ def parse_boss_logic(value) -> dict:
 
 
 def compile_rules(reqs, tier, player, hu_in_pool=False) -> dict:
-    """{id: REQ} -> {átomo BOSS_<ID>: callable(state)}. Solo los jefes con
-    requisito real; el resto los resuelve logic_format como libres."""
+    """{id: REQ} -> {BOSS_<ID> atom: callable(state)}. Only bosses with a
+    real requirement; logic_format resolves the rest as free."""
     rules = {}
     for bid, req in (reqs or {}).items():
         r = F.compile_req(req, tier, player, hu_in_pool)
@@ -128,7 +128,7 @@ def compile_rules(reqs, tier, player, hu_in_pool=False) -> dict:
 
 
 def items_used(reqs) -> set:
-    """Items `useful` que estos requisitos convierten en progresión."""
+    """`useful` items that these requirements turn into progression."""
     atoms = set()
     for req in (reqs or {}).values():
         atoms |= F.req_atoms(req)
@@ -136,13 +136,13 @@ def items_used(reqs) -> set:
 
 
 def describe(reqs) -> dict:
-    """{nombre del jefe: texto del requisito} para slot_data y depuración."""
+    """{boss name: requirement text} for slot_data and debugging."""
     return {F.BOSSES[b]["name"]: F.dnf_to_text(F.req_alternatives(r, "expert"))
             for b, r in sorted((reqs or {}).items())}
 
 
 def unanchored(doc, reqs) -> list:
-    """Jefes CON requisito que no están anclados en el documento: su
-    requisito no se aplicaría a nada. Es un error de generación."""
+    """Bosses WITH a requirement that are not anchored in the document: their
+    requirement would apply to nothing. It is a generation error."""
     anchored = F.bosses_anchored(doc)
     return [F.BOSSES[b]["name"] for b in sorted(reqs or {}) if b not in anchored]

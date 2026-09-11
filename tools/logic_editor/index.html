@@ -1,104 +1,104 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Editor de lógica — Mega Man ZX</title>
+<title>Logic editor - Mega Man ZX</title>
 <link rel="stylesheet" href="/style.css">
 </head>
 <body>
 <div id="app">
   <header id="top">
     <div class="row row1">
-      <div class="brand" title="Editor visual de lógica del randomizer (worlds/mmzx/logic/logic.json)">MMZX · Lógica</div>
-      <nav id="area-tabs" class="tabs" aria-label="Áreas"></nav>
+      <div class="brand" title="Visual logic editor of the randomizer (worlds/mmzx/logic/logic.json)">MMZX · Logic</div>
+      <nav id="area-tabs" class="tabs" aria-label="Areas"></nav>
       <div class="spacer"></div>
       <div class="search-wrap">
-        <input id="search" type="search" placeholder="Buscar location / región / arista (F)" autocomplete="off" spellcheck="false" title="Buscar y saltar (F)">
+        <input id="search" type="search" placeholder="Search location / region / edge (F)" autocomplete="off" spellcheck="false" title="Search and jump (F)">
         <div id="search-results" class="dropdown" hidden></div>
       </div>
-      <label class="tier" title="Nivel mostrado en las etiquetas del lienzo (expert amplía normal)">Nivel
+      <label class="tier" title="Tier shown in the canvas labels (expert extends normal)">Tier
         <select id="tier"><option value="normal">normal</option><option value="expert">expert</option></select>
       </label>
-      <button id="btn-validate" title="Validar el documento sin guardar">Validar</button>
-      <button id="btn-txt" title="Abrir logic.txt (vista legible) en una pestaña nueva">logic.txt</button>
-      <button id="btn-gates" title="Verjas de evento: requisito por flag">Verjas</button>
-      <button id="btn-help" title="Atajos de teclado (?)">?</button>
-      <span id="status" class="status" title="Estado del guardado automático">—</span>
-      <button id="counter" class="counter" title="Abrir/cerrar el informe de validación">0 errores · 0 avisos</button>
+      <button id="btn-validate" title="Validate the document without saving">Validate</button>
+      <button id="btn-txt" title="Open logic.txt (readable view) in a new tab">logic.txt</button>
+      <button id="btn-gates" title="Event gates: requirement per flag">Gates</button>
+      <button id="btn-help" title="Keyboard shortcuts (?)">?</button>
+      <span id="status" class="status" title="Autosave status">—</span>
+      <button id="counter" class="counter" title="Open/close the validation report">0 errors · 0 warnings</button>
     </div>
     <div class="row row2">
-      <nav id="room-tabs" class="tabs" aria-label="Salas"></nav>
+      <nav id="room-tabs" class="tabs" aria-label="Rooms"></nav>
       <div class="spacer"></div>
       <div class="tools" id="tools">
-        <button data-mode="select" title="Seleccionar y mover (V)">Seleccionar</button>
-        <button data-mode="poly" title="Dibujar un polígono de región (P)">Polígono</button>
-        <button data-mode="edge" title="Crear conexiones arrastrando de una región a otra (A). Nunca toca Main.">Arista</button>
+        <button data-mode="select" title="Select and move (V)">Select</button>
+        <button data-mode="poly" title="Draw a region polygon (P)">Polygon</button>
+        <button data-mode="edge" title="Create connections by dragging from one region to another (A). Never touches Main.">Edge</button>
       </div>
-      <div id="layers" class="layers" title="Capas visibles"></div>
+      <div id="layers" class="layers" title="Visible layers"></div>
       <div class="zoom">
-        <button id="zoom-out" title="Alejar (-)">−</button>
-        <button id="zoom-fit" title="Ajustar la sala a la ventana (0)">Ajustar</button>
-        <button id="zoom-in" title="Acercar (+)">+</button>
+        <button id="zoom-out" title="Zoom out (-)">−</button>
+        <button id="zoom-fit" title="Fit the room to the window (0)">Fit</button>
+        <button id="zoom-in" title="Zoom in (+)">+</button>
         <span id="zoom-label" class="zoom-label"></span>
       </div>
     </div>
   </header>
 
   <div id="main">
-    <aside id="left" aria-label="Esquema de la sala"><div id="tree"></div></aside>
+    <aside id="left" aria-label="Room outline"><div id="tree"></div></aside>
     <div id="canvas-wrap">
       <canvas id="canvas" tabindex="0"></canvas>
       <div id="hint" class="canvas-hint" hidden></div>
       <div id="tooltip" class="tooltip" hidden></div>
-      <div id="boot" class="boot">Cargando el mundo…</div>
+      <div id="boot" class="boot">Loading the world...</div>
     </div>
     <aside id="right" aria-label="Inspector"><div id="inspector"></div></aside>
   </div>
 
   <footer id="report">
-    <div id="report-head" class="report-head" title="Informe de validación (clic para plegar/desplegar)">
-      <span id="report-summary">Informe</span>
+    <div id="report-head" class="report-head" title="Validation report (click to collapse/expand)">
+      <span id="report-summary">Report</span>
       <span class="spacer"></span>
-      <button id="report-toggle" title="Plegar/desplegar">▴</button>
+      <button id="report-toggle" title="Collapse/expand">▴</button>
     </div>
     <div id="report-body" class="report-body" hidden></div>
   </footer>
 </div>
 
 <div id="gates-panel" class="panel" hidden>
-  <div class="panel-head"><span>Verjas de evento</span><span class="spacer"></span><button class="panel-close" data-close="gates-panel" title="Cerrar (Esc)">×</button></div>
+  <div class="panel-head"><span>Event gates</span><span class="spacer"></span><button class="panel-close" data-close="gates-panel" title="Close (Esc)">×</button></div>
   <div class="panel-body" id="gates-body"></div>
 </div>
 
 <div id="help-panel" class="panel" hidden>
-  <div class="panel-head"><span>Atajos y uso</span><span class="spacer"></span><button class="panel-close" data-close="help-panel" title="Cerrar (Esc)">×</button></div>
+  <div class="panel-head"><span>Shortcuts and usage</span><span class="spacer"></span><button class="panel-close" data-close="help-panel" title="Close (Esc)">×</button></div>
   <div class="panel-body help">
-    <h3>Teclado</h3>
+    <h3>Keyboard</h3>
     <table>
-      <tr><td><kbd>V</kbd></td><td>Herramienta seleccionar</td></tr>
-      <tr><td><kbd>P</kbd></td><td>Dibujar polígono (clic añade vértice; clic en el primero, doble clic o <kbd>Enter</kbd> cierra; <kbd>Esc</kbd> cancela; clic derecho quita el último)</td></tr>
-      <tr><td><kbd>A</kbd></td><td>Crear conexiones en el lienzo: arrastra de una región a otra (o clic en el origen y clic en el destino). Bidireccional; con <kbd>Shift</kbd>, solo la ida. Main se ignora: fuera de los polígonos no pasa nada</td></tr>
-      <tr><td><kbd>Esc</kbd></td><td>Cancelar / deseleccionar / cerrar paneles</td></tr>
-      <tr><td><kbd>Supr</kbd></td><td>Borrar la selección (conexión, región, posición colocada a mano) o el vértice activo</td></tr>
-      <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Ctrl</kbd>+<kbd>Y</kbd></td><td>Deshacer / rehacer</td></tr>
-      <tr><td><kbd>0</kbd> · <kbd>+</kbd> · <kbd>-</kbd></td><td>Ajustar · acercar · alejar (también rueda del ratón)</td></tr>
-      <tr><td><kbd>F</kbd></td><td>Buscador (salta a la sala y centra el nodo)</td></tr>
-      <tr><td><kbd>?</kbd></td><td>Este panel</td></tr>
-      <tr><td><kbd>Espacio</kbd>+arrastre</td><td>Desplazar el lienzo (también botón central o arrastre sobre zona vacía)</td></tr>
+      <tr><td><kbd>V</kbd></td><td>Select tool</td></tr>
+      <tr><td><kbd>P</kbd></td><td>Draw polygon (click adds a vertex; click on the first one, double click or <kbd>Enter</kbd> closes; <kbd>Esc</kbd> cancels; right click removes the last one)</td></tr>
+      <tr><td><kbd>A</kbd></td><td>Create connections on the canvas: drag from one region to another (or click the source and click the target). Bidirectional; with <kbd>Shift</kbd>, one way only. Main is ignored: outside the polygons nothing happens</td></tr>
+      <tr><td><kbd>Esc</kbd></td><td>Cancel / deselect / close panels</td></tr>
+      <tr><td><kbd>Del</kbd></td><td>Delete the selection (connection, region, hand-placed position) or the active vertex</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Ctrl</kbd>+<kbd>Y</kbd></td><td>Undo / redo</td></tr>
+      <tr><td><kbd>0</kbd> · <kbd>+</kbd> · <kbd>-</kbd></td><td>Fit · zoom in · zoom out (also the mouse wheel)</td></tr>
+      <tr><td><kbd>F</kbd></td><td>Search (jumps to the room and centers the node)</td></tr>
+      <tr><td><kbd>?</kbd></td><td>This panel</td></tr>
+      <tr><td><kbd>Space</kbd>+drag</td><td>Pan the canvas (also middle button or dragging over an empty area)</td></tr>
     </table>
-    <h3>Ratón</h3>
+    <h3>Mouse</h3>
     <ul>
-      <li>Clic selecciona (nodo, conexión, región). Los nodos colocados a mano (hexágono) se arrastran.</li>
-      <li>Con una región seleccionada: arrastra sus vértices; doble clic sobre un lado inserta un vértice; clic derecho o <kbd>Supr</kbd> sobre un vértice lo elimina (mínimo 3); <kbd>Shift</kbd>+arrastre por dentro mueve toda la región.</li>
-      <li>Panel izquierdo: arrastra un elemento de «Sin colocar» al lienzo (o pulsa «Colocar» y haz clic en el lienzo).</li>
+      <li>Click selects (node, connection, region). Hand-placed nodes (hexagon) can be dragged.</li>
+      <li>With a region selected: drag its vertices; double click on a side inserts a vertex; right click or <kbd>Del</kbd> on a vertex removes it (minimum 3); <kbd>Shift</kbd>+drag inside moves the whole region.</li>
+      <li>Left panel: drag an item from "Unplaced" onto the canvas (or press "Place" and click on the canvas).</li>
     </ul>
-    <h3>Semántica</h3>
+    <h3>Semantics</h3>
     <ul>
-      <li>Un nodo pertenece al polígono más pequeño que lo contiene; si ninguno, a <em>Main</em>. Se puede fijar a mano (chincheta).</li>
-      <li>Requisito = alternativas (OR) de átomos (AND). <em>expert</em> AMPLÍA <em>normal</em>: en expert valen las alternativas de ambos niveles.</li>
-      <li>Expresiones: <code>HX &amp; (LX | FX)</code>, <code>and</code>/<code>or</code>, <code>+</code>, <code>,</code>, <code>free</code>/<code>any</code>, <code>never</code>, <code>LIFEUP&gt;=2</code>.</li>
-      <li>Todo se guarda solo (600 ms tras el último cambio) y el servidor devuelve el informe de validación.</li>
+      <li>A node belongs to the smallest polygon that contains it; if none, to <em>Main</em>. It can be pinned by hand (pushpin).</li>
+      <li>Requirement = alternatives (OR) of atoms (AND). <em>expert</em> EXTENDS <em>normal</em>: in expert the alternatives of both tiers count.</li>
+      <li>Expressions: <code>HX &amp; (LX | FX)</code>, <code>and</code>/<code>or</code>, <code>+</code>, <code>,</code>, <code>free</code>/<code>any</code>, <code>never</code>, <code>LIFEUP&gt;=2</code>.</li>
+      <li>Everything saves itself (600 ms after the last change) and the server returns the validation report.</li>
     </ul>
   </div>
 </div>
@@ -107,7 +107,7 @@
   <div class="modal-box">
     <div id="modal-title" class="modal-title"></div>
     <input id="modal-input" type="text" autocomplete="off" spellcheck="false">
-    <div class="modal-actions"><button id="modal-cancel">Cancelar</button><button id="modal-ok" class="primary">Aceptar</button></div>
+    <div class="modal-actions"><button id="modal-cancel">Cancel</button><button id="modal-ok" class="primary">OK</button></div>
   </div>
 </div>
 

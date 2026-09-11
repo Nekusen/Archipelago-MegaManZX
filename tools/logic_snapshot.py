@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
-"""logic_snapshot.py — instantánea REPRODUCIBLE de la lógica del apworld.
+"""logic_snapshot.py - REPRODUCIBLE snapshot of the apworld's logic.
 
-Recorre una MATRIZ de (opciones × inventarios) y guarda, para cada celda,
-las regiones alcanzables y las locations en lógica. Sirve como línea base
-para comprobar que un cambio en la lógica no altera nada donde no debe
-(`--compare base.json nuevo.json`).
+Walks a MATRIX of (options x inventories) and stores, for each cell, the
+reachable regions and the locations in logic. Serves as a baseline to check
+that a logic change alters nothing where it should not
+(`--compare base.json new.json`).
 
-Comparte el cargador con tools/logic_probe.py (checkout de AP 0.6.7:
---ap o $AP_SRC).
+Shares the loader with tools/logic_probe.py (AP 0.6.7 checkout: --ap or
+$AP_SRC).
 
-Uso (desde la raíz del apworld):
+Usage (from the apworld root):
   python tools/logic_snapshot.py --out build/base.json
-  python tools/logic_snapshot.py --out build/nuevo.json
-  python tools/logic_snapshot.py --compare build/base.json build/nuevo.json
+  python tools/logic_snapshot.py --out build/new.json
+  python tools/logic_snapshot.py --compare build/base.json build/new.json
 """
 import argparse
 import importlib.util
@@ -26,15 +26,15 @@ _spec = importlib.util.spec_from_file_location("mmzx_logic_probe", Path(__file__
 _probe = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_probe)  # type: ignore[union-attr]
 
-# Conjuntos de opciones evaluados (nombre -> dict de opciones del YAML).
+# Option sets evaluated (name -> dict of YAML options).
 OPTION_SETS = {
     "default": {},
     "expert": {"logic_difficulty": "expert"},
     "hu_in_pool": {"hu_in_pool": True},
     "no_start_model": {"starting_model": "none"},
 }
-# Inventarios fijos (nombre -> lista de items). Los progresivos se dan por
-# mitades: "Progressive Model HX" dos veces = biometal completo.
+# Fixed inventories (name -> list of items). Progressive ones are given by
+# halves: "Progressive Model HX" twice = complete biometal.
 KEYS = ["Yellow Card Key", "Green Card Key", "Red Card Key", "Blue Card Key", "Purple Card Key"]
 HALVES = ["Progressive Model HX", "Progressive Model FX", "Progressive Model LX", "Progressive Model PX"]
 
@@ -53,7 +53,7 @@ def fixed_inventories(all_items):
                       + ["Life Up"] * 4 + ["Sub Tank"] * 4
                       + [n for n in all_items if n.endswith(" Chip")],
     }
-    # subconjuntos aleatorios deterministas sobre el pool de progresión
+    # deterministic random subsets over the progression pool
     pool = sorted(set(["Model X", "Model ZX", "Model OX"] + HALVES + KEYS + access))
     rng = random.Random(20260904)
     for i in range(8):
@@ -92,7 +92,7 @@ def snapshot(ap_src, world_dir=None, extra_options=None):
                 "locs_in": locs,
                 "victory": bool(mw.completion_condition[player](state)),
             }
-        # clasificación de los items del pool (progresión/useful/filler)
+        # classification of the pool items (progression/useful/filler)
         cls = {}
         for it in sorted(world.item_name_to_id):
             try:
@@ -107,23 +107,23 @@ def compare(a, b):
     diffs = []
     for set_name in sorted(set(a) | set(b)):
         if set_name not in a or set_name not in b:
-            diffs.append("conjunto de opciones solo en uno: %s" % set_name)
+            diffs.append("option set only in one of them: %s" % set_name)
             continue
         ca, cb = a[set_name], b[set_name]
         for it in sorted(set(ca["classification"]) | set(cb["classification"])):
             xa, xb = ca["classification"].get(it), cb["classification"].get(it)
             if xa != xb:
-                diffs.append("[%s] clasificación de %r: %s -> %s" % (set_name, it, xa, xb))
+                diffs.append("[%s] classification of %r: %s -> %s" % (set_name, it, xa, xb))
         for inv in sorted(set(ca["cells"]) | set(cb["cells"])):
             da, db = ca["cells"].get(inv, {}), cb["cells"].get(inv, {})
             for key in ("regions", "locs_in"):
                 sa, sb = set(da.get(key, [])), set(db.get(key, []))
                 for x in sorted(sa - sb):
-                    diffs.append("[%s/%s] %s PERDIDO: %s" % (set_name, inv, key, x))
+                    diffs.append("[%s/%s] %s LOST: %s" % (set_name, inv, key, x))
                 for x in sorted(sb - sa):
-                    diffs.append("[%s/%s] %s NUEVO: %s" % (set_name, inv, key, x))
+                    diffs.append("[%s/%s] %s NEW: %s" % (set_name, inv, key, x))
             if da.get("victory") != db.get("victory"):
-                diffs.append("[%s/%s] victoria: %s -> %s" % (set_name, inv, da.get("victory"), db.get("victory")))
+                diffs.append("[%s/%s] victory: %s -> %s" % (set_name, inv, da.get("victory"), db.get("victory")))
     return diffs
 
 
@@ -131,9 +131,9 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--ap", default=_probe.DEFAULT_AP)
     ap.add_argument("--world", default=None)
-    ap.add_argument("--out", default=None, help="guardar la instantánea aquí")
-    ap.add_argument("--compare", nargs=2, metavar=("BASE", "NUEVO"))
-    ap.add_argument("--opts", default=None, help="JSON {nombre: {opciones}} con conjuntos extra")
+    ap.add_argument("--out", default=None, help="save the snapshot here")
+    ap.add_argument("--compare", nargs=2, metavar=("BASE", "NEW"))
+    ap.add_argument("--opts", default=None, help="JSON {name: {options}} with extra sets")
     a = ap.parse_args()
 
     if a.compare:
@@ -142,18 +142,18 @@ def main():
         diffs = compare(base, new)
         for d in diffs:
             print(d)
-        print("[logic_snapshot] %d diferencias" % len(diffs))
+        print("[logic_snapshot] %d differences" % len(diffs))
         sys.exit(1 if diffs else 0)
 
     extra = json.loads(a.opts) if a.opts else None
-    out_path = Path(a.out).resolve() if a.out else None   # antes del chdir del cargador
+    out_path = Path(a.out).resolve() if a.out else None   # before the loader's chdir
     snap = snapshot(a.ap, a.world, extra)
     text = json.dumps(snap, ensure_ascii=False, indent=1)
     if out_path:
         out_path.parent.mkdir(parents=True, exist_ok=True)
         out_path.write_text(text, encoding="utf-8", newline="\n")
     n = sum(len(v["cells"]) for v in snap.values())
-    print("[logic_snapshot] %d conjuntos de opciones × inventarios = %d celdas%s" % (
+    print("[logic_snapshot] %d option sets x inventories = %d cells%s" % (
         len(snap), n, (" -> " + str(out_path)) if out_path else ""))
 
 

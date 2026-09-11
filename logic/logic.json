@@ -111,7 +111,7 @@
    "unsure": false
   },
   "A-2: Sub Tank": {
-   "note": "dash aereo hasta la plataforma",
+   "note": "air dash up to the platform",
    "req": {
     "normal": [
      [
@@ -122,7 +122,7 @@
    "unsure": false
   },
   "A-4: Disk E-20": {
-   "note": "A-4: arriba a la derecha de la estructura alta (escalera + columna vertical)",
+   "note": "A-4: top right of the tall structure (ladder + vertical column)",
    "req": {
     "normal": [
      [
@@ -147,7 +147,7 @@
    "unsure": false
   },
   "B-1: Disk E-24": {
-   "note": "B-1: repisa elevada al fondo derecho",
+   "note": "B-1: raised ledge at the far right",
    "req": {
     "normal": [
      [
@@ -172,7 +172,7 @@
    "unsure": false
   },
   "B-2: Disk B-1": {
-   "note": "B-2: cima de la estructura derecha (y=28)",
+   "note": "B-2: top of the right structure (y=28)",
    "req": {
     "normal": [
      [
@@ -183,7 +183,7 @@
    "unsure": false
   },
   "B-2: Disk E-17": {
-   "note": "B-2: en lo alto de un pilar (tile y=29)",
+   "note": "B-2: on top of a pillar (tile y=29)",
    "req": {
     "normal": [
      [
@@ -260,7 +260,7 @@
    "unsure": false
   },
   "B-4: Disk E-11": {
-   "note": "B-4: estructura alta arriba a la derecha",
+   "note": "B-4: tall structure at the top right",
    "req": {
     "normal": [
      [
@@ -429,7 +429,7 @@
    "unsure": false
   },
   "C-3: Disk E-49": {
-   "note": "C-3: repisa alta a la izquierda (y=34)",
+   "note": "C-3: high ledge on the left (y=34)",
    "req": {
     "normal": [
      [
@@ -550,7 +550,7 @@
    "unsure": false
   },
   "E-4: Disk E-8": {
-   "note": "E-4: arriba a la derecha, por la ruta de los engranajes hacia E-3 (nota interordi)",
+   "note": "E-4: top right, along the gear route towards E-3 (interordi note)",
    "req": {
     "normal": [
      [
@@ -583,7 +583,7 @@
    "unsure": false
   },
   "E-5: Disk E-37": {
-   "note": "E-5: pasadas las plataformas electricas E-4 (Sub Tank) ya cubierto por Steam; E-21 abajo por escalera; M-5 arriba de la escalera larga de E-5; B-8 en el suelo de E-8.",
+   "note": "E-5: past the electric platforms. E-4 (Sub Tank) already covered by Steam; E-21 down a ladder; M-5 at the top of the long ladder of E-5; B-8 on the floor of E-8.",
    "req": {
     "normal": [
      [
@@ -616,7 +616,7 @@
    "unsure": false
   },
   "F-1: Disk E-39": {
-   "note": "F-1: repisa en la cueva izquierda (y=34)",
+   "note": "F-1: ledge in the left cave (y=34)",
    "req": {
     "normal": [
      [
@@ -627,12 +627,12 @@
    "unsure": false
   },
   "F-2: Disk E-15": {
-   "note": "F-2: laberinto inferior (cubos (75,54-62))",
+   "note": "F-2: lower maze (cubes (75,54-62))",
    "req": null,
    "unsure": false
   },
   "F-2: Life Up": {
-   "note": "bloques de hielo + salto alto",
+   "note": "ice blocks + high jump",
    "req": {
     "normal": [
      [
@@ -646,7 +646,7 @@
    "unsure": false
   },
   "F-3: Disk E-2": {
-   "note": "F-3: el disco esta ENTRE cubos (122-124,39)",
+   "note": "F-3: the disk is BETWEEN cubes (122-124,39)",
    "req": {
     "normal": [
      [
@@ -657,7 +657,7 @@
    "unsure": true
   },
   "F-3: Disk E-48": {
-   "note": "F-3: arriba del todo tras una fila de cubos (37-45,30) y cajas (46-48,33-35)",
+   "note": "F-3: at the very top, behind a row of cubes (37-45,30) and boxes (46-48,33-35)",
    "req": {
     "normal": [
      [
@@ -751,7 +751,7 @@
    "unsure": false
   },
   "G-5: Disk B-11": {
-   "note": "G-5: sub-sala (puerta (112,43)) tapada por fuego; interordi apunta con flecha",
+   "note": "G-5: sub-room (door (112,43)) covered by fire; interordi points at it with an arrow",
    "req": {
     "normal": [
      [
@@ -980,7 +980,7 @@
    "unsure": false
   },
   "I-5: Disk M-6": {
-   "note": "I-5: en lo alto del tronco de un arbol",
+   "note": "I-5: at the top of a tree trunk",
    "req": {
     "normal": [
      [
@@ -991,7 +991,7 @@
    "unsure": true
   },
   "I-5: Life Up": {
-   "note": "Requiere HX mejorado",
+   "note": "Requires upgraded HX",
    "req": {
     "normal": [
      [
@@ -1002,7 +1002,7 @@
    "unsure": false
   },
   "J-1: Life Up": {
-   "note": "nadar entre pinchos",
+   "note": "swim between spikes",
    "req": {
     "expert": [
      [
@@ -1018,7 +1018,7 @@
    "unsure": false
   },
   "J-2: Disk E-7": {
-   "note": "J-2: hueco alto con fila de pinchos bajo el agua (1360-1450,85)",
+   "note": "J-2: high gap with a row of spikes under water (1360-1450,85)",
    "req": {
     "expert": [
      [
@@ -1034,7 +1034,7 @@
    "unsure": true
   },
   "J-3: Disk E-36": {
-   "note": "J-3: en lo alto de la estructura derecha Life Up J-1 (Steam, LX) ya cubierto; M-7 (J-3) en un hueco al que se cae; B-16 (J-5) tras Leganchor por escalera -> sin requisito propio.",
+   "note": "J-3: at the top of the right structure. Life Up J-1 (Steam, LX) already covered; M-7 (J-3) in a hole you fall into; B-16 (J-5) past Leganchor up a ladder -> no requirement of its own.",
    "req": {
     "normal": [
      [
@@ -1045,7 +1045,7 @@
    "unsure": false
   },
   "K-1: Disk E-22": {
-   "note": "K-1: estructura alta a la derecha (y=38)",
+   "note": "K-1: tall structure on the right (y=38)",
    "req": {
     "normal": [
      [
@@ -1056,7 +1056,7 @@
    "unsure": false
   },
   "K-1: Sub Tank": {
-   "note": "el mas largo (techos, bloques, boton oculto, nado)",
+   "note": "the longest one (ceilings, blocks, hidden button, swimming)",
    "req": {
     "normal": [
      [
@@ -1070,7 +1070,7 @@
    "unsure": false
   },
   "K-3: Disk E-35": {
-   "note": "K-3: repisa a media altura del pozo",
+   "note": "K-3: ledge halfway down the shaft",
    "req": {
     "normal": [
      [
@@ -1081,7 +1081,7 @@
    "unsure": true
   },
   "K-4: Disk B-12": {
-   "note": "K-4: tras la puerta interna Blanca (169,71) -> aterriza en (78,117), junto a B-12 E-26 (K-4, pasillo central) y E-25 (K-5, escalera) sin requisito.",
+   "note": "K-4: past the internal White door (169,71) -> lands at (78,117), next to B-12. E-26 (K-4, central corridor) and E-25 (K-5, ladder) without requirement.",
    "req": null,
    "unsure": false
   },
@@ -1118,17 +1118,17 @@
    "unsure": false
   },
   "L-1: Disk E-18": {
-   "note": "L-1: plataforma flotante muy alta (y=33 con suelo en 47); nada que escalar",
+   "note": "L-1: very high floating platform (y=33 with the floor at 47); nothing to climb",
    "req": null,
    "unsure": false
   },
   "L-2: Disk E-41": {
-   "note": "L-2: idem (y=29) E-5 (L-3) y B-13 (L-4) a pie de suelo -> sin requisito propio.",
+   "note": "L-2: same (y=29). E-5 (L-3) and B-13 (L-4) at floor level -> no requirement of their own.",
    "req": null,
    "unsure": true
   },
   "M-1: Disk E-50": {
-   "note": "M-1: \"Use Model Fx Buster Edit to hit this switch\" (sub-sala por la puerta (316,30)) B-10 (M-3) a pie de suelo antes de Pandora -> sin requisito.",
+   "note": "M-1: \"Use Model Fx Buster Edit to hit this switch\" (sub-room through the door (316,30)). B-10 (M-3) at floor level before Pandora -> no requirement.",
    "req": {
     "normal": [
      [
@@ -1139,7 +1139,7 @@
    "unsure": false
   },
   "M-1: Disk M-2": {
-   "note": "M-1: sub-sala por la puerta (282,46); el disco 5 tiles por encima del aterrizaje",
+   "note": "M-1: sub-room through the door (282,46); the disk is 5 tiles above the landing point",
    "req": {
     "normal": [
      [
@@ -1172,7 +1172,7 @@
    "unsure": false
   },
   "Mission - Fight The Mavericks": {
-   "note": "hablar con NPCs + pelear",
+   "note": "talk to NPCs + fight",
    "req": {
     "normal": [
      [
@@ -1205,7 +1205,7 @@
    "unsure": false
   },
   "Mission - Pass The Test": {
-   "note": "(hablar + superar)",
+   "note": "(talk + pass it)",
    "req": {
     "normal": [
      [
@@ -1316,7 +1316,7 @@
    "unsure": false
   },
   "N-1: Disk B-2": {
-   "note": "N-1: zona superior con plataformas que desaparecen y pinchos (gate Blanco coarse de la sala tambien aplica: sobre-estricto)",
+   "note": "N-1: upper area with vanishing platforms and spikes (the room's coarse White gate also applies: over-strict)",
    "req": {
     "normal": [
      [
@@ -1371,7 +1371,7 @@
    "unsure": false
   },
   "Quest - Deliver The Aid Kit": {
-   "note": "destruir contenedores en L",
+   "note": "destroy containers in L",
    "req": {
     "normal": [
      [
@@ -1382,7 +1382,7 @@
    "unsure": false
   },
   "Quest - Find The Boy": {
-   "note": "escondite con los ninos (hablar) E-38 en la calle de G-1; E-16 arriba del edificio (rampas); E-9 en G-3; E-32 al pie de la cuesta de G-5 -> sin requisito.",
+   "note": "hideout with the kids (talk). E-38 in the street of G-1; E-16 on top of the building (ramps); E-9 in G-3; E-32 at the foot of the slope of G-5 -> no requirement.",
    "req": {
     "normal": [
      [
@@ -1393,7 +1393,7 @@
    "unsure": false
   },
   "Quest - Find The Pearl": {
-   "note": "F-2: la Cold Pearl esta bajo el agua del lago",
+   "note": "F-2: the Cold Pearl is under the water of the lake",
    "req": {
     "normal": [
      [
@@ -1404,7 +1404,7 @@
    "unsure": true
   },
   "Quest - Purify The Lakes": {
-   "note": "B-4: 5 Pure Water Tanks en el lago (bajo el agua; romperlos)",
+   "note": "B-4: 5 Pure Water Tanks in the lake (under water; break them)",
    "req": {
     "normal": [
      [
@@ -1419,14 +1419,14 @@
  "edges": {
   "a01 door (6256,752)": {
    "dst_pos": null,
-   "note": "puerta Amarilla en lo alto del muro derecho (tile y=47 vs suelo 69): hay que escalar",
+   "note": "Yellow door at the top of the right wall (tile y=47 vs floor 69): you have to climb",
    "pos": null,
    "req": null,
    "unsure": true
   },
   "a03 door (2096,880)": {
    "dst_pos": null,
-   "note": "Fire thorns (118,55) en el pasillo a la puerta Purpura (131,55): quemarlas a04->m01: el \"sello de los 6 biometales\" de M-1 era un mito: lo abre una cutscene de Stop The Dig (agente exp350-359) y el cliente pone su flag (395); las capas de ovl104 son cosmeticas. Sin ALL6 aqui (el goal lo exige en D-2 -> D-4).",
+   "note": "Fire thorns (118,55) in the corridor to the Purple door (131,55): burn them. a04->m01: the \"seal of the 6 biometals\" of M-1 was a myth: a Stop The Dig cutscene opens it (agent exp350-359) and the client sets its flag (395); the ovl104 layers are cosmetic. No ALL6 here (the goal requires it at D-2 -> D-4).",
    "pos": null,
    "req": {
     "normal": [
@@ -1439,14 +1439,14 @@
   },
   "a04 door (864,320)": {
    "dst_pos": null,
-   "note": "puerta en la estructura alta (54,20): se sube por escalera y columna; y nada mas entrar en M-1 esta la puerta Roja interna (56,46) + el Orehawk (miniboss)",
+   "note": "door in the tall structure (54,20): climb up by ladder and column; and right after entering M-1 there is the internal Red door (56,46) + the Orehawk (miniboss)",
    "pos": null,
    "req": null,
    "unsure": true
   },
   "b02 door (5088,496)": {
    "dst_pos": null,
-   "note": "el Rayfly (miniboss) esta en el tramo derecho de B-2, antes del corredor a D-1",
+   "note": "the Rayfly (miniboss) is in the right stretch of B-2, before the corridor to D-1",
    "pos": null,
    "req": {
     "normal": [
@@ -1459,14 +1459,14 @@
   },
   "b03 door (2272,704)": {
    "dst_pos": null,
-   "note": "caverna ascendente con pinchos hasta F-1",
+   "note": "rising cavern with spikes up to F-1",
    "pos": null,
    "req": null,
    "unsure": true
   },
   "c01 door (4832,896)": {
    "dst_pos": null,
-   "note": "bloque derecho de C-1: hueco de 1 tile (Hu) o saltarlo por encima + gap grande (Hx) [usuario]",
+   "note": "right block of C-1: 1-tile gap (Hu) or jump over it + big gap (Hx) [user]",
    "pos": null,
    "req": {
     "normal": [
@@ -1482,7 +1482,7 @@
   },
   "d01 door (4320,544)": {
    "dst_pos": null,
-   "note": "el puente de la autopista se baja con un switch (Bridge switch (141,34)): hay que golpear",
+   "note": "the highway bridge is lowered with a switch (Bridge switch (141,34)): it has to be hit",
    "pos": null,
    "req": {
     "normal": [
@@ -1508,7 +1508,7 @@
   },
   "d04 door (288,272)": {
    "dst_pos": null,
-   "note": "re-pelea del boss rush (teletransportador arg 00)",
+   "note": "boss rush rematch (teleporter arg 00)",
    "pos": null,
    "req": {
     "normal": [
@@ -1521,7 +1521,7 @@
   },
   "d04 door (288,656)": {
    "dst_pos": null,
-   "note": "re-pelea del boss rush (teletransportador arg 02)",
+   "note": "boss rush rematch (teleporter arg 02)",
    "pos": null,
    "req": {
     "normal": [
@@ -1534,7 +1534,7 @@
   },
   "d04 door (480,272)": {
    "dst_pos": null,
-   "note": "re-pelea del boss rush (teletransportador arg 04)",
+   "note": "boss rush rematch (teleporter arg 04)",
    "pos": null,
    "req": {
     "normal": [
@@ -1547,7 +1547,7 @@
   },
   "d04 door (480,656)": {
    "dst_pos": null,
-   "note": "re-pelea del boss rush (teletransportador arg 06)",
+   "note": "boss rush rematch (teleporter arg 06)",
    "pos": null,
    "req": {
     "normal": [
@@ -1560,7 +1560,7 @@
   },
   "d04 door (800,272)": {
    "dst_pos": null,
-   "note": "re-pelea del boss rush (teletransportador arg 01)",
+   "note": "boss rush rematch (teleporter arg 01)",
    "pos": null,
    "req": {
     "normal": [
@@ -1573,7 +1573,7 @@
   },
   "d04 door (800,656)": {
    "dst_pos": null,
-   "note": "re-pelea del boss rush (teletransportador arg 03)",
+   "note": "boss rush rematch (teleporter arg 03)",
    "pos": null,
    "req": {
     "normal": [
@@ -1586,7 +1586,7 @@
   },
   "d04 door (992,272)": {
    "dst_pos": null,
-   "note": "re-pelea del boss rush (teletransportador arg 05)",
+   "note": "boss rush rematch (teleporter arg 05)",
    "pos": null,
    "req": {
     "normal": [
@@ -1599,7 +1599,7 @@
   },
   "d04 door (992,656)": {
    "dst_pos": null,
-   "note": "re-pelea del boss rush (teletransportador arg 07)",
+   "note": "boss rush rematch (teleporter arg 07)",
    "pos": null,
    "req": {
     "normal": [
@@ -1612,7 +1612,7 @@
   },
   "d04 door (992,736)": {
    "dst_pos": null,
-   "note": "la torre solo deja pasar a D-5 tras el boss rush: exige los 8 Pseudoroids",
+   "note": "the tower only lets you through to D-5 after the boss rush: requires the 8 Pseudoroids",
    "pos": null,
    "req": {
     "normal": [
@@ -1632,7 +1632,7 @@
   },
   "e02 door (1248,1088)": {
    "dst_pos": null,
-   "note": "pozo de E-2: barras electricas giratorias y",
+   "note": "E-2 shaft: rotating electric rods and",
    "pos": null,
    "req": {
     "normal": [
@@ -1645,7 +1645,7 @@
   },
   "e02 door (288,320)": {
    "dst_pos": null,
-   "note": "sus botones (Electric Rod button): golpear",
+   "note": "their buttons (Electric Rod button): hit them",
    "pos": null,
    "req": {
     "normal": [
@@ -1658,7 +1658,7 @@
   },
   "e05 door (3040,528)": {
    "dst_pos": null,
-   "note": "plataformas electrificadas (Electric Platform x10) antes de la salida a E-7",
+   "note": "electrified platforms (Electric Platform x10) before the exit to E-7",
    "pos": null,
    "req": {
     "normal": [
@@ -1684,7 +1684,7 @@
   },
   "f01 door (2016,736)": {
    "dst_pos": null,
-   "note": "cubos/cajas de hielo tapando la puerta",
+   "note": "ice cubes/boxes blocking the door",
    "pos": null,
    "req": {
     "normal": [
@@ -1697,7 +1697,7 @@
   },
   "f02 door (2528,544)": {
    "dst_pos": null,
-   "note": "cubos en el pasillo superior (109-111,32)",
+   "note": "cubes in the upper corridor (109-111,32)",
    "pos": null,
    "req": {
     "normal": [
@@ -1710,7 +1710,7 @@
   },
   "f03 door (384,1600)": {
    "dst_pos": null,
-   "note": "cubos de hielo junto a la VERJA de evento (flag 381, la abre el cliente; NO es puerta Azul: exp341d)",
+   "note": "ice cubes next to the event GATE (flag 381, the client opens it; NOT a Blue door: exp341d)",
    "pos": null,
    "req": {
     "normal": [
@@ -1750,14 +1750,14 @@
   },
   "f04 door (1760,528)": {
    "dst_pos": null,
-   "note": "filas de cubos/cajas a lo largo de F-4",
+   "note": "rows of cubes/boxes along F-4",
    "pos": null,
    "req": null,
    "unsure": true
   },
   "h02 door (1440,704)": {
    "dst_pos": null,
-   "note": "de H-2; ambas salidas quedan detras",
+   "note": "of H-2; both exits are behind it",
    "pos": null,
    "req": {
     "normal": [
@@ -1770,7 +1770,7 @@
   },
   "i02 door (2208,1120)": {
    "dst_pos": null,
-   "note": "Diadrake (miniboss) nada mas entrar en I-4",
+   "note": "Diadrake (miniboss) right after entering I-4",
    "pos": null,
    "req": {
     "normal": [
@@ -1783,14 +1783,14 @@
   },
   "i02 door (2208,736)": {
    "dst_pos": null,
-   "note": "Steephinx (miniboss) nada mas entrar en I-5",
+   "note": "Steephinx (miniboss) right after entering I-5",
    "pos": null,
    "req": null,
    "unsure": true
   },
   "j01 door (448,352)": {
    "dst_pos": null,
-   "note": "subir 13 tiles bajo el agua hasta la puerta Azul (28,22): escalar paredes",
+   "note": "climb 13 tiles under water up to the Blue door (28,22): wall climbing",
    "pos": null,
    "req": {
     "normal": [
@@ -1803,7 +1803,7 @@
   },
   "j02 door (3296,752)": {
    "dst_pos": null,
-   "note": "Tentalamia (miniboss) nada mas entrar en J-3",
+   "note": "Tentalamia (miniboss) right after entering J-3",
    "pos": null,
    "req": {
     "normal": [
@@ -1854,7 +1854,7 @@
   },
   "k03 door (1504,528)": {
    "dst_pos": null,
-   "note": "subir por el pozo de K-3 hasta la salida alta",
+   "note": "climb the K-3 shaft up to the high exit",
    "pos": null,
    "req": null,
    "unsure": false
@@ -4407,7 +4407,7 @@
     },
     {
      "from": "g-1-entrance",
-     "note": "misma puerta amarilla: bloquea también de vuelta (exp504)",
+     "note": "same yellow door: it also blocks the way back (exp504)",
      "req": {
       "normal": [
        [
@@ -4421,7 +4421,7 @@
     },
     {
      "from": "main",
-     "note": "puerta AMARILLA interna (2296,728): parte D-3 en dos mitades y la tabla de puertas no la ve (entidad kind5 subkind18 rol 0x40; exp501)",
+     "note": "internal YELLOW door (2296,728): splits D-3 in two halves and the door table does not see it (entity kind5 subkind18 role 0x40; exp501)",
      "req": {
       "normal": [
        [
@@ -6914,7 +6914,7 @@
     "f-4-entrance": {
      "color": "#a7ffeb",
      "name": "F-4 Entrance",
-     "note": "POLÍGONO PROVISIONAL (bbox migrado): redibujar. ",
+     "note": "PROVISIONAL POLYGON (migrated bbox): redraw. ",
      "poly": [
       [
        240,

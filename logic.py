@@ -1,13 +1,13 @@
-"""Lógica de acceso de Mega Man ZX — utilidades del grafo (v0.3).
+"""Mega Man ZX access logic - graph utilities (v0.3).
 
-La lógica curada vive en logic/logic.json (editor visual
-tools/logic_editor/, formato docs/logic_format.md, módulo compartido
-logic_format.py). Este módulo reúne lo que NO es curable desde el editor:
-  - el grafo estático de aristas (data.DOORS) y la regla de llave;
-  - la red de Transervers (modelo HÍBRIDO, decisión del usuario 2026-09-02);
-  - la regla de etiqueta de área para locations que aún no se han colocado
-    en una sala (misiones/quests/biometales con 'B-1B-2', 'E-7/I-3', 'F');
-  - la sala inicial según opciones.
+The curated logic lives in logic/logic.json (visual editor
+tools/logic_editor/, format docs/logic_format.md, shared module
+logic_format.py). This module gathers what is NOT curable from the editor:
+  - the static edge graph (data.DOORS) and the key rule;
+  - the Transerver network (HYBRID model, user decision 2026-09-02);
+  - the area-label rule for locations that have not been placed in a room
+    yet (missions/quests/biometals with 'B-1B-2', 'E-7/I-3', 'F');
+  - the starting room according to the options.
 """
 
 import re
@@ -23,7 +23,7 @@ ROOM_NAMES = WORLD["rooms"]
 
 
 def door_rule(edge: dict, player: int):
-    """Regla de llave de una arista (o None si es libre)."""
+    """Key rule of an edge (or None if it is free)."""
     key = edge.get("key")
     if not key:
         return None
@@ -31,31 +31,31 @@ def door_rule(edge: dict, player: int):
 
 
 def transerver_rule(edge: dict, player: int):
-    """Modelo HÍBRIDO de la red de Transervers (decisión del usuario,
-    2026-09-02): un warp que SALE del hub (sala genérica sub 70, todos los
-    pisos conflacionados) hacia una sala exige el item "Transerver Access -
-    Area X" del PISO destino (data.TRANSERVER_ACCESS: sala con pad -> item
-    del badge de su piso; p.ej. n01 -> Access M, i01 -> Access E). Entrar a
-    la red desde una sala (pad) es libre. El acceso a pie (puertas físicas +
-    pasillos de piso) no pasa por aquí."""
+    """HYBRID model of the Transerver network (user decision,
+    2026-09-02): a warp LEAVING the hub (generic room sub 70, all floors
+    conflated) towards a room requires the "Transerver Access - Area X"
+    item of the destination FLOOR (data.TRANSERVER_ACCESS: room with pad ->
+    item of its floor's badge; e.g. n01 -> Access M, i01 -> Access E).
+    Entering the network from a room (pad) is free. Access on foot (physical
+    doors + floor corridors) does not go through here."""
     if edge.get("kind") != "warp" or edge["src"] != HUB_ROOM:
         return None
     if edge["dst"] in TRANSERVER_ALWAYS:
-        return None                  # X-1 Guardian HQ: siempre en la lista (exp271)
+        return None                  # X-1 Guardian HQ: always in the list (exp271)
     item = TRANSERVER_ACCESS.get(edge["dst"])
     if item is None:
-        return lambda state: False   # piso DATA sin destino de Transport: no hay warp
+        return lambda state: False   # DATA floor with no Transport destination: no warp
     return lambda state: state.has(item, player)
 
 
 def label_room_groups(label: str) -> list[list[str]]:
-    """Etiqueta de área humana -> [[salas AND]...] en OR entre grupos."""
+    """Human area label -> [[rooms AND]...] with OR between groups."""
     groups = []
     for part in str(label).split("/"):
         pairs = re.findall(r"([A-Za-z])-?(\d+)", part)
         if pairs:
             g = ["%s%02d" % (letter.lower(), int(num)) for letter, num in pairs]
-        else:  # área sin número ('F', 'G', 'M', 'O'): todas sus salas
+        else:  # area without a number ('F', 'G', 'M', 'O'): all its rooms
             letter = part.strip()[:1].lower()
             g = [r for r in ROOM_NAMES if r.startswith(letter)]
         g = [r for r in g if r in ROOM_NAMES]
@@ -65,8 +65,8 @@ def label_room_groups(label: str) -> list[list[str]]:
 
 
 def label_rule(label: str, player: int):
-    """Regla para misiones/quests SIN colocar: alcanzar las salas de su
-    etiqueta (las regiones 'main' se llaman como la sala)."""
+    """Rule for UNPLACED missions/quests: reach the rooms of their label
+    (the 'main' regions are named after the room)."""
     groups = label_room_groups(label)
     if not groups:
         return None
@@ -78,8 +78,8 @@ def label_rule(label: str, player: int):
 
 
 def starting_room(world) -> str:
-    """Sala inicial según la opción starting_transerver (data-driven para
-    poder randomizar el starting point en el futuro)."""
+    """Starting room according to the starting_transerver option (data-driven
+    so the starting point can be randomized in the future)."""
     key = world.options.starting_transerver.current_key
     sub = STARTING_TRANSERVERS.get(key, STARTING_TRANSERVERS["guardian_hub"])[0]
     for room, s in ROOM_SUBAREA.items():
@@ -89,7 +89,7 @@ def starting_room(world) -> str:
 
 
 def and_rules(*rules):
-    """AND de callables (ignora None). Devuelve None si no queda nada."""
+    """AND of callables (ignores None). Returns None if nothing is left."""
     rs = [r for r in rules if r is not None]
     if not rs:
         return None

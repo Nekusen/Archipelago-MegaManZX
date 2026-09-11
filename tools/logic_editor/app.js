@@ -1,35 +1,35 @@
-/* app.js — Editor visual de lógica de Mega Man ZX (front-end).
- * JavaScript puro (ES2020), sin dependencias ni build. Sirve tools/logic_editor/serve.py.
- * El núcleo lógico (parser de expresiones, DNF, pertenencia geométrica) es un espejo
- * de worlds/mmzx/logic_format.py y se expone en globalThis.MMZXLogic para pruebas.
- * Parámetros de URL: ?room=a01&select=<id de nodo>&region=<rid>&conn=<from>><to>&tier=expert&gates=1
+/* app.js - Mega Man ZX visual logic editor (front-end).
+ * Plain JavaScript (ES2020), no dependencies, no build. Served by tools/logic_editor/serve.py.
+ * The logic core (expression parser, DNF, geometric membership) mirrors
+ * worlds/mmzx/logic_format.py and is exposed as globalThis.MMZXLogic for tests.
+ * URL parameters: ?room=a01&select=<node id>&region=<rid>&conn=<from>><to>&tier=expert&gates=1
  */
 'use strict';
 (function (root) {
 
 // =====================================================================
-// Núcleo lógico (espejo de logic_format.py)
+// Logic core (mirror of logic_format.py)
 // =====================================================================
 const DEFAULT_ATOMS = (() => {
   const out = [];
-  const models = { HU: 'Hu (forma humana)', X: 'Model X', ZX: 'Model ZX', HX: 'Model HX', FX: 'Model FX', LX: 'Model LX', PX: 'Model PX', OX: 'Model OX' };
-  for (const [id, label] of Object.entries(models)) out.push({ id, group: 'modelo', label });
-  for (const m of ['HX', 'FX', 'LX', 'PX']) out.push({ id: m + '2', group: 'modelo', label: 'Model ' + m + ' completo (2 mitades: carga nivel 2)' });
-  out.push({ id: 'MODEL', group: 'modelo', label: 'MODEL (cualquier modelo no-Hu)' });
-  out.push({ id: 'ALL6', group: 'modelo', label: 'ALL6 (los seis biometales)' });
-  for (const k of ['YELLOW', 'GREEN', 'RED', 'BLUE', 'WHITE', 'PURPLE']) out.push({ id: k, group: 'llave', label: k[0] + k.slice(1).toLowerCase() + ' Card Key' });
-  for (let n = 1; n <= 4; n++) out.push({ id: 'LIFEUP>=' + n, group: 'vida', label: 'Life Up x' + n });
-  for (let n = 1; n <= 4; n++) out.push({ id: 'SUBTANK>=' + n, group: 'vida', label: 'Sub Tank x' + n });
-  for (const m of ['LOCATE_GIRO', 'PASS_THE_TEST', 'TROOP_REINFORCEMENT', 'SEARCH_THE_PLANT', 'FIND_THE_SURVIVORS', 'FIGHT_THE_MAVERICKS', 'SECURE_THE_BIOMETAL', 'SAVE_THE_PEOPLE', 'RECOVER_THE_DISK', 'ATTACK_THE_EXCAVATORS', 'PROTECT_THE_LAB', 'PROTECT_HQ', 'STOP_THE_DIG', 'REPEL_THE_ARMY', 'DESTROY_MODEL_W']) out.push({ id: m, group: 'misión', label: m });
-  for (let n = 1; n <= 8; n++) out.push({ id: 'MISSIONS>=' + n, group: 'misión', label: 'Misiones de área completadas x' + n + ' (de las 8: E-7…L-4)' });
+  const models = { HU: 'Hu (human form)', X: 'Model X', ZX: 'Model ZX', HX: 'Model HX', FX: 'Model FX', LX: 'Model LX', PX: 'Model PX', OX: 'Model OX' };
+  for (const [id, label] of Object.entries(models)) out.push({ id, group: 'model', label });
+  for (const m of ['HX', 'FX', 'LX', 'PX']) out.push({ id: m + '2', group: 'model', label: 'Model ' + m + ' complete (2 halves: level 2 charge)' });
+  out.push({ id: 'MODEL', group: 'model', label: 'MODEL (any non-Hu model)' });
+  out.push({ id: 'ALL6', group: 'model', label: 'ALL6 (all six biometals)' });
+  for (const k of ['YELLOW', 'GREEN', 'RED', 'BLUE', 'WHITE', 'PURPLE']) out.push({ id: k, group: 'key', label: k[0] + k.slice(1).toLowerCase() + ' Card Key' });
+  for (let n = 1; n <= 4; n++) out.push({ id: 'LIFEUP>=' + n, group: 'life', label: 'Life Up x' + n });
+  for (let n = 1; n <= 4; n++) out.push({ id: 'SUBTANK>=' + n, group: 'life', label: 'Sub Tank x' + n });
+  for (const m of ['LOCATE_GIRO', 'PASS_THE_TEST', 'TROOP_REINFORCEMENT', 'SEARCH_THE_PLANT', 'FIND_THE_SURVIVORS', 'FIGHT_THE_MAVERICKS', 'SECURE_THE_BIOMETAL', 'SAVE_THE_PEOPLE', 'RECOVER_THE_DISK', 'ATTACK_THE_EXCAVATORS', 'PROTECT_THE_LAB', 'PROTECT_HQ', 'STOP_THE_DIG', 'REPEL_THE_ARMY', 'DESTROY_MODEL_W']) out.push({ id: m, group: 'mission', label: m });
+  for (let n = 1; n <= 8; n++) out.push({ id: 'MISSIONS>=' + n, group: 'mission', label: 'Area missions completed x' + n + ' (of the 8: E-7...L-4)' });
   for (const a of 'ABCDEFGIKLMOX') out.push({ id: 'ACCESS_' + a, group: 'transerver', label: 'Transerver Access - Area ' + a });
   return out;
 })();
 
 const Logic = (() => {
   let TIERS = ['normal', 'expert'];
-  let plain = new Set();      // átomos sin conteo
-  let counts = new Set();     // prefijos NAME de NAME>=n
+  let plain = new Set();      // atoms without a count
+  let counts = new Set();     // NAME prefixes of NAME>=n
   let groups = {};            // id -> group
   let catalog = [];
   const CONST_TRUE = ['TRUE', 'ANY', 'FREE'];
@@ -99,7 +99,7 @@ const Logic = (() => {
     while (pos < expr.length) {
       TOK.lastIndex = pos;
       const m = TOK.exec(expr);
-      if (!m) throw new Error('expresión inválida en la posición ' + pos + ': «' + expr.slice(pos, pos + 12) + '»');
+      if (!m) throw new Error('invalid expression at position ' + pos + ': "' + expr.slice(pos, pos + 12) + '"');
       out.push(m[1].replace(/ /g, ''));
       pos = TOK.lastIndex;
     }
@@ -112,7 +112,7 @@ const Logic = (() => {
     const toks = tokens(expr);
     if (!toks.length) return DNF_TRUE();
     const [dnf, i] = parseOr(toks, 0);
-    if (i !== toks.length) throw new Error('tokens sobrantes a partir de «' + toks[i] + '»');
+    if (i !== toks.length) throw new Error('leftover tokens starting at "' + toks[i] + '"');
     return dnf;
   }
   function parseOr(toks, i) {
@@ -132,18 +132,18 @@ const Logic = (() => {
     return [node, j];
   }
   function parseAtom(toks, i) {
-    if (i >= toks.length) throw new Error('expresión incompleta');
+    if (i >= toks.length) throw new Error('incomplete expression');
     const t = toks[i];
     if (t === '(') {
       const [node, j] = parseOr(toks, i + 1);
-      if (j >= toks.length || toks[j] !== ')') throw new Error("falta ')'");
+      if (j >= toks.length || toks[j] !== ')') throw new Error("missing ')'");
       return [node, j + 1];
     }
     const up = t.toUpperCase();
     if (CONST_TRUE.includes(up)) return [DNF_TRUE(), i + 1];
     if (CONST_FALSE.includes(up)) return [DNF_FALSE(), i + 1];
     const a = canonicalAtom(t);
-    if (a === null) throw new Error('átomo desconocido «' + t + '»');
+    if (a === null) throw new Error('unknown atom "' + t + '"');
     return [[[a]], i + 1];
   }
   function dnfToText(dnf) {
@@ -214,10 +214,10 @@ const Logic = (() => {
 })();
 root.MMZXLogic = Logic;
 
-if (typeof document === 'undefined') return;   // en node: solo el núcleo
+if (typeof document === 'undefined') return;   // in node: core only
 
 // =====================================================================
-// Utilidades
+// Utilities
 // =====================================================================
 const $ = (sel, el = document) => el.querySelector(sel);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -279,18 +279,18 @@ function polyBounds(poly) {
 }
 
 // =====================================================================
-// Constantes visuales
+// Visual constants
 // =====================================================================
 const CAT = {
   disk: { color: '#4dd0e1', label: 'Data Disk' },
   life_up: { color: '#ef5350', label: 'Life Up' },
   sub_tank: { color: '#ffee58', label: 'Sub Tank' },
   biometal: { color: '#ba68c8', label: 'Biometal' },
-  mission: { color: '#66bb6a', label: 'Misión' },
+  mission: { color: '#66bb6a', label: 'Mission' },
   quest: { color: '#ffa726', label: 'Quest' },
   pickup_crystal: { color: '#a8a8a8', label: 'E-Crystal (pickup)' },
   pickup_1up: { color: '#c4c4c4', label: '1-Up (pickup)' },
-  pickup_energy: { color: '#8f8f8f', label: 'Energía (pickup)' },
+  pickup_energy: { color: '#8f8f8f', label: 'Energy (pickup)' },
   pickup_weapon: { color: '#777777', label: 'Weapon Energy (pickup)' },
 };
 const catColor = (c) => (CAT[c] || { color: '#9e9e9e' }).color;
@@ -299,22 +299,22 @@ const KEY_COLOR = { 'Yellow Card Key': '#ffd600', 'Green Card Key': '#43a047', '
 const NOKEY = '#cfd8dc';
 const IN_COLOR = '#90caf9';
 const PALETTE = ['#f28b82', '#fbbc04', '#81c995', '#a7ffeb', '#d7aefb', '#ff8bcb', '#78d9ec', '#fde293'];
-const KIND_ES = { door: 'puerta', internal: 'puerta interna', warp: 'warp', save: 'pad (save)', curated: 'arista curada' };
+const KIND_ES = { door: 'door', internal: 'internal door', warp: 'warp', save: 'pad (save)', curated: 'curated edge' };
 const LAYER_DEFS = [
-  ['checks', 'Checks', true], ['doors', 'Puertas', true], ['landings', 'Aterrizajes', true],
-  ['gimmicks', 'Gimmicks', true], ['enemies', 'Enemigos', false], ['regions', 'Regiones', true],
-  ['conns', 'Conexiones', true], ['labels', 'Etiquetas', true],
+  ['checks', 'Checks', true], ['doors', 'Doors', true], ['landings', 'Landings', true],
+  ['gimmicks', 'Gimmicks', true], ['enemies', 'Enemies', false], ['regions', 'Regions', true],
+  ['conns', 'Connections', true], ['labels', 'Labels', true],
 ];
 
 // =====================================================================
-// Estado
+// State
 // =====================================================================
 let W = null, DOC = null;
 const S = {
   room: null, tier: 'normal', mode: 'select',
   sel: { type: 'room' }, hover: null, activeVertex: null,
   drawing: null, placing: null, drag: null, space: false,
-  edgeFrom: null, edgeHover: null,   // modo 'edge': origen fijado y región bajo el cursor
+  edgeFrom: null, edgeHover: null,   // 'edge' mode: pinned source and region under the cursor
   layers: {}, collapsed: new Set(),
   docVersion: 0, undo: [], redo: [],
   saveTimer: null, saving: false, savePending: false, savedVersion: 0,
@@ -325,14 +325,14 @@ for (const [k, , d] of LAYER_DEFS) S.layers[k] = d;
 try {
   const saved = JSON.parse(localStorage.getItem('mmzx-logic-layers') || 'null');
   if (saved && typeof saved === 'object') for (const [k] of LAYER_DEFS) if (typeof saved[k] === 'boolean') S.layers[k] = saved[k];
-} catch (e) { /* sin almacenamiento */ }
+} catch (e) { /* no storage */ }
 
 const V = { scale: 1, tx: 0, ty: 0 };
 let canvas, ctx, cw = 1, ch = 1, dirty = true, mouse = [0, 0];
-let connShapes = [];   // geometría de conexiones del último frame (hit-test)
+let connShapes = [];   // connection geometry of the last frame (hit-test)
 
 // =====================================================================
-// Documento: acceso y mutación
+// Document: access and mutation
 // =====================================================================
 function normalizeDoc(doc) {
   doc = doc || {};
@@ -365,7 +365,7 @@ function pruneEdge(name) { const e = DOC.edges[name]; if (e && !e.pos && !e.dst_
 function ensureCheck(name) { return DOC.checks[name] || (DOC.checks[name] = { req: null, unsure: false, note: '' }); }
 function pruneCheck(name) { const c = DOC.checks[name]; if (c && c.req == null && !c.unsure && !c.note) delete DOC.checks[name]; }
 function ensureGate(flag) { return DOC.gates[flag] || (DOC.gates[flag] = { req: null, note: '' }); }
-// lecturas SIN efectos (el inspector no debe crear entradas al renderizar)
+// reads WITHOUT side effects (the inspector must not create entries while rendering)
 const peekCheck = (name) => DOC.checks[name] || {};
 const peekEdge = (name) => DOC.edges[name] || {};
 const peekGate = (flag) => DOC.gates[flag] || {};
@@ -415,12 +415,12 @@ function changed(opts = {}) {
 }
 
 // =====================================================================
-// Nodos de una sala (checks, salidas y aterrizajes) con pertenencia
+// Nodes of a room (checks, exits and landings) with membership
 // =====================================================================
 let cache = { v: -1, nodes: {}, cent: {}, unplacedLocs: null };
 function ensureCache() { if (cache.v !== S.docVersion) cache = { v: S.docVersion, nodes: {}, cent: {}, unplacedLocs: null }; }
-// Colocaciones a mano: DOC.placed[name] = {room,pos} o LISTA de ellos (los
-// biometales se obtienen en cualquiera de dos jefes: dos salas, regla OR).
+// Hand placements: DOC.placed[name] = {room,pos} or a LIST of them (the
+// biometals are obtained at either of two bosses: two rooms, OR rule).
 function placementsOf(name) {
   const p = DOC.placed[name];
   const arr = Array.isArray(p) ? p : (p ? [p] : []);
@@ -432,14 +432,14 @@ function setPlacements(name, arr) {
   else DOC.placed[name] = arr;
 }
 function placementIn(name, room) { return placementsOf(name).find(q => q.room === room) || null; }
-// nº de salas alternativas según la etiqueta de área ('E-7/I-3' = 2)
+// number of alternative rooms according to the area tag ('E-7/I-3' = 2)
 function altRooms(name) { const lab = (W.locations[name] || {}).room || ''; return lab.includes('/') ? lab.split('/').length : 1; }
 function checkPosition(name) {
   const v = W.locations[name];
   if (!v) return [null, null];
   if (v.pos && DOC.rooms[v.room]) return [v.room, v.pos];
   const pl = placementsOf(name);
-  const cur = pl.find(q => q.room === S.room) || pl[0];   // la de la sala actual si la hay
+  const cur = pl.find(q => q.room === S.room) || pl[0];   // the current room's one if any
   return cur ? [cur.room, cur.pos] : [null, null];
 }
 function edgeEndpoints(e) {
@@ -486,11 +486,11 @@ function roomNodes(room) {
     n.autoRid = Logic.regionOfPoint(rl, n.pos);
     members[n.id] = n.rid;
   }
-  // nodos sin posición: override o main (como resolve_members)
+  // nodes without a position: override or main (like resolve_members)
   for (const e of un.outs) members[e.name] = (rl.members[e.name] && rl.regions[rl.members[e.name]]) ? rl.members[e.name] : 'main';
   for (const e of un.ins) members[e.name + '@in'] = (rl.members[e.name + '@in'] && rl.regions[rl.members[e.name + '@in']]) ? rl.members[e.name + '@in'] : 'main';
   const out = { list, byId, members, un };
-  cache.nodes[room] = out;   // antes de las etiquetas: nodeLabel consulta la pertenencia de OTRAS salas (ciclos A-1 <-> A-4)
+  cache.nodes[room] = out;   // before the labels: nodeLabel queries the membership of OTHER rooms (cycles A-1 <-> A-4)
   for (const n of list) n.label = nodeLabel(n);
   return out;
 }
@@ -499,7 +499,7 @@ function nodeLabel(n) {
   if (n.type === 'check') return n.name;
   const e = n.edge;
   if (n.type === 'out') {
-    if (e.kind === 'internal') return '↔ interna';
+    if (e.kind === 'internal') return '↔ internal';
     if (e.kind === 'save') return 'pad';
     const rid = landingRid(e);
     const dst = roomLabel(e.dst) + (rid !== 'main' ? '/' + regionName(e.dst, rid) : '');
@@ -507,31 +507,31 @@ function nodeLabel(n) {
     if (e.kind === 'curated') return '⇢ ' + dst;
     return '→ ' + dst;
   }
-  if (e.kind === 'internal') return '← interna';
+  if (e.kind === 'internal') return '← internal';
   if (e.kind === 'save') return '← ' + roomLabel(e.src) + ' (pad)';
   if (e.kind === 'warp') return '⇄ ' + roomLabel(e.src);
   return '← ' + roomLabel(e.src);
 }
 function nodeTooltip(n) {
   const rl = RL();
-  const reg = regionName(S.room, n.rid) + (n.pinned ? ' (fijada)' : '');
+  const reg = regionName(S.room, n.rid) + (n.pinned ? ' (pinned)' : '');
   if (n.type === 'check') {
     const ch = DOC.checks[n.id] || {};
-    return n.full + '\n' + catLabel(n.cat) + (n.placed ? ' · colocado a mano' : '') + ' · región ' + reg + '\nrequisito: ' + reqUiText(ch.req) + (ch.unsure ? ' (?)' : '');
+    return n.full + '\n' + catLabel(n.cat) + (n.placed ? ' · placed by hand' : '') + ' · region ' + reg + '\nrequirement: ' + reqUiText(ch.req) + (ch.unsure ? ' (?)' : '');
   }
   const e = n.edge, ov = DOC.edges[e.name] || {};
-  let s = e.name + '\n' + (n.type === 'out' ? 'salida' : 'aterrizaje') + ' · ' + (KIND_ES[e.kind] || e.kind);
-  s += n.type === 'out' ? ' → ' + roomLabel(e.dst) + '/' + regionName(e.dst, landingRid(e)) : ' desde ' + roomLabel(e.src);
-  if (e.key) s += '\nllave: ' + e.key + (isLockedKey(e) ? ' (NO está en el pool: puerta cerrada)' : '');
-  if (e.gate != null) s += '\nverja ' + e.gate + ': ' + gateText(e.gate);
-  if (e.kind === 'warp' && e.src === W.hub && W.transerver_access[e.dst]) s += '\nnecesita ' + W.transerver_access[e.dst];
-  s += '\nregión ' + reg;
-  if (ov.req) s += '\ncoste extra: ' + reqUiText(ov.req);
+  let s = e.name + '\n' + (n.type === 'out' ? 'exit' : 'landing') + ' · ' + (KIND_ES[e.kind] || e.kind);
+  s += n.type === 'out' ? ' → ' + roomLabel(e.dst) + '/' + regionName(e.dst, landingRid(e)) : ' from ' + roomLabel(e.src);
+  if (e.key) s += '\nkey: ' + e.key + (isLockedKey(e) ? ' (NOT in the pool: locked door)' : '');
+  if (e.gate != null) s += '\ngate ' + e.gate + ': ' + gateText(e.gate);
+  if (e.kind === 'warp' && e.src === W.hub && W.transerver_access[e.dst]) s += '\nneeds ' + W.transerver_access[e.dst];
+  s += '\nregion ' + reg;
+  if (ov.req) s += '\nextra cost: ' + reqUiText(ov.req);
   void rl;
   return s;
 }
-// llave cuyo item NO está en el pool (p. ej. White Card Key): la puerta queda
-// cerrada en la lógica (W.unavailable_items lo dice el servidor)
+// key whose item is NOT in the pool (e.g. White Card Key): the door stays
+// locked in the logic (the server says so via W.unavailable_items)
 function isLockedKey(e) { return !!(e && e.key && (W.unavailable_items || []).includes(e.key)); }
 function keyColor(e) { return isLockedKey(e) ? '#555' : (e.key ? (KEY_COLOR[e.key] || NOKEY) : NOKEY); }
 function unplacedLocations() {
@@ -539,7 +539,7 @@ function unplacedLocations() {
   if (!cache.unplacedLocs) cache.unplacedLocs = Object.keys(W.locations).filter(n => !W.locations[n].pos && placementsOf(n).length === 0);
   return cache.unplacedLocs;
 }
-// colocadas en alguna sala pero con más salas posibles (biometales: 2 jefes)
+// placed in some room but with more possible rooms (biometals: 2 bosses)
 function multiCandidates() {
   return Object.keys(W.locations).filter(n => !W.locations[n].pos && placementsOf(n).length > 0 && placementsOf(n).length < altRooms(n));
 }
@@ -561,12 +561,12 @@ function regionCentroid(room, rid) {
 }
 function gateText(flag) {
   const g = DOC.gates[String(flag)];
-  if (!g || g.req == null) return 'libre (el cliente la abre)';
+  if (!g || g.req == null) return 'free (the client opens it)';
   return reqUiText(g.req);
 }
 function reqUiText(req, tier) {
   const t = Logic.dnfToText(Logic.reqAlternatives(req, tier || S.tier));
-  return t === 'free' ? 'libre' : t === 'never' ? 'imposible' : t;
+  return t === 'free' ? 'free' : t === 'never' ? 'impossible' : t;
 }
 function reqShort(req, tier, max = 34) {
   let t = reqUiText(req, tier);
@@ -575,7 +575,7 @@ function reqShort(req, tier, max = 34) {
 }
 
 // =====================================================================
-// Vista (pan/zoom) e imágenes
+// View (pan/zoom) and images
 // =====================================================================
 const toScreen = (p) => [p[0] * V.scale + V.tx, p[1] * V.scale + V.ty];
 const toWorld = (sx, sy) => [(sx - V.tx) / V.scale, (sy - V.ty) / V.scale];
@@ -618,7 +618,7 @@ function getImage(room) {
 }
 
 // =====================================================================
-// Dibujo
+// Drawing
 // =====================================================================
 function layerOf(n) { return n.type === 'check' ? 'checks' : n.type === 'out' ? 'doors' : 'landings'; }
 const nodeVisible = (n) => !!S.layers[layerOf(n)];
@@ -676,7 +676,7 @@ function draw() {
   } else {
     ctx.fillStyle = '#1b1b20';
     ctx.fillRect(ox, oy, sz[0] * V.scale, sz[1] * V.scale);
-    haloText(im.error ? 'Render no disponible: ' + S.room + '.png' : 'Cargando render…', cw / 2, ch / 2 - 6, { size: 14, color: '#aaa' });
+    haloText(im.error ? 'Render not available: ' + S.room + '.png' : 'Loading render...', cw / 2, ch / 2 - 6, { size: 14, color: '#aaa' });
   }
   ctx.strokeStyle = 'rgba(255,255,255,.25)'; ctx.lineWidth = 1;
   ctx.strokeRect(ox + 0.5, oy + 0.5, sz[0] * V.scale, sz[1] * V.scale);
@@ -684,7 +684,7 @@ function draw() {
   const rl = RL();
   const nodes = roomNodes(S.room);
   const sel = S.sel;
-  // --- regiones
+  // --- regions
   if (S.layers.regions) {
     for (const rid of regionOrder(rl)) {
       const reg = rl.regions[rid];
@@ -710,9 +710,9 @@ function draw() {
       pill(rl.regions.main.name || 'Main', c[0], c[1], { bold: true, color: rl.regions.main.color || '#8ab4f8', border: isSel ? '#fff' : hexA(rl.regions.main.color, 0.8) });
     }
   }
-  // --- conexiones
+  // --- connections
   if (S.layers.conns) for (const c of rl.conns) drawConn(rl, c);
-  // --- gimmicks / enemigos
+  // --- gimmicks / enemies
   if (S.layers.gimmicks || S.layers.enemies) {
     const gs = W.gimmicks[S.room] || [];
     for (let i = 0; i < gs.length; i++) {
@@ -729,7 +729,7 @@ function draw() {
       if (S.layers.labels && (isHov || isSel || V.scale >= 0.6)) haloText(g.name, x, y + 5, { size: 9, color: '#c8d0d4' });
     }
   }
-  // --- nodos (aterrizajes, salidas, checks)
+  // --- nodes (landings, exits, checks)
   const order = { in: 0, out: 1, check: 2 };
   const vis = nodes.list.filter(nodeVisible).sort((a, b) => order[a.type] - order[b.type]);
   for (const n of vis) {
@@ -755,10 +755,10 @@ function draw() {
       shapeCircle(x, y, 8); ctx.strokeStyle = n.color; ctx.lineWidth = 2.5; ctx.stroke();
     }
     if (n.pinned) drawPin(x + 9, y - 10);
-    // etiquetas: checks y salidas debajo, aterrizajes encima (suelen coincidir con una salida)
+    // labels: checks and exits below, landings above (they usually coincide with an exit)
     if (S.layers.labels) haloText(n.label, x, n.type === 'in' ? y - 11 : y + 11, { size: 10, baseline: n.type === 'in' ? 'bottom' : 'top', color: n.type === 'check' ? '#f2f2f2' : n.type === 'out' ? '#ffe9a8' : '#bfe0ff' });
   }
-  // --- vértices de la región seleccionada
+  // --- vertices of the selected region
   if (S.mode === 'select' && sel.type === 'region' && sel.rid !== 'main' && S.layers.regions) {
     const reg = rl.regions[sel.rid];
     if (reg && reg.poly) reg.poly.forEach((p, i) => {
@@ -770,7 +770,7 @@ function draw() {
       ctx.strokeStyle = '#000'; ctx.lineWidth = 1.5; ctx.stroke();
     });
   }
-  // --- polígono en construcción
+  // --- polygon under construction
   if (S.mode === 'poly' && S.drawing) {
     const pts = S.drawing.map(toScreen);
     ctx.beginPath();
@@ -787,7 +787,7 @@ function draw() {
       ctx.strokeStyle = '#000'; ctx.lineWidth = 1; ctx.stroke();
     });
   }
-  // --- modo arista: resalte del origen/destino y goma elástica
+  // --- edge mode: source/target highlight and rubber band
   if (S.mode === 'edge') {
     const outline = (rid, color, width) => {
       const reg = rl.regions[rid];
@@ -816,7 +816,7 @@ function draw() {
       ctx.closePath(); ctx.fillStyle = '#ffe9a8'; ctx.fill();
     }
   }
-  // --- marcador de colocación
+  // --- placement marker
   if (S.placing && S.hover === null) {
     shapeHex(mouse[0], mouse[1], 10); ctx.strokeStyle = '#fff'; ctx.setLineDash([3, 3]); ctx.lineWidth = 1.5; ctx.stroke(); ctx.setLineDash([]);
   }
@@ -874,7 +874,7 @@ function hitTest(sx, sy) {
   if (S.mode === 'select' && S.sel.type === 'region' && S.sel.rid !== 'main' && S.layers.regions) {
     const reg = rl.regions[S.sel.rid];
     if (reg && reg.poly) for (let i = 0; i < reg.poly.length; i++) if (dist(toScreen(reg.poly[i]), p) <= 8) return { type: 'vertex', i };
-    // cerca de un lado de la región seleccionada: no deseleccionar (permite el doble clic para insertar un vértice)
+    // near a side of the selected region: do not deselect (allows the double click to insert a vertex)
     const si = sideHit(sx, sy);
     if (si >= 0) return { type: 'side', i: si, rid: S.sel.rid };
   }
@@ -920,7 +920,7 @@ function sideHit(sx, sy) {
 }
 
 // =====================================================================
-// Interacción con el lienzo
+// Canvas interaction
 // =====================================================================
 function evPos(e) { const r = canvas.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; }
 function setMode(m) {
@@ -935,11 +935,11 @@ function setMode(m) {
   updateHint(); dirty = true;
 }
 
-// --- modo «Arista»: crear conexiones dibujando en el lienzo -----------
-// Solo entre regiones con POLÍGONO: fuera de ellos está Main, y el usuario
-// no quiere aristas a Main por accidente (la idea es ir sacando todo de esa
-// bolsa). Si hace falta una conexión con Main, sigue estando el desplegable
-// del panel de región.
+// --- "Edge" mode: create connections by drawing on the canvas ---------
+// Only between regions with a POLYGON: outside them is Main, and the user
+// does not want edges to Main by accident (the idea is to keep pulling
+// everything out of that bag). If a connection with Main is needed, the
+// dropdown in the region panel is still there.
 function polyRegionAt(sx, sy) {
   const rid = Logic.regionOfPoint(RL(), toWorld(sx, sy));
   return rid === 'main' ? null : rid;
@@ -950,9 +950,9 @@ function edgeGestureEnd(to, oneWay) {
   if (!from || !to || from === to) { dirty = true; return; }
   const rl = RL();
   const had = !!findConn(rl, from, to), hadRev = !!findConn(rl, to, from);
-  addConn(rl, from, to, !oneWay);            // avisa él si no creó nada
+  addConn(rl, from, to, !oneWay);            // it warns by itself if nothing was created
   if (had && (oneWay || hadRev)) return;
-  flash((oneWay ? 'Conexión ' : 'Conexión bidireccional ') + regionName(S.room, from) + ' → ' + regionName(S.room, to) + ' (libre: ponle requisito)');
+  flash((oneWay ? 'Connection ' : 'Bidirectional connection ') + regionName(S.room, from) + ' → ' + regionName(S.room, to) + ' (free: set its requirement)');
 }
 function select(sel, opts = {}) {
   S.sel = sel;
@@ -974,7 +974,7 @@ function switchRoom(code, opts = {}) {
   if (!same || opts.reset) { S.sel = { type: 'room' }; S.activeVertex = null; S.placing = null; if (S.mode === 'poly') setMode('select'); S.edgeFrom = null; S.edgeHover = null; fitView(); }
   renderTabs(); renderTree(); renderInspector(); renderReport(); updateHint();
   dirty = true;
-  try { const u = new URL(location.href); u.searchParams.set('room', code); for (const k of ['select', 'region', 'conn']) u.searchParams.delete(k); history.replaceState(null, '', u); } catch (e) { /* nada */ }
+  try { const u = new URL(location.href); u.searchParams.set('room', code); for (const k of ['select', 'region', 'conn']) u.searchParams.delete(k); history.replaceState(null, '', u); } catch (e) { /* nothing */ }
 }
 function nodePosSetter(n) {
   if (n.type === 'check') return (p) => { const q = placementIn(n.id, S.room); if (q) q.pos = p; };
@@ -995,7 +995,7 @@ function bindCanvas() {
     if (S.mode === 'poly') { polyClick(sx, sy); return; }
     if (S.mode === 'edge') {
       const rid = polyRegionAt(sx, sy);
-      if (!rid) {   // Main / fuera de todo polígono: cancela y deja arrastrar el lienzo
+      if (!rid) {   // Main / outside every polygon: cancel and let the canvas be dragged
         S.edgeFrom = null; dirty = true;
         S.drag = { kind: 'pan', sx, sy, tx: V.tx, ty: V.ty, moved: false };
         return;
@@ -1015,7 +1015,7 @@ function bindCanvas() {
     }
     if (hit.type === 'side') {
       if (e.shiftKey) { pushUndo(); S.drag = { kind: 'region', rid: hit.rid, last: toWorld(sx, sy), moved: false }; }
-      return;   // la región sigue seleccionada; el doble clic inserta un vértice aquí
+      return;   // the region stays selected; the double click inserts a vertex here
     }
     if (hit.type === 'node') {
       select({ type: 'node', id: hit.node.id });
@@ -1092,8 +1092,8 @@ function bindCanvas() {
       return;
     }
     if (d.kind === 'edge') {
-      // arrastre: se suelta sobre el destino. Clic sin arrastrar: el origen
-      // queda fijado y el siguiente clic elige el destino.
+      // drag: released over the target. Click without dragging: the source
+      // stays pinned and the next click picks the target.
       const to = polyRegionAt(mouse[0], mouse[1]);
       if (to && to !== d.from) edgeGestureEnd(to, e && e.shiftKey);
       dirty = true; return;
@@ -1157,7 +1157,7 @@ async function closePolygon() {
   if (pts.length < 3) { updateHint(); return; }
   const rl = RL();
   const n = Object.keys(rl.regions).length;
-  const name = await askText('Nombre de la nueva región', 'Región ' + n);
+  const name = await askText('Name of the new region', 'Region ' + n);
   if (name === null) { S.drawing = []; dirty = true; updateHint(); return; }
   let rid = slugify(name) || 'region';
   if (rid === 'main' || /^\d/.test(rid)) rid = 'r-' + rid;
@@ -1174,7 +1174,7 @@ function deleteVertex(i) {
   const rl = RL();
   if (S.sel.type !== 'region' || S.sel.rid === 'main') return;
   const poly = rl.regions[S.sel.rid].poly;
-  if (!poly || poly.length <= 3) { flash('Un polígono necesita al menos 3 vértices'); return; }
+  if (!poly || poly.length <= 3) { flash('A polygon needs at least 3 vertices'); return; }
   edit(() => { poly.splice(i, 1); }, { keepInspector: true });
   S.activeVertex = null;
 }
@@ -1226,12 +1226,12 @@ function placeAt(wp) {
     sel = { type: 'node', id: d.id };
   } else if (d.kind === 'out') {
     const e = W.edges.find(x => x.name === d.id);
-    if (!e || e.src !== room) { flash('Esa salida pertenece a ' + (e ? roomLabel(e.src) : '?')); stopPlacing(); return; }
+    if (!e || e.src !== room) { flash('That exit belongs to ' + (e ? roomLabel(e.src) : '?')); stopPlacing(); return; }
     edit(() => { ensureEdge(d.id).pos = p; });
     sel = { type: 'node', id: d.id };
   } else if (d.kind === 'in') {
     const e = W.edges.find(x => x.name === d.id);
-    if (!e || e.dst !== room) { flash('Ese aterrizaje pertenece a ' + (e ? roomLabel(e.dst) : '?')); stopPlacing(); return; }
+    if (!e || e.dst !== room) { flash('That landing belongs to ' + (e ? roomLabel(e.dst) : '?')); stopPlacing(); return; }
     edit(() => { ensureEdge(d.id).dst_pos = p; });
     sel = { type: 'node', id: d.id + '@in' };
   }
@@ -1241,7 +1241,7 @@ function placeAt(wp) {
 function autoPlaceHubWarps() {
   const hub = W.hub;
   const todo = W.edges.filter(e => e.kind === 'warp' && e.src === hub && !e.pos && !(DOC.edges[e.name] && DOC.edges[e.name].pos));
-  if (!todo.length) { flash('No quedan warps del hub sin colocar'); return; }
+  if (!todo.length) { flash('No unplaced hub warps left'); return; }
   edit(() => {
     for (const e of todo) {
       const letter = e.dst[0].toUpperCase();
@@ -1250,11 +1250,11 @@ function autoPlaceHubWarps() {
       ensureEdge(e.name).pos = [letter === 'N' ? 560 : 368, y];
     }
   });
-  flash(todo.length + ' warps colocados');
+  flash(todo.length + ' warps placed');
 }
 
 // =====================================================================
-// Teclado
+// Keyboard
 // =====================================================================
 function bindKeys() {
   window.addEventListener('keydown', (e) => {
@@ -1300,26 +1300,26 @@ function bindKeys() {
 }
 
 // =====================================================================
-// Guardado e informe
+// Saving and report
 // =====================================================================
 function setStatus(text, cls) { const el = $('#status'); el.textContent = text; el.className = 'status ' + (cls || ''); }
 function scheduleSave() {
   clearTimeout(S.saveTimer);
-  setStatus('Sin guardar', 'dirty');
+  setStatus('Unsaved', 'dirty');
   S.saveTimer = setTimeout(doSave, 600);
 }
 async function doSave() {
   if (S.saving) { S.savePending = true; return; }
   S.saving = true;
   const v = S.docVersion;
-  setStatus('Guardando…', 'saving');
+  setStatus('Saving...', 'saving');
   try {
     const r = await fetch('/api/logic', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(DOC) });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const rep = await r.json();
     if (rep.error) throw new Error(rep.error);
     S.report = rep;
-    if (S.docVersion === v) { S.savedVersion = v; setStatus('Guardado', 'ok'); }
+    if (S.docVersion === v) { S.savedVersion = v; setStatus('Saved', 'ok'); }
     renderReport(); renderTabs();
   } catch (err) {
     setStatus('Error: ' + err.message, 'error');
@@ -1329,13 +1329,13 @@ async function doSave() {
   }
 }
 async function doValidate() {
-  setStatus('Validando…', 'saving');
+  setStatus('Validating...', 'saving');
   try {
     const r = await fetch('/api/validate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(DOC) });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     S.report = await r.json();
     renderReport(); renderTabs();
-    setStatus(S.docVersion === S.savedVersion ? 'Guardado' : 'Sin guardar', S.docVersion === S.savedVersion ? 'ok' : 'dirty');
+    setStatus(S.docVersion === S.savedVersion ? 'Saved' : 'Unsaved', S.docVersion === S.savedVersion ? 'ok' : 'dirty');
     $('#report-body').hidden = false; $('#report-toggle').textContent = '▾';
   } catch (err) { setStatus('Error: ' + err.message, 'error'); }
 }
@@ -1345,35 +1345,35 @@ function renderReport() {
   const rep = S.report || { errors: [], warnings: [] };
   const errs = rep.errors || [], warns = rep.warnings || [];
   const counter = $('#counter');
-  counter.textContent = errs.length + ' error' + (errs.length === 1 ? '' : 'es') + ' · ' + warns.length + ' aviso' + (warns.length === 1 ? '' : 's');
+  counter.textContent = errs.length + ' error' + (errs.length === 1 ? '' : 's') + ' · ' + warns.length + ' warning' + (warns.length === 1 ? '' : 's');
   counter.className = 'counter ' + (errs.length ? 'has-err' : warns.length ? 'has-warn' : '');
   const sum = $('#report-summary');
-  const parts = ['Informe: ', h('span', { class: 'e' }, errs.length + ' errores'), ' · ', h('span', { class: 'w' }, warns.length + ' avisos'),
-    ' · ' + (rep.unsure || 0) + ' sin confirmar · ' + (rep.unplaced || 0) + ' sin colocar'];
-  if (rep.txt === false) parts.push(h('span', { class: 'e' }, ' · logic.txt NO regenerado (hay errores)'));
+  const parts = ['Report: ', h('span', { class: 'e' }, errs.length + ' errors'), ' · ', h('span', { class: 'w' }, warns.length + ' warnings'),
+    ' · ' + (rep.unsure || 0) + ' unconfirmed · ' + (rep.unplaced || 0) + ' unplaced'];
+  if (rep.txt === false) parts.push(h('span', { class: 'e' }, ' · logic.txt NOT regenerated (there are errors)'));
   sum.replaceChildren(...parts);
   const body = $('#report-body');
   body.replaceChildren();
   const items = errs.map(t => ({ t, cls: 'err' })).concat(warns.map(t => ({ t, cls: 'warn' })));
-  if (!items.length) { body.append(h('div', { class: 'ok' }, 'Sin errores ni avisos.')); return; }
+  if (!items.length) { body.append(h('div', { class: 'ok' }, 'No errors or warnings.')); return; }
   const here = [], other = [];
   for (const it of items) { it.room = reportRoomOf(it.t); (it.room === S.room ? here : other).push(it); }
-  if (here.length) body.append(h('div', { class: 'dim' }, 'Sala actual (' + roomLabel(S.room) + '):'));
+  if (here.length) body.append(h('div', { class: 'dim' }, 'Current room (' + roomLabel(S.room) + '):'));
   for (const it of here.concat(other)) {
-    body.append(h('div', { class: 'it ' + it.cls + (it.room === S.room ? ' here' : '') + (it.room ? ' jump' : ''), title: it.room ? 'Ir a ' + roomLabel(it.room) : null,
+    body.append(h('div', { class: 'it ' + it.cls + (it.room === S.room ? ' here' : '') + (it.room ? ' jump' : ''), title: it.room ? 'Go to ' + roomLabel(it.room) : null,
       onclick: it.room ? () => switchRoom(it.room) : null }, it.t));
   }
 }
 
 // =====================================================================
-// Barra superior: pestañas, capas, buscador
+// Top bar: tabs, layers, search
 // =====================================================================
 function renderTabs() {
   const areas = [];
   for (const r of W.room_order) { const a = W.rooms[r].area; if (!areas.includes(a)) areas.push(a); }
   const curArea = W.rooms[S.room].area;
   const at = $('#area-tabs');
-  at.replaceChildren(...areas.map(a => h('button', { class: a === curArea ? 'active' : '', title: 'Área ' + areaLabel(a), onclick: () => switchRoom(W.room_order.find(r => W.rooms[r].area === a)) }, areaLabel(a))));
+  at.replaceChildren(...areas.map(a => h('button', { class: a === curArea ? 'active' : '', title: 'Area ' + areaLabel(a), onclick: () => switchRoom(W.room_order.find(r => W.rooms[r].area === a)) }, areaLabel(a))));
   const rt = $('#room-tabs');
   const rep = S.report || {};
   const counts = {};
@@ -1381,15 +1381,15 @@ function renderTabs() {
   for (const t of (rep.warnings || [])) { const r = reportRoomOf(t); if (r) counts[r] = counts[r] || { e: 0, w: 0 }, counts[r].w++; }
   rt.replaceChildren(...W.room_order.filter(r => W.rooms[r].area === curArea).map(r => {
     const c = counts[r];
-    return h('button', { class: r === S.room ? 'active' : '', title: r + (c ? ' · ' + c.e + ' errores, ' + c.w + ' avisos' : ''), onclick: () => switchRoom(r) },
+    return h('button', { class: r === S.room ? 'active' : '', title: r + (c ? ' · ' + c.e + ' errors, ' + c.w + ' warnings' : ''), onclick: () => switchRoom(r) },
       roomLabel(r), c ? h('span', { class: 'badge' + (c.e ? ' err' : '') }, c.e || c.w) : null);
   }));
 }
 function renderLayers() {
   const el = $('#layers');
   el.replaceChildren(...LAYER_DEFS.map(([k, label]) => {
-    const cb = h('input', { type: 'checkbox', checked: !!S.layers[k], onchange: () => { S.layers[k] = cb.checked; lab.classList.toggle('on', cb.checked); dirty = true; try { localStorage.setItem('mmzx-logic-layers', JSON.stringify(S.layers)); } catch (e) { /* nada */ } } });
-    const lab = h('label', { class: S.layers[k] ? 'on' : '', title: 'Capa: ' + label }, cb, label);
+    const cb = h('input', { type: 'checkbox', checked: !!S.layers[k], onchange: () => { S.layers[k] = cb.checked; lab.classList.toggle('on', cb.checked); dirty = true; try { localStorage.setItem('mmzx-logic-layers', JSON.stringify(S.layers)); } catch (e) { /* nothing */ } } });
+    const lab = h('label', { class: S.layers[k] ? 'on' : '', title: 'Layer: ' + label }, cb, label);
     return lab;
   }));
 }
@@ -1397,8 +1397,8 @@ let searchItems = null, searchActive = -1;
 function buildSearchIndex() {
   const items = [];
   for (const name of Object.keys(W.locations)) items.push({ kind: 'loc', name, text: name.toLowerCase(), k: 'location' });
-  for (const r of W.room_order) for (const rid of Object.keys(DOC.rooms[r].regions)) items.push({ kind: 'region', room: r, rid, name: roomLabel(r) + ' / ' + regionName(r, rid), text: (roomLabel(r) + ' ' + regionName(r, rid) + ' ' + rid).toLowerCase(), k: 'región' });
-  for (const e of W.edges) items.push({ kind: 'edge', name: e.name, text: e.name.toLowerCase(), k: 'arista', edge: e });
+  for (const r of W.room_order) for (const rid of Object.keys(DOC.rooms[r].regions)) items.push({ kind: 'region', room: r, rid, name: roomLabel(r) + ' / ' + regionName(r, rid), text: (roomLabel(r) + ' ' + regionName(r, rid) + ' ' + rid).toLowerCase(), k: 'region' });
+  for (const e of W.edges) items.push({ kind: 'edge', name: e.name, text: e.name.toLowerCase(), k: 'edge', edge: e });
   return items;
 }
 function hideSearch() { $('#search-results').hidden = true; searchActive = -1; }
@@ -1411,10 +1411,10 @@ function runSearch() {
   searchItems = items.slice(0, 40);
   searchActive = searchItems.length ? 0 : -1;
   box.replaceChildren();
-  if (!searchItems.length) box.append(h('div', { class: 'empty' }, 'Sin resultados'));
+  if (!searchItems.length) box.append(h('div', { class: 'empty' }, 'No results'));
   searchItems.forEach((it, i) => {
     let where = '';
-    if (it.kind === 'loc') { const [r] = checkPosition(it.name); where = r ? roomLabel(r) : 'sin colocar [' + (W.locations[it.name].room || '?') + ']'; }
+    if (it.kind === 'loc') { const [r] = checkPosition(it.name); where = r ? roomLabel(r) : 'unplaced [' + (W.locations[it.name].room || '?') + ']'; }
     else if (it.kind === 'edge') where = roomLabel(it.edge.src) + ' → ' + roomLabel(it.edge.dst);
     box.append(h('div', { class: 'item' + (i === searchActive ? ' active' : ''), onmousedown: (e) => { e.preventDefault(); goToSearch(it); } },
       h('span', { class: 'k' }, it.k), h('span', null, it.name), h('span', { class: 'r' }, where)));
@@ -1476,7 +1476,7 @@ function togglePanel(id) {
 }
 
 // =====================================================================
-// Panel izquierdo: esquema de la sala
+// Left panel: room outline
 // =====================================================================
 const ICON = (n) => {
   const cls = 'ico ' + (n.placed ? 'hex' : n.type === 'check' ? 'sq' : n.type === 'out' ? 'tri' : 'cir');
@@ -1495,7 +1495,7 @@ function renderTree() {
     const key = S.room + '/' + rid;
     const collapsed = S.collapsed.has(key);
     const wrap = h('div', { class: 'tree-region' + (collapsed ? ' collapsed' : '') });
-    const head = h('div', { class: 'tree-head' + (S.sel.type === 'region' && S.sel.rid === rid ? ' sel' : ''), title: 'Región ' + (reg.name || rid) + ' (' + rid + ')', onclick: () => select({ type: 'region', rid }, { center: true }) },
+    const head = h('div', { class: 'tree-head' + (S.sel.type === 'region' && S.sel.rid === rid ? ' sel' : ''), title: 'Region ' + (reg.name || rid) + ' (' + rid + ')', onclick: () => select({ type: 'region', rid }, { center: true }) },
       h('span', { class: 'caret', onclick: (e) => { e.stopPropagation(); if (collapsed) S.collapsed.delete(key); else S.collapsed.add(key); renderTree(); } }, collapsed ? '▸' : '▾'),
       h('span', { class: 'sw', style: 'background:' + reg.color }),
       h('span', { class: 'name' }, reg.name || rid),
@@ -1503,35 +1503,35 @@ function renderTree() {
     wrap.append(head);
     const list = h('div', { class: 'tree-nodes' });
     for (const n of members) list.append(treeNode(n));
-    if (!members.length) list.append(h('div', { class: 'empty dim' }, 'vacía'));
+    if (!members.length) list.append(h('div', { class: 'empty dim' }, 'empty'));
     wrap.append(list);
     el.append(wrap);
   }
-  // sin colocar
-  const sec = h('div', { class: 'tree-section' }, h('h4', null, 'Sin colocar'));
+  // unplaced
+  const sec = h('div', { class: 'tree-section' }, h('h4', null, 'Unplaced'));
   const un = nodes.un;
   const hubTodo = S.room === W.hub ? un.outs.filter(e => e.kind === 'warp' && !e.pos) : [];
-  if (hubTodo.length) sec.append(h('div', { class: 'actions' }, h('button', { class: 'small', title: 'Coloca cada warp «z01 transerver to X» en (368, piso del área destino); N en x=560', onclick: autoPlaceHubWarps }, 'Auto-colocar warps del hub (' + hubTodo.length + ')')));
+  if (hubTodo.length) sec.append(h('div', { class: 'actions' }, h('button', { class: 'small', title: 'Places each "z01 transerver to X" warp at (368, floor of the target area); N at x=560', onclick: autoPlaceHubWarps }, 'Auto-place hub warps (' + hubTodo.length + ')')));
   if (un.outs.length) {
-    sec.append(h('div', { class: 'sub' }, 'Salidas de ' + roomLabel(S.room) + ' sin posición (' + un.outs.length + ')'));
+    sec.append(h('div', { class: 'sub' }, 'Exits of ' + roomLabel(S.room) + ' without a position (' + un.outs.length + ')'));
     for (const e of un.outs) sec.append(unplacedRow({ kind: 'out', id: e.name }, { type: 'out', placed: true, color: e.key ? (KEY_COLOR[e.key] || NOKEY) : NOKEY }, e.name, '→ ' + roomLabel(e.dst)));
   }
   if (un.ins.length) {
-    sec.append(h('div', { class: 'sub' }, 'Aterrizajes en ' + roomLabel(S.room) + ' sin posición (' + un.ins.length + ')'));
+    sec.append(h('div', { class: 'sub' }, 'Landings in ' + roomLabel(S.room) + ' without a position (' + un.ins.length + ')'));
     for (const e of un.ins) sec.append(unplacedRow({ kind: 'in', id: e.name }, { type: 'in', placed: true, color: IN_COLOR }, e.name, '← ' + roomLabel(e.src)));
   }
   const multi = multiCandidates().filter(n => !placementIn(n, S.room));
   if (multi.length) {
-    sec.append(h('div', { class: 'sub', title: 'Se obtienen en cualquiera de varias salas (etiqueta de área con "/"): colócalas en cada una; en la lógica vale cualquiera (OR)' }, 'Con varias salas posibles: colocar también (' + multi.length + ')'));
+    sec.append(h('div', { class: 'sub', title: 'Obtained in any of several rooms (area tag with "/"): place them in each one; in the logic any of them counts (OR)' }, 'With several possible rooms: also place in (' + multi.length + ')'));
     for (const name of multi) {
       const loc = W.locations[name];
       const done = placementsOf(name).map(q => roomLabel(q.room)).join(', ');
-      sec.append(unplacedRow({ kind: 'loc', id: name }, { type: 'check', placed: true, color: catColor(loc.category) }, name, placementsOf(name).length + '/' + altRooms(name) + ' · ya en ' + done, S.sel.type === 'loc' && S.sel.name === name, () => select({ type: 'loc', name })));
+      sec.append(unplacedRow({ kind: 'loc', id: name }, { type: 'check', placed: true, color: catColor(loc.category) }, name, placementsOf(name).length + '/' + altRooms(name) + ' · already in ' + done, S.sel.type === 'loc' && S.sel.name === name, () => select({ type: 'loc', name })));
     }
   }
   const locs = unplacedLocations();
-  sec.append(h('div', { class: 'sub' }, 'Locations del juego sin sala (' + locs.length + ')'));
-  if (!locs.length) sec.append(h('div', { class: 'empty' }, 'ninguna'));
+  sec.append(h('div', { class: 'sub' }, 'Game locations without a room (' + locs.length + ')'));
+  if (!locs.length) sec.append(h('div', { class: 'empty' }, 'none'));
   for (const name of locs) {
     const loc = W.locations[name];
     sec.append(unplacedRow({ kind: 'loc', id: name }, { type: 'check', placed: true, color: catColor(loc.category) }, name, '[' + (loc.room || '?') + ']', S.sel.type === 'loc' && S.sel.name === name, () => select({ type: 'loc', name })));
@@ -1542,21 +1542,21 @@ function treeNode(n) {
   const row = h('div', { class: 'tree-node' + (S.sel.type === 'node' && S.sel.id === n.id ? ' sel' : ''), title: nodeTooltip(n),
     onclick: () => select({ type: 'node', id: n.id }, { center: true }) },
     ICON(n), h('span', { class: 'lbl' }, n.type === 'check' ? n.name : n.label),
-    n.pinned ? h('span', { class: 'pin', title: 'Región fijada a mano' }, '📌') : null,
-    n.type !== 'check' ? h('span', { class: 'tag' }, n.edge.key ? (isLockedKey(n.edge) ? '🔒 cerrada' : n.edge.key.replace(' Card Key', '')) : (n.edge.gate != null ? 'verja ' + n.edge.gate : '')) : null);
+    n.pinned ? h('span', { class: 'pin', title: 'Region pinned by hand' }, '📌') : null,
+    n.type !== 'check' ? h('span', { class: 'tag' }, n.edge.key ? (isLockedKey(n.edge) ? '🔒 locked' : n.edge.key.replace(' Card Key', '')) : (n.edge.gate != null ? 'gate ' + n.edge.gate : '')) : null);
   return row;
 }
 function unplacedRow(data, fake, name, tag, isSel, onclick) {
-  const row = h('div', { class: 'tree-node drag' + (isSel ? ' sel' : ''), draggable: true, title: name + '\nArrastra al lienzo o pulsa «Colocar» y haz clic en el lienzo',
+  const row = h('div', { class: 'tree-node drag' + (isSel ? ' sel' : ''), draggable: true, title: name + '\nDrag onto the canvas or press "Place" and click on the canvas',
     ondragstart: (e) => { e.dataTransfer.setData('text/plain', JSON.stringify(data)); e.dataTransfer.effectAllowed = 'copy'; },
     onclick: onclick || null },
     ICON(fake), h('span', { class: 'lbl' }, name), h('span', { class: 'tag' }, tag),
-    h('button', { class: 'place', title: 'Colocar en esta sala: clic en el lienzo', onclick: (e) => { e.stopPropagation(); startPlacing(data); } }, 'Colocar'));
+    h('button', { class: 'place', title: 'Place in this room: click on the canvas', onclick: (e) => { e.stopPropagation(); startPlacing(data); } }, 'Place'));
   return row;
 }
 
 // =====================================================================
-// Editor de requisitos (componente reutilizable)
+// Requirement editor (reusable component)
 // =====================================================================
 function reqEditor(opts) {
   const root = h('div', { class: 'req' });
@@ -1574,14 +1574,14 @@ function reqEditor(opts) {
     const req = current();
     if (opts.nullable) {
       const cb = h('input', { type: 'checkbox', checked: req == null, onchange: () => setReq(cb.checked ? null : { [tiers[0]]: [[]] }) });
-      root.append(h('label', { class: 'req-null', title: 'null en el documento' }, cb, opts.nullLabel || 'Sin requisito (libre)'));
+      root.append(h('label', { class: 'req-null', title: 'null in the document' }, cb, opts.nullLabel || 'No requirement (free)'));
       if (req == null) return;
     }
     const r = req || {};
     for (const tier of tiers) root.append(tierBlock(tier, r[tier] === undefined ? null : r[tier]));
     const sum = h('div', { class: 'summary' });
     for (const tier of tiers) sum.append(h('div', null, tier + ': ' + reqUiText(r, tier) + (tier !== tiers[0] ? '  (+ ' + tiers.slice(0, tiers.indexOf(tier)).join(', ') + ')' : '')));
-    sum.append(h('div', { class: 'hint' }, 'expert amplía normal: en expert valen también las alternativas de normal.'));
+    sum.append(h('div', { class: 'hint' }, 'expert extends normal: in expert the alternatives of normal also count.'));
     root.append(sum);
   }
   function tierBlock(tier, dnf) {
@@ -1589,35 +1589,35 @@ function reqEditor(opts) {
     const blk = h('div', { class: 'tier' });
     blk.append(h('div', { class: 'tier-head' },
       h('span', { class: 'tname' }, tier),
-      h('span', { class: 'thint' }, tier === tiers[0] ? '' : '(amplía ' + tiers[0] + ')'),
+      h('span', { class: 'thint' }, tier === tiers[0] ? '' : '(extends ' + tiers[0] + ')'),
       h('span', { class: 'spacer' }),
-      h('button', { title: 'Libre: una alternativa vacía [[]]', onclick: () => setTier(tier, [[]]) }, 'Libre'),
-      h('button', { title: 'Imposible: sin alternativas []', onclick: () => setTier(tier, []) }, 'Imposible'),
-      h('button', { title: 'Añadir una alternativa (OR)', onclick: () => setTier(tier, alts.concat([[]])) }, '+ alternativa')));
-    if (!alts.length) blk.append(h('div', { class: 'none' }, tier === tiers[0] ? 'sin alternativas: imposible en ' + tier + (dnf === null ? '' : '') : 'sin alternativas propias (solo las de ' + tiers[0] + ')'));
+      h('button', { title: 'Free: one empty alternative [[]]', onclick: () => setTier(tier, [[]]) }, 'Free'),
+      h('button', { title: 'Impossible: no alternatives []', onclick: () => setTier(tier, []) }, 'Impossible'),
+      h('button', { title: 'Add an alternative (OR)', onclick: () => setTier(tier, alts.concat([[]])) }, '+ alternative')));
+    if (!alts.length) blk.append(h('div', { class: 'none' }, tier === tiers[0] ? 'no alternatives: impossible in ' + tier + (dnf === null ? '' : '') : 'no alternatives of its own (only those of ' + tiers[0] + ')'));
     alts.forEach((alt, ai) => {
-      const row = h('div', { class: 'alt' }, h('span', { class: 'or' }, ai ? 'o' : ''));
-      if (!alt.length) row.append(h('span', { class: 'chip free', title: 'Alternativa vacía = libre' }, 'libre'));
+      const row = h('div', { class: 'alt' }, h('span', { class: 'or' }, ai ? 'or' : ''));
+      if (!alt.length) row.append(h('span', { class: 'chip free', title: 'Empty alternative = free' }, 'free'));
       alt.forEach((atom, xi) => {
         row.append(h('span', { class: 'chip g-' + Logic.groupOf(atom), title: atomLabel(atom) }, atom,
-          h('span', { class: 'x', title: 'Quitar', onclick: () => { const na = alts.map(a => a.slice()); na[ai].splice(xi, 1); setTier(tier, na); } }, '×')));
+          h('span', { class: 'x', title: 'Remove', onclick: () => { const na = alts.map(a => a.slice()); na[ai].splice(xi, 1); setTier(tier, na); } }, '×')));
         if (xi < alt.length - 1) row.append(h('span', { class: 'dim' }, '&'));
       });
       row.append(atomSelect((atom) => { const na = alts.map(a => a.slice()); if (!na[ai].includes(atom)) na[ai].push(atom); setTier(tier, na); }));
-      row.append(h('span', { class: 'rm', title: 'Quitar esta alternativa', onclick: () => { const na = alts.map(a => a.slice()); na.splice(ai, 1); setTier(tier, na); } }, '×'));
+      row.append(h('span', { class: 'rm', title: 'Remove this alternative', onclick: () => { const na = alts.map(a => a.slice()); na.splice(ai, 1); setTier(tier, na); } }, '×'));
       blk.append(row);
     });
-    const inp = h('input', { type: 'text', value: dnf === null ? '' : Logic.dnfToText(dnf), placeholder: 'expresión: HX & (LX | FX) · free · never', title: 'Enter aplica. Gramática de logic_format.parse_expr' });
+    const inp = h('input', { type: 'text', value: dnf === null ? '' : Logic.dnfToText(dnf), placeholder: 'expression: HX & (LX | FX) · free · never', title: 'Enter applies. Grammar of logic_format.parse_expr' });
     const err = h('div', { class: 'expr-err' });
     inp.addEventListener('keydown', (e) => {
       if (e.key !== 'Enter') return;
       e.preventDefault();
       const txt = inp.value.trim();
-      if (!txt) { err.textContent = 'Vacío: escribe free (libre) o never (imposible).'; return; }
+      if (!txt) { err.textContent = 'Empty: type free or never (impossible).'; return; }
       try { const parsed = Logic.parseExpr(txt); err.textContent = ''; setTier(tier, parsed); }
       catch (ex) { err.textContent = ex.message; }
     });
-    blk.append(h('div', { class: 'expr' }, inp, h('button', { class: 'small', title: 'Aplicar la expresión (Enter)', onclick: () => inp.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' })) }, '↵')), err);
+    blk.append(h('div', { class: 'expr' }, inp, h('button', { class: 'small', title: 'Apply the expression (Enter)', onclick: () => inp.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' })) }, '↵')), err);
     return blk;
   }
   build();
@@ -1625,12 +1625,12 @@ function reqEditor(opts) {
 }
 function atomLabel(atom) { const a = W.atoms.find(x => x.id === atom); return a ? a.label : atom; }
 function atomSelect(onPick) {
-  const sel = h('select', { class: 'add-atom', title: 'Añadir un átomo (AND)' }, h('option', { value: '' }, '+ átomo'));
+  const sel = h('select', { class: 'add-atom', title: 'Add an atom (AND)' }, h('option', { value: '' }, '+ atom'));
   const groups = {};
   for (const a of W.atoms) (groups[a.group] = groups[a.group] || []).push(a);
   for (const g of Object.keys(groups)) {
     const og = h('optgroup', { label: g });
-    for (const a of groups[g]) og.append(h('option', { value: a.id }, a.id + ' — ' + a.label));
+    for (const a of groups[g]) og.append(h('option', { value: a.id }, a.id + ' - ' + a.label));
     sel.append(og);
   }
   sel.addEventListener('change', () => { if (sel.value) { onPick(sel.value); sel.value = ''; } });
@@ -1652,22 +1652,22 @@ function bindNote(getObj, key, el, opts = {}) {
   return el;
 }
 function noteField(getObj, key = 'note', opts = {}) {
-  const obj = (opts.peek || getObj)();   // peek: lectura sin crear la entrada
-  return h('div', { class: 'field col' }, h('label', null, 'Nota'), bindNote(getObj, key, h('textarea', { class: 'note', rows: 2, value: obj[key] || '', placeholder: 'nota libre' }), opts));
+  const obj = (opts.peek || getObj)();   // peek: read without creating the entry
+  return h('div', { class: 'field col' }, h('label', null, 'Note'), bindNote(getObj, key, h('textarea', { class: 'note', rows: 2, value: obj[key] || '', placeholder: 'free note' }), opts));
 }
 function unsureField(getObj, opts = {}) {
   const cur = (opts.peek || getObj)();
   const cb = h('input', { type: 'checkbox', checked: !!cur.unsure, onchange: () => { edit(() => { getObj().unsure = cb.checked; if (opts.after) opts.after(); }, { keepInspector: true }); } });
-  return h('div', { class: 'field' }, h('label', { title: 'Regla sin confirmar in-game («?» en logic.txt)' }, cb, 'Sin confirmar in-game (?)'));
+  return h('div', { class: 'field' }, h('label', { title: 'Rule not confirmed in-game ("?" in logic.txt)' }, cb, 'Unconfirmed in-game (?)'));
 }
 function regionSelectField(node) {
   const rl = RL();
-  const sel = h('select', { title: 'Región del nodo: automática (geometría) o fijada a mano' },
-    h('option', { value: '' }, 'Automática: ' + regionName(S.room, node.autoRid)));
-  for (const rid of regionOrder(rl)) sel.append(h('option', { value: rid, selected: node.pinned && node.rid === rid }, 'Fijar a ' + regionName(S.room, rid)));
+  const sel = h('select', { title: 'Region of the node: automatic (geometry) or pinned by hand' },
+    h('option', { value: '' }, 'Automatic: ' + regionName(S.room, node.autoRid)));
+  for (const rid of regionOrder(rl)) sel.append(h('option', { value: rid, selected: node.pinned && node.rid === rid }, 'Pin to ' + regionName(S.room, rid)));
   sel.addEventListener('change', () => { edit(() => { if (sel.value === '') delete rl.members[node.id]; else rl.members[node.id] = sel.value; }); });
-  return h('div', { class: 'field' }, h('label', null, 'Región'), sel,
-    node.pinned ? h('button', { class: 'small', title: 'Volver a la pertenencia geométrica', onclick: () => edit(() => { delete rl.members[node.id]; }) }, 'Soltar') : null);
+  return h('div', { class: 'field' }, h('label', null, 'Region'), sel,
+    node.pinned ? h('button', { class: 'small', title: 'Back to geometric membership', onclick: () => edit(() => { delete rl.members[node.id]; }) }, 'Unpin') : null);
 }
 function kv(pairs) {
   const g = h('div', { class: 'kv' });
@@ -1689,11 +1689,11 @@ function renderInspector() {
 }
 function inspectRoom(el, rl) {
   const info = W.rooms[S.room];
-  el.append(h('h2', null, 'Sala ' + roomLabel(S.room)), h('div', { class: 'kind' }, S.room + ' · subárea ' + info.sub + ' · ' + info.size[0] + '×' + info.size[1] + ' px' + (W.transerver_access[S.room] ? ' · Transerver: ' + W.transerver_access[S.room] : '')));
-  el.append(h('h3', null, 'Requisito de entrada (para estar en la sala)'));
-  el.append(reqEditor({ nullable: true, nullLabel: 'Sin requisito de entrada', get: () => rl.req, set: (r) => edit(() => { rl.req = r; }, { keepInspector: true }) }));
+  el.append(h('h2', null, 'Room ' + roomLabel(S.room)), h('div', { class: 'kind' }, S.room + ' · subarea ' + info.sub + ' · ' + info.size[0] + '×' + info.size[1] + ' px' + (W.transerver_access[S.room] ? ' · Transerver: ' + W.transerver_access[S.room] : '')));
+  el.append(h('h3', null, 'Entry requirement (to be in the room)'));
+  el.append(reqEditor({ nullable: true, nullLabel: 'No entry requirement', get: () => rl.req, set: (r) => edit(() => { rl.req = r; }, { keepInspector: true }) }));
   el.append(noteField(() => rl));
-  el.append(h('h3', null, 'Regiones (' + regionOrder(rl).length + ')'));
+  el.append(h('h3', null, 'Regions (' + regionOrder(rl).length + ')'));
   const list = h('div', { class: 'list' });
   for (const rid of regionOrder(rl)) {
     const reg = rl.regions[rid];
@@ -1701,37 +1701,37 @@ function inspectRoom(el, rl) {
     const colorIn = h('input', { type: 'color', value: reg.color || '#8ab4f8', title: 'Color', onclick: (e) => e.stopPropagation(), onchange: () => edit(() => { reg.color = colorIn.value; }, { keepInspector: true }) });
     list.append(h('div', { class: 'row-item', onclick: () => select({ type: 'region', rid }, { center: true }) },
       colorIn, h('span', { class: 'grow' }, reg.name || rid, ' ', h('span', { class: 'dim' }, '(' + nn + ')')),
-      h('button', { class: 'small', title: 'Renombrar', onclick: async (e) => { e.stopPropagation(); const nm = await askText('Nombre de la región', reg.name || rid); if (nm !== null && nm.trim()) edit(() => { reg.name = nm.trim(); }); } }, '✎'),
-      rid !== 'main' ? h('button', { class: 'small danger', title: 'Borrar la región (sus nodos vuelven a la geometría)', onclick: (e) => { e.stopPropagation(); deleteRegion(rid); } }, '×') : null));
+      h('button', { class: 'small', title: 'Rename', onclick: async (e) => { e.stopPropagation(); const nm = await askText('Region name', reg.name || rid); if (nm !== null && nm.trim()) edit(() => { reg.name = nm.trim(); }); } }, '✎'),
+      rid !== 'main' ? h('button', { class: 'small danger', title: 'Delete the region (its nodes go back to the geometry)', onclick: (e) => { e.stopPropagation(); deleteRegion(rid); } }, '×') : null));
   }
   el.append(list);
-  el.append(h('div', { class: 'actions' }, h('button', { title: 'Dibujar un polígono (P)', onclick: () => setMode('poly') }, '+ Región (dibujar polígono)')));
-  el.append(h('h3', null, 'Conexiones (' + rl.conns.length + ')'));
+  el.append(h('div', { class: 'actions' }, h('button', { title: 'Draw a polygon (P)', onclick: () => setMode('poly') }, '+ Region (draw polygon)')));
+  el.append(h('h3', null, 'Connections (' + rl.conns.length + ')'));
   el.append(connList(rl, rl.conns));
   if (regionOrder(rl).length > 1) el.append(newConnForm(rl, 'main'));
 }
 function connList(rl, conns) {
   const list = h('div', { class: 'list' });
-  if (!conns.length) list.append(h('div', { class: 'dim' }, 'ninguna'));
+  if (!conns.length) list.append(h('div', { class: 'dim' }, 'none'));
   for (const c of conns) {
     const isSel = S.sel.type === 'conn' && S.sel.from === c.from && S.sel.to === c.to;
     list.append(h('div', { class: 'row-item' + (isSel ? ' sel' : ''), onclick: () => select({ type: 'conn', from: c.from, to: c.to }, { center: true }) },
       h('span', { class: 'sw', style: 'background:' + regionColor(S.room, c.from) }),
       h('span', { class: 'grow' }, regionName(S.room, c.from) + ' → ' + regionName(S.room, c.to)),
-      c.unsure ? h('span', { class: 'unsure', title: 'sin confirmar' }, '?') : null,
+      c.unsure ? h('span', { class: 'unsure', title: 'unconfirmed' }, '?') : null,
       h('span', { class: 'req' }, reqShort(c.req, S.tier, 22))));
   }
   return list;
 }
 function newConnForm(rl, from) {
   const others = regionOrder(rl).filter(r => r !== from);
-  if (!others.length) return h('div', { class: 'dim' }, 'Dibuja otra región para poder conectar.');
+  if (!others.length) return h('div', { class: 'dim' }, 'Draw another region to be able to connect.');
   const sel = h('select', null, ...others.map(r => h('option', { value: r }, regionName(S.room, r))));
   const bi = h('input', { type: 'checkbox', checked: true });
-  return h('div', { class: 'field', title: 'Crear una conexión dirigida desde ' + regionName(S.room, from) },
-    h('span', { class: 'lbl' }, 'Nueva conexión ' + regionName(S.room, from) + ' →'), sel,
-    h('label', null, bi, 'bidireccional'),
-    h('button', { class: 'primary small', onclick: () => addConn(rl, from, sel.value, bi.checked) }, 'Crear'));
+  return h('div', { class: 'field', title: 'Create a directed connection from ' + regionName(S.room, from) },
+    h('span', { class: 'lbl' }, 'New connection ' + regionName(S.room, from) + ' →'), sel,
+    h('label', null, bi, 'bidirectional'),
+    h('button', { class: 'primary small', onclick: () => addConn(rl, from, sel.value, bi.checked) }, 'Create'));
 }
 function addConn(rl, from, to, bidir) {
   if (from === to) return;
@@ -1741,14 +1741,14 @@ function addConn(rl, from, to, bidir) {
     if (!findConn(rl, from, to)) { rl.conns.push(mk(from, to)); created++; }
     if (bidir && !findConn(rl, to, from)) { rl.conns.push(mk(to, from)); created++; }
   });
-  if (!created) flash('Esa conexión ya existe');
+  if (!created) flash('That connection already exists');
   select({ type: 'conn', from, to });
 }
-// Arena de jefe: marca esta región como el sitio donde se pelea a un jefe.
-// El apworld hace AND del requisito que el jugador ponga en su YAML (opción
-// boss_logic) en TODA arista que aterrice aquí, así que sin cumplirlo no se
-// entra, no se cruza al otro lado y no se coge nada de dentro. Aquí NO se
-// escribe requisito ninguno: solo se dice dónde está cada jefe.
+// Boss arena: marks this region as the place where a boss is fought.
+// The apworld ANDs the requirement the player sets in their YAML (boss_logic
+// option) into EVERY edge that lands here, so without meeting it you do not
+// get in, do not cross to the other side and do not pick up anything inside.
+// NO requirement is written here: it only says where each boss is.
 function bossOwner(bossId) {
   for (const [room, rl] of Object.entries(DOC.rooms || {}))
     for (const [rid, reg] of Object.entries(rl.regions || {}))
@@ -1758,15 +1758,15 @@ function bossOwner(bossId) {
 function bossField(reg, rid) {
   const roster = W.bosses || [];
   if (!roster.length) return h('div');
-  const sel = h('select', { title: 'Marca esta región como la arena de un jefe (opción boss_logic del YAML)' },
-    h('option', { value: '' }, '(ninguno)'));
+  const sel = h('select', { title: 'Marks this region as the arena of a boss (boss_logic option of the YAML)' },
+    h('option', { value: '' }, '(none)'));
   for (const b of roster) {
     const own = bossOwner(b.id);
     const taken = own && !(own.room === S.room && own.rid === rid);
     sel.append(h('option', {
       value: b.id, disabled: taken ? 'disabled' : null,
-      title: taken ? 'ya etiquetado en ' + own.room + '/' + own.rid : b.room_label,
-    }, b.name + ' (' + b.room_label + ')' + (taken ? ' — ya en ' + own.room + '/' + own.rid : '')));
+      title: taken ? 'already tagged in ' + own.room + '/' + own.rid : b.room_label,
+    }, b.name + ' (' + b.room_label + ')' + (taken ? ' - already in ' + own.room + '/' + own.rid : '')));
   }
   sel.value = reg.boss || '';
   sel.addEventListener('change', () => edit(() => {
@@ -1774,126 +1774,126 @@ function bossField(reg, rid) {
   }, { keepInspector: true }));
   const b = roster.find(x => x.id === reg.boss);
   const hint = b && b.room !== S.room
-    ? h('div', { class: 'dim' }, '⚠️ ' + b.name + ' se esperaba en ' + b.room_label)
+    ? h('div', { class: 'dim' }, '⚠️ ' + b.name + ' was expected in ' + b.room_label)
     : null;
-  return h('div', { class: 'field col' }, h('label', null, 'Arena de jefe'), sel, hint);
+  return h('div', { class: 'field col' }, h('label', null, 'Boss arena'), sel, hint);
 }
 function inspectRegion(el, rl, rid) {
   const reg = rl.regions[rid];
   const nodes = roomNodes(S.room).list.filter(n => n.rid === rid);
-  el.append(h('h2', null, h('span', { class: 'sw', style: 'background:' + reg.color }), 'Región ', reg.name || rid), h('div', { class: 'kind' }, 'id ' + rid + ' · ' + (rid === 'main' ? 'resto de la sala (sin polígono)' : (reg.poly || []).length + ' vértices') + ' · ' + nodes.length + ' nodos'));
+  el.append(h('h2', null, h('span', { class: 'sw', style: 'background:' + reg.color }), 'Region ', reg.name || rid), h('div', { class: 'kind' }, 'id ' + rid + ' · ' + (rid === 'main' ? 'rest of the room (no polygon)' : (reg.poly || []).length + ' vertices') + ' · ' + nodes.length + ' nodes'));
   const nameIn = h('input', { type: 'text', value: reg.name || '' });
   nameIn.addEventListener('change', () => { if (nameIn.value.trim()) edit(() => { reg.name = nameIn.value.trim(); }); });
   const colorIn = h('input', { type: 'color', value: reg.color || '#8ab4f8', onchange: () => edit(() => { reg.color = colorIn.value; }, { keepInspector: true }) });
-  el.append(h('div', { class: 'field' }, h('label', null, 'Nombre'), nameIn, colorIn));
+  el.append(h('div', { class: 'field' }, h('label', null, 'Name'), nameIn, colorIn));
   el.append(bossField(reg, rid));
   el.append(noteField(() => reg));
   if (rid !== 'main') el.append(h('div', { class: 'actions' },
-    h('button', { title: 'Los vértices se arrastran en el lienzo; doble clic en un lado inserta; clic derecho borra; Shift+arrastre mueve', onclick: () => { setMode('select'); select({ type: 'region', rid }, { center: true }); flash('Edita los vértices en el lienzo (ver ? para los atajos)'); } }, 'Editar polígono'),
-    h('button', { class: 'danger', title: 'Borrar la región (Supr)', onclick: () => deleteRegion(rid) }, 'Borrar región')));
-  el.append(h('h3', null, 'Nodos miembros (' + nodes.length + ')'));
+    h('button', { title: 'Vertices are dragged on the canvas; double click on a side inserts; right click deletes; Shift+drag moves', onclick: () => { setMode('select'); select({ type: 'region', rid }, { center: true }); flash('Edit the vertices on the canvas (see ? for the shortcuts)'); } }, 'Edit polygon'),
+    h('button', { class: 'danger', title: 'Delete the region (Del)', onclick: () => deleteRegion(rid) }, 'Delete region')));
+  el.append(h('h3', null, 'Member nodes (' + nodes.length + ')'));
   const list = h('div', { class: 'list' });
-  if (!nodes.length) list.append(h('div', { class: 'dim' }, 'ninguno'));
+  if (!nodes.length) list.append(h('div', { class: 'dim' }, 'none'));
   for (const n of nodes) list.append(h('div', { class: 'row-item', title: nodeTooltip(n), onclick: () => select({ type: 'node', id: n.id }, { center: true }) }, ICON(n), h('span', { class: 'grow' }, n.type === 'check' ? n.name : n.label + '  ', n.type !== 'check' ? h('span', { class: 'dim mono' }, n.edge.name) : null), n.pinned ? h('span', { class: 'pin' }, '📌') : null));
   el.append(list);
-  el.append(h('h3', null, 'Conexiones'));
+  el.append(h('h3', null, 'Connections'));
   el.append(newConnForm(rl, rid));
   el.append(connList(rl, rl.conns.filter(c => c.from === rid || c.to === rid)));
 }
 function inspectConn(el, rl, c) {
-  el.append(h('h2', null, 'Conexión'), h('div', { class: 'kind' },
+  el.append(h('h2', null, 'Connection'), h('div', { class: 'kind' },
     h('span', { class: 'sw', style: 'background:' + regionColor(S.room, c.from) }), regionName(S.room, c.from), ' → ',
     h('span', { class: 'sw', style: 'background:' + regionColor(S.room, c.to) }), regionName(S.room, c.to)));
-  el.append(h('h3', null, 'Requisito para pasar'));
+  el.append(h('h3', null, 'Requirement to pass'));
   el.append(reqEditor({ nullable: false, get: () => c.req || {}, set: (r) => edit(() => { c.req = r; }, { keepInspector: true }) }));
   el.append(unsureField(() => c));
   el.append(noteField(() => c));
   const rev = findConn(rl, c.to, c.from);
   el.append(h('div', { class: 'actions' },
-    rev ? h('button', { onclick: () => select({ type: 'conn', from: c.to, to: c.from }) }, 'Ir a la inversa') : h('button', { title: 'Crear la conexión en sentido contrario (libre)', onclick: () => addConn(rl, c.to, c.from, false) }, 'Crear la inversa'),
-    h('button', { disabled: !!rev, title: rev ? 'Ya existe la inversa' : 'Intercambiar origen y destino', onclick: () => { edit(() => { const f = c.from; c.from = c.to; c.to = f; }); select({ type: 'conn', from: c.from, to: c.to }); } }, 'Invertir'),
-    h('button', { class: 'danger', title: 'Borrar (Supr)', onclick: () => { S.sel = { type: 'conn', from: c.from, to: c.to }; deleteSelection(); } }, 'Borrar')));
+    rev ? h('button', { onclick: () => select({ type: 'conn', from: c.to, to: c.from }) }, 'Go to the reverse') : h('button', { title: 'Create the connection in the opposite direction (free)', onclick: () => addConn(rl, c.to, c.from, false) }, 'Create the reverse'),
+    h('button', { disabled: !!rev, title: rev ? 'The reverse already exists' : 'Swap source and target', onclick: () => { edit(() => { const f = c.from; c.from = c.to; c.to = f; }); select({ type: 'conn', from: c.from, to: c.to }); } }, 'Invert'),
+    h('button', { class: 'danger', title: 'Delete (Del)', onclick: () => { S.sel = { type: 'conn', from: c.from, to: c.to }; deleteSelection(); } }, 'Delete')));
 }
 function inspectNode(el, rl, n) {
   if (n.type === 'check') {
     const loc = W.locations[n.id];
-    el.append(h('h2', null, n.full), h('div', { class: 'kind' }, h('span', { class: 'sw', style: 'background:' + n.color }), catLabel(n.cat) + (n.placed ? ' · colocado a mano' : '') + (loc.detect ? '' : ' · sin detección')));
+    el.append(h('h2', null, n.full), h('div', { class: 'kind' }, h('span', { class: 'sw', style: 'background:' + n.color }), catLabel(n.cat) + (n.placed ? ' · placed by hand' : '') + (loc.detect ? '' : ' · no detection')));
     const others = n.placed ? placementsOf(n.id).filter(q => q.room !== S.room).map(q => roomLabel(q.room)) : [];
-    el.append(kv([['Sala', roomLabel(S.room)], ['Posición', n.pos[0] + ', ' + n.pos[1]], ['Etiqueta de área', n.placed ? loc.room : null],
-      ['También en', others.length ? others.join(', ') + ' (vale cualquiera: OR)' : null]]));
+    el.append(kv([['Room', roomLabel(S.room)], ['Position', n.pos[0] + ', ' + n.pos[1]], ['Area tag', n.placed ? loc.room : null],
+      ['Also in', others.length ? others.join(', ') + ' (any of them counts: OR)' : null]]));
     el.append(regionSelectField(n));
-    el.append(h('h3', null, 'Requisito para obtener el check'));
-    el.append(reqEditor({ nullable: true, nullLabel: 'Sin requisito (basta con estar en la región)', get: () => (DOC.checks[n.id] || {}).req || null, set: (r) => edit(() => { ensureCheck(n.id).req = r; pruneCheck(n.id); }, { keepInspector: true }) }));
+    el.append(h('h3', null, 'Requirement to obtain the check'));
+    el.append(reqEditor({ nullable: true, nullLabel: 'No requirement (being in the region is enough)', get: () => (DOC.checks[n.id] || {}).req || null, set: (r) => edit(() => { ensureCheck(n.id).req = r; pruneCheck(n.id); }, { keepInspector: true }) }));
     el.append(unsureField(() => ensureCheck(n.id), { peek: () => peekCheck(n.id), after: () => pruneCheck(n.id) }));
     el.append(noteField(() => ensureCheck(n.id), 'note', { peek: () => peekCheck(n.id), after: () => pruneCheck(n.id) }));
-    if (n.placed) el.append(h('div', { class: 'actions' }, h('button', { class: 'danger', title: 'Quitar la colocación manual (vuelve a «Sin colocar»)', onclick: () => removePlacement(n) }, 'Quitar de la sala')));
+    if (n.placed) el.append(h('div', { class: 'actions' }, h('button', { class: 'danger', title: 'Remove the manual placement (goes back to "Unplaced")', onclick: () => removePlacement(n) }, 'Remove from the room')));
     return;
   }
   const e = n.edge;
   const ov = () => DOC.edges[e.name] || {};
   const other = n.type === 'out' ? e.dst : e.src;
   const otherId = n.type === 'out' ? e.name + '@in' : e.name;
-  el.append(h('h2', null, n.type === 'out' ? 'Salida de arista' : 'Aterrizaje de arista'), h('div', { class: 'kind mono' }, e.name));
-  const goBtn = h('button', { class: 'small', title: 'Ir a ' + roomLabel(other), onclick: () => { switchRoom(other); if (roomNodes(other).byId[otherId]) select({ type: 'node', id: otherId }, { center: true }); } }, 'Ir a ' + roomLabel(other));
-  const pairs = [['Tipo', KIND_ES[e.kind] || e.kind], ['Posición', n.pos[0] + ', ' + n.pos[1] + (n.placed ? ' (colocada a mano)' : '')]];
-  if (n.type === 'out') pairs.push(['Destino', h('span', null, roomLabel(e.dst) + ' / ' + regionName(e.dst, landingRid(e)) + ' ', e.dst !== S.room ? goBtn : null)]);
-  else pairs.push(['Desde', h('span', null, roomLabel(e.src) + ' / ' + regionName(e.src, roomNodes(e.src).members[e.name] || 'main') + ' ', e.src !== S.room ? goBtn : null)]);
-  if (e.kind === 'internal') pairs.push(['Interna', 'une ' + regionName(S.room, roomNodes(S.room).members[e.name] || 'main') + ' → ' + regionName(S.room, roomNodes(S.room).members[e.name + '@in'] || 'main')]);
-  if (e.key) pairs.push(['Llave', h('span', null, h('span', { class: 'sw', style: 'background:' + keyColor(e) }), e.key + (isLockedKey(e) ? ' — NO está en el pool: la puerta está CERRADA en la lógica (en vanilla solo se cruza de vuelta)' : ''))]);
-  if (e.gate != null) pairs.push(['Verja', h('span', null, e.gate + ': ' + gateText(e.gate) + ' ', h('a', { class: 'link', onclick: () => { S.gatesTarget = String(e.gate); $('#gates-panel').hidden = false; renderGates(); } }, 'ver verjas'))]);
-  if (e.kind === 'warp' && e.src === W.hub) pairs.push(['Transerver', W.transerver_access[e.dst] || 'sin destino de Transport']);
-  if (e.kind === 'save') pairs.push(['Nota', 'los pads no crean transición (NON_TRANSITION_KINDS)']);
+  el.append(h('h2', null, n.type === 'out' ? 'Edge exit' : 'Edge landing'), h('div', { class: 'kind mono' }, e.name));
+  const goBtn = h('button', { class: 'small', title: 'Go to ' + roomLabel(other), onclick: () => { switchRoom(other); if (roomNodes(other).byId[otherId]) select({ type: 'node', id: otherId }, { center: true }); } }, 'Go to ' + roomLabel(other));
+  const pairs = [['Type', KIND_ES[e.kind] || e.kind], ['Position', n.pos[0] + ', ' + n.pos[1] + (n.placed ? ' (placed by hand)' : '')]];
+  if (n.type === 'out') pairs.push(['Target', h('span', null, roomLabel(e.dst) + ' / ' + regionName(e.dst, landingRid(e)) + ' ', e.dst !== S.room ? goBtn : null)]);
+  else pairs.push(['From', h('span', null, roomLabel(e.src) + ' / ' + regionName(e.src, roomNodes(e.src).members[e.name] || 'main') + ' ', e.src !== S.room ? goBtn : null)]);
+  if (e.kind === 'internal') pairs.push(['Internal', 'joins ' + regionName(S.room, roomNodes(S.room).members[e.name] || 'main') + ' → ' + regionName(S.room, roomNodes(S.room).members[e.name + '@in'] || 'main')]);
+  if (e.key) pairs.push(['Key', h('span', null, h('span', { class: 'sw', style: 'background:' + keyColor(e) }), e.key + (isLockedKey(e) ? ' - NOT in the pool: the door is LOCKED in the logic (in vanilla it is only crossed on the way back)' : ''))]);
+  if (e.gate != null) pairs.push(['Gate', h('span', null, e.gate + ': ' + gateText(e.gate) + ' ', h('a', { class: 'link', onclick: () => { S.gatesTarget = String(e.gate); $('#gates-panel').hidden = false; renderGates(); } }, 'see gates'))]);
+  if (e.kind === 'warp' && e.src === W.hub) pairs.push(['Transerver', W.transerver_access[e.dst] || 'no Transport destination']);
+  if (e.kind === 'save') pairs.push(['Note', 'pads do not create a transition (NON_TRANSITION_KINDS)']);
   el.append(kv(pairs));
   el.append(regionSelectField(n));
   if (n.type === 'out') {
-    el.append(h('h3', null, 'Coste extra para usar la arista'));
-    el.append(reqEditor({ nullable: true, nullLabel: 'Sin coste extra (solo llave, verja y entrada de la sala destino)', get: () => ov().req || null, set: (r) => edit(() => { ensureEdge(e.name).req = r; pruneEdge(e.name); }, { keepInspector: true }) }));
+    el.append(h('h3', null, 'Extra cost to use the edge'));
+    el.append(reqEditor({ nullable: true, nullLabel: 'No extra cost (only key, gate and entry of the target room)', get: () => ov().req || null, set: (r) => edit(() => { ensureEdge(e.name).req = r; pruneEdge(e.name); }, { keepInspector: true }) }));
     el.append(unsureField(() => ensureEdge(e.name), { peek: () => peekEdge(e.name), after: () => pruneEdge(e.name) }));
     el.append(noteField(() => ensureEdge(e.name), 'note', { peek: () => peekEdge(e.name), after: () => pruneEdge(e.name) }));
   } else {
     const o = ov();
-    if (o.req || o.note) el.append(h('div', { class: 'dim' }, 'La regla de la arista se edita en su salida (' + roomLabel(e.src) + ').'));
+    if (o.req || o.note) el.append(h('div', { class: 'dim' }, 'The edge rule is edited at its exit (' + roomLabel(e.src) + ').'));
   }
-  if (n.placed) el.append(h('div', { class: 'actions' }, h('button', { class: 'danger', title: 'Quitar la posición colocada a mano', onclick: () => removePlacement(n) }, 'Quitar posición')));
+  if (n.placed) el.append(h('div', { class: 'actions' }, h('button', { class: 'danger', title: 'Remove the hand-placed position', onclick: () => removePlacement(n) }, 'Remove position')));
 }
 function inspectUnplacedLoc(el, name) {
   const loc = W.locations[name];
   if (!loc) return;
   const already = placementsOf(name);
-  el.append(h('h2', null, name), h('div', { class: 'kind' }, h('span', { class: 'sw', style: 'background:' + catColor(loc.category) }), catLabel(loc.category) + (already.length ? ' · colocada en ' + already.map(q => roomLabel(q.room)).join(', ') + ' (' + already.length + '/' + altRooms(name) + ' salas)' : ' · SIN COLOCAR')));
-  el.append(kv([['Etiqueta de área', loc.room || '?'], ['Regla actual', already.length ? 'alcanzar cualquiera de sus salas (OR) ∧ requisito' : 'fallback por etiqueta de área (v0.2)']]));
-  el.append(h('div', { class: 'actions' }, h('button', { class: 'primary', title: 'Clic en el lienzo de la sala actual para colocarla', onclick: () => startPlacing({ kind: 'loc', id: name }) }, 'Colocar en ' + roomLabel(S.room) + ' (clic en el lienzo)')));
-  el.append(h('h3', null, 'Requisito para obtener el check'));
-  el.append(reqEditor({ nullable: true, nullLabel: 'Sin requisito', get: () => (DOC.checks[name] || {}).req || null, set: (r) => edit(() => { ensureCheck(name).req = r; pruneCheck(name); }, { keepInspector: true }) }));
+  el.append(h('h2', null, name), h('div', { class: 'kind' }, h('span', { class: 'sw', style: 'background:' + catColor(loc.category) }), catLabel(loc.category) + (already.length ? ' · placed in ' + already.map(q => roomLabel(q.room)).join(', ') + ' (' + already.length + '/' + altRooms(name) + ' rooms)' : ' · UNPLACED')));
+  el.append(kv([['Area tag', loc.room || '?'], ['Current rule', already.length ? 'reach any of its rooms (OR) ∧ requirement' : 'fallback by area tag (v0.2)']]));
+  el.append(h('div', { class: 'actions' }, h('button', { class: 'primary', title: 'Click on the canvas of the current room to place it', onclick: () => startPlacing({ kind: 'loc', id: name }) }, 'Place in ' + roomLabel(S.room) + ' (click on the canvas)')));
+  el.append(h('h3', null, 'Requirement to obtain the check'));
+  el.append(reqEditor({ nullable: true, nullLabel: 'No requirement', get: () => (DOC.checks[name] || {}).req || null, set: (r) => edit(() => { ensureCheck(name).req = r; pruneCheck(name); }, { keepInspector: true }) }));
   el.append(unsureField(() => ensureCheck(name), { peek: () => peekCheck(name), after: () => pruneCheck(name) }));
   el.append(noteField(() => ensureCheck(name), 'note', { peek: () => peekCheck(name), after: () => pruneCheck(name) }));
 }
 function inspectGimmick(el, idx) {
   const g = (W.gimmicks[S.room] || [])[idx];
   if (!g) return;
-  el.append(h('h2', null, g.name), h('div', { class: 'kind' }, g.layer === 'enemies' ? 'enemigo' : 'gimmick'));
-  el.append(kv([['Posición', g.pos[0] + ', ' + g.pos[1]], ['kind / sub', g.kind + ' / ' + g.sub], ['role / mod', g.role + ' / ' + g.mod], ['Región', regionName(S.room, Logic.regionOfPoint(RL(), g.pos))]]));
-  el.append(h('div', { class: 'dim' }, 'Solo informativo: los gimmicks no forman parte de la lógica.'));
+  el.append(h('h2', null, g.name), h('div', { class: 'kind' }, g.layer === 'enemies' ? 'enemy' : 'gimmick'));
+  el.append(kv([['Position', g.pos[0] + ', ' + g.pos[1]], ['kind / sub', g.kind + ' / ' + g.sub], ['role / mod', g.role + ' / ' + g.mod], ['Region', regionName(S.room, Logic.regionOfPoint(RL(), g.pos))]]));
+  el.append(h('div', { class: 'dim' }, 'Informational only: gimmicks are not part of the logic.'));
 }
 
 // =====================================================================
-// Panel de verjas
+// Gates panel
 // =====================================================================
 function renderGates() {
   const body = $('#gates-body');
   body.replaceChildren();
   const flags = Array.from(new Set(Object.keys(W.gate_edges).concat(Object.keys(DOC.gates)))).sort((a, b) => Number(a) - Number(b));
-  if (!flags.length) { body.append(h('div', { class: 'dim' }, 'No hay verjas de evento en las aristas.')); return; }
-  body.append(h('div', { class: 'dim', style: 'margin-bottom:8px' }, 'Regla completa de una arista = llave ∧ verja ∧ entrada de la sala destino ∧ coste extra. Verja «libre» = null: el cliente la abre.'));
+  if (!flags.length) { body.append(h('div', { class: 'dim' }, 'There are no event gates on the edges.')); return; }
+  body.append(h('div', { class: 'dim', style: 'margin-bottom:8px' }, 'Full rule of an edge = key ∧ gate ∧ entry of the target room ∧ extra cost. "Free" gate = null: the client opens it.'));
   for (const flag of flags) {
     const g = DOC.gates[flag] || { req: null, note: '' };
     const edges = (W.gate_edges[flag] || []).map(n => W.edges.find(e => e.name === n)).filter(Boolean);
-    const card = h('div', { class: 'gate' + (S.gatesTarget === flag ? ' target' : '') }, h('h4', null, 'Verja ' + flag, W.event_gates_open.includes(Number(flag)) ? h('span', { class: 'open' }, '  · el cliente la abre (EVENT_GATES_OPEN)') : null));
+    const card = h('div', { class: 'gate' + (S.gatesTarget === flag ? ' target' : '') }, h('h4', null, 'Gate ' + flag, W.event_gates_open.includes(Number(flag)) ? h('span', { class: 'open' }, '  · the client opens it (EVENT_GATES_OPEN)') : null));
     const ed = h('div', { class: 'edges' });
-    if (!edges.length) ed.append('sin aristas en data');
+    if (!edges.length) ed.append('no edges in data');
     for (const e of edges) ed.append(h('a', { class: 'link', onclick: () => { $('#gates-panel').hidden = true; switchRoom(e.src); if (roomNodes(e.src).byId[e.name]) select({ type: 'node', id: e.name }, { center: true }); } }, roomLabel(e.src) + ' → ' + roomLabel(e.dst) + '  (' + e.name + ')' + (e.key ? ' · ' + e.key : '')));
     card.append(ed);
-    card.append(reqEditor({ nullable: true, nullLabel: 'Libre: el cliente la abre (null)', get: () => (DOC.gates[flag] || {}).req || null, set: (r) => edit(() => { ensureGate(flag).req = r; }, { keepInspector: true }) }));
+    card.append(reqEditor({ nullable: true, nullLabel: 'Free: the client opens it (null)', get: () => (DOC.gates[flag] || {}).req || null, set: (r) => edit(() => { ensureGate(flag).req = r; }, { keepInspector: true }) }));
     card.append(noteField(() => ensureGate(flag), 'note', { peek: () => peekGate(flag) }));
     body.append(card);
     void g;
@@ -1902,16 +1902,16 @@ function renderGates() {
 }
 
 // =====================================================================
-// Tooltip, pistas, modal, avisos
+// Tooltip, hints, modal, notices
 // =====================================================================
 function showTooltipFor(hit, sx, sy) {
   const tt = $('#tooltip');
   if (!hit || hit.type === 'vertex' || hit.type === 'side') { hideTooltip(); return; }
   let text = '';
   if (hit.type === 'node') text = nodeTooltip(hit.node);
-  else if (hit.type === 'gimmick') text = hit.g.name + ' (' + (hit.g.layer === 'enemies' ? 'enemigo' : 'gimmick') + ') @ ' + hit.g.pos.join(',');
-  else if (hit.type === 'conn') text = 'Conexión ' + regionName(S.room, hit.conn.from) + ' → ' + regionName(S.room, hit.conn.to) + '\n' + Logic.reqToLines(hit.conn.req).join('\n') + (hit.conn.unsure ? '\n(sin confirmar)' : '') + (hit.conn.note ? '\n# ' + hit.conn.note : '');
-  else if (hit.type === 'region') { const r = RL().regions[hit.rid]; text = 'Región ' + (r.name || hit.rid) + (r.note ? '\n# ' + r.note : ''); }
+  else if (hit.type === 'gimmick') text = hit.g.name + ' (' + (hit.g.layer === 'enemies' ? 'enemy' : 'gimmick') + ') @ ' + hit.g.pos.join(',');
+  else if (hit.type === 'conn') text = 'Connection ' + regionName(S.room, hit.conn.from) + ' → ' + regionName(S.room, hit.conn.to) + '\n' + Logic.reqToLines(hit.conn.req).join('\n') + (hit.conn.unsure ? '\n(unconfirmed)' : '') + (hit.conn.note ? '\n# ' + hit.conn.note : '');
+  else if (hit.type === 'region') { const r = RL().regions[hit.rid]; text = 'Region ' + (r.name || hit.rid) + (r.note ? '\n# ' + r.note : ''); }
   tt.textContent = text;
   tt.hidden = false;
   const x = Math.min(sx + 14, cw - tt.offsetWidth - 8), y = Math.min(sy + 16, ch - tt.offsetHeight - 8);
@@ -1921,12 +1921,12 @@ function hideTooltip() { $('#tooltip').hidden = true; }
 function updateHint() {
   const el = $('#hint');
   let text = '';
-  if (S.placing) text = 'Colocando «' + S.placing.id + '»: clic en el lienzo · Esc cancela';
-  else if (S.mode === 'poly') text = 'Polígono: clic añade vértice (' + ((S.drawing || []).length) + ') · clic en el primero, doble clic o Enter cierra · clic derecho quita el último · Esc cancela';
+  if (S.placing) text = 'Placing "' + S.placing.id + '": click on the canvas · Esc cancels';
+  else if (S.mode === 'poly') text = 'Polygon: click adds a vertex (' + ((S.drawing || []).length) + ') · click on the first one, double click or Enter closes · right click removes the last one · Esc cancels';
   else if (S.mode === 'edge') text = S.edgeFrom
-    ? 'Arista desde «' + regionName(S.room, S.edgeFrom) + '»: suelta o haz clic en la región destino · Shift = solo la ida · Esc cancela'
-    : 'Arista: arrastra de una región a otra (o clic origen, clic destino). Bidireccional; Shift = solo la ida. Main no cuenta: fuera de los polígonos no pasa nada';
-  else if (S.sel.type === 'region' && S.sel.rid !== 'main') text = 'Región «' + regionName(S.room, S.sel.rid) + '»: arrastra vértices · doble clic en un lado inserta · clic derecho / Supr borra vértice · Shift+arrastre mueve la región · Supr (sin vértice activo) borra la región';
+    ? 'Edge from "' + regionName(S.room, S.edgeFrom) + '": release or click on the target region · Shift = one way only · Esc cancels'
+    : 'Edge: drag from one region to another (or click source, click target). Bidirectional; Shift = one way only. Main does not count: outside the polygons nothing happens';
+  else if (S.sel.type === 'region' && S.sel.rid !== 'main') text = 'Region "' + regionName(S.room, S.sel.rid) + '": drag vertices · double click on a side inserts · right click / Del deletes a vertex · Shift+drag moves the region · Del (no active vertex) deletes the region';
   el.textContent = text;
   el.hidden = !text;
 }
@@ -1955,7 +1955,7 @@ function askText(title, def) {
 }
 
 // =====================================================================
-// Arranque
+// Startup
 // =====================================================================
 function applyUrl() {
   const q = new URLSearchParams(location.search);
@@ -1965,7 +1965,7 @@ function applyUrl() {
   let room = q.get('room');
   if (!room || !W.rooms[room]) room = W.start_room && W.rooms[W.start_room] ? W.start_room : W.room_order[0];
   const sel = q.get('select');
-  if (sel && W.locations[sel]) { const [r] = checkPosition(sel); if (r) room = r; }   // una location manda sobre ?room=
+  if (sel && W.locations[sel]) { const [r] = checkPosition(sel); if (r) room = r; }   // a location overrides ?room=
   switchRoom(room);
   if (sel) {
     const nodes = roomNodes(S.room);
@@ -1997,7 +1997,7 @@ async function init() {
     DOC = normalizeDoc(doc);
   } catch (err) {
     const b = $('#boot'); b.className = 'boot error';
-    b.textContent = 'No se pudo cargar el mundo: ' + err.message + '\n\nArranca el servidor: .venv/Scripts/python.exe tools/logic_editor/serve.py --no-browser --port 8765';
+    b.textContent = 'Could not load the world: ' + err.message + '\n\nStart the server: .venv/Scripts/python.exe tools/logic_editor/serve.py --no-browser --port 8765';
     return;
   }
   $('#boot').remove();
@@ -2006,11 +2006,11 @@ async function init() {
   resizeCanvas();
   setMode('select');
   applyUrl();
-  setStatus('Guardado', 'ok');
+  setStatus('Saved', 'ok');
   loop();
   fetch('/api/validate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(DOC) })
     .then(r => r.json()).then(rep => { if (!rep.error) { S.report = rep; renderReport(); renderTabs(); } })
-    .catch(() => { /* el informe llegará con el primer guardado */ });
+    .catch(() => { /* the report will arrive with the first save */ });
   root.MMZXEditor = { get W() { return W; }, get DOC() { return DOC; }, S, V, switchRoom, select, edit, undo, redo, roomNodes, doSave, fitView, startPlacing, setMode, toScreen, toWorld, centerOn, regionCentroid };
 }
 document.addEventListener('DOMContentLoaded', init);

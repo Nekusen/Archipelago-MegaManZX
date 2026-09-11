@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
-"""test_skip_boss_rush.py — la opción QoL `skip_boss_rush` en la LÓGICA.
+"""test_skip_boss_rush.py - the QoL option `skip_boss_rush` in the LOGIC.
 
-Comprueba, con el core de AP (tools/logic_probe.py::load_core) y sin generar
-seed, que:
-  1. sin la opción, un Pseudoroid con requisito imposible en `boss_logic`
-     bloquea la victoria (el juego obliga a superar el boss rush: exige a los
-     ocho para pasar de D-4 a D-5) y las 8 puertas a z02 existen;
-  2. con la opción, el mismo requisito ya NO bloquea la victoria (solo su
-     pelea de historia), z02 (Hub-2) desaparece del grafo y, salvo z02, la
-     lógica con todo el pool es idéntica a la de referencia;
-  3. con la opción y sin boss_logic, la lógica es idéntica a la de referencia
-     salvo z02 (0 locations ganadas o perdidas).
+Checks, with the AP core (tools/logic_probe.py::load_core) and without
+generating a seed, that:
+  1. without the option, a Pseudoroid with an impossible requirement in
+     `boss_logic` blocks the victory (the game forces you through the boss
+     rush: requires all eight to go from D-4 to D-5) and the 8 doors to z02
+     exist;
+  2. with the option, the same requirement NO longer blocks the victory (only
+     its story fight), z02 (Hub-2) disappears from the graph and, except for
+     z02, the logic with the whole pool is identical to the reference;
+  3. with the option and without boss_logic, the logic is identical to the
+     reference except for z02 (0 locations gained or lost).
 
-Uso (desde la raíz del apworld): python test/test_skip_boss_rush.py [--verbose]
+Usage (from the apworld root): python test/test_skip_boss_rush.py [--verbose]
 """
 import argparse
 import importlib.util
@@ -41,22 +42,22 @@ def main():
 
     base = H.run({})
     skip = H.run({}, options={"skip_boss_rush": True})
-    print("referencia: %d regiones, %d locations, victoria=%s" % (len(base["regions"]), len(base["locs"]), base["victory"]))
-    print("skip_boss_rush: %d regiones, %d locations, victoria=%s" % (len(skip["regions"]), len(skip["locs"]), skip["victory"]))
+    print("reference: %d regions, %d locations, victory=%s" % (len(base["regions"]), len(base["locs"]), base["victory"]))
+    print("skip_boss_rush: %d regions, %d locations, victory=%s" % (len(skip["regions"]), len(skip["locs"]), skip["victory"]))
     if hub2 not in base["regions"]:
-        fails.append("referencia: z02 (%s) no está en lógica con todo el pool" % hub2)
+        fails.append("reference: z02 (%s) is not in logic with the whole pool" % hub2)
     if hub2 in skip["regions"]:
-        fails.append("skip: z02 (%s) sigue en lógica (los teletransportadores deben estar apagados)" % hub2)
+        fails.append("skip: z02 (%s) is still in logic (the teleporters must be off)" % hub2)
     if (base["regions"] - {hub2}) != skip["regions"]:
         d = (base["regions"] - {hub2}) ^ skip["regions"]
-        fails.append("skip: regiones distintas de la referencia (aparte de z02): %s" % sorted(d)[:8])
+        fails.append("skip: regions differ from the reference (apart from z02): %s" % sorted(d)[:8])
     if base["locs"] != skip["locs"]:
         d = base["locs"] ^ skip["locs"]
-        fails.append("skip: locations distintas de la referencia: %s" % sorted(d)[:8])
+        fails.append("skip: locations differ from the reference: %s" % sorted(d)[:8])
     if not skip["victory"]:
-        fails.append("skip: no hay victoria con todo el pool")
+        fails.append("skip: no victory with the whole pool")
 
-    # un Pseudoroid con requisito imposible (testigo fuera del inventario)
+    # a Pseudoroid with an impossible requirement (witness out of the inventory)
     for bid in F.PSEUDOROIDS:
         name = F.BOSSES[bid]["name"]
         cfg = {name: WITNESS}
@@ -65,18 +66,18 @@ def main():
         arena = next((F.region_name(r, rid) for (r, rid), b in F.boss_regions(
             sys.modules["worlds.mmzx"].regions.load_document()).items() if b == bid), None)
         if off["victory"]:
-            fails.append("%s imposible SIN skip: la victoria sigue en lógica (el boss rush debería exigirlo)" % name)
+            fails.append("%s impossible WITHOUT skip: the victory is still in logic (the boss rush should require it)" % name)
         if not on["victory"]:
-            fails.append("%s imposible CON skip: la victoria NO está en lógica (el boss rush ya no debe exigirlo)" % name)
+            fails.append("%s impossible WITH skip: the victory is NOT in logic (the boss rush must no longer require it)" % name)
         if arena and arena in on["regions"]:
-            fails.append("%s imposible CON skip: su arena de historia %s sigue en lógica" % (name, arena))
+            fails.append("%s impossible WITH skip: its story arena %s is still in logic" % (name, arena))
         if a.verbose:
-            print("  %-11s sin skip: victoria=%s | con skip: victoria=%s, arena %s en lógica=%s"
+            print("  %-11s without skip: victory=%s | with skip: victory=%s, arena %s in logic=%s"
                   % (name, off["victory"], on["victory"], arena, arena in on["regions"]))
 
     for f in fails:
-        print("FALLO:", f)
-    print("[test_skip_boss_rush] %d fallos" % len(fails))
+        print("FAIL:", f)
+    print("[test_skip_boss_rush] %d failures" % len(fails))
     return 1 if fails else 0
 
 

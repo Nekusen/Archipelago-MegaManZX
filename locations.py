@@ -1,4 +1,4 @@
-"""Locations del mundo Mega Man ZX."""
+"""Locations of the Mega Man ZX world."""
 
 from BaseClasses import Location
 
@@ -13,8 +13,8 @@ def location_name_to_id() -> dict[str, int]:
     return {name: v["id"] for name, v in LOCATIONS.items()}
 
 
-# Categorías de pickups respawneables (data.PICKUP_CATEGORIES) -> opción que
-# las activa (options.py). Por defecto OFF: son checks opcionales.
+# Categories of respawnable pickups (data.PICKUP_CATEGORIES) -> option that
+# enables them (options.py). OFF by default: they are optional checks.
 PICKUP_OPTION_BY_CATEGORY = {
     "pickup_1up": "pickup_checks_1up",
     "pickup_energy": "pickup_checks_energy",
@@ -24,7 +24,7 @@ PICKUP_OPTION_BY_CATEGORY = {
 
 
 def pickup_flags_from_options(options) -> dict[str, bool]:
-    """{categoría de pickup: activa} leído del dataclass de opciones."""
+    """{pickup category: enabled} read from the options dataclass."""
     return {cat: bool(getattr(options, opt).value)
             for cat, opt in PICKUP_OPTION_BY_CATEGORY.items()}
 
@@ -32,14 +32,14 @@ def pickup_flags_from_options(options) -> dict[str, bool]:
 def locations_for_options(include_quests: bool, include_level4: bool,
                           include_undetectable: bool = False,
                           pickups: dict[str, bool] | None = None) -> dict[str, dict]:
-    """Subconjunto de locations activo según opciones.
+    """Subset of locations enabled by the options.
 
-    Por defecto se EXCLUYEN las locations sin detección fiable
-    (detect=None: 6 misiones + 21 quests cuya 'completada' aún no se
-    mapeó) para no meter checks 'muertos' que nunca se envían. El seed de
-    v0.1 queda con checks 100%% detectables. `include_undetectable` las
-    fuerza (para pruebas). `pickups` = {categoría 'pickup_*': activa}
-    (pickup_flags_from_options); sin él, ningún pickup respawneable entra."""
+    By default the locations without reliable detection are EXCLUDED
+    (detect=None: 6 missions + 21 quests whose 'completed' state has not
+    been mapped yet) so that no 'dead' checks that never get sent are
+    added. The v0.1 seed keeps 100%% detectable checks. `include_undetectable`
+    forces them in (for testing). `pickups` = {'pickup_*' category: enabled}
+    (pickup_flags_from_options); without it, no respawnable pickup is included."""
     pickups = pickups or {}
     out = {}
     for name, v in LOCATIONS.items():

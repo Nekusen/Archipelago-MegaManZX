@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Everything in the repository is now in English: code comments and
+  docstrings, the visual logic editor's interface and help, the messages of
+  the logic validator and of the tools, the generated `logic.txt`, and the
+  notes stored in `logic.json`. No behaviour changes: the patched ROM, the
+  logic evaluation and the tests were checked to give identical results.
 - Universal Tracker maps now work in "hybrid" mode: the map layout stays in
   the world and the images come from the separate
   [MegaManZX-Tracker](https://github.com/Nekusen/MegaManZX-Tracker) pack

@@ -16,7 +16,7 @@ from ..apnds import lz
 from ..data import NOTIFY_ADDR, NOTIFY_BUF_MAX, PICKUP_MAILBOX_ADDR, PICKUP_MAILBOX_SLOTS
 
 ARM9_RAM = (0x02000000, 0x02400000)
-# Zero stretches of the vanilla ARM9 that take the caves (docs/rom_patches.md).
+# Zero stretches of the vanilla ARM9 that take the caves.
 FREE_STRETCHES = [(0x020CB434, 0x020CB9D4), (0x020C8150, rom.GFX_CAVES_END)]
 ROM_PATH = os.environ.get("MMZX_ROM") or str(Path(__file__).resolve().parents[3] / "roms" / "mmzx_us.nds")
 

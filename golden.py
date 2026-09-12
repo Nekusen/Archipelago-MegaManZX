@@ -3,7 +3,7 @@
 GOLDEN_IMAGE is a dump of the game's own LOAD buffer in a clean post-briefing
 state (Normal difficulty, hub floor, no mission in progress); build_image
 applies the slot's starting model and character on top. Layout in
-docs/memory_map.md, section 5.
+the field offsets below.
 """
 
 import pkgutil

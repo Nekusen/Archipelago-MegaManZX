@@ -3,7 +3,7 @@
 
 Serves the interface in this folder, the room renders, the world data and the
 document logic/logic.json; every save regenerates logic.txt and returns the
-validation report. Standard library only. Format: docs/logic_format.md.
+validation report. Standard library only.
 
 Usage (from the apworld root):
     python tools/logic_editor/serve.py [--port N] [--no-browser] [--renders DIR] [--gimmicks FILE]

@@ -1,4 +1,4 @@
-@ RETRY (rom_patches.md "RETRY").
+@ RETRY.
 @ A pickup born during the room load, before the client's table or the item
 @ scouts arrive, keeps its vanilla look. The per-frame animation-advance call
 @ of the three pickup thinks goes through the cave: if the entity does not

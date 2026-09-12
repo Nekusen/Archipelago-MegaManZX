@@ -63,7 +63,7 @@ The game always runs on Normal difficulty. What varies is the logic:
 - `logic_difficulty`: `normal` only uses safe routes. `expert` adds the alternatives marked as expert in the logic: a
   few passages and checks that normal reserves for a specific model (HX's air dash, PX's wall climb, LX's swimming)
   are allowed with any model or with none, through tight jumps, damage boosts and swimming between spikes.
-- `boss_logic`: for each story boss, what you must be carrying before the logic considers you able to beat it, for
+- `boss_logic` (see [boss_logic.md](boss_logic.md)): for each story boss, what you must be carrying before the logic considers you able to beat it, for
   example `Hivolt: "HX & Life Up x2"`. It never restricts what you may fight in the game; it only keeps the seed from
   forcing you through a boss you are not equipped for by your own standard. A Life Up, Sub Tank or chip named in a
   requirement becomes a progression item.

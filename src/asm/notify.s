@@ -1,4 +1,4 @@
-@ NOTIFY: on-screen notices (rom_patches.md "NOTIFY: on-screen notices").
+@ NOTIFY: on-screen notices.
 @ The gameplay handler's per-frame call to the message tick goes through the
 @ cave: with a request pending and the message system idle it opens the small
 @ pickup popup on the client's text (or a vanilla message id) and clears the

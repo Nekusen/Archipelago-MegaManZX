@@ -1,4 +1,4 @@
-@ Tutorial skip (rom_patches.md "Tutorial skip").
+@ Tutorial skip.
 @ New Game enters the scene through the LOAD handler when the game mode has its
 @ low half clear and the title carousel is at step 6; otherwise the displaced
 @ prologue of the New Game handler runs and the handler resumes as in vanilla.

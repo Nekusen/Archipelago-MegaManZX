@@ -1,4 +1,4 @@
-@ AP icon set (rom_patches.md "AP icon set").
+@ AP icon set.
 @ Set 261 (the AP icons) is made resident like the item atlas, set 58: the
 @ resident list gains a fourth entry, its two length constants become four and
 @ the boot cave replaces the VRAM upload of set 58 with that upload, the static

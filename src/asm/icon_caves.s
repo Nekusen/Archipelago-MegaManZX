@@ -1,4 +1,4 @@
-@ Icon caves (rom_patches.md "Icon caves").
+@ Icon caves.
 @ LOOKUP finds a pickup entity in the spawn list and returns the icon code the
 @ client wrote for its coords index, or -1. ATTACH replaces the graphics-attach
 @ call of the three pickup inits: with a code it attaches set 261 and clears the

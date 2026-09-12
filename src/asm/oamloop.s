@@ -1,4 +1,4 @@
-@ OAM drawer guards (rom_patches.md "OAM drawer guards").
+@ OAM drawer guards.
 @ Two sprite drawers leave their loop only through `subs r5, #1; beq exit`; with
 @ a count of zero the counter wraps and the loop sprays RAM. `bls` also leaves
 @ when the subtraction borrowed, so a zero count exits after one bounded pass.

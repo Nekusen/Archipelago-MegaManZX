@@ -1,5 +1,4 @@
-@ PICKUP_AP: pickups replaced by AP items (rom_patches.md "PICKUP_AP: pickups
-@ replaced by AP items").
+@ PICKUP_AP: pickups replaced by AP items.
 @ The gate routine says whether an entity stands for a pending multiworld
 @ location (the `present` bitmap of the client's icon table); four hooks make
 @ such a pickup only chime, skipping its vanilla effect, popup or disk label.

@@ -4,7 +4,7 @@ Commented Thumb (ARMv5TE, little endian) sources of every code patch that
 `rom.py` applies to the ARM9 of Mega Man ZX (USA): the caves (small routines
 placed in zero-filled stretches of the binary) and the hooks (one to three
 instructions rewritten in place, usually a `bl` into a cave). What each patch
-does and why is in `docs/rom_patches.md`; this folder is the readable form.
+does and why is in the header of each file and in `rom.py`; this folder is the readable form.
 
 ## What ships
 

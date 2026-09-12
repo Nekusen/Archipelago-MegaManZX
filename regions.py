@@ -1,6 +1,5 @@
 """Archipelago regions, entrances, locations and events built from the logic document.
 
-See docs/logic_format.md.
 """
 
 import json

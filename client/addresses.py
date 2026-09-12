@@ -1,6 +1,6 @@
 """RAM addresses, structure layouts and the tables derived from data.py.
 
-Everything the client reads or writes is named here; see docs/memory_map.md.
+Everything the client reads or writes is named here.
 """
 
 from ..data import (

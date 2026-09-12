@@ -1,7 +1,6 @@
 """Shared core of the logic document: atoms, requirements, regions, validation, text export.
 
 Imports nothing from Archipelago, so the editor and the tools load it on their own.
-See docs/logic_format.md.
 """
 
 import json

@@ -2,9 +2,7 @@
 
 Game data of the world: locations with their RAM detection recipe, items
 with their grant recipe, the room graph, and the RAM structures shared with
-the patched ROM. Addresses and layouts are documented in docs/memory_map.md,
-the client side in docs/client_protocol.md and the room graph in
-docs/logic_format.md."""
+the patched ROM."""
 
 BASE_ID = 0xD00000
 LIVE_BLOCK = 0x021045CC
@@ -337,18 +335,17 @@ GOAL_BITS = [(0x021045CA, 5)]
 GOAL_BITS_SERPENT = [(0x02104602, 2), (0x02104602, 3)]
 
 # Mailbox of respawnable pickups, installed by the ROM patch: a counter and a
-# ring of (subarea, coords index, role) entries. Layout in docs/memory_map.md.
+# ring of (subarea, coords index, role) entries.
 PICKUP_MAILBOX_ADDR = 0x020CB500
 PICKUP_MAILBOX_SLOTS = 8
 # In-world item icon table that the client fills per subarea; every physical
-# location carries 'icon': [subarea, coords index]. Layout in docs/memory_map.md.
+# location carries 'icon': [subarea, coords index].
 ICON_TABLE_ADDR = 0x02191460
 ICON_TABLE_SIZE = 0xC4
 ICON_TABLE_PRESENT_OFF = 0xA4
 ICON_SET = 261
 ICON_CODES = {'logo_useful': 1, 'logo_progression': 2, 'logo_filler': 3, 'lifeup': 4, 'subtank': 5, 'chip_Absorber': 6, 'chip_Eraser': 7, 'chip_Featherweight': 8, 'chip_Extender': 9, 'chip_QuickCharger': 10, 'chip_IceBoots': 11, 'chip_WindBoots': 12, 'chip_Frog': 13, 'model_Hu': 14, 'model_X': 15, 'model_ZX': 16, 'model_HX': 17, 'model_FX': 18, 'model_LX': 19, 'model_PX': 20, 'model_OX': 21, 'card_Red': 22, 'card_Blue': 23, 'card_Purple': 24, 'card_Green': 25, 'card_Yellow': 26, 'card_White': 27}
-# On-screen notice buffer (request flag, state, duration, text). Layout in
-# docs/memory_map.md.
+# On-screen notice buffer (request flag, state, duration, text).
 NOTIFY_ADDR = 0x020CB700
 NOTIFY_BUF_MAX = 0xFC
 NOTIFY_POPUP_GLYPHS = 30
@@ -356,7 +353,6 @@ PICKUP_CATEGORIES = ['pickup_1up', 'pickup_crystal', 'pickup_energy', 'pickup_we
 
 # Missions the client force-accepts when the player enters their target
 # subarea: subarea -> {id, state, flag:[addr,bit], name[, extra:[[addr,bit]..]]}.
-# See docs/client_protocol.md.
 MISSION_STATE_ADDR = 0x021046AC
 MISSION_ACTIVE_FLAG = 0x02160FA8
 MISSION_ACCEPT = {
@@ -453,7 +449,7 @@ STARTING_TRANSERVERS = {
 # Room graph: directed edges between rooms. kind is 'door' (physical door),
 # 'internal' (door inside one room), 'warp' (Transerver network), 'save'
 # (save-only pad, no transition) or 'curated' (a real seam missing from the
-# game's door table); 'ret' marks a synthesized return door. See docs/logic_format.md.
+# game's door table); 'ret' marks a synthesized return door.
 HUB_ROOM = 'z01'
 ROOM_SUBAREA = {
     'a01': 1,

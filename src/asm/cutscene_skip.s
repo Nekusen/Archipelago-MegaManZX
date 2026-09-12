@@ -1,4 +1,4 @@
-@ Cutscenes always skippable (rom_patches.md "Cutscenes always skippable").
+@ Cutscenes always skippable.
 @ The script opcode that opens a skippable block flags it only when the event
 @ was already seen; that branch becomes a no-op. The START reader calls the
 @ cave, which marks the event seen (with its backup) and re-executes the two

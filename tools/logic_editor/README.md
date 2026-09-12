@@ -7,7 +7,7 @@ no dependencies. The interface is in English.
 Each room is shown on a 1:1 render. You draw polygons (regions), connect them with directed connections
 that carry a requirement, give requirements to checks, edge exits and event gates, and place by hand the
 locations that have no position in the data (missions, quests, biometals). The result is
-`logic/logic.json`, the single source of truth of the logic, described in `docs/logic_format.md`.
+`logic/logic.json`, the single source of truth of the logic.
 Never edit that file by hand.
 
 ## Starting it

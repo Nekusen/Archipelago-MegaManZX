@@ -1,4 +1,4 @@
-@ Pickup mailbox (rom_patches.md "Pickup mailbox").
+@ Pickup mailbox.
 @ The animation-advance call of the refill think handler goes through the cave,
 @ which calls the original and, when the entity was just collected, finds its
 @ spawn record and appends (subarea, coords index, role) to a ring the client polls.

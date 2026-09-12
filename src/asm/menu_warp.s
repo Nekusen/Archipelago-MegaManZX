@@ -1,5 +1,4 @@
-@ Go to Transerver from the pause menu (rom_patches.md "Go to Transerver from
-@ the pause menu").
+@ Go to Transerver from the pause menu.
 @ Cave A replaces the pad read of the MISSION tab scroll handler: it returns the
 @ held buttons and, when Y was just pressed, raises "warp requested" (client)
 @ and "close menu" (cave B). Cave B replaces the menu-closing call: with the

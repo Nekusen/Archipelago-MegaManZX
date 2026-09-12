@@ -3,7 +3,7 @@
 Reads and writes the game's RAM through the "ARM9 System Bus" domain of the
 melonDS core and talks to the structures the ROM patch leaves in free RAM.
 The watcher and its stage order live here; each stage is a function
-(client, ctx, ...) in a module of its own. See docs/client_protocol.md.
+(client, ctx, ...) in a module of its own.
 """
 
 import collections
@@ -194,7 +194,6 @@ class MMZXClient(BizHawkClient):
     async def game_watcher(self, ctx: "BizHawkClientContext") -> None:
         """One tick: seed the title, then detect checks, grant items and repair the game.
 
-        The order of the stages is documented in docs/client_protocol.md section 3.
         """
         if ctx.server is None or ctx.slot_data is None:
             return

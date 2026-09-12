@@ -1,5 +1,4 @@
-@ Life Up and Sub Tank: collected versus capacity (rom_patches.md "Life Up and
-@ Sub Tank: collected versus capacity").
+@ Life Up and Sub Tank: collected versus capacity.
 @ The capacity bytes 0x0214FC77 (Life Ups) and 0x0214FC78 (Sub Tanks) doubled as
 @ the "slot collected" record. The pickup now sets bit 4 + slot (high nibble),
 @ the spawn gates test that bit and the vanilla capacity effects are removed.

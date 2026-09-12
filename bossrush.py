@@ -2,7 +2,7 @@
 
 Pure functions with no Archipelago imports. Marking a pair before the elevator has stopped at
 its stop makes the elevator jump and drops the player, hence the position checks. The RAM
-contract is in docs/client_protocol.md and docs/memory_map.md.
+contract is shared with the client package.
 """
 
 SUBAREA = 18                     # D-4 (tower)

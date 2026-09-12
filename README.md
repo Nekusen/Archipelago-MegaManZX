@@ -47,23 +47,19 @@ UT loads from a zip you download once (`ut_pack_path` in `host.yaml`).
 shared with the patched ROM), `tracker_meta.py` (map indices and transforms for the tracker),
 `tools/logic_editor/data/gimmicks.json` (enemy and switch positions shown in the editor) and `assets/golden_image.bin`
 (the starting save image) are generated. The generators belong to the maintainers' reverse-engineering toolkit, which
-needs the game, an emulator harness and a Ghidra project, and are not in this repository. The formats they produce are
-documented: addresses and layouts in [docs/memory_map.md](docs/memory_map.md), the room graph and the logic document
-in [docs/logic_format.md](docs/logic_format.md). `logic/logic.txt` is regenerated from `logic.json` by the logic
-tools. Open an issue for data corrections.
+needs the game, an emulator harness and a Ghidra project, and are not in this repository; so is the technical
+reference of the memory map, the ROM patches and the client protocol. `logic/logic.txt` is regenerated from
+`logic.json` by the logic tools. Open an issue for data corrections.
 
 ## Documentation for contributors
 
-- [docs/memory_map.md](docs/memory_map.md): every RAM address, ROM offset and data layout the world relies on.
-- [docs/rom_patches.md](docs/rom_patches.md): each change made to the ROM, what it does and why.
-- [docs/client_protocol.md](docs/client_protocol.md): how the client detects checks, grants items and keeps the game
-  in step with the multiworld.
-- [docs/logic_format.md](docs/logic_format.md): the logic document, its requirements, how it becomes regions and
-  how it is validated.
-- [docs/glossary.md](docs/glossary.md): the vocabulary of the code and the documents.
+`docs/` holds the player documentation. For contributors:
+
 - [tools/logic_editor/README.md](tools/logic_editor/README.md): the visual logic editor, how to run it and
   how its modules are laid out.
 - [src/asm/](src/asm/README.md): the assembly sources of the ROM patches, one file per patch.
+- The module docstrings and the glossary below cover the rest; the maintainers keep the detailed reference of the
+  memory map, the ROM patches and the client protocol with their toolkit and share it on request.
 
 ## Running from source
 
@@ -75,7 +71,7 @@ of the game's levels, which are not in the repository; without them it works on 
 
 ## Glossary
 
-The terms you will meet first; the full list is in [docs/glossary.md](docs/glossary.md).
+The terms you will meet first.
 
 - biometal, model: a transformable form. Model X, ZX and OX are single items; HX, FX, LX and PX are progressive items
   whose two copies are the biometal's two halves.

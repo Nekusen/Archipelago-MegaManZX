@@ -1,8 +1,4 @@
-"""ROM patch for Mega Man ZX (USA): ARM9 code patches, the AP icon set and the AP marker.
-
-Each patch is described in docs/rom_patches.md; the addresses and the layouts
-of the blocks the client shares with the ROM are in docs/memory_map.md.
-"""
+"""ROM patch for Mega Man ZX (USA): ARM9 code patches, the AP icon set and the AP marker."""
 
 import hashlib
 import os
@@ -296,7 +292,7 @@ def _insert_set(blob: bytes, setno: int, block: bytes) -> bytes:
 
 
 # BLZ (DS code compression) with an optimal parse: a greedy encoder leaves no
-# room in the ARM9 slot for the caves. Format in docs/rom_patches.md.
+# room in the ARM9 slot for the caves.
 BLZ_HEADER_LEN = 0x4000        # never compressed: secure area and crt0
 BLZ_MIN_MATCH = 3
 BLZ_MAX_MATCH = 18
@@ -472,7 +468,7 @@ class Arm9:
 
 
 # One function per patch, applied in this order by patch_arm9. What each one
-# changes and why is in docs/rom_patches.md, under the same name.
+# changes and why is in src/asm/, under the same name.
 
 def _patch_tutorial_skip(arm9: Arm9) -> None:
     """Send New Game through the LOAD handler, so a slot starts from the image the client seeds."""

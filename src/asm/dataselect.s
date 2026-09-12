@@ -1,4 +1,4 @@
-@ DATA SELECT biometal icons (rom_patches.md "DATA SELECT biometal icons").
+@ DATA SELECT biometal icons.
 @ The save-slot screen tested raw victory bits for H/F/L/P; the four in-place
 @ sequences read the first-half ownership flags instead (u32 at slot +0x58,
 @ high byte = 0x02104627). The X/ZX branch calls the cave, which selects the

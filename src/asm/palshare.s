@@ -1,4 +1,4 @@
-@ PALSHARE (rom_patches.md "PALSHARE").
+@ PALSHARE.
 @ Set 261 borrows the OBJ palette slot of set 58 instead of taking one of the
 @ 15 the registrar hands out. The cave is the tail of icon_boot.s: it copies
 @ the slot table entry and then runs the boot cave's epilogue.

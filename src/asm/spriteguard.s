@@ -1,5 +1,4 @@
-@ Sprite guard: set without a VRAM slot (rom_patches.md "Sprite guard: set
-@ without a VRAM slot").
+@ Sprite guard: set without a VRAM slot.
 @ When the registrar rejects a set, ten drawers resolve its slot record to a
 @ null pointer and read a halfword from address 2. At each site
 @ `ldrh r0, [r0, #2]; movs r3, #1` becomes a call into the cave, which skips

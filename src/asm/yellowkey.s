@@ -1,4 +1,4 @@
-@ Yellow Card Key dialogue (rom_patches.md "Yellow Card Key dialogue").
+@ Yellow Card Key dialogue.
 @ The Operator's console re-ran the script that announces and grants the key
 @ whenever Troop Reinforcement was reported and the key bit was clear. The key
 @ is a pool item enforced by the client, so the script is skipped for good.

@@ -61,6 +61,9 @@ tools. Open an issue for data corrections.
 - [docs/logic_format.md](docs/logic_format.md): the logic document, its requirements, how it becomes regions and
   how it is validated.
 - [docs/glossary.md](docs/glossary.md): the vocabulary of the code and the documents.
+- [tools/logic_editor/README.md](tools/logic_editor/README.md): the visual logic editor, how to run it and
+  how its modules are laid out.
+- [src/asm/README.md](src/asm/README.md): the assembly sources of the ROM patches.
 - [src/asm/](src/asm/README.md): the assembly sources of the ROM patches, one file per patch.
 
 ## Running from source

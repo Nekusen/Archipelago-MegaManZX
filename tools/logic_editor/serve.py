@@ -180,10 +180,13 @@ class Handler(BaseHTTPRequestHandler):
         try:
             if path in ("/", "/index.html"):
                 return self._static("index.html", "text/html; charset=utf-8")
-            if path == "/app.js":
-                return self._static("app.js", "text/javascript; charset=utf-8")
             if path == "/style.css":
                 return self._static("style.css", "text/css; charset=utf-8")
+            if path.startswith("/js/"):
+                name = path[len("/js/"):]
+                if "/" in name or ".." in name or not name.endswith(".js"):
+                    return self._send(404, {"error": "not found"})
+                return self._static("js/" + name, "text/javascript; charset=utf-8")
             if path == "/api/world":
                 return self._send(200, CACHE.get()[2])
             if path == "/api/logic":

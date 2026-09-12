@@ -61,8 +61,8 @@ each with a requirement or none. A gate with no requirement is open in the logic
 Rooms, regions, connections, edges, checks and gates all accept a free-text note, carried into `logic.txt` as a
 trailing comment.
 
-Region names follow a convention that keeps `logic.txt` readable; `tools/logic_editor/normalize_names.py` rewrites
-names and ids to it without touching the logic. Names are Title Case and write room codes with a dash (`A-2`).
+Region names follow a convention that keeps `logic.txt` readable. Names are Title Case and write room codes
+with a dash (`A-2`).
 
 | name | region |
 |---|---|

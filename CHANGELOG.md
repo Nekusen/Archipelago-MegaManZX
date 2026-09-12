@@ -51,4 +51,5 @@ will be 0.1.0.
 - A DeathLink received in human form no longer freezes the game: the client now hands the game a lethal hit instead of forcing the death animation, which the human form does not have.
 - Leaving a boss fight by teleport (Go to Transerver, `/mmzx_teleport`) no longer leaves every door in the game locked until Abort Mission: the lock bits the boss room raised are released once the player is elsewhere, and the fight starts over on the next visit.
 - The ladder in D-3 up to the walkway of the Area O door is always lowered. The game only lowers it while Repel The Army is in progress or done, and the open world accepts that mission on arrival in Area O, so the way there was closed.
+- Teleports (Go to Transerver, `/mmzx_teleport`) write the same scene word a door would. They wrote only the subarea, and the first door crossed afterwards made the game clear the temporary flags of the area, such as the lava flow setting of Area K.
 - A dropped BizHawk connection abandons the current tick and the next one retries, instead of stopping the client.

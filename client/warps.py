@@ -3,7 +3,7 @@
 from typing import TYPE_CHECKING
 import worlds._bizhawk as bizhawk
 
-from ..data import HUB_FLOOR_Y
+from ..data import HUB_FLOOR_Y, SCENE_WORDS
 from .addresses import (
     DESC_FACING_OFF, DESC_SPAWN_X_OFF, DESC_SPAWN_Y_OFF, DESC_SUBAREA_OFF, DOM, GAME_STATE,
     HUB_PAD_DY, HUB_SUBAREA, HUB_X, SCENE_DESC, STATE_LOAD, STATE_TARGET_AREA, STATION_ROOMS,
@@ -61,11 +61,17 @@ async def serve_warp_request(client: "MMZXClient", ctx, guard) -> None:
 
 
 async def teleport(ctx, sub: int, x: int, y: int, guard) -> None:
-    """Request a scene load at (sub, x, y), guarded on gameplay."""
+    """Request a scene load at (sub, x, y), guarded on gameplay.
+
+    The descriptor takes the full scene word a door would write, not the bare
+    subarea: on entering a room the game compares the word's area index with
+    the previous room's and, when it differs, clears the per-area temporary
+    flags. A bare word (area 0) would make the next door wipe them.
+    """
     writes = [
         (SCENE_DESC + DESC_SPAWN_X_OFF, (x << 8).to_bytes(4, "little"), DOM),
         (SCENE_DESC + DESC_SPAWN_Y_OFF, (y << 8).to_bytes(4, "little"), DOM),
-        (SCENE_DESC + DESC_SUBAREA_OFF, sub.to_bytes(4, "little"), DOM),
+        (SCENE_DESC + DESC_SUBAREA_OFF, SCENE_WORDS.get(sub, sub).to_bytes(4, "little"), DOM),
         (SCENE_DESC + DESC_FACING_OFF, b"\x01", DOM),
         (GAME_STATE, STATE_LOAD.to_bytes(4, "little"), DOM),
         (GAME_STATE + 4, b"\x00\x00\x00\x00", DOM),

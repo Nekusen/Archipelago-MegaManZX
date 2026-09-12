@@ -264,13 +264,13 @@ def _thumb_bl(src: int, dst: int) -> bytes:
 
 
 def _gfx_data(name: str) -> bytes:
-    """Bytes of a file in gfx/, from a directory or from a zipped .apworld."""
+    """Bytes of a file in assets/, from a directory or from a zipped .apworld."""
     try:
-        data = pkgutil.get_data(__name__.rsplit(".", 1)[0], "gfx/" + name)
+        data = pkgutil.get_data(__name__.rsplit(".", 1)[0], "assets/" + name)
     except Exception:
         data = None
     if data is None:
-        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "gfx", name), "rb") as f:
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", name), "rb") as f:
             data = f.read()
     return data
 
@@ -467,8 +467,7 @@ class Arm9:
         return self.params.write_start_info(packed, self.ram)[:BLZ_HEADER_LEN] + body
 
 
-# One function per patch, applied in this order by patch_arm9. What each one
-# changes and why is in src/asm/, under the same name.
+# One function per patch, applied in this order by patch_arm9.
 
 def _patch_tutorial_skip(arm9: Arm9) -> None:
     """Send New Game through the LOAD handler, so a slot starts from the image the client seeds."""

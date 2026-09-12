@@ -9,7 +9,7 @@ needs from the player's own ROM.
 | Component | Author | License | Use |
 |---|---|---|---|
 | [apnds](https://github.com/ljtpetersen/apnds) 0.2.5 (`apnds/`, unmodified) | James Petersen | MIT | Splitting the ARM9 into its autoload sections and writing its start parameters back at patch time; its decoder is the reference for our BLZ encoder. See `apnds/LICENSE`. |
-| Archipelago logo sprites (`gfx/`, 3 icons) | The [Metroid: Zero Mission apworld](https://github.com/lilDavid/Archipelago-Metroid-Zero-Mission) (lil David and contributors) | MIT | In-game icon for items of other games (progression / useful / filler variants). |
+| Archipelago logo sprites (`assets/`, 3 icons) | The [Metroid: Zero Mission apworld](https://github.com/lilDavid/Archipelago-Metroid-Zero-Mission) (lil David and contributors) | MIT | In-game icon for items of other games (progression / useful / filler variants). |
 
 Everything else in the package (patches, the BLZ code compressor, client,
 logic, data, tracker code) was written for this project.

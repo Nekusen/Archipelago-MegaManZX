@@ -35,11 +35,11 @@ UT loads from a zip you download once (`ut_pack_path` in `host.yaml`).
     tracker_pos.py              Universal Tracker callbacks (map tab and position icon)
     data.py, tracker_meta.py    generated tables (see below)
     logic/                      logic.json (source of truth) and logic.txt (its readable twin)
-    tracker/, assets/, gfx/     UT map layout; the starting save image; the three Archipelago logos
-    apnds/, src/asm/            vendored apnds (MIT); commented assembly of the ROM patches
+    tracker/, assets/           UT map layout; the starting save image and the three Archipelago logos
+    apnds/                      vendored apnds (MIT)
     docs/, tools/, test/        documentation; maintainer tools; tests
 
-`tools/`, `test/`, `src/` and the git files are left out of the `.apworld` (see `.apignore`).
+`tools/`, `test/` and the git files are left out of the `.apworld` (see `.apignore`).
 
 ## Generated files
 
@@ -57,9 +57,9 @@ reference of the memory map, the ROM patches and the client protocol. `logic/log
 
 - [tools/logic_editor/README.md](tools/logic_editor/README.md): the visual logic editor, how to run it and
   how its modules are laid out.
-- [src/asm/](src/asm/README.md): the assembly sources of the ROM patches, one file per patch.
 - The module docstrings and the glossary below cover the rest; the maintainers keep the detailed reference of the
-  memory map, the ROM patches and the client protocol with their toolkit and share it on request.
+  memory map, the ROM patches (with the commented assembly of every cave) and the client protocol with their
+  toolkit and share it on request.
 
 ## Running from source
 

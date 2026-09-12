@@ -1,7 +1,7 @@
 """The "AP" sprite set: item icons cut from the player's ROM at patch time.
 
 rom.py inserts the set as set 261 and its icon caves draw it on pickups. Only
-the three Archipelago logos in gfx/ ship with the world (MIT, from the Metroid:
+the three Archipelago logos in assets/ ship with the world (MIT, from the Metroid:
 Zero Mission apworld); every other icon is a frame of the game's own sets
 (ICONS), quantised to the palette of set 58, which the AP set shares in VRAM.
 
@@ -235,7 +235,7 @@ def _pick_shape(w, h):
 def build_icon_set(fnt_file, dat_file, logo_data):
     """Build the AP set from the player's obj_fnt.bin / obj_dat.bin.
 
-    `logo_data(file)` returns the bytes of a logo .gfx from gfx/. Returns
+    `logo_data(file)` returns the bytes of a logo .gfx from assets/. Returns
     (fnt block, dat block) ready for rom.py to insert as a new set.
     """
     colours = set_palette(fnt_file)

@@ -242,7 +242,7 @@ room B-3 [b03]
       normal: FX
       normal: LX
       normal: OX
-      expert: MODEL
+      normal: ZX
   region F-1 Entrance
     door -> F-1/B-3 Entrance   # rising cavern with spikes up to F-1
     <- F-1
@@ -871,8 +871,7 @@ room F-3 [f03]
       normal: free
   region Upper Area
     check F-3: Disk E-48
-      normal: FX
-      normal: HX   # F-3: at the very top, behind a row of cubes (37-45,30) and boxes (46-48,33-35)
+      normal: MODEL   # F-3: at the very top, behind a row of cubes (37-45,30) and boxes (46-48,33-35)
     check F-3: Energy Capsule L
     conn -> Top Door
       normal: MODEL
@@ -929,8 +928,10 @@ room G-1 [g01]
       normal: HX
     check G-1: Energy Capsule L
       normal: HX
+      normal: FIGHT_THE_MAVERICKS
     check G-1: Weapon Energy L
       normal: HX
+      normal: FIGHT_THE_MAVERICKS
     conn -> D-3 Entrance
       normal: MODEL
     conn -> G-2 Entrance
@@ -1069,7 +1070,7 @@ room G-2 [g02]
     <- G-4
     check G-2: Disk E-16
       normal: HX
-      normal: LX
+      normal: LX & FIGHT_THE_MAVERICKS
     conn -> 7th Floor
       normal: free
   region Basement

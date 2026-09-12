@@ -661,10 +661,7 @@
    "req": {
     "normal": [
      [
-      "FX"
-     ],
-     [
-      "HX"
+      "MODEL"
      ]
     ]
    },
@@ -720,6 +717,9 @@
     "normal": [
      [
       "HX"
+     ],
+     [
+      "FIGHT_THE_MAVERICKS"
      ]
     ]
    },
@@ -731,6 +731,9 @@
     "normal": [
      [
       "HX"
+     ],
+     [
+      "FIGHT_THE_MAVERICKS"
      ]
     ]
    },
@@ -744,7 +747,8 @@
       "HX"
      ],
      [
-      "LX"
+      "LX",
+      "FIGHT_THE_MAVERICKS"
      ]
     ]
    },
@@ -3068,11 +3072,6 @@
      "from": "b-1-entrance",
      "note": "",
      "req": {
-      "expert": [
-       [
-        "MODEL"
-       ]
-      ],
       "normal": [
        [
         "FX"
@@ -3088,6 +3087,9 @@
        ],
        [
         "OX"
+       ],
+       [
+        "ZX"
        ]
       ]
      },

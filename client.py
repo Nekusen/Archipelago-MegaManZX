@@ -1,8 +1,8 @@
-"""BizHawkClient for Mega Man ZX (USA). Direct-RAM approach (no runtime ASM).
+"""BizHawk client for Mega Man ZX (USA).
 
-Addresses and recipes: docs/client_integration.md + worlds/mmzx/data.py.
-Memory domain: "ARM9 System Bus" with absolute 0x02xxxxxx addresses
-(verify the melonDS core mapping when wiring it up; see playbook section 1).
+Reads and writes the game's RAM through the "ARM9 System Bus" domain of the
+melonDS core and talks to the structures the ROM patch leaves in free RAM.
+See docs/client_protocol.md and docs/memory_map.md.
 """
 
 import collections
@@ -23,9 +23,8 @@ from .data import ICON_TABLE_ADDR, ICON_TABLE_SIZE, ICON_TABLE_PRESENT_OFF, ICON
 from .golden import GOLDEN_IMAGE, GOLDEN_IMAGE_ADDR, build_image
 from . import bossrush as BR
 ITEM_ID_TO_NAME = {v["id"]: n for n, v in ITEMS.items()}
-# item of this game -> icon of the AP set (icons.ICONS, codes in data.ICON_CODES).
-# Anything not listed here (Transerver Access, fillers...) goes by classification:
-# progression = logo with the arrow, useful = logo with the cross, filler = grey.
+# Items with their own sprite in the AP graphics set; anything else is drawn
+# as the Archipelago logo of its classification.
 ICON_BY_ITEM = {
     "Life Up": "lifeup", "Sub Tank": "subtank",
     "Absorber Chip": "chip_Absorber", "Eraser Chip": "chip_Eraser", "Featherweight Chip": "chip_Featherweight",
@@ -45,278 +44,158 @@ if TYPE_CHECKING:
 
 DOM = "ARM9 System Bus"
 
-# Anchors (docs/client_integration.md)
-LIVE_BLOCK = 0x021045CC       # live copy of the progress block
-# Card Keys: key bits per address (derived from ITEMS). The game GIVES them
-# away on its own as mission rewards (exp505: at least Green in FUN_02031028
-# state 0xAB, Blue in 0xAE and Yellow in FUN_02094288), so their possession is
-# AUTHORITATIVE from AP: exactly the received set is written, preserving the
-# other bits of the byte (which are other flags).
+# Progress block
+LIVE_BLOCK = 0x021045CC       # live copy
+# The game hands out Card Keys as mission rewards, so the received set is
+# written as-is over these bits every tick.
 CARDKEY_MASKS: dict[int, int] = {}
 for _kn, _kv in ITEMS.items():
     if _kn.endswith("Card Key") and _kv["grant"][0] == "live_bit":
         CARDKEY_MASKS[_kv["grant"][1]] = CARDKEY_MASKS.get(_kv["grant"][1], 0) | (1 << _kv["grant"][2])
-CANON_BLOCK = 0x021602B4      # canonical copy (grant = set bit here)
-LIVE_LEN = 0x60               # live window to read (covers disks/missions/keys)
-PLAYER_POS = 0x0214FB64      # u32 x<<8 (0x0214FB64) and u32 y<<8 (0x0214FB68); px = >>8
-                             # (exp342: the doc said FB65/FB69, which gives garbage read as u32)
-POS_KEY = "mmzx_pos_%d"     # data storage: [subarea, x, y] for UT (auto-tab/icon)
-POS_INTERVAL = 1.0           # s between sends if the subarea does not change
-POS_MIN_DELTA = 48           # minimum px of movement to resend
-PLAYTIME = 0x021602A8        # u32 play time in frames (header of the save image;
-                             # exp497: +1/frame in game, does not go back on death, returns to
-                             # the save's value on Game Over->Continue/LOAD, 0 on a new game)
-CONS_KEY = "mmzx_consumables_%s_%s"  # data storage per (team, slot): [[applied, playtime], ...]
+CANON_BLOCK = 0x021602B4      # canonical copy, restored on death
+LIVE_LEN = 0x60
+PLAYER_POS = 0x0214FB64      # two u32: x << 8, y << 8
+POS_KEY = "mmzx_pos_%d"     # data storage: [subarea, x, y] for UT
+POS_INTERVAL = 1.0
+POS_MIN_DELTA = 48
+PLAYTIME = 0x021602A8        # frames; the game clock for consumables
+CONS_KEY = "mmzx_consumables_%s_%s"  # data storage: [[applied, playtime], ...]
 
 
 def _consumables_present(log, playtime: int) -> int:
-    """How many consumables (in server order) are ALREADY in the current game
-    state: the highest cumulative count among the applied batches with playtime <=
-    the current one (later ones were rewound by Continue/LOAD/new game)."""
+    """Consumables already present in a game state at the given play time.
+
+    Batches stamped later than the play time were rewound by a reload.
+    """
     return max([int(e[0]) for e in log if int(e[1]) <= playtime], default=0)
 
-# Weapon Energy (agent exp390-399): a model's WE cap = 4 x (victory level of
-# the pair's 1st boss + of its 2nd boss); the levels (1-4) are 8 bytes of the
-# game block 0x02104634..3B (order Hivolt, Lurerre, Fistleo, Purprill,
-# Hurricaune, Leganchor, Flammole, Protectos) written only by a real victory
-# (FUN_02009438). With the biometal granted by flag they stay at 0 -> cap 0 ->
-# empty bar and pickups do not refill it. Recipe: when the model is owned, if
-# lv0+lv1 < 4 set lv0 = 4 - lv1 (live+canonical; cap 16 as after the 1st boss)
-# and fill the bar (u8[0x0214FC92 + model] = 16) ONCE.
+# Weapon Energy: a model's cap comes from the victory levels of its two bosses,
+# which only a real victory writes, so a model granted by item needs them set.
 BOSS_LEVELS = 0x02104634
 MODEL_LEVEL_IDX = {3: (0, 4), 4: (2, 6), 5: (1, 5), 6: (3, 7)}   # HX, FX, LX, PX
-WE_BASE = 0x0214FC92          # + active model (3..6) = the model's current WE
+WE_BASE = 0x0214FC92          # + active model = current WE
 WE_FULL = 16
-MSG_BANK = 0x02104588         # u32 index of the last text bank (0xFFFFFFFF = boot)
+MSG_BANK = 0x02104588         # 0xFFFFFFFF until boot has finished
+
+# Player object
 LIFEUP_BYTE = 0x0214FC77
 SUBTANK_BYTE = 0x0214FC78
 ECRYSTALS = 0x0214FC70        # u24
 HP = 0x0214FBB2
 MODEL = 0x0214FC74
+
+# Scene and title
 SUBAREA_STABLE = 0x02108228
-GAME_STATE = 0x0215E6D8       # 0x500 = in game
+GAME_STATE = 0x0215E6D8
 STATE_INGAME = 0x500
-STATE_LOAD = 0x400            # the game is loading the scene (teleport)
-# Title carousel (static object 0x0214CD6C, literal DAT_020160C4 of
-# FUN_02015f98 / DAT_02017F54 of FUN_02017e68). Byte +4 = STEP (exp269n/q):
-#   0..2 = logos/boot, 3 = "Press START" title, 5 = title menus (New
-#   Game/Continue, Easy/Normal, Vent/Aile, and also the "Exit Game" menu of the
-#   Game Over screen, which re-enters this carousel), 4 = title/attract,
-#   6 = game launched (set on the SAME frame New Game (mode 0x10000) or
-#   Continue (mode 3) is requested and never goes back to <6 until the next
-#   Game Over/title). While the step is 3 or 5 nothing writes the scene block
-#   0x021602A8 (exp262/269c: no writers), so it is the safe moment to seed the
-#   golden image.
+STATE_LOAD = 0x400            # scene load (teleport)
+# The title and its menus share the gameplay state word; the carousel step
+# tells them apart. Steps 3 and 5 are safe to seed the golden image, 6 is a
+# launched game.
 TITLE_CAROUSEL_STEP = 0x0214CD70
 TITLE_STEPS_SEEDABLE = (3, 5)
-SCENE_DESC = 0x0216047C       # scene descriptor (spawn X/Y + subarea)
+SCENE_DESC = 0x0216047C       # spawn x, y and subarea
 LIVES = 0x0214FC6C
 HPMAX = 0x0214FC76
 
-CANON_OFF = CANON_BLOCK - LIVE_BLOCK  # 0x21602B4 - 0x21045CC
+CANON_OFF = CANON_BLOCK - LIVE_BLOCK
 
-# #5 (exp240 + rom.py section 1c) + authoritative possession (2026-09-03): active
-# model (0x0214FC74) -> (AP item, possession bit that ONLY that item sets).
-# Used to revert a form that was not received and to clear any possession
-# bit that shows up without its item (ZX from Troop D0.0, X from LOAD, etc.).
+# Models: active value to (item, possession bit only that item sets). Owning a
+# form comes from its item alone; anything the game sets on its own is undone.
 MODEL_POSSESSION = {
-    # X: flag 31 (0x021045CF.7; the golden image carries it set or cleared
-    # per the YAML). In playtest 5 X showed up usable without the item -> it is
-    # treated like any other model (revert + clear the bit).
     1: ("Model X", 0x021045CF, 7),
     2: ("Model ZX", 0x021045D0, 0),
-    # H/F/L/P: FREE flags 0x02104627.0-3 (agent exp380-389); the D0/D1 bits
-    # are written by the pair's bosses and no longer grant anything.
     3: ("Progressive Model HX", 0x02104627, 0),
     4: ("Progressive Model FX", 0x02104627, 1),
     5: ("Progressive Model LX", 0x02104627, 2),
     6: ("Progressive Model PX", 0x02104627, 3),
     7: ("Model OX", 0x021045D2, 1),
 }
-# 2nd HALF of H/F/L/P = 2nd copy of the progressive item (exp444-447c, 2026-09-03):
-# FREE flags 0x02104626.0-3 (720-723) = list[1] of the model's category
-# (rom.py BIOMETAL_CAT_PATCH, vanilla count 2). With both halves
-# model_owned_count == 2 -> level 2 charged attack (charge counter cap 0x78;
-# HX: hurricane by releasing the charge in the air with jump+UP, exp446k) and
-# WE cap 32 (levels 4+4). Without the 2nd copy the client clears this bit
-# (the level shop FUN_02045084 re-derives it from the levels).
+# Second copy of a progressive model: level-2 charged attack and the larger WE cap.
 MODEL_PART2 = {
     3: (0x02104626, 0), 4: (0x02104626, 1), 5: (0x02104626, 2), 6: (0x02104626, 3),
 }
 
-# "Mission in progress" byte of the game block (0x0210460C+0x1F): bit1 is set
-# by FUN_02031f10 on accept (id<17), bit2 for story missions;
-# FUN_02009184 ("is mission X active?") requires (&6). Cleared by the Report.
-# Canonical at +0x5BCE8. Without it the boss arena did not arm (exp229/231).
-MISSION_ACTIVE_BYTE = 0x0210462B
-# STORY state block (agent exp350-359): active mission id + per-mission
-# handler object (table 0x020CF0F4). Without installing it, the force-accept
-# does not trigger cutscenes or rectangle flags (gates).
-STORY_BLOCK = 0x0214F6BC           # story block (0x11C B: +4 id, +8 handler object)
-STORY_BLOCK_CANON = 0x02160554     # its checkpoint copy (restored on death)
-# MISSION START SNAPSHOT (exp452, 2026-09-03): when accepting a mission at the
-# console, FUN_02022744 copies canonical A -> mirror B, descriptor 1 -> descriptor 2
-# and queue 1 -> queue 2. "Abort Mission" (FUN_020946f0 -> FUN_02022630 -> state 0x300)
-# restores THOSE mirrors (progress block, position/scene and story script).
-# With the client's forced accept they were never refreshed and the Abort went
-# back to the golden image / tutorial contents (A-1, human model, blank block).
-# The client replicates them on auto-accept (before writing the mission).
-BLOCK_MIRROR = 0x02160398          # mirror B of the progress block (0xE4 B; = canonical + 0xE4)
-SCENE_DESC_MIRROR = 0x021604E8     # descriptor 2 (0x6C B; = descriptor 1 + 0x6C)
-STORY_BLOCK_MIRROR = 0x02160670    # queue 2 (0x11C B; = queue 1 + 0x11C)
+# Missions and story
+MISSION_ACTIVE_BYTE = 0x0210462B   # .1 mission accepted, .2 story mission
+STORY_BLOCK = 0x0214F6BC           # +4 mission id, +8 handler object
+STORY_BLOCK_CANON = 0x02160554     # checkpoint copy, restored on death
+# Abort Mission restores these three mirrors, so a forced accept refreshes them
+# first or the abort would bring back whatever the golden image held.
+BLOCK_MIRROR = 0x02160398
+SCENE_DESC_MIRROR = 0x021604E8
+STORY_BLOCK_MIRROR = 0x02160670
 SCENE_DESC_LEN, STORY_BLOCK_LEN, LIVE_BLOCK_LEN = 0x6C, 0x11C, 0xE4
-CUTSCENE_FLAG = 0x0214F502         # bit0 = cutscene/story script in progress
-# Troop Reinforcement: the Giro scene at the end of D-2 (and with it the Model Z
-# boss) only triggers if 0x02104602.1 = 0 (VERIFIED exp507d: with the bit set
-# NOTHING happens at any height nor anywhere in the room). The game sets that
-# bit on the megamerge; if the player dies afterwards without the mission
-# getting reported, D-2 stays empty FOREVER and Troop cannot be completed.
-# The client clears it while Troop is the active mission and is not completed
-# (see _troop_unstick).
-TROOP_STATE = 162                  # 0xA2 = "Troop Reinforcement accepted" state
-TROOP_MERGE = (0x02104602, 1)      # "Troop megamerge done" flag
-# Troop START flag. Without it the Giro scene at the end of D-2 does NOT
-# trigger (exp508 with the user's real state: without the bit nothing happens;
-# with it the scene fires at x=7696). What erased it was the SECOND unguarded
-# OAM loop (0x02009D7C, twin of the one already patched): when the first
-# mini-boss fired it sprayed RAM and took this byte with it - it was not
-# legitimate code (agent exp521/523; `rom.py OAMLOOP2_*` fixes it). The only
-# legitimate clear of this bit is the report itself. The client re-sets it while
-# the mission is accepted and not completed, as a safety net.
+CUTSCENE_FLAG = 0x0214F502         # bit 0 = cutscene running
+# Troop Reinforcement: the Giro scene at the end of D-2 only arms with the
+# start flag set and the megamerge flag clear. Dying after the megamerge
+# without the Report would leave D-2 empty for good, so the client repairs
+# both while Troop is active and not yet completed.
+TROOP_STATE = 162                  # mission state "Troop accepted"
+TROOP_MERGE = (0x02104602, 1)
 TROOP_START = (0x021045E0, 2)
-# The unstick only acts in the area D rooms (D-1/D-2/D-3), which is where the
-# scene needs arming. After beating the boss the game does the megamerge and a
-# cinematic that leads to the Guardian base: there 0x02104602.1 is set
-# LEGITIMATELY and the client must not touch it (playtest 2026-09-04: clearing
-# it in X-2 gets in the way of closing the mission).
-TROOP_ROOMS = (15, 16, 17)
-# D-2 room script object (0x02020110); +0xB = its state. Case 10 is the
-# MEGAMERGE (sets 0x02104602.1 and 0x021045D0.0) and 13 the trigger of the
-# final cinematic. From state 7 (Giro scene) onwards, 602.1 is set
-# LEGITIMATELY and the X-2 auto-report REQUIRES it: if the client clears it
-# during those seconds the player is still in D-2, the mission does not complete
-# (agent exp529/529b).
-TROOP_ROOM_OBJ = 0x0214F3EC
-TROOP_ROOM_MERGED = 7
+TROOP_ROOMS = (15, 16, 17)         # D-1 to D-3, where the scene arms
+TROOP_ROOM_OBJ = 0x0214F3EC        # room script object of the loaded room
+TROOP_ROOM_MERGED = 7              # D-2 script state once merged
 STORY_HANDLER_ID = 0x0214F6C0
-STORY_HANDLER_OBJ = 0x0214F6C4     # 0x114 B; +9 = cutscene id (0xFF = none)
+STORY_HANDLER_OBJ = 0x0214F6C4     # +9 cutscene id (0xFF none), +0xB state
 
-# ---- Game ending (D-5 / Serpent): story handler watchdog ------------------
-# The ending -- post-Serpent cinematic, CREDITS, "CLEARED!!" screen and return
-# to the title -- is NOT driven by the D-5 room script nor by the cutscene VM:
-# it is driven by the STORY HANDLER of mission 16 "Destroy Model W"
-# (FUN_0201fc90, table 0x020CF0F4[16]), which only runs if STORY_HANDLER_ID is
-# 16. Its state 0x0D waits for the death of Serpent 2 (0x02104602.3), 0x0E
-# launches the final script 0x020D30FC and 0x13 sets "game completed"
-# 0x0210462D.0. In vanilla the handler is installed by accepting the mission at
-# the Transerver and its states 0..7 advance while crossing D-4 via rectangles
-# and flags (0x021045FF.4-7 / 0x02104600.0-3).
-# In the randomizer D-5 is reached without any of that having fired (open
-# world, changed gates, /mmzx_teleport) or with the mission already accepted --
-# the auto-accept only writes the handler WHEN it accepts --, so when Serpent 2
-# dies nobody starts the final chain: the room script reaches its terminal
-# state, the VM finishes its script and the screen stays on the FADE TO WHITE
-# of the last cutscene, forever (user playtest in BizHawk 2026-09-04; cause
-# and fix verified by agent exp530-541 and by the integrator exp550). It
-# happens after the goal and the release: it does not affect the Archipelago
-# game, only the game's closing.
+# Game ending: the credits are driven by the story handler of mission 16, not
+# by the D-5 room. In the open world Serpent can die with that handler missing
+# (D-4 never crossed with the mission) and the screen stays white for good,
+# so the client installs the handler at the state that waits for Serpent 2.
 ENDING_SUBAREA = 19                   # D-5
-ENDING_SERPENT = (0x02104602, 0x0C)   # .2 Serpent 1 and .3 Serpent 2 defeated
-GAME_CLEARED = (0x0210462D, 0)        # "game completed" (set by state 0x13)
-D05_ROOM_TERMINAL = 21                # terminal state of the D-5 room script
-ENDING_HANDLER_ID = 16                # mission 16 "Destroy Model W"
-ENDING_HANDLER_STATE = 0x0D           # state that waits for the death of Serpent 2
-ENDING_UNSTICK_TICKS = 5              # consecutive ticks with the signature before acting
+ENDING_SERPENT = (0x02104602, 0x0C)   # bits 2 and 3: both Serpent forms beaten
+GAME_CLEARED = (0x0210462D, 0)
+D05_ROOM_TERMINAL = 21                # D-5 room script finished
+ENDING_HANDLER_ID = 16                # Destroy Model W
+ENDING_HANDLER_STATE = 0x0D           # waiting for Serpent 2 to die
+ENDING_UNSTICK_TICKS = 5
 
-# ---- QoL skip_boss_rush (Slither tower D-4): see bossrush.py ------------
-# The client marks each Pseudoroid pair as "beaten in the boss rush" only when
-# the elevator is already stopped at the pair's stop (or the player is inside
-# the pair's room), repaints its capsules and COMMITs the checkpoint
-# (position + block + handler) like FUN_0201b384. exp614-618 (2026-09-09).
-PLAYER_OBJ = 0x0214FB08              # player object (+0x5C/+0x60 pos, +0xA.4 facing, +0x15C scene)
-PLAYER_PERSIST = 0x0214FC5C          # player persistent block (0x6C B; +0 spawn x, +4 y, +0x11.0 facing)
-DEATH_STATE = 0x0A                   # player+0x11: "dying"; with +0x12 = 2 the full death starts (exp620/621)
+# Player object, for the boss rush skip (see bossrush.py) and DeathLink
+PLAYER_OBJ = 0x0214FB08
+PLAYER_PERSIST = 0x0214FC5C          # spawn position and facing
+DEATH_STATE = 0x0A                   # player state byte: dying
 
-# BOSS (and mission-end) subareas where auto-accept does NOT fire on entry
-# (exp212/213): e07 26, f05 32, g05 37, i03 44, k04 55, l04 60, m03 63,
-# o02 66; h04 41, j05 51, d05 19.
-BOSS_SUBAREAS = {26, 32, 37, 44, 55, 60, 63, 66, 41, 51, 19}   # informational; no longer excludes (agent exp379: no corruption with the OAM guard)
+BOSS_SUBAREAS = {26, 32, 37, 44, 55, 60, 63, 66, 41, 51, 19}   # unused
 
 ROM_GAME_CODE = b"ARZE"       # MMZX USA
 
-# Default anti-softlock hub (z01 = subarea 70): ON TOP of the Transerver
-# console pad (raised platform at x=384, y=335; the skip's spawn (288,351)
-# falls outside its hitbox and UP does nothing - exp251-259/272).
-# (384,351) does NOT work: it falls inside the platform and the player drops to
-# the floor below.
+# Hub and warps
+# Default teleport: the console pad of floor A, so UP opens the console.
 HUB_SUBAREA, HUB_X, HUB_Y = 70, 384, 335
 
-# "Go to Transerver" FROM THE MENU (2026-09-03, exp432-442): in the MISSION
-# (map) tab of the pause menu, Y ("Y Button:Go to Transerver", patched text)
-# makes the ROM patch (rom.py section 1g) set WARP_REQ = 1 and close the menu.
-# The client, once in game, consumes the request and opens THE GAME'S
-# "Target Area" list (the same one the Transerver console offers: only
-# destinations with their access bit, whether by item or by having stepped on
-# the floor), requesting state 0x50700 as the console does
-# (FUN_02021070(0x0215D7F8, 0x50700)) with the "current station" at -1 so it
-# excludes none. When the list closes the game leaves the chosen index in
-# TRANSPORT_SEL (0..12; -1 = cancelled with B) and returns to gameplay without
-# moving (at the console it is the Operator's script that repositions the
-# player and requests state 0x600): the client then teleports to the hub floor
-# of that destination, (384, y_floor-17), exactly where the vanilla Transport
-# leaves you. Indices: 0 A-2, 1 B-2, 2 C-2, 3 D-2, 4 E-7, 5 F-5,
-# 6 G-5, 7 I-3, 8 K-4, 9 L-4, 10 M-3, 11 O-2, 12 X-1 (table 0x020DB0A4).
-# Button state (exp432/433): u16 0x020F2768 = held this frame
-# (NitroSDK mask: A 1, B 2, SELECT 4, START 8, RIGHT/LEFT/UP/DOWN 0x10..0x80,
-# R 0x100, L 0x200, X 0x400, Y 0x800), 0x020F276A = previous frame.
-WARP_REQ = 0x020CB9D0          # u8: 1 = pending request (set by cave A, cleared by the client)
-PAD_HELD = 0x020F2768
-TRANSPORT_SEL = 0x021046A8     # u32: "Target Area" list selection (0x0210464C+0x5C); -1 = none
-STATE_TARGET_AREA = 0x00050700 # state request that opens the list (the console: DAT_02093E64)
-STATION_ROOMS = list(WARP_DESTINATIONS) + ["x01"]   # station index -> Transerver room
-HUB_PAD_DY = 17                # each floor's console is 17 px above the floor
+# "Go to Transerver" from the pause menu: the ROM raises WARP_REQ, the client
+# opens the game's own Target Area list and reads the chosen station back.
+WARP_REQ = 0x020CB9D0          # 1 = pending; the client clears it
+PAD_HELD = 0x020F2768          # unused
+TRANSPORT_SEL = 0x021046A8     # Target Area selection, -1 = none
+STATE_TARGET_AREA = 0x00050700 # opens the Target Area list
+STATION_ROOMS = list(WARP_DESTINATIONS) + ["x01"]   # room per station index
+HUB_PAD_DY = 17                # console pad height above the floor
 
-# Flag diagnostics: wide window of the progress block (covers
-# missions/quests/story/HQ) to trace which bits change when completing
-# a mission live.
-FLAG_WATCH_BASE, FLAG_WATCH_LEN = 0x021045C0, 0x84
+FLAG_WATCH_BASE, FLAG_WATCH_LEN = 0x021045C0, 0x84   # /mmzx_flags window
 
-# Respawnable pickups as checks (v0.2, agent exp360-369): the rom.py
-# PICKUP_MAILBOX_* patch writes to a RAM MAILBOX (u32 counter + ring of
-# PICKUP_MAILBOX_SLOTS entries [sub, idx, role, 0]) every layout refill
-# collected. slot_data options that enable the polling.
+# Pickup mailbox, polled only if the slot enables a pickup category
 PICKUP_OPTION_KEYS = ("pickup_checks_1up", "pickup_checks_energy",
                       "pickup_checks_weapon", "pickup_checks_crystals")
 
 
-# --- On-screen notices (rom.py NOTIFY_* patch; agent exp473-480,
-# docs/v02_notes.md section 2a) ---
-# The cave opens the game's small popup (the "Found a Life Up!" one, non
-# blocking) with the text the client leaves at NOTIFY_ADDR: u8 REQ (1 = text
-# in BUF; the cave sets it to 0 when the notice closes), u8 STATE (the cave's),
-# u16 DUR (frames with the whole text), BUF at +4 (game font = ASCII-0x20,
-# end 0xFE). One line of NOTIFY_POPUP_GLYPHS glyphs; the color controls
-# (F1 03 green / F1 00 white) do not count. Thresholds per item class with
-# /mmzx_notify (received/sent: off, progression, useful = progression+useful, all).
-NOTIFY_DUR = 90
+# On-screen notices: text left in the NOTIFY mailbox, shown by the ROM in the
+# game's small popup
+NOTIFY_DUR = 90                 # frames
 NOTIFY_LEVELS = ("off", "progression", "useful", "all")
-# font punctuation (ASCII-0x20): 0x01-0x0F `!"#$%&'()*+,-./` and 0x1A `:` seen
-# on screen (exp475/479); `?` (0x1F) by extrapolation
-NOTIFY_PUNCT = {ch: ord(ch) - 0x20 for ch in "!\"#$%&'()*+,-./:"}
+NOTIFY_PUNCT = {ch: ord(ch) - 0x20 for ch in "!\"#$%&'()*+,-./:"}   # glyphs seen on screen
 NOTIFY_PUNCT["?"] = 0x1F
 NOTIFY_GREEN, NOTIFY_WHITE = b"\xf1\x03", b"\xf1\x00"
 NOTIFY_QUEUE_MAX = 16
-# Notice style: `short` = one line of NOTIFY_POPUP_GLYPHS glyphs (gets trimmed);
-# `full` = the whole text split by words into PAGES separated by 0xFD:
-# the popup handler (FUN_02010f50, phase 5) chains the pages by rewriting
-# the text WITHOUT closing the window (verified exp604). YAML option notify_style.
+# `full` splits the text into pages that the popup chains without closing
 NOTIFY_STYLES = ("short", "full")
 NOTIFY_PAGE = b"\xfd"
 
 
 def encode_text(text: str, terminate: bool = True) -> bytes:
-    """Encode with the MMZX font (ASCII-0x20; verified on screen for space,
-    digits, A-Z, a-z and the NOTIFY_PUNCT punctuation; everything else -> space)."""
+    """Encode text in the game's font: ASCII minus 0x20, unknown glyphs as spaces."""
     out = bytearray()
     for ch in text:
         if ch == " ":
@@ -337,12 +216,12 @@ def encode_text(text: str, terminate: bool = True) -> bytes:
 
 
 def notify_pages(head: str, item: str, tail: str, n: int = NOTIFY_POPUP_GLYPHS) -> list[bytes]:
-    """Split head + item (in green) + tail by words into pages of <= n glyphs
-    (color controls do not count). Each page starts with its own color control
-    so it does not depend on the state left by the previous one; a word longer
-    than the line is chopped. Returns the encoded pages, without 0xFD or 0xFE."""
-    # the tail (' from Alice' / ' to Bob') goes whole if it fits in one line, so as
-    # not to leave a dangling "from" at the end of the previous page
+    """Split head, item (in green) and tail by words into pages of at most n glyphs.
+
+    Each page carries its own color control; a word longer than a line is chopped.
+    Returns the encoded pages without 0xFD or 0xFE.
+    """
+    # keep " from Alice" together so no page ends with a dangling "from"
     tail_words = [tail.strip()] if 0 < len(tail.strip()) <= n else tail.split()
     words = ([(w, False) for w in head.split()] + [(w, True) for w in item.split()]
              + [(w, False) for w in tail_words])
@@ -381,10 +260,11 @@ def notify_pages(head: str, item: str, tail: str, n: int = NOTIFY_POPUP_GLYPHS) 
 
 
 def notify_bytes(head: str, item: str, tail: str, style: str = "short") -> bytes:
-    """head + item (in green) + tail. `short`: one line of NOTIFY_POPUP_GLYPHS
-    glyphs (if it does not fit, tail, ' from Alice', is sacrificed first and then
-    the item is trimmed). `full`: the whole text in chained pages of the same popup
-    (notify_pages + 0xFD); if it does not fit in the buffer trailing pages are dropped."""
+    """Encode a notice in the given style.
+
+    `short` keeps one popup line, dropping the tail and then trimming the item.
+    `full` chains pages with 0xFD and drops trailing pages that overflow BUF.
+    """
     n = NOTIFY_POPUP_GLYPHS
     if style == "full":
         pages = notify_pages(head, item, tail, n)
@@ -419,7 +299,7 @@ class MMZXClient(BizHawkClient):
     def __init__(self) -> None:
         super().__init__()
         self.local_checked: set[int] = set()
-        self.cons_log = None          # applied consumables: [[cumulative n, playtime]] (datastore); None = unresolved
+        self.cons_log = None          # [[cumulative n, playtime]]; None = not loaded
         self.cons_key = None
         self.cons_requested = False
         self.death_link_enabled = False
@@ -435,55 +315,45 @@ class MMZXClient(BizHawkClient):
         self.prev_hp = None
         self.prev_death_link = None
         self.pending_death = False
-        self.death_induced = False       # the last death was caused by a received DeathLink (do not resend)
+        self.death_induced = False       # last death came from DeathLink: no echo
         self.pending_teleport = None   # (subarea, x, y) or None
-        self.transport_wait = False    # "Target Area" list opened by the client: read the selection on return
+        self.transport_wait = False    # Target Area list open: read the pick on return
         self.added_commands = False
         self._win: tuple[int, int] | None = None   # detection window (cache)
-        # flag diagnostics (to map "mission completed" live)
+        # flag diagnostics
         self.flag_watch = False
         self.flag_snap: bytes | None = None
-        self.pending_dump = False   # /mmzx_dump: dump the Transerver state
-        # tutorial-skip: one-shot application of the initial state (YAML model
-        # + Transerver). 0=not requested, 1=waiting for the datastore, 2=apply
-        # when eligible, 3=done. /mmzx_start forces state 2.
+        self.pending_dump = False   # /mmzx_dump
+        # starting state: 0 not requested, 1 waiting for the datastore, 2 apply, 3 done
         self.start_state = 0
         self.start_key: str | None = None
-        # the LOAD forces the active model to X (0x0214FC74=1) during the
-        # scene entry, OVERWRITING the one the client sets if it arrives first.
-        # It is re-asserted until the desired value holds for N ticks.
+        # the LOAD may force Model X once; the model is re-asserted until it holds
         self.start_confirm = 0
         self.start_retries = 0
-        # #5: last "legitimate" active model (owned via AP item, or Hu/X)
-        # seen, to revert if a boss / Troop megamerge forces a form the
-        # player has not received yet.
-        self.last_legit_model = 1
-        # respawnable pickup mailbox: counter seen, ids already sent
-        # (repeats due to respawn are filtered here), map (sub, idx) ->
-        # location id and whether the slot enables any category (slot_data).
+        self.last_legit_model = 1     # last owned active model seen, to revert to
+        # respawnable pickup mailbox
         self.mailbox_count: int | None = None
         self.mailbox_checked: set[int] = set()
         self.mailbox_map: dict[tuple[int, int], int] | None = None
         self.mailbox_enabled: bool | None = None
         self.pos_last = None          # (sub, x, y, t) of the last position send
-        # on-screen notices (NOTIFY patch): queue of already-encoded texts,
-        # index of items already notified (None = sync without backlog on
-        # connect), /mmzx_notify thresholds, scouts requested ('Sent' notices)
+        # on-screen notices
         self.notify_queue: collections.deque = collections.deque()
-        self.notified_items: int | None = None
+        self.notified_items: int | None = None    # None = skip the backlog on connect
         self.notify_cfg = {"received": 2, "sent": 2}      # indices into NOTIFY_LEVELS
         self.notify_setup = False        # YAML thresholds already applied
         self.notify_user_set = False     # /mmzx_notify used (wins over the YAML)
-        self.notify_style = "full"       # NOTIFY_STYLES; the YAML (notify_style) sets it on connect
-        self.notify_style_user = False   # /mmzx_notify short|full used (wins over the YAML)
+        self.notify_style = "full"       # NOTIFY_STYLES; the YAML sets it on connect
+        self.notify_style_user = False   # /mmzx_notify style used (wins over the YAML)
         self.scout_requested: set[int] = set()
-        # item icons in the world (ICON_* patch: table per subarea)
+        # item icons in the world
         self.icons_enabled = True
         self.debug_log = False           # /mmzx_debug on: diagnostic messages at INFO level
         self.icon_written: tuple[int, bytes] | None = None
         self.icon_by_sub: dict[int, list[tuple[int, int, bool]]] | None = None
 
     async def validate_rom(self, ctx: "BizHawkClientContext") -> bool:
+        """Accept only a ROM patched for Archipelago; take the slot name from its header."""
         from CommonClient import logger
         try:
             reads = await bizhawk.read(ctx.bizhawk_ctx, [
@@ -507,8 +377,7 @@ class MMZXClient(BizHawkClient):
         except UnicodeDecodeError:
             self.slot_name = None
         ctx.game = self.game
-        # The patch does NOT pre-place items in the ROM: the client grants
-        # EVERYTHING via RAM, including local items and the start inventory.
+        # the ROM places no items: the client grants everything, start inventory included
         ctx.items_handling = 0b111
         ctx.want_slot_data = True
         ctx.watcher_timeout = 0.125
@@ -521,7 +390,7 @@ class MMZXClient(BizHawkClient):
         self.prev_hp = None
         self.prev_death_link = None
         self.pending_death = False
-        self.death_induced = False       # the last death was caused by a received DeathLink (do not resend)
+        self.death_induced = False
         self.mailbox_count = None
         self.mailbox_checked = set()
         self.mailbox_enabled = None
@@ -534,14 +403,16 @@ class MMZXClient(BizHawkClient):
         return True
 
     async def set_auth(self, ctx: "BizHawkClientContext") -> None:
+        """Log in with the slot name read from the ROM header."""
         if getattr(self, "slot_name", None):
             ctx.auth = self.slot_name
 
     def _detect_window(self) -> tuple[int, int]:
-        """Range [lo, hi) covering the detect addresses OF THE progress BLOCK
-        (+ GOAL_BITS). The far addresses (Life Ups/Sub Tanks: capacity bytes
-        0x0214FC77/78, high nibble = physically collected) are read separately
-        (self._extra_addrs) so as not to read 190 KiB per tick."""
+        """Range [lo, hi) of the progress-block window read once per tick.
+
+        Detect addresses far from the block (the Life Up and Sub Tank capacity
+        bytes) go to self._extra_addrs and are read one byte at a time.
+        """
         if self._win is not None:
             return self._win
         addrs: list[int] = [a for a, _ in GOAL_BITS] + [a for a, _ in GOAL_BITS_ALT]
@@ -560,9 +431,7 @@ class MMZXClient(BizHawkClient):
         return self._win
 
     async def _in_game(self, ctx):
-        """Returns (in_game, state_bytes). state_bytes serves as a GUARD so
-        that writes are only applied if the game is STILL in gameplay
-        (not in a menu/transition) - avoids corrupting a scene load."""
+        """Return (in_game, state_bytes); the bytes are the guard for every write."""
         try:
             reads = await bizhawk.read(ctx.bizhawk_ctx, [
                 (SUBAREA_STABLE, 1, DOM), (HP, 1, DOM), (GAME_STATE, 4, DOM),
@@ -573,23 +442,20 @@ class MMZXClient(BizHawkClient):
         hp = reads[1][0]
         state_bytes = reads[2]
         state = int.from_bytes(state_bytes, "little")
-        # The TITLE and its menus also have gs=0x500, sub=1 and hp=16
-        # (exp260-269): it is only real gameplay if the title carousel is
-        # at "game launched" (step 6).
+        # the title and its menus also show gs=0x500, sub=1 and hp=16
         launched = reads[3][0] == 6
         return (launched and sub != 0 and hp > 0 and state == STATE_INGAME), state_bytes
 
     def _debug(self, msg: str) -> None:
-        """Diagnostic message. Shown only after /mmzx_debug on; otherwise it is
-        logged at DEBUG level, which the Archipelago client does not display."""
+        """Log at INFO after /mmzx_debug on, else at DEBUG (hidden by the client)."""
         from CommonClient import logger
         (logger.info if self.debug_log else logger.debug)(msg)
 
     async def _stage(self, name: str, coro) -> None:
-        """Run a watcher stage catching any exception: the BizHawk framework
-        does not catch them and a single one would silently kill the loop.
-        It is traced in the log (once per stage until it works
-        again)."""
+        """Run one watcher stage and log its first exception.
+
+        The BizHawk framework does not catch exceptions; one would kill the loop.
+        """
         try:
             await coro
             self._stage_failed.discard(name)
@@ -602,17 +468,22 @@ class MMZXClient(BizHawkClient):
                 logger.exception("[mmzx] stage '%s' failed (continuing with the rest)" % name)
 
     async def game_watcher(self, ctx: "BizHawkClientContext") -> None:
+        """One tick: seed the title, then detect checks, grant items and repair the game.
+
+        Every gameplay stage runs through _stage; the order and the reason for
+        each stage are in docs/client_protocol.md section 3.
+        """
         if ctx.server is None or ctx.slot_data is None:
             return
 
-        # DeathLink: enable the tag once per slot_data
+        # DeathLink tag, once per connection
         if not self.death_link_setup:
             self.death_link_setup = True
             self.death_link_enabled = bool(ctx.slot_data.get("death_link", False))
             if self.death_link_enabled:
                 await ctx.update_death_link(True)
 
-        # Open-world mode: read the option once
+        # Options
         if not self.mission_setup:
             self.mission_setup = True
             self.mission_auto_accept = bool(ctx.slot_data.get("mission_auto_accept", False))
@@ -622,10 +493,7 @@ class MMZXClient(BizHawkClient):
                 logger.info("[mmzx] skip_boss_rush: the D-4 boss rush is skipped (each pair of "
                             "Pseudoroids is marked as beaten when the elevator reaches its stop)")
 
-        # On-screen notices: default thresholds from the YAML (notify_received /
-        # notify_sent), once per connection and only if the player has not
-        # already set them with /mmzx_notify (the command wins; old seeds without
-        # the keys -> useful). The effective configuration is announced in the log.
+        # Notice thresholds from the YAML, unless /mmzx_notify already set them
         if not self.notify_setup:
             self.notify_setup = True
             for key in ("received", "sent"):
@@ -641,7 +509,7 @@ class MMZXClient(BizHawkClient):
                         % (NOTIFY_LEVELS[self.notify_cfg["received"]],
                            NOTIFY_LEVELS[self.notify_cfg["sent"]], self.notify_style))
 
-        # client commands (anti-softlock + flag diagnostics)
+        # Console commands
         if not self.added_commands:
             self.added_commands = True
             ctx.command_processor.commands["mmzx_teleport"] = _cmd_teleport
@@ -654,15 +522,8 @@ class MMZXClient(BizHawkClient):
             ctx.command_processor.commands["mmzx_icons"] = _cmd_icons
             ctx.command_processor.commands["mmzx_debug"] = _cmd_debug
 
-        # ---- tutorial-skip: one-shot state (datastore) + golden image ----
-        # Resolve EARLY (also in menus) the one-shot state machine of the YAML
-        # model (0->1->2/3); only the APPLY phase (2) requires gameplay.
+        # Starting state and golden image: both run in the menus too
         await self._start_state_resolve(ctx)
-        # Seed the golden image at 0x021602A8 WHENEVER the title/menus are
-        # active (independent of start_state): "New Game" (redirected by the
-        # patch to the LOAD handler) enters the scene with this block
-        # -> post-tutorial hub, also after a Game Over. Never during a load
-        # nor in gameplay (see _seed_golden_image).
         await self._seed_golden_image(ctx)
 
         in_game, state_bytes = await self._in_game(ctx)
@@ -671,11 +532,7 @@ class MMZXClient(BizHawkClient):
             self.ingame_ticks = 0
             return
         guard = (GAME_STATE, state_bytes, DOM)   # only write if still in game
-        # Startup debounce (agent exp310-319): when launching the game there
-        # are ~37 frames where _in_game is already True but structures outside
-        # the block still hold the 0xFF boot fill (e.g. the message struct
-        # 0x02104588). No check nor write until the game has been stable for
-        # several ticks and the message struct is initialized.
+        # Startup debounce: right after launch some structures still hold the boot fill
         self.ingame_ticks = getattr(self, "ingame_ticks", 0) + 1
         if self.ingame_ticks < 3:
             return
@@ -690,13 +547,10 @@ class MMZXClient(BizHawkClient):
             self.pending_where = False
             await self._stage("where", self._log_where(ctx))
 
-        # ---- player position -> data storage (UT: auto-tab and icon) ----
+        # Position for Universal Tracker
         await self._stage("position", self._send_position(ctx))
 
-        # ---- detect checks ----
-        # Read window computed from ALL the detect addresses (+ GOAL_BITS).
-        # Covers the progress block 0x021045CC and also the A-2 Sub Tank
-        # flag (0x02104589, below the block).
+        # Check detection
         lo, hi = self._detect_window()
         extra = self._extra_addrs
         try:
@@ -721,9 +575,9 @@ class MMZXClient(BizHawkClient):
                 continue
             if det[0] == "bit":
                 ok = bit_set(det[1], det[2])
-            elif det[0] == "all":   # all the bits (mission completed)
+            elif det[0] == "all":   # mission completed
                 ok = all(bit_set(a, b) for a, b in det[1])
-            elif det[0] == "any":   # any of them (biometal: 1st or 2nd boss of the pair)
+            elif det[0] == "any":   # biometal: either boss of the pair
                 ok = any(bit_set(a, b) for a, b in det[1])
             else:
                 continue
@@ -732,8 +586,7 @@ class MMZXClient(BizHawkClient):
                 if loc_id in ctx.server_locations:
                     checked.add(loc_id)
 
-        # ---- respawnable pickups: poll the mailbox (only if the slot enables
-        #      them); ids already seen persist in mailbox_checked ----
+        # Pickup mailbox
         await self._stage("pickup mailbox", self._poll_pickup_mailbox(ctx))
         checked |= self.mailbox_checked
 
@@ -744,62 +597,58 @@ class MMZXClient(BizHawkClient):
                 self._notify_sent(ctx, newly)
             self.local_checked = checked
 
-        # ---- item icons in the world (ICON_* patch: table per subarea) ----
+        # Item icons
         await self._stage("item icons", self._sync_icon_table(ctx))
 
-        # ---- Troop: unstick the Giro scene if it was left half-way ----
+        # Troop Reinforcement unstick
         await self._stage("troop", self._troop_unstick(ctx, guard))
 
-        # ---- active mission: restore its 'extra' bits if something clears them ----
+        # Mission bits restore
         if self.mission_auto_accept:
             await self._stage("mission bits", self._mission_bits_tick(ctx, guard))
 
-        # ---- diagnostics: trace changing bits (map mission completed) ----
+        # Diagnostics requested from the console
         if self.flag_watch:
             await self._stage("flags", self._flag_watch_tick(ctx))
-
-        # ---- diagnostics: dump the Transerver state (on request) ----
         if self.pending_dump:
             self.pending_dump = False
             await self._stage("dump", self._dump_transerver(ctx))
 
-        # ---- tutorial-skip: apply the initial state (one-shot) ----
+        # Starting state, one shot
         await self._stage("starting state", self._start_state_tick(ctx, guard))
 
-        # ---- grant received items (idempotent, re-apply everything) ----
+        # Grant items
         await self._stage("items", self._grant_items(ctx, guard))
 
-        # ---- on-screen notices: new received items + queue pump ----
+        # Notices
         await self._stage("notifications", self._notify_tick(ctx))
 
-        # ---- #5: revert boss / Troop forms not owned via AP item ----
+        # Revert models the player does not own
         await self._stage("models", self._revert_unowned_models(ctx, guard))
 
-        # ---- open-world: auto-accept the mission of the current zone ----
+        # Mission auto-accept
         if self.mission_auto_accept:
             await self._stage("auto-accept", self._auto_accept_mission(ctx, guard))
 
-        # ---- QoL: skip the Slither tower boss rush (D-4) ----
+        # Boss rush skip
         if self.skip_boss_rush:
             await self._stage("boss rush", self._boss_rush_skip_tick(ctx, guard))
 
-        # ---- DeathLink ----
+        # DeathLink
         if self.death_link_enabled:
             await self._stage("deathlink", self._handle_death_link(ctx, guard))
 
-        # ---- "Go to Transerver" (MISSION tab of the menu) + last Transerver ----
+        # Go to Transerver
         await self._stage("warp", self._warp_request_tick(ctx, guard))
 
-        # ---- anti-softlock: teleport requested by command ----
+        # Pending teleport
         if self.pending_teleport is not None:
             sub, x, y = self.pending_teleport
             self.pending_teleport = None
             await self._stage("teleport", self._teleport(ctx, sub, x, y, guard))
 
-        # ---- goal: Serpent defeated (final mission completed) ----
+        # Goal: Serpent beaten, by the epilogue event or by both D-5 Serpent bits
         if not ctx.finished_game:
-            # Serpent (form 2) beaten: epilogue event 0x021045CA.5 or, as a
-            # fallback, both bits of the D-5 script (forms 1 and 2). exp298f/275.
             done = (all(bit_set(a, b) for (a, b) in GOAL_BITS)
                     or all(bit_set(a, b) for (a, b) in GOAL_BITS_ALT))
             if done:
@@ -808,8 +657,7 @@ class MMZXClient(BizHawkClient):
                 await ctx.send_msgs([{"cmd": "StatusUpdate",
                                       "status": ClientStatus.CLIENT_GOAL}])
 
-        # ---- game ending: if the story handler is missing after Serpent,
-        #      the screen stays white; start the credits chain ----
+        # Ending unstick
         await self._stage("ending", self._ending_unstick(ctx, guard))
 
     async def _log_where(self, ctx) -> None:
@@ -830,12 +678,12 @@ class MMZXClient(BizHawkClient):
                     % (r[9][0], (r[10][0] >> TROOP_MERGE[1]) & 1, r[11][0] & 1))
 
     async def _send_position(self, ctx) -> None:
-        """Write [subarea, x, y] to the mmzx_pos_<slot> key of the data
-        storage for Universal Tracker's auto-tab and map icon.
-        UT reloads the map tab on every change of the key (no throttling on
-        its side), so it is throttled here: on subarea change (immediate)
-        or, at most, every POS_INTERVAL s and only if the player has moved
-        >= POS_MIN_DELTA px."""
+        """Publish [subarea, x, y] for Universal Tracker, throttled.
+
+        UT reloads the map tab on every change of the key, so the position goes
+        out on a subarea change and otherwise at most once per POS_INTERVAL
+        after POS_MIN_DELTA px of movement.
+        """
         if not getattr(ctx, "slot", None):
             return
         try:
@@ -860,16 +708,11 @@ class MMZXClient(BizHawkClient):
         }])
 
     async def _poll_pickup_mailbox(self, ctx) -> None:
-        """Respawnable pickups (v0.2): read the mailbox filled by the patch
-        (u32 counter + ring of PICKUP_MAILBOX_SLOTS u32 entries
-        [u8 subarea, u8 coords index, u8 role, 0]; entry k of the counter
-        lives at +4 + (k % SLOTS)*4). Every new (sub, idx) is mapped to its
-        location (detect ['mailbox', sub, idx]) and accumulated in
-        mailbox_checked; repeats (the pickup respawns on re-entry) do
-        nothing. If the counter GOES BACK (emulator reset: the mailbox lives
-        in RAM and starts at 0) or it is the first tick, at most the last
-        SLOTS entries are processed and it re-syncs. Without any
-        pickup_checks_* option enabled in the slot nothing is read."""
+        """Turn new pickup mailbox entries into checks; repeats do nothing.
+
+        The mailbox lives in RAM: when the counter went backwards (emulator
+        reset) or on the first read, only the last ring of entries is processed.
+        """
         if self.mailbox_enabled is None:
             self.mailbox_enabled = any(bool(ctx.slot_data.get(k, False))
                                        for k in PICKUP_OPTION_KEYS)
@@ -913,11 +756,10 @@ class MMZXClient(BizHawkClient):
             self._debug("[mmzx] pickup collected: %s" % ", ".join(names))
 
     def _icon_code(self, ctx, loc_id: int) -> int:
-        """Icon code (anim+1 of the AP set) of the item at the location, per the
-        received LocationScouts: items of this game with their own sprite (Life Up,
-        Sub Tank, chips, models, Card Keys) -> their icon; the rest by classification
-        (progression -> logo with arrow, useful -> logo with cross, filler/trap -> grey
-        logo). 0 = no scout yet (vanilla look: the disk is the plain logo)."""
+        """Icon code of the item scouted at a location, or 0 while unknown.
+
+        Own items with a sprite get it; anything else the logo of its classification.
+        """
         info = (getattr(ctx, "locations_info", None) or {}).get(loc_id)
         if info is None:
             return 0
@@ -934,18 +776,12 @@ class MMZXClient(BizHawkClient):
         return ICON_CODES["logo_filler"]
 
     async def _sync_icon_table(self, ctx) -> None:
-        """Write to RAM (ICON_TABLE_ADDR) the pickup table of the current subarea:
-        for each physical location of the room (disks, Life Up/Sub Tank, refills) the
-        code of the item it contains (only with icons on), the bitmap of refills
-        ALREADY SENT (+0x84: they look like the vanilla refill) and the `present`
-        bitmap (+0xA4, rom.py PICKUP_AP): multiworld locations whose pickup must
-        NOT apply its vanilla effect (energy/1-Up/popup/disk label):
-        refills only while not yet sent (afterwards they respawn and heal as
-        usual); disks/Life Up/Sub Tank always (they do not respawn; after a
-        !collect the physical pickup is still there and only the chime plays). The
-        ROM cave queries it when creating each entity and when collecting it. It is
-        rewritten on sub change, when scouts arrive, when sending checks and if the
-        ROM lost the table (reset). /mmzx_icons off only removes the icon codes."""
+        """Write the icon table of the current subarea: codes and both bitmaps.
+
+        Rewritten when the subarea, the scouts or the checked set change and
+        when the ROM lost the header. Refills already sent look vanilla again;
+        disks, Life Ups and Sub Tanks stay `present` since they never respawn.
+        """
         if self.icon_by_sub is None:
             self.icon_by_sub = {}
             for v in LOCATIONS.values():
@@ -981,8 +817,7 @@ class MMZXClient(BizHawkClient):
         self.icon_written = want
 
     def _ensure_scouts(self, ctx) -> list:
-        """Request LocationScouts (without creating hints) for the pending
-        locations to know which item of which player is at each ('Sent' notices)."""
+        """Request LocationScouts (no hints) for the locations still missing their info."""
         if self.notify_cfg["sent"] == 0:
             return []
         info = getattr(ctx, "locations_info", None) or {}
@@ -995,8 +830,7 @@ class MMZXClient(BizHawkClient):
         return [{"cmd": "LocationScouts", "locations": sorted(pending), "create_as_hint": 0}]
 
     def _notify_sent(self, ctx, newly: set) -> None:
-        """Queue 'Sent <item> to <player>' for each new check whose item belongs
-        to ANOTHER player (per the 'sent' threshold)."""
+        """Queue "Sent <item> to <player>" for new checks holding another player's item."""
         lvl = self.notify_cfg["sent"]
         if lvl == 0:
             return
@@ -1016,9 +850,10 @@ class MMZXClient(BizHawkClient):
             self.notify_queue.append(notify_bytes("Sent ", item, " to " + who, self.notify_style))
 
     async def _notify_tick(self, ctx) -> None:
-        """Queue 'Got <item> [from <player>]' for each new received item
-        (per the 'received' threshold; the backlog on connect is not announced) and,
-        if the popup is free (REQ == 0), write the next notice from the queue."""
+        """Queue "Got" notices for new items and push one when the popup is free.
+
+        The backlog present when connecting is not announced.
+        """
         msgs = self._ensure_scouts(ctx)
         if msgs and hasattr(ctx, "send_msgs"):
             await ctx.send_msgs(msgs)
@@ -1054,10 +889,7 @@ class MMZXClient(BizHawkClient):
         await bizhawk.write(ctx.bizhawk_ctx, [(NOTIFY_ADDR, b"\x01", DOM)])   # REQ last
 
     async def _flag_watch_tick(self, ctx) -> None:
-        """Read the wide window of the progress block and report in the log
-        which bits change relative to the previous snapshot. Used to map the
-        'mission completed' routine live: enable with /mmzx_flags, take the
-        snapshot, turn in the mission, and see which bit(s) turn on."""
+        """/mmzx_flags: log the progress-block bits that changed since the snapshot."""
         from CommonClient import logger
         try:
             cur = (await bizhawk.read(
@@ -1081,13 +913,9 @@ class MMZXClient(BizHawkClient):
             self.flag_snap = cur
 
     async def _dump_transerver(self, ctx) -> None:
-        """Dump the state relevant to the gating of the Transerver mission
-        list: mission flag region (0x021045DE..), Transerver region
-        (0x02104620.., includes the index 0x02104630) and decode which
-        missions have their START flag set. To correlate with what is offered
-        in the menu (availability RE, v0.2)."""
+        """/mmzx_dump: log the mission and Transerver flag regions."""
         from CommonClient import logger
-        MISSIONS = [  # id -> (byte, bit, name) - start flag (mission_table)
+        MISSIONS = [  # start flag per mission
             (0x021045DE, 2, "Catch The Maverick"), (0x021045DE, 5, "Locate Giro"),
             (0x021045DF, 1, "Pass The Test"), (0x021045E0, 2, "Troop Reinforcement"),
             (0x021045E1, 3, "Search The Plant"), (0x021045E1, 6, "Find The Survivors"),
@@ -1126,10 +954,7 @@ class MMZXClient(BizHawkClient):
         return []
 
     async def _mission_bits_tick(self, ctx, guard) -> None:
-        """Restore the 'extra' bits of the ACTIVE mission if they disappear.
-        They are needed for the room scripts to recognize it (Troop: E0.5/E0.6
-        are required by the X-2 auto-report) and a ROM without the guard on the
-        second OAM loop (0x02009D7C) can corrupt that byte when a mini-boss fires."""
+        """Re-set the extra bits of the active mission if something cleared them."""
         try:
             state = int.from_bytes((await bizhawk.read(
                 ctx.bizhawk_ctx, [(MISSION_STATE_ADDR, 4, DOM)]))[0], "little")
@@ -1162,13 +987,11 @@ class MMZXClient(BizHawkClient):
                         % (rec["name"], len(writes)))
 
     async def _troop_unstick(self, ctx, guard) -> None:
-        """Troop Reinforcement: the boss at the end of D-2 only appears if the
-        megamerge flag 0x02104602.1 is 0 (exp507d). The game sets it when
-        megamerging with Model ZX; if the player dies there without the mission
-        getting reported, the room stays empty and the mission cannot be finished
-        (all of D-2 is traversed without a fight). While Troop is the ACTIVE
-        mission and is NOT completed, the bit is cleared (live + canonical), never
-        during a story cutscene."""
+        """Re-arm the Giro scene of D-2 while Troop Reinforcement is active.
+
+        The scene needs the start flag set and the megamerge flag clear; dying
+        after the megamerge without the Report would leave D-2 empty for good.
+        """
         addr, bit = TROOP_MERGE
         saddr, sbit = TROOP_START
         try:
@@ -1177,10 +1000,8 @@ class MMZXClient(BizHawkClient):
             return
         if sub not in TROOP_ROOMS:
             return
-        # The megamerge guard affects ONLY clearing 0x02104602.1: the START
-        # flag must always be restored (if the unguarded OAM loop of an old ROM
-        # corrupts it with the script already advanced, not restoring it leaves
-        # the mission dead: the Giro scene cannot be armed again).
+        # The start flag is always restored; the megamerge flag only until the
+        # D-2 script has passed the merge, since the X-2 report needs it set.
         merged = False
         if sub == 16:
             try:
@@ -1231,21 +1052,12 @@ class MMZXClient(BizHawkClient):
                         "can trigger again" % " and ".join(what))
 
     async def _ending_unstick(self, ctx, guard) -> None:
-        """Game ending: if Serpent 2 has died in D-5 and the story handler of
-        mission 16 is missing (or is below its state 0x0D), nobody launches the
-        final cinematic nor the credits and the screen stays white forever.
-        The handler is installed at state 0x0D -- exactly the point where
-        vanilla waits for the death of Serpent 2 -- and the game carries on by
-        itself: final cinematic -> credits -> "CLEARED!!" -> title (agent
-        exp535/540/541, integrator exp550).
+        """Install the mission 16 story handler if Serpent died without it.
 
-        It fires ONCE, with the final boss already dead and after the release,
-        so it cannot alter checks, items or logic: the only thing it writes is
-        the story handler's work area. The guards (no cutscene in progress,
-        room script in its terminal state, 5 consecutive ticks) prevent acting
-        while Serpent's death scene is still running, and the "game completed"
-        flag prevents repeating it if the player returns to D-5 with the game
-        already finished."""
+        Without that handler nobody starts the credits and the screen stays
+        white. Runs after the goal, writes only the handler, at the state where
+        vanilla waits for Serpent 2's death; the game carries on by itself.
+        """
         try:
             sub = (await bizhawk.read(ctx.bizhawk_ctx, [(SUBAREA_STABLE, 1, DOM)]))[0][0]
         except bizhawk.RequestFailedError:
@@ -1258,7 +1070,7 @@ class MMZXClient(BizHawkClient):
         try:
             r = await bizhawk.read(ctx.bizhawk_ctx, [
                 (saddr, 1, DOM), (caddr, 1, DOM), (CUTSCENE_FLAG, 1, DOM),
-                (TROOP_ROOM_OBJ + 0xB, 1, DOM),      # room script (of ANY room)
+                (TROOP_ROOM_OBJ + 0xB, 1, DOM),      # room script of the loaded room
                 (STORY_HANDLER_ID, 4, DOM), (STORY_HANDLER_OBJ + 0xB, 1, DOM)])
         except bizhawk.RequestFailedError:
             return
@@ -1288,20 +1100,13 @@ class MMZXClient(BizHawkClient):
                         "Serpent): final cutscene started; the credits follow")
 
     async def _boss_rush_skip_tick(self, ctx, guard) -> None:
-        """QoL `skip_boss_rush`: cross the Slither tower (D-4) without beating
-        the 8 Pseudoroids again. Each pair is marked as beaten in the boss
-        rush (flags 0x021045FF.4+k / 0x02104600.k) ONLY when the elevator is
-        already stopped at the pair's stop with the player on it, or the player
-        is inside the pair's room: doing it early makes the elevator jump
-        straight to the stop and the player falls into the pit (bossrush.py,
-        exp614-618). With the pair set, the mission 16 handler chains the next
-        cinematic and ascent by itself, the capsules become inert, their doors
-        open and the tiles are repainted as used (replica of FUN_02013328).
-        The checkpoint is also COMMITted (position -> player persistent block
-        -> scene descriptor; live block -> canonical; story block -> queue 1),
-        like FUN_0201b384: fade doors only update the respawn position and a
-        death respawned with the handler out of sync and the elevator dead
-        (exp617)."""
+        """Mark Pseudoroid pairs as beaten in the D-4 boss rush (skip_boss_rush).
+
+        A pair is set only once the elevator stands at its stop or the player is
+        inside its room: set early, the elevator jumps and drops the player. The
+        checkpoint is committed as a pad would, or a death would respawn with
+        the handler out of sync and a dead elevator.
+        """
         try:
             r = await bizhawk.read(ctx.bizhawk_ctx, [
                 (SUBAREA_STABLE, 1, DOM), (CUTSCENE_FLAG, 1, DOM),
@@ -1353,25 +1158,21 @@ class MMZXClient(BizHawkClient):
                             "checkpoint saved" % (BR.PAIR_NAMES[k], x, y))
 
     async def _auto_accept_mission(self, ctx, guard) -> None:
-        """Open-world: when ENTERING the target subarea of a mission, force it
-        as accepted (replicates FUN_02031f10, validated exp067): start flag
-        (live+canonical) + state at MISSION_STATE_ADDR + MISSION_ACTIVE_
-        FLAG=1. Only on zone CHANGE (not every frame) and if it is not already
-        the active mission. Excludes Troop/Protect HQ (not in MISSION_ACCEPT;
-        they auto-launch via story). Before writing the mission it takes the
-        mission start snapshot (mirrors B/descriptor 2/queue 2) so that
-        "Abort Mission" returns the player to this point with no mission and
-        with progress intact (exp452); afterwards, checkpoint commit."""
+        """Accept the mission of the subarea or hub floor just entered (open world).
+
+        Replicates what the console does: snapshot for Abort Mission, start
+        flag, state, story handler, extra bits and a checkpoint commit. Never
+        re-accepts a completed mission (a second Report would pay again).
+        Protect HQ is not in the table; the game launches it on its own.
+        """
         try:
             sub = (await bizhawk.read(ctx.bizhawk_ctx, [(SUBAREA_STABLE, 1, DOM)]))[0][0]
         except bizhawk.RequestFailedError:
             return
         if sub == HUB_SUBAREA:
-            # Hub floor with a door to a BOSS room: the floor door
-            # (G-5/K-4/L-4) and the arena shutters require the area's mission
-            # accepted or completed (agent exp370-379). It is accepted when
-            # approaching the left door (x <= HUB_FLOOR_DOOR_X) so as not to
-            # turn the floor's console into "Abort the mission?".
+            # Floors whose door leads to a boss room keep it shut until the mission
+            # is accepted. Accept near the door, not on arrival, or the floor's
+            # console turns into "Abort the mission?".
             try:
                 r = await bizhawk.read(ctx.bizhawk_ctx, [(PLAYER_POS, 8, DOM)])
             except bizhawk.RequestFailedError:
@@ -1393,15 +1194,12 @@ class MMZXClient(BizHawkClient):
             if sub == self.last_accept_sub and not self.force_accept:
                 return
             key = sub
-            # (BOSS rooms are no longer excluded: with the ROM's OAM guard,
-            # forcing the mission inside does not corrupt the room; agent exp379/379b.)
             rec = MISSION_ACCEPT.get(sub)
         self.force_accept = False
         if not rec:
             self.last_accept_sub = key
             return
-        # mission already COMPLETED ("completed" bits = detection of its
-        # location): do not re-accept it (would allow a second Report/reward)
+        # already completed: accepting again would allow a second Report
         done_bits = self._mission_done_bits(rec["name"])
         if done_bits:
             try:
@@ -1420,10 +1218,7 @@ class MMZXClient(BizHawkClient):
             return
         if cur_state == rec["state"]:
             self.last_accept_sub = key
-            # It is already the active mission, but it may be missing some
-            # 'extra' bit if it was accepted with an earlier apworld version
-            # (games in progress): they are completed here so they heal on
-            # their own. It is an OR of bits the acceptance would have set anyway.
+            # already active: only heal missing extra bits
             extras = rec.get("extra", [])
             if extras:
                 try:
@@ -1451,10 +1246,7 @@ class MMZXClient(BizHawkClient):
             (LIVE_BLOCK, LIVE_BLOCK_LEN, DOM), (SCENE_DESC, SCENE_DESC_LEN, DOM),
             (STORY_BLOCK, STORY_BLOCK_LEN, DOM)])
         writes = [
-            # Mission start snapshot (FUN_02022744) with the state PRIOR to the
-            # mission: it is what "Abort Mission" restores (exp452k/452l): live block ->
-            # mirror B, descriptor 1 (spawn of the current room/floor) -> descriptor 2,
-            # live story block -> queue 2.
+            # mission-start snapshot: what Abort Mission restores
             (BLOCK_MIRROR, cur[4], DOM),
             (SCENE_DESC_MIRROR, cur[5], DOM),
             (STORY_BLOCK_MIRROR, cur[6], DOM),
@@ -1462,21 +1254,17 @@ class MMZXClient(BizHawkClient):
             (canon, bytes([cur[1][0] | (1 << bit)]), DOM),
             (MISSION_STATE_ADDR, rec["state"].to_bytes(4, "little"), DOM),
             (MISSION_ACTIVE_FLAG, b"\x01", DOM),
-            # "mission in progress" (bit1): set by FUN_02031f10; required by FUN_02009184
+            # "mission in progress" bit, tested by the game's "is mission X active"
             (act, bytes([cur[2][0] | 0x02]), DOM),
             (act_c, bytes([cur[3][0] | 0x02]), DOM),
         ]
-        # STORY handler of the mission (recipe FUN_0201b5ec, validated by
-        # agent exp350-359 for missions 6/14/16): zeroed object, no active
-        # cutscene (+9 = 0xFF) and mission id. With it the rectangle cutscenes
-        # and the mission flags run as in vanilla.
+        # story handler: without it the mission's cutscenes and flags never run
         obj = bytearray(0x114)
-        obj[9] = 0xFF
-        obj[0xB] = int(rec.get("hstate", 0))   # initial handler state (Troop: 3)
+        obj[9] = 0xFF                           # no pending cutscene
+        obj[0xB] = int(rec.get("hstate", 0))   # initial handler state
         writes.append((STORY_HANDLER_OBJ, bytes(obj), DOM))
         writes.append((STORY_HANDLER_ID, int(rec["id"]).to_bytes(4, "little"), DOM))
-        # extra mission bits (e.g. Troop: 0x021045E0.7 = "already launched" so
-        # that the X-2 command room does not relaunch it via story), live+canonical
+        # extra bits: the "step taken" flags the room scripts test first
         for ea, eb in rec.get("extra", []):
             ecur = await bizhawk.read(ctx.bizhawk_ctx, [(ea, 1, DOM), (ea + CANON_OFF, 1, DOM)])
             writes.append((ea, bytes([ecur[0][0] | (1 << eb)]), DOM))
@@ -1484,11 +1272,8 @@ class MMZXClient(BizHawkClient):
         ok = await bizhawk.guarded_write(ctx.bizhawk_ctx, writes, [guard])
         from CommonClient import logger
         if ok:
-            # Checkpoint COMMIT (what the game does at the pads,
-            # FUN_0201b384): live progress block -> canonical and story block
-            # (id + handler) -> its copy. Without this, a death before the
-            # first milestone restores the checkpoint and erases the handler
-            # and the mission state (agent exp410-416).
+            # Checkpoint commit like a pad, or a death before the first milestone
+            # would restore a checkpoint without the mission.
             try:
                 cur = await bizhawk.read(ctx.bizhawk_ctx, [
                     (LIVE_BLOCK, 0xE4, DOM), (STORY_BLOCK, 0x11C, DOM)])
@@ -1502,10 +1287,10 @@ class MMZXClient(BizHawkClient):
             self._debug("[mmzx] acceptance of %s not applied (game state guard); retrying" % rec["name"])
 
     async def _start_state_resolve(self, ctx) -> None:
-        """Advance the skip's one-shot state machine using the server
-        datastore (key `mmzx_start_applied_<team>_<slot>`), whether the game
-        is running or not. 0=request, 1=waiting for Get, 2=apply (requires
-        gameplay+hub), 3=done. /mmzx_start jumps straight to 2."""
+        """Advance the starting-state machine from its datastore key, in menus too.
+
+        0 request, 1 waiting for the reply, 2 apply in gameplay, 3 done.
+        """
         if self.start_state >= 2:
             return
         self.start_key = "mmzx_start_applied_%s_%s" % (ctx.team, ctx.slot)
@@ -1522,45 +1307,13 @@ class MMZXClient(BizHawkClient):
             self.start_state = 3 if ctx.stored_data[self.start_key] else 2
 
     async def _seed_golden_image(self, ctx) -> None:
-        """Write the golden image to 0x021602A8 while the TITLE/MENUS are
-        active, every tick and independently of start_state, so that any
-        "New Game" (mode 0x10000, redirected by the patch to the LOAD handler)
-        ALWAYS enters the post-tutorial hub - also after a Game Over, whose
-        "Exit Game" re-enters the same title carousel
-        (exp260-269, work/nav/exp260/NOTES.md).
+        """Seed the golden image into the LOAD buffer while the title or its menus are up.
 
-        Measured states (game_state 0x0215E6D8 / carousel step 0x0214CD70):
-          logos/boot ............ gs=0x000000, step 0-2 (not seeded; the
-                                  title re-initializes the block on load)
-          title load ............ 0xB00 (1 frame) -> 0x200 -> 0x400, step 3
-                                  (block init by DMA: do not seed)
-          "Press START" title ... gs=0x500, step 3, stable sub=1  <- SEED
-          title menus ........... gs=0x500, step 5                <- SEED
-          New Game requested .... gs=0x010000 (1 frame; Aile: 0x000000) and
-                                  step=6 on that same frame -> 0x200 -> 0x400
-                                  (LOAD reads the block) -> 0x500
-          Continue requested .... gs=0x000003 -> 0x000103 -> 0x0203xx (data
-                                  select), step=6 from 0x000003; restore DMA
-                                  SRAM->0x021602A8 at 0x140203/
-                                  0x150203 -> 0x820203 -> 0x840203 -> 0x840303
-                                  -> 0x100 -> 0x200 -> 0x400 -> 0x500
-          gameplay .............. gs=0x500, step 6 (0x021602A8 = live scene
-                                  buffer -> NEVER write)
-          pause ................. 0x1000700 -> 0x1 -> 0x10001 -> 0x1010001 ->
-                                  0x101; unpause 0x800 -> 0x1000800 -> 0x500
-          death -> Game Over .... 0x900 -> 0x000007 -> 0x000107 -> 0x010107
-                                  (step 6); on press: 0x0x0107 -> 0x0x0207 and
-                                  step 6 -> 1 -> 5 (Exit Game/Continue menu =
-                                  title carousel)                  <- SEED
-          Exit Game ............. = New Game (0x10000 -> LOAD of the block)
-          Continue from GO ...... 0x010003 -> data select (step 6) -> DMA -> LOAD
-        Rule: step in {3,5} AND (gs == 0x500 or gs&0xFF == 0x07). By
-        construction excludes 0x100/0x200/0x400 and the 0x..03 states of the
-        data select (the Continue DMA precedes the LOAD: seeding there would
-        clobber the save), and gameplay (step 6). Step 4 (title/attract with
-        demo, gs 0x090700) is excluded: every New Game goes through step 5 first.
-        Write GUARDED by (step, gs) so it does not go through if the carousel
-        advanced to 6 between the read and the write."""
+        New Game is redirected to LOAD, so every new game starts in the hub,
+        also after a Game Over. Only carousel steps 3 and 5 with the state word
+        at gameplay or at a Game Over menu are safe: the data select restores
+        the SRAM there, and in gameplay the buffer is the live scene. Guarded on both.
+        """
         try:
             r = await bizhawk.read(ctx.bizhawk_ctx, [
                 (GAME_STATE, 4, DOM), (TITLE_CAROUSEL_STEP, 1, DOM)])
@@ -1573,13 +1326,7 @@ class MMZXClient(BizHawkClient):
         if not (gs == STATE_INGAME or (gs & 0xFF) == 0x07):
             return
         try:
-            # The golden image carries difficulty/character at +0x70/+0x71
-            # (exp273d: +0x70 = 1 Easy / 0 Normal; +0x71 = 0 Vent / 1 Aile).
-            # The golden one is Normal/Vent; the YAML character is applied.
-            # Image v2 patched per YAML (golden.build_image): active model and
-            # possession from the first frame (the LOAD does not force X),
-            # character (0x0214FC75), Normal difficulty, WE of the starting model,
-            # no briefing, spawn (384,335). _start_state_tick remains as a fallback.
+            # the image is patched per slot: starting model and character
             img = build_image(str(ctx.slot_data.get("starting_model", "model_x")),
                               int(ctx.slot_data.get("character", 0) or 0), STARTING_MODELS)
             await bizhawk.guarded_write(
@@ -1590,18 +1337,14 @@ class MMZXClient(BizHawkClient):
             return
 
     async def _start_state_tick(self, ctx, guard) -> None:
-        """Tutorial-skip (v0.2): APPLY phase (start_state==2). Applies ONCE
-        the YAML's initial state (starting_model + starting_transerver)
-        on top of the post-tutorial golden state, when the game is IN GAME,
-        in the hub (subarea 70) and with Transerver access (0x02104627 bit4) -
-        the signature of the post-tutorial state. Marks the datastore when done.
-        (States 0/1/3 are handled by _start_state_resolve.)"""
+        """Apply the starting state once the player is in the hub (start_state 2).
+
+        Re-asserts the active model until it holds, since the LOAD may force
+        Model X once, then marks the datastore key.
+        """
         if self.start_state == 3:
-            # NEW game after one already applied (playtest 4: "new save" left
-            # Model X available and did not force the YAML model). Signature of
-            # the raw golden state: X owned (0x021045CF.7 comes with the image)
-            # without having received the "Model X" item and starting model != model_x
-            # -> re-arm the application (idempotent: applying revokes X).
+            # A new save under an applied slot shows the raw golden signature:
+            # Model X owned without its item while the start is another model. Re-arm.
             key = str(ctx.slot_data.get("starting_model", "model_x"))
             rec = STARTING_MODELS.get(key)
             if rec and rec.get("revoke_x"):
@@ -1635,8 +1378,7 @@ class MMZXClient(BizHawkClient):
             return   # write did not go through (guard) - retry next tick
         if desired_active == -1:      # unknown model: nothing to confirm
             self.start_confirm = 4
-        # confirm that the active model HOLDS (the load overwrites it with X
-        # once during the entry; we re-assert until it sticks).
+        # the LOAD may overwrite the model once; confirm it holds
         try:
             active_now = (await bizhawk.read(ctx.bizhawk_ctx, [(MODEL, 1, DOM)]))[0][0]
         except bizhawk.RequestFailedError:
@@ -1652,10 +1394,10 @@ class MMZXClient(BizHawkClient):
             }])
 
     async def _apply_start_state(self, ctx, guard):
-        """Write the starting model (live+canonical possession + active model)
-        and, if the starting Transerver is not the hub, teleport. Returns the
-        DESIRED active model value (int) if the writes went through, or None if
-        the gameplay guard rejected them (to retry)."""
+        """Write the starting model's possession and active value; teleport if needed.
+
+        Returns the desired active model, or None if the guard rejected the writes.
+        """
         from CommonClient import logger
         key = str(ctx.slot_data.get("starting_model", "model_x"))
         rec = STARTING_MODELS.get(key)
@@ -1693,7 +1435,7 @@ class MMZXClient(BizHawkClient):
         if not ok:
             return None
 
-        # starting Transerver other than the hub -> teleport (v0.2: hub only)
+        # a starting Transerver other than the hub means a teleport
         ts_key = str(ctx.slot_data.get("starting_transerver", "guardian_hub"))
         dest = STARTING_TRANSERVERS.get(ts_key)
         if dest and dest[0] != HUB_SUBAREA:
@@ -1705,11 +1447,11 @@ class MMZXClient(BizHawkClient):
         return rec["active"]
 
     async def _warp_request_tick(self, ctx, guard) -> None:
-        """Serve "Go to Transerver" (MISSION tab + Y): (1) WARP_REQ = 1
-        (set by the patch's cave; the menu has already closed) -> consume it
-        and open the game's "Target Area" list; (2) on returning to gameplay
-        after the list, read the selection and teleport to the hub floor
-        of that destination (-1 = cancelled: nothing)."""
+        """Serve "Go to Transerver": open the Target Area list, then teleport to the pick.
+
+        The request byte comes from the ROM's menu cave; the selection is read
+        on the first tick back in gameplay (-1 = cancelled).
+        """
         from CommonClient import logger
         try:
             r = await bizhawk.read(ctx.bizhawk_ctx, [(WARP_REQ, 1, DOM), (TRANSPORT_SEL, 4, DOM)])
@@ -1731,8 +1473,7 @@ class MMZXClient(BizHawkClient):
             return
         if req != 1:
             return
-        # open the game's list: no current station (-1) and state request,
-        # all under the gameplay guard (if it does not go through, retry next tick)
+        # open the game's list with no current station; retried if the guard fails
         ok = await bizhawk.guarded_write(ctx.bizhawk_ctx, [
             (WARP_REQ, b"\x00", DOM),
             (TRANSPORT_SEL, (0xFFFFFFFF).to_bytes(4, "little"), DOM),
@@ -1745,8 +1486,7 @@ class MMZXClient(BizHawkClient):
             self._debug("[mmzx] Go to Transerver: opening the Target Area list")
 
     async def _teleport(self, ctx, sub, x, y, guard) -> None:
-        """Clean teleport (7 writes; docs/client_integration.md section 6).
-        With a state 0x500 guard so it does not fire in a menu/transition."""
+        """Request a scene load at (sub, x, y), guarded on gameplay."""
         writes = [
             (SCENE_DESC + 0x00, (x << 8).to_bytes(4, "little"), DOM),
             (SCENE_DESC + 0x04, (y << 8).to_bytes(4, "little"), DOM),
@@ -1759,15 +1499,11 @@ class MMZXClient(BizHawkClient):
         await bizhawk.guarded_write(ctx.bizhawk_ctx, writes, [guard])
 
     async def _grant_items(self, ctx, guard) -> None:
-        """Apply the received items.
+        """Write the received items into the game.
 
-        Two families:
-          - IDEMPOTENT (bits that persist or are rebuilt): the desired
-            state is recomputed from the total count and written
-            (OR / set of maximum). Cheap and safe to re-apply.
-          - CONSUMABLES (E-Crystals, 1-Up): applied ONCE per game
-            (record in the data storage stamped with the play time,
-            see `_consumables_resolve`), never re-added on reconnect.
+        Idempotent grants (bits, capacities, levels) are recomputed from the
+        whole list every tick; consumables are applied once per game, stamped
+        with the play time (see _consumables_resolve).
         """
         id_to_item = {v["id"]: (name, v["grant"]) for name, v in ITEMS.items()}
         # copies received by name (progressive: 1 = 1st half, 2 = both)
@@ -1803,21 +1539,14 @@ class MMZXClient(BizHawkClient):
                     if name_count.get(name, 0) > k:
                         live_bits.add((addr, bit))
             elif kind == "transerver":
-                # access to the Transerver network: if the destination's bit
-                # is known (exp230) it is set in the bitfield 0x02104627/28
-                # (live+canonical) so it shows up in the game's Transport
-                # list; otherwise the item only gates the logic (the client's
-                # /mmzx_teleport warp covers the travel).
+                # the destination's bit in the Transport bitfield (every item has one)
                 if len(grant) >= 3:
                     live_bits.add((grant[1], grant[2]))
             elif kind in ("ecrystals", "oneup"):
                 consumables.append(kind)
-            # kind == "todo": item without a recipe yet (not in the v0.1 pool)
 
-        # EVENT gates (doors with bit 1 of the role; exp341): those in
-        # EVENT_GATES_OPEN always open (open world) and those in
-        # EVENT_GATES_ALL6 when holding the 6 biometals via AP items (goal
-        # design requirement: Slither HQ D-2 -> D-4, M-1 seal).
+        # Event gates: some story gates open for everyone; the Slither gate
+        # (D-2 to D-4) once the six model items are held.
         for fl in EVENT_GATES_OPEN:
             live_bits.add(tuple(EVENT_GATES[fl]))
         received = {id_to_item[net.item][0] for net in ctx.items_received if net.item in id_to_item}
@@ -1829,10 +1558,8 @@ class MMZXClient(BizHawkClient):
 
         writes: list[tuple[int, bytes, str]] = []
 
-        # Weapon Energy of the biometals owned via item (see BOSS_LEVELS):
-        # 1 half: level of the pair's 1st boss >= 4 - level of the 2nd (cap >= 16);
-        # 2 halves: levels 4+4 (cap 32, like two perfect victories). Bar filled
-        # once. Idempotent: touches nothing if the sum already reaches the cap.
+        # Weapon Energy for models granted by item: raise the pair's victory
+        # levels to the cap and fill the bar, once (see BOSS_LEVELS).
         owned_models = [m for m, (item, _a, _b) in MODEL_POSSESSION.items()
                         if m in MODEL_LEVEL_IDX and item in received]
         if owned_models:
@@ -1852,8 +1579,7 @@ class MMZXClient(BizHawkClient):
                     writes.append((BOSS_LEVELS + i0 + CANON_OFF, v, DOM))
                     writes.append((WE_BASE + m, bytes([WE_FULL]), DOM))
 
-        # Idempotent bits (biometals 0x021045D0, card keys 0x021045FC/FD):
-        # set in LIVE (immediate effect) and in CANONICAL (persistence)
+        # idempotent bits go to live (effect now) and canonical (persistence)
         if live_bits:
             by_addr: dict[int, int] = {}
             for addr, bit in live_bits:
@@ -1870,11 +1596,8 @@ class MMZXClient(BizHawkClient):
                 if canon_v & mask != mask:
                     writes.append((a + CANON_OFF, bytes([canon_v | mask]), DOM))
 
-        # Card Keys: AUTHORITATIVE possession. The game grants them when
-        # reporting certain missions (bug from the user's playtest: the Blue one
-        # showed up without having received it via AP). EXACTLY the received set
-        # is written to the 6 key bits of 0x021045FC/FD (live + canonical),
-        # leaving the other bits of those bytes intact (seen cutscenes, gates...).
+        # Card Keys: the game also hands them out as mission rewards, so exactly
+        # the received set is written; the neighbouring bits are unrelated flags.
         want_keys = {a: 0 for a in CARDKEY_MASKS}
         for a, b in cardkeys:
             want_keys[a] = want_keys.get(a, 0) | (1 << b)
@@ -1889,11 +1612,8 @@ class MMZXClient(BizHawkClient):
                 if new != cur:
                     writes.append((a + off, bytes([new]), DOM))
 
-        # Life Ups: AUTHORITATIVE capacity - only the AP items, NEVER the
-        # NATIVE pickup from the world. EXACTLY the received count is written
-        # to bits 0..3 (clearing whatever the physical pickup grants): the
-        # check fires from its persistent flag (separately) but the Life Up is
-        # not granted as capacity. Fixes the double-grant of playtest #2.
+        # Life Up capacity is exactly the received count; the physical pickup
+        # only marks its "collected" nibble (the check) and grants nothing.
         nlu = min(4, n_lifeup)
         lu_mask = (1 << nlu) - 1
         cur_lu, cur_hpmax = (await bizhawk.read(
@@ -1904,21 +1624,17 @@ class MMZXClient(BizHawkClient):
         if cur_hpmax[0] != hpmax:
             writes.append((HPMAX, bytes([hpmax]), DOM))
 
-        # Sub Tanks: AUTHORITATIVE capacity (same criterion)
+        # Sub Tanks: same rule
         nst = min(4, n_subtank)
         st_mask = (1 << nst) - 1
         cur_st = (await bizhawk.read(ctx.bizhawk_ctx, [(SUBTANK_BYTE, 1, DOM)]))[0][0]
         if (cur_st & 0x0F) != st_mask:
             writes.append((SUBTANK_BYTE, bytes([(cur_st & 0xF0) | st_mask]), DOM))
 
-        # Consumables (ONCE per game): the record of applied ones lives in the
-        # server's data storage, each batch stamped with the play time
-        # (PLAYTIME) at which it was applied. That counter is the game's clock:
-        # grows 1/frame, does not go back on death and returns to the save's
-        # value on Game Over->Continue or LOAD (exp497), and is 0 on a new game.
-        # Batches with playtime > current = the state was rewound to before
-        # applying them -> granted again; reconnecting the client rewinds
-        # nothing -> no re-adding.
+        # Consumables are applied once per game. Each batch is stamped with the
+        # play time, which grows every frame, never goes back on death and returns
+        # to the save's value on Continue or LOAD: a batch stamped later than the
+        # current play time was rewound and is granted again; a reconnect rewinds nothing.
         new_consumables: list[str] = []
         pt = 0
         if consumables:
@@ -1934,17 +1650,15 @@ class MMZXClient(BizHawkClient):
             add = sum(50 for k in new_consumables if k == "ecrystals")
             ec = min(99999, ec + add)
             writes.append((ECRYSTALS, ((raw & 0xFF000000) | ec).to_bytes(4, "little"), DOM))
-            # 1-Up: add lives (0x0214FC6C), cap 99
+            # 1-Up: one life each, cap 99
             n1 = sum(1 for k in new_consumables if k == "oneup")
             if n1:
                 lives = (await bizhawk.read(ctx.bizhawk_ctx, [(LIVES, 1, DOM)]))[0][0]
                 writes.append((LIVES, bytes([min(99, lives + n1)]), DOM))
 
         if writes:
-            # state guard: only if the game is still in gameplay
             ok = await bizhawk.guarded_write(ctx.bizhawk_ctx, writes, [guard])
-            # consumables are only marked as applied if the write went through:
-            # rewound batches out, the new one in with its playtime; persist
+            # consumables count as applied only if the write went through
             if ok and new_consumables:
                 self.cons_log = [e for e in self.cons_log if e[1] <= pt] + [[len(consumables), pt]]
                 await ctx.send_msgs([{
@@ -1954,11 +1668,10 @@ class MMZXClient(BizHawkClient):
                 }])
 
     async def _consumables_resolve(self, ctx) -> None:
-        """Load from the data storage the record of applied consumables for
-        this slot (key mmzx_consumables_<team>_<slot>): the 1st call requests
-        SetNotify+Get; the following ones wait for the reply. Until then
-        cons_log is None and no consumable is granted (avoids duplicating
-        in the reconnection window)."""
+        """Load the applied-consumables log from the datastore; None until it arrives.
+
+        Nothing is granted meanwhile, so a reconnect never adds a batch twice.
+        """
         if self.cons_key is None:
             self.cons_key = CONS_KEY % (ctx.team, ctx.slot)
         if not self.cons_requested:
@@ -1979,9 +1692,7 @@ class MMZXClient(BizHawkClient):
         self.cons_log = log
 
     def _fallback_model(self, ctx, owned: dict) -> int:
-        """Active model to revert an unowned form to: the last legitimate one
-        seen if still owned; otherwise the YAML's starting model; otherwise
-        any owned model; otherwise Hu (0)."""
+        """Model to revert to: last legitimate, YAML start, any owned, else Hu."""
         if owned.get(self.last_legit_model, False):
             return self.last_legit_model
         key = str((ctx.slot_data or {}).get("starting_model", "model_x"))
@@ -1994,20 +1705,12 @@ class MMZXClient(BizHawkClient):
         return 0
 
     async def _revert_unowned_models(self, ctx, guard) -> None:
-        """#5 + AUTHORITATIVE possession (2026-09-03): the active form and the
-        possession bits of ALL models must come ONLY from the AP item (the
-        starting model arrives pre-granted as an item). A boss victory or the
-        Troop mission do a megamerge that changes the active model (and, for
-        ZX, sets the shared bit D0.0); the LOAD can force X active; and in
-        playtest 5 the menu offered X and PX without the item. Every tick:
-          1) active model not owned -> revert (last legitimate / starting
-             model / any owned / Hu);
-          2) possession bit set without the item -> clear it (live+canonical)
-             so the menu does not offer it and the save does not show it.
-        Touches nothing during a story cutscene (0x0214F502.0) nor before
-        receiving the first ReceivedItems (there is always at least the
-        pre-granted Transerver Access: empty list = not synced yet).
-        Idempotent."""
+        """Revert an unowned active form and clear possession bits without their item.
+
+        Boss victories, the Troop megamerge and the LOAD change the active model
+        or set shared bits; ownership must come from items alone. Skipped during
+        cutscenes and until the first ReceivedItems (the list is never empty).
+        """
         if not ctx.items_received:
             return
         counts: dict[int, int] = {}
@@ -2018,22 +1721,16 @@ class MMZXClient(BizHawkClient):
         except bizhawk.RequestFailedError:
             return
         if r[1][0] & 1:
-            return   # story cutscene in progress (Troop megamerge, etc.): do not touch the model
+            return   # cutscene running: leave the model alone
         active = r[0][0]
         owned = {m: counts.get(ITEMS.get(item, {}).get("id"), 0) >= 1
                  for m, (item, _a, _b) in MODEL_POSSESSION.items()}
         # 2nd half (progressive): only with 2 copies received
         full = {m: counts.get(ITEMS.get(MODEL_POSSESSION[m][0], {}).get("id"), 0) >= 2
                 for m in MODEL_PART2}
-        # Hu: hardcoded in vanilla, but with hu_in_pool the Hu-gate patch ties
-        # it to the "Model Hu" item -> then it is just another NON-owned form
-        # and must be reverted. Staying in Hu without the item is a SOFTLOCK
-        # (exp595-601): `can_transform` (0x020377A8) requires TWO owned model
-        # categories (`cmp r0,#2` at 0x020377C8 on the FUN_02045064 counter)
-        # and, gated, Hu no longer counts; with a single biometal the total is
-        # 1 and the game rejects EVERY transformation ("Cannot transform
-        # now"). Several scenes leave you in Hu when they end - the M-1 seal
-        # one (mission 14, exp601) is the one the user reported.
+        # With hu_in_pool Hu is just another form. The game refuses to transform
+        # with a single owned category, so a scene that ends in Hu (the M-1 seal
+        # one does) would leave the player stuck in Hu for good.
         owned[0] = (not (ctx.slot_data or {}).get("hu_in_pool")
                     or counts.get(ITEMS.get("Model Hu", {}).get("id"), 0) >= 1)
         writes: list[tuple[int, bytes, str]] = []
@@ -2045,8 +1742,7 @@ class MMZXClient(BizHawkClient):
             if fallback != active:   # with nothing better (Hu gated and 0 biometals) leave it
                 writes.append((MODEL, bytes([fallback]), DOM))
                 notes.append("model %d not owned -> reverting to %d" % (active, fallback))
-        # possession bits without item -> clear (live + canonical); same for the
-        # 2nd half without the 2nd copy (e.g. re-derived by the level shop)
+        # possession bits without their item are cleared in both copies
         addrs = sorted({a for _i, a, _b in MODEL_POSSESSION.values()}
                        | {a for a, _b in MODEL_PART2.values()})
         try:
@@ -2086,21 +1782,12 @@ class MMZXClient(BizHawkClient):
                 self._debug("[mmzx] %s" % n)
 
     async def _handle_death_link(self, ctx, guard) -> None:
-        """SEND: watch the game's death (HP >0 -> 0) and send it (unless it was
-        caused by a received DeathLink: no echo).
-        RECEIVE: poll ctx.last_death_link (updated by CommonContext when a
-        DeathLink is received) -> kill the player LIKE THE GAME DOES. Writing HP=0
-        does not kill (exp619E): death is decided by the player tick
-        (FUN_0203d680) upon seeing a lethal hit, and what it does is set the
-        player object's state to 0x0A ("dying") with sub-state 2 (exp620);
-        replicating those writes (+0x11=0x0A, +0x12=2, +0x13=0) plus HP=0 gives
-        the full death: animation, one life less, reload at the checkpoint
-        (exp621 variant E; validated in hub, already-beaten boss room, Troop in
-        mid-fight and after Model Z, D-4 tower and D-5). Guards: in game
-        (state guard), no cutscene or dialog in progress, player alive and in
-        the normal state (+0x11 = 0; 0x0A = hurt/dying, 0x0B = interaction,
-        0x0D = cutscene); if not met, the death stays pending until the first
-        tick where the player has control."""
+        """Send the game's deaths and apply the received ones.
+
+        A death is HP going from above zero to zero, unless this client caused
+        it. A received death is applied the way the game does it (HP 0 plus the
+        dying state bytes; HP alone does not kill), once the player has control.
+        """
         try:
             r = await bizhawk.read(ctx.bizhawk_ctx, [
                 (HP, 1, DOM), (CUTSCENE_FLAG, 1, DOM), (PLAYER_OBJ + 0x11, 1, DOM)])
@@ -2111,8 +1798,7 @@ class MMZXClient(BizHawkClient):
         if self.prev_death_link is None:
             self.prev_death_link = ctx.last_death_link
 
-        # SEND: transition >0 -> 0 (real game death), except the one we just
-        # caused ourselves (avoids the echo between players)
+        # send: a real death, unless we caused it (no echo)
         if self.prev_hp is not None and self.prev_hp > 0 and hp == 0:
             if self.death_induced:
                 self.death_induced = False
@@ -2121,7 +1807,7 @@ class MMZXClient(BizHawkClient):
             self.prev_death_link = ctx.last_death_link  # do not self-receive our own
         self.prev_hp = hp
 
-        # RECEIVE: last_death_link advanced due to another player
+        # receive
         if ctx.last_death_link > self.prev_death_link:
             self.prev_death_link = ctx.last_death_link
             self.pending_death = True
@@ -2144,19 +1830,14 @@ class MMZXClient(BizHawkClient):
 
 
 def _cmd_teleport(self, *args) -> None:
-    """Anti-softlock teleport. No arguments: the Guardian hub. /mmzx_teleport K
-    (area letter): that area's floor of the hub, next to the console.
-    /mmzx_teleport <subarea> <x_px> <y_px>: an exact position."""
+    """Anti-softlock teleport: no args for the hub, an area letter for its floor, or sub x y."""
     from CommonClient import logger
     handler = self.ctx.client_handler
     if not isinstance(handler, MMZXClient):
         return
     if len(args) >= 1 and str(args[0]).strip().upper() in HUB_FLOOR_Y:
-        # area letter -> hub floor (sub 70) of that area, next to the console
         letter = str(args[0]).strip().upper()
-        # (384, y_floor-17) = on top of the floor's console, like the vanilla
-        # Transport and "Go to Transerver"; with y_floor-1 the player landed inside
-        # the floor and fell to the one below (exp451: floor M -> floor O).
+        # on the floor's console pad; any lower and the player falls through the floor
         y = HUB_FLOOR_Y[letter] - HUB_PAD_DY
         handler.pending_teleport = (HUB_SUBAREA, HUB_X, y)
         logger.info(f"Teleport queued -> hub, floor {letter} ({HUB_X},{y}).")
@@ -2183,8 +1864,7 @@ def _cmd_where(self, *args) -> None:
 
 
 def _cmd_accept(self, *args) -> None:
-    """Force-accept the mission of the current area (or of the hub floor you
-    are on) on the next tick, even if it was already attempted."""
+    """Force-accept the mission of the current area or hub floor on the next tick."""
     from CommonClient import logger
     handler = self.ctx.client_handler
     if not isinstance(handler, MMZXClient):
@@ -2195,9 +1875,7 @@ def _cmd_accept(self, *args) -> None:
 
 
 def _cmd_start(self, *args) -> None:
-    """Re-apply the YAML starting state (model and Transerver). Use it if you
-    restart the save mid-seed (the automatic application happens once per
-    seed)."""
+    """Re-apply the YAML starting state (model and Transerver), e.g. after a new save."""
     from CommonClient import logger
     handler = self.ctx.client_handler
     if not isinstance(handler, MMZXClient):
@@ -2209,10 +1887,7 @@ def _cmd_start(self, *args) -> None:
 
 
 def _cmd_flags(self, *args) -> None:
-    """Diagnostic: trace the progress-block bits that change.
-    /mmzx_flags on takes a snapshot and starts tracing; /mmzx_flags off stops.
-    To map a mission completion: /mmzx_flags on BEFORE reporting at the
-    Transerver, report the mission, and the bits logged as ON are the signature."""
+    """Diagnostic: /mmzx_flags on|off traces the progress-block bits that change."""
     from CommonClient import logger
     handler = self.ctx.client_handler
     if not isinstance(handler, MMZXClient):
@@ -2230,9 +1905,7 @@ def _cmd_flags(self, *args) -> None:
 
 
 def _cmd_dump(self, *args) -> None:
-    """Diagnostic: dump the Transerver state (mission flags and the
-    availability index 0x02104630). Use it IN the Transerver menu with the
-    mission list on screen, to correlate which missions are offered."""
+    """Diagnostic: log the mission and Transerver flag regions."""
     from CommonClient import logger
     handler = self.ctx.client_handler
     if not isinstance(handler, MMZXClient):
@@ -2242,14 +1915,7 @@ def _cmd_dump(self, *args) -> None:
 
 
 def _cmd_notify(self, *args) -> None:
-    """On-screen notifications for received and sent items. /mmzx_notify <level>
-    sets the same level for both; /mmzx_notify [received|sent] <level> sets
-    one side. Levels: off, progression, useful (progression + useful), all
-    (also filler: E-Crystals, 1-Up). /mmzx_notify short|full picks the style:
-    one cut line, or the full text in chained pages of the same popup. With no
-    arguments it prints the current setting. The initial value comes from the
-    YAML (notify_received / notify_sent / notify_style) and is not kept
-    between sessions."""
+    """Notice levels: /mmzx_notify [received|sent] <off|progression|useful|all> | <short|full>."""
     from CommonClient import logger
     handler = self.ctx.client_handler
     if not isinstance(handler, MMZXClient):
@@ -2290,9 +1956,7 @@ def _cmd_icons(self, *args) -> None:
 
 
 def _cmd_debug(self, *args) -> None:
-    """Show the client's diagnostic messages (auto-accepted missions, restored
-    flags, model reverts...): /mmzx_debug [on|off]. Off by default; turn it on
-    before reproducing a problem you want to report."""
+    """Show the client's diagnostic messages: /mmzx_debug [on|off]."""
     from CommonClient import logger
     handler = self.ctx.client_handler
     if not isinstance(handler, MMZXClient):

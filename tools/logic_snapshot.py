@@ -1,17 +1,12 @@
 #!/usr/bin/env python3
-"""logic_snapshot.py - REPRODUCIBLE snapshot of the apworld's logic.
+"""Snapshot of the logic over a matrix of option sets and inventories.
 
-Walks a MATRIX of (options x inventories) and stores, for each cell, the
-reachable regions and the locations in logic. Serves as a baseline to check
-that a logic change alters nothing where it should not
-(`--compare base.json new.json`).
-
-Shares the loader with tools/logic_probe.py (AP 0.6.7 checkout: --ap or
-$AP_SRC).
+Stores the reachable regions and the locations in logic of every cell, so that
+--compare can prove that a change alters nothing it should not. Needs an
+Archipelago source checkout (--ap or $AP_SRC), loaded through logic_probe.py.
 
 Usage (from the apworld root):
   python tools/logic_snapshot.py --out build/base.json
-  python tools/logic_snapshot.py --out build/new.json
   python tools/logic_snapshot.py --compare build/base.json build/new.json
 """
 import argparse
@@ -26,15 +21,14 @@ _spec = importlib.util.spec_from_file_location("mmzx_logic_probe", Path(__file__
 _probe = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_probe)  # type: ignore[union-attr]
 
-# Option sets evaluated (name -> dict of YAML options).
+# option sets to evaluate: name to YAML options
 OPTION_SETS = {
     "default": {},
     "expert": {"logic_difficulty": "expert"},
     "hu_in_pool": {"hu_in_pool": True},
     "no_start_model": {"starting_model": "none"},
 }
-# Fixed inventories (name -> list of items). Progressive ones are given by
-# halves: "Progressive Model HX" twice = complete biometal.
+# items of the fixed inventories; a full biometal is two halves
 KEYS = ["Yellow Card Key", "Green Card Key", "Red Card Key", "Blue Card Key", "Purple Card Key"]
 HALVES = ["Progressive Model HX", "Progressive Model FX", "Progressive Model LX", "Progressive Model PX"]
 
@@ -92,7 +86,7 @@ def snapshot(ap_src, world_dir=None, extra_options=None):
                 "locs_in": locs,
                 "victory": bool(mw.completion_condition[player](state)),
             }
-        # classification of the pool items (progression/useful/filler)
+        # classification of every pool item
         cls = {}
         for it in sorted(world.item_name_to_id):
             try:

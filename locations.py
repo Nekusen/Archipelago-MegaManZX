@@ -13,8 +13,7 @@ def location_name_to_id() -> dict[str, int]:
     return {name: v["id"] for name, v in LOCATIONS.items()}
 
 
-# Categories of respawnable pickups (data.PICKUP_CATEGORIES) -> option that
-# enables them (options.py). OFF by default: they are optional checks.
+# Respawnable pickup category to the option that enables it; all off by default.
 PICKUP_OPTION_BY_CATEGORY = {
     "pickup_1up": "pickup_checks_1up",
     "pickup_energy": "pickup_checks_energy",
@@ -32,14 +31,13 @@ def pickup_flags_from_options(options) -> dict[str, bool]:
 def locations_for_options(include_quests: bool, include_level4: bool,
                           include_undetectable: bool = False,
                           pickups: dict[str, bool] | None = None) -> dict[str, dict]:
-    """Subset of locations enabled by the options.
+    """Subset of LOCATIONS enabled by the options.
 
-    By default the locations without reliable detection are EXCLUDED
-    (detect=None: 6 missions + 21 quests whose 'completed' state has not
-    been mapped yet) so that no 'dead' checks that never get sent are
-    added. The v0.1 seed keeps 100%% detectable checks. `include_undetectable`
-    forces them in (for testing). `pickups` = {'pickup_*' category: enabled}
-    (pickup_flags_from_options); without it, no respawnable pickup is included."""
+    Locations without a detection (detect None) are left out unless
+    `include_undetectable` is set, so no check can stay unsent. `pickups` maps
+    each pickup category to whether its option is on (pickup_flags_from_options);
+    without it no respawnable pickup is included.
+    """
     pickups = pickups or {}
     out = {}
     for name, v in LOCATIONS.items():

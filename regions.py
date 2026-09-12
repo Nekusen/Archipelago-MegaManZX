@@ -1,22 +1,6 @@
-"""Regions of the Mega Man ZX world - v0.3: logic from logic/logic.json.
+"""Archipelago regions, entrances, locations and events built from the logic document.
 
-One Archipelago region per ROOM (`a01`, region 'main') plus one per
-sub-region drawn in the visual editor (`a01/cueva-e1`). Edges:
-  - data.DOORS (doors, warps, corridors, curated ones): from the region
-    holding their EXIT to the region where they LAND (geometric membership
-    resolved by logic_format.resolve_members); rule = key AND event gate
-    AND entry requirement of the destination room AND extra cost of the
-    edge AND Transerver rule. Internal doors (src == dst) only create a
-    transition if they join different regions.
-  - curated region->region connections (rooms[room].conns) with their requirement.
-Locations: in the region of their position (data.pos or placed by hand);
-those without a room yet go to "Field" with the area-label rule
-(logic.label_rule). "Cleared: <mission>" events with the same rule as the
-mission's check. Logic tier: logic_difficulty option (normal / cumulative
-expert).
-
-Ready for transition randomization in the future: each entrance carries
-the stable name of its physical door (data.DOORS[i].name).
+See docs/logic_format.md.
 """
 
 import json
@@ -35,7 +19,7 @@ _DOC = None
 
 
 def load_document():
-    """logic/logic.json (bundled in the apworld), normalized; cached."""
+    """The bundled logic/logic.json, normalized and cached."""
     global _DOC
     if _DOC is None:
         raw = pkgutil.get_data(__name__, "logic/logic.json")
@@ -47,8 +31,7 @@ def load_document():
 
 
 def boss_requirements(world) -> dict:
-    """{boss id: REQ} from the player's boss_logic option; cached on the
-    world because create_regions, create_item and fill_slot_data query it."""
+    """{boss id: REQ} from the boss_logic option, cached on the world for the other hooks."""
     reqs = getattr(world, "_mmzx_boss_reqs", None)
     if reqs is None:
         reqs = B.parse_boss_logic(world.options.boss_logic.value)
@@ -57,23 +40,23 @@ def boss_requirements(world) -> dict:
 
 
 def progression_overrides(world) -> set:
-    """'useful' items that the logic turns into progression: those required
-    by the document (LIFEUP>=n / SUBTANK>=n / CHIP_x) and those required by
-    the player's boss YAML."""
+    """Useful items that the document or the player's boss YAML turn into progression."""
     return F.count_items_used(load_document()) | B.items_used(boss_requirements(world))
 
 
 def create_regions(world) -> None:
+    """Creates the regions, entrances, locations and events of one player.
+
+    A door's rule is the AND of its key, the destination room's entry requirement when the
+    door changes room, its extra cost, the Transerver rule, its event gate and the landing arena.
+    """
     player, mw = world.player, world.multiworld
     hu_in_pool = bool(world.options.hu_in_pool.value)
     tier = world.options.logic_difficulty.current_key
     doc = load_document()
     members = F.resolve_members(WORLD, doc)
 
-    # Boss difficulty from the YAML: {BOSS_<ID>: callable}. Injected as an
-    # atom (the 8 boss rush doors use it explicitly) AND ANDed into every
-    # edge that lands in a region tagged as its arena, so it is impossible to
-    # enter it, cross it or pick anything inside without meeting it.
+    # Boss rules are injected as BOSS_* atoms and added to every edge landing in the boss's arena.
     boss_reqs = boss_requirements(world)
     boss_rules = B.compile_rules(boss_reqs, tier, player, hu_in_pool)
     boss_of = F.boss_regions(doc)
@@ -82,7 +65,7 @@ def create_regions(world) -> None:
         return F.compile_req(req, tier, player, hu_in_pool, boss_rules)
 
     def arena_rule(room, rid):
-        """Requirement of the boss whose arena is this region (or None)."""
+        """Rule of the boss whose arena is this region, or None."""
         bid = boss_of.get((room, rid))
         return boss_rules.get(F.boss_atom(bid)) if bid else None
 
@@ -100,7 +83,7 @@ def create_regions(world) -> None:
                  and_rules(rule(doc["rooms"][start].get("req")), arena_rule(start, "main")))
     menu.connect(field, "Field access")
 
-    # curated region -> region connections (inside a room)
+    # drawn connections inside each room
     for room, rl in doc["rooms"].items():
         for c in rl.get("conns", []):
             src = regions[F.region_name(room, c["from"])]
@@ -108,13 +91,11 @@ def create_regions(world) -> None:
             src.connect(dst, "%s: %s -> %s" % (room, c["from"], c["to"]),
                         and_rules(rule(c.get("req")), arena_rule(room, c["to"])))
 
-    # edges of the static graph
+    # door table edges
     gates = doc.get("gates", {})
     edge_ov = doc.get("edges", {})
-    # QoL `skip_boss_rush`: the D-4 tower is crossed without re-fighting the
-    # 8 Pseudoroids (the client marks each pair as defeated on reaching its
-    # stop): the exit to D-5 loses its BOSS_* requirement and the 8
-    # teleporters towards z02 are switched off (nonexistent edge).
+    # skip_boss_rush drops the eight rush teleporters and the extra cost of the exit to D-5;
+    # the client marks the pairs as beaten while the player climbs the tower.
     skip_rush = bool(world.options.skip_boss_rush.value)
     for d in ALL_EDGES:
         if d["kind"] in F.NON_TRANSITION_KINDS:
@@ -140,9 +121,11 @@ def create_regions(world) -> None:
     checks = doc.get("checks", {})
 
     def place(name, v):
-        """(parent region, base rule). One placement: the region of its point.
-        Several (biometals: two bosses): Field region + OR of reaching any
-        of their regions. None: Field + label rule."""
+        """(parent region, base rule) of a location.
+
+        One placement: the region of its point. Two: Field with "reach either region".
+        None: Field with the area-label rule.
+        """
         pl = F.check_placements(WORLD, doc, name)
         if len(pl) == 1:
             room = pl[0][0]
@@ -165,9 +148,7 @@ def create_regions(world) -> None:
             loc.access_rule = r
         parent.locations.append(loc)
 
-    # "Cleared: <mission>" events (one per mission, whether or not it is
-    # active as a check): same access rule as the mission's location. The
-    # mission atoms require them (e.g. the E-7 -> E-8 door requires SEARCH_THE_PLANT).
+    # one "Cleared" event per mission, active check or not; the mission atoms test these
     for name, v in LOCATIONS.items():
         if v.get("category") != "mission":
             continue
@@ -185,10 +166,8 @@ def create_regions(world) -> None:
     victory.place_locked_item(world.create_event("Victory"))
     final = "Mission - Destroy Model W"
     parent, base = place(final, LOCATIONS.get(final, {"room": "D-4D-5"}))
-    # Serpent shows up in D-5 with NO mission nor biometal checks (agent
-    # exp290-299): physically d02 --Green Key--> d04 -> d05 is enough. As a
-    # DESIGN requirement of the goal (equivalent to the M-1 seal / vanilla's
-    # "the 6 biometals") ALL6 is required as well.
+    # Nothing in the game gates Serpent beyond the Green Card Key door into D-4; ALL6 is a
+    # design requirement standing in for the vanilla six-biometal seal.
     if base is None:
         pname = parent.name
         base = lambda state, _p=pname: state.can_reach_region(_p, player)  # noqa: E731

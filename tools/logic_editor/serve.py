@@ -1,24 +1,21 @@
 #!/usr/bin/env python3
-"""serve.py - local server of the Mega Man ZX VISUAL LOGIC EDITOR.
+"""Local server of the visual logic editor.
 
-Serves the application (index.html/app.js/style.css from this folder), the
-1:1 room renders (tools/logic_editor/local/renders/<room>.png, local and
-outside git; --renders for another folder), the world data (data.py +
-tools/logic_editor/data/gimmicks.json) and reads/writes the logic document
-logic/logic.json, regenerating on every save its readable twin logic.txt
-and returning the validation report (logic_format.py). No external
-dependencies.
+Serves the interface in this folder, the room renders, the world data and the
+document logic/logic.json; every save regenerates logic.txt and returns the
+validation report. Standard library only. Format: docs/logic_format.md.
 
 Usage (from the apworld root):
-    python tools/logic_editor/serve.py [--port 8765] [--no-browser] [--renders DIR] [--gimmicks FILE]
+    python tools/logic_editor/serve.py [--port N] [--no-browser] [--renders DIR] [--gimmicks FILE]
 
 API (JSON):
-    GET  /api/world      static data: rooms, locations, edges, gimmicks, atoms
-    GET  /api/logic      current document (or an empty skeleton)
-    POST /api/logic      saves the document; response = validation report
-    POST /api/validate   validates without saving
+    GET  /api/world      rooms, locations, edges, gimmicks, atoms, boss roster
+    GET  /api/logic      current document, or an empty skeleton
+    GET  /api/txt        the text twin
+    POST /api/logic      save; the response is the validation report
+    POST /api/validate   validate without saving
+    POST /api/reload     reread data.py and the gimmicks
     GET  /renders/<room>.png
-Document specification: docs/logic_format.md.
 """
 
 import argparse
@@ -31,10 +28,10 @@ import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]          # apworld root (mmzx package)
+ROOT = Path(__file__).resolve().parents[2]          # apworld root
 STATIC = Path(__file__).resolve().parent
-RENDERS = STATIC / "local" / "renders"              # 1:1 renders (local, gitignored); --renders
-GIMMICKS = STATIC / "data" / "gimmicks.json"        # named gimmicks (tools/gen_editor_gimmicks.py from the lab); --gimmicks
+RENDERS = STATIC / "local" / "renders"              # 1:1 renders, not in git; --renders
+GIMMICKS = STATIC / "data" / "gimmicks.json"        # named gimmicks; --gimmicks
 LOGIC_DIR = ROOT / "logic"
 LOGIC_JSON = LOGIC_DIR / "logic.json"
 LOGIC_TXT = LOGIC_DIR / "logic.txt"
@@ -42,8 +39,10 @@ LOGIC_TXT = LOGIC_DIR / "logic.txt"
 
 
 def _load_logic_format():
-    """logic_format.py of the world without putting the package on sys.path
-    (its vendored third-party packages would shadow the venv ones)."""
+    """Load logic_format.py by path.
+
+    Putting the package on sys.path would shadow the venv with its vendored packages.
+    """
     spec = importlib.util.spec_from_file_location("mmzx_logic_format", ROOT / "logic_format.py")
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)  # type: ignore[union-attr]
@@ -69,11 +68,10 @@ def png_size(path: Path):
 
 
 def load_gimmicks(rooms):
-    """{room: [{name, kind, sub, role, mod, pos, layer}]} (without doors), from
-    the derived JSON tools/logic_editor/data/gimmicks.json (the lab generates
-    it with tools/gen_editor_gimmicks.py from the entity tables and the Mega
-    Man ZX Editor nomenclature). If it is missing, the editor works without
-    the gimmicks layer."""
+    """{room: [{name, kind, sub, role, mod, pos, layer}]} from gimmicks.json.
+
+    Doors are not included. Without the file the editor works without the layer.
+    """
     out = {r: [] for r in rooms}
     if not GIMMICKS.exists():
         print("[serve] no gimmicks: missing %s" % GIMMICKS)
@@ -131,9 +129,7 @@ class WorldCache:
             "transerver_access": world["transerver_access"],
             "event_gates_open": world["event_gates_open"],
             "gate_edges": gate_edges,
-            # boss roster: arena tag in the region panel. The requirement
-            # is not drawn here, the player sets it in their YAML
-            # (boss_logic option); this only says WHERE each boss is.
+            # boss roster for the arena tag; the requirement comes from the YAML
             "bosses": [{"id": b, "name": v["name"], "room": v["room"],
                         "room_label": F.room_label(v["room"]),
                         "pseudoroid": "index" in v}

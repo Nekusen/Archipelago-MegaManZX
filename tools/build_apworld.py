@@ -1,15 +1,11 @@
 #!/usr/bin/env python3
-"""build_apworld.py - packs this apworld into a `mmzx.apworld` file
-(a zip with the package under `mmzx/`), ready for the `custom_worlds/` folder
-of an Archipelago installation.
+"""Pack this package into mmzx.apworld, a zip with the package under mmzx/.
 
-The whole package tree goes in except what must not travel (the same
-patterns as `.apignore`: tools/, test/, build/, README, CHANGELOG and the
-git metadata). Local assets ignored by git (tracker/images/, gfx/,
-generated or extracted on your machine) DO go in if they are on disk.
+Everything goes in except what .apignore also leaves out: tools/, test/, build/,
+tracker/images/, README, CHANGELOG and the git metadata. Other files ignored by
+git, such as local renders, are packed when they are on disk.
 
-Usage (from anywhere):
-    python tools/build_apworld.py [--out build/mmzx.apworld]
+Usage: python tools/build_apworld.py [--out build/mmzx.apworld]
 """
 
 import argparse

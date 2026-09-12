@@ -1,21 +1,7 @@
-"""Mega Man ZX logic format (worlds/mmzx/logic/logic.json).
+"""Shared core of the logic document: atoms, requirements, regions, validation, text export.
 
-Module SHARED by the apworld (regions.py), the visual editor
-(tools/logic_editor/) and migration/validation. It imports nothing from
-Archipelago: standard Python only. Specification in docs/logic_format.md.
-
-Model (Randovania's structure + Ori-style text requirements):
-  room -> regions (drawn polygons; "main" = the rest of the room)
-       -> nodes: checks (locations), edge endpoints (exit in the source
-          room, landing in the destination one), warps
-       -> directed region->region connections with a requirement per tier.
-  A node's membership in a region is GEOMETRIC (the polygon containing it;
-  the smallest one if nested) unless explicitly overridden.
-
-Requirement (REQ) = {"normal": DNF, "expert": DNF}; DNF = list of
-alternatives (OR), each alternative a list of atoms (AND). [[]] = free,
-[] = impossible. Tiers are CUMULATIVE: in expert the alternatives of
-normal + those of expert apply.
+Imports nothing from Archipelago, so the editor and the tools load it on their own.
+See docs/logic_format.md.
 """
 
 import json
@@ -24,9 +10,7 @@ import re
 FORMAT_VERSION = 1
 TIERS = ["normal", "expert"]
 
-# --------------------------------------------------------------------------
 # Atoms
-# --------------------------------------------------------------------------
 
 ATOM_ITEM = {
     "X": "Model X", "ZX": "Model ZX", "HX": "Progressive Model HX", "FX": "Progressive Model FX",
@@ -39,9 +23,7 @@ for _a in ACCESS_AREAS:
     ATOM_ITEM["ACCESS_" + _a] = "Transerver Access - Area " + _a
 MODELS_NONHU = ["X", "ZX", "HX", "FX", "LX", "PX", "OX"]
 ALL6 = ["X", "ZX", "HX", "FX", "LX", "PX"]
-# FULL biometal (both halves = 2 copies of the progressive item): level 2
-# charged attack (e.g. HX's hurricane that raises the I-5 Life Up platform).
-# Plain `HX` = at least one half.
+# Both halves of the biometal, which unlock the level 2 charge; plain HX is one half.
 FULL_MODEL_ATOMS = {"HX2": "Progressive Model HX", "FX2": "Progressive Model FX",
                     "LX2": "Progressive Model LX", "PX2": "Progressive Model PX"}
 
@@ -62,12 +44,9 @@ MISSION_EVENT = {
     "REPEL_THE_ARMY": "Cleared: Repel The Army",
     "DESTROY_MODEL_W": "Cleared: Destroy Model W",
 }
-# count atoms: NAME>=n  -> (item, reasonable maximum)
+# Count atoms NAME>=n: (item or events, copies that exist). Any n >= 1 parses.
 COUNT_ATOMS = {"LIFEUP": ("Life Up", 4), "SUBTANK": ("Sub Tank", 4)}
-# count atoms over a LIST of events: NAME>=n -> (events, maximum).
-# MISSIONS = AREA missions cleared (ids 5-12: the 8 the game counts in
-# FUN_02032458; exp449, 2026-09-03). "Protect HQ" auto-launches on the
-# Report (console) that leaves that count at >= 4 (the reported mission counts).
+# The eight area missions; the game launches Protect HQ once four are cleared.
 AREA_MISSION_EVENTS = ["Cleared: Search The Plant", "Cleared: Find The Survivors",
                        "Cleared: Fight The Mavericks", "Cleared: Secure The Biometal",
                        "Cleared: Save The People", "Cleared: Recover The Disk",
@@ -77,8 +56,7 @@ MACRO_ATOMS = ("MODEL", "ALL6")
 CONST_TRUE = ("TRUE", "ANY", "FREE")
 CONST_FALSE = ("FALSE", "NEVER", "IMPOSSIBLE")
 
-# ITEM B chips: `useful` by default, promoted to PROGRESSION if some
-# requirement (document or boss YAML) demands them. See progression_items().
+# Useful items; progression_items() promotes them when a requirement uses them.
 CHIP_ATOMS = {
     "CHIP_ABSORBER": "Absorber Chip",
     "CHIP_FEATHERWEIGHT": "Featherweight Chip",
@@ -93,25 +71,15 @@ ATOM_ITEM.update(CHIP_ATOMS)
 
 _COUNT_RE = re.compile(r"^([A-Z_]+)>=(\d+)$")
 
-# --------------------------------------------------------------------------
-# Bosses - difficulty configurable by the player (boss_logic YAML option)
-# --------------------------------------------------------------------------
-# Each boss's requirement does NOT live in the logic document: the player
-# writes it in their YAML and the world injects it as `extra_atoms` when
-# compiling (worlds/mmzx/bosses.py + regions.py). The document only ANCHORS
-# where each boss is, in two ways:
-#   - region tag `rooms[room].regions[rid].boss = "<id>"` (preferred: the
-#     world ANDs the requirement into EVERY edge that lands in that region,
-#     so it is impossible to enter, cross or pick anything inside without
-#     meeting it, and it does not rely on remembering to annotate edge by edge);
-#   - `BOSS_<ID>` atom in any requirement (for what is not a region: the 8
-#     doors of the D-4 boss rush share the generic room z02).
-# Without a YAML the atom compiles to FREE: the default logic is the usual one.
-# `index` = canonical order of the Pseudoroid (victory levels
-# 0x02104634..3B and arg of the boss rush teleporter).
+# Boss anchoring
+
+# A boss's requirement comes from the player's boss_logic YAML, not from the document.
+# The document only anchors where the boss is fought: a `boss` tag on its arena region,
+# which the world adds to every edge landing there, or a BOSS_<ID> atom where the fight
+# is not a region of its own, as with the D-4 boss rush doors. With no YAML the atom is
+# free. `index` is the Pseudoroid order the game uses for victory levels and teleporters.
 BOSSES = {
-    # Giga Aspis (the TUTORIAL boss) is not here: the randomizer skips the
-    # whole tutorial, so it is never fought (user, 2026-09-04).
+    # Giga Aspis is missing on purpose: the randomizer skips the tutorial.
     "rayfly": {"name": "Rayfly", "room": "b02", "mission": "Locate Giro"},
     "model_z": {"name": "Model Z", "room": "d02", "mission": "Troop Reinforcement"},
     "hivolt": {"name": "Hivolt", "room": "e07", "mission": "Search The Plant", "index": 0},
@@ -131,35 +99,31 @@ BOSSES = {
 BOSS_ATOMS = {"BOSS_" + b.upper(): b for b in BOSSES}
 PSEUDOROIDS = [b for b, v in sorted(BOSSES.items(), key=lambda kv: kv[1].get("index", 99))
                if "index" in v]
-# D-4 boss rush (Slither Inc. tower): 8 teleporters (entity 5.4B with
-# arg = Pseudoroid index, docs/entity_catalog.md, section d04) towards the
-# generic room z02. Since z02 has no checks, what really matters is the
-# EXIT to D-5: the GAME does not let you through without beating all eight
-# (confirmed by the user, 2026-09-04), so it is always required - and it fits
-# that a boss required in `boss_logic` is required in BOTH of its encounters.
+# The eight D-4 boss rush teleporters, by Pseudoroid index, all lead into the generic
+# room z02. The exit to D-5 needs all eight, as in the game, so a boss required by
+# boss_logic is required in both of its fights.
 BOSS_RUSH_DOORS = {
     "d04 door (288,272)": 0, "d04 door (800,272)": 1,
     "d04 door (288,656)": 2, "d04 door (800,656)": 3,
     "d04 door (480,272)": 4, "d04 door (992,272)": 5,
     "d04 door (480,656)": 6, "d04 door (992,656)": 7,
 }
-BOSS_RUSH_EXIT = "d04 door (992,736)"        # Boss Rush -> D-5 (Serpent)
-# Edges that ONLY cover the re-fight: not valid as anchor for a boss's
-# story fight (see bosses_anchored).
+BOSS_RUSH_EXIT = "d04 door (992,736)"        # the tower's exit to D-5
+# Anchoring a boss only on these edges would leave its story fight unrestricted.
 BOSS_RUSH_EDGES = set(BOSS_RUSH_DOORS) | {BOSS_RUSH_EXIT}
 
 
-# Renamed boss ids: migrated when normalizing the document (like
-# LEGACY_EDGE_NAMES), so that an old tag is not left orphaned.
+# Retired boss ids, rewritten by normalize_logic so an old tag is not orphaned.
 LEGACY_BOSS_IDS = {"giga_aspis": "rayfly"}
 
 
 def boss_atom(boss_id: str) -> str:
+    """BOSS_<ID> atom of a boss id."""
     return "BOSS_" + boss_id.upper()
 
 
 def boss_regions(doc) -> dict:
-    """{(room, rid): boss id} of the regions tagged as arena."""
+    """{(room, rid): boss id} for the regions tagged as arenas."""
     out = {}
     for room, rl in (doc.get("rooms") or {}).items():
         for rid, reg in (rl.get("regions") or {}).items():
@@ -170,17 +134,16 @@ def boss_regions(doc) -> dict:
 
 
 def bosses_anchored(doc) -> set:
-    """Bosses anchored to their STORY fight: arena tag, or BOSS_<ID> atom
-    in some requirement that is NOT a D-4 boss rush door (those only cover
-    the re-fight: a boss anchored only there would leave its original fight
-    without requirement, which is exactly what must not happen)."""
+    """Bosses anchored to their story fight.
+
+    An arena tag counts; so does a BOSS_<ID> atom anywhere but on a boss rush edge.
+    """
     atoms = document_atoms(doc, skip_edges=BOSS_RUSH_EDGES)
     return {BOSS_ATOMS[a] for a in atoms if a in BOSS_ATOMS} | set(boss_regions(doc).values())
 
 
 def unavailable_atoms(D):
-    """Atoms whose item is NOT in the pool (data.ITEMS pooled=False, e.g.
-    White Card Key): never satisfied; the validator warns if they are used."""
+    """Atoms of items the data marks as not pooled; they are never met."""
     out = set()
     items = getattr(D, "ITEMS", {})
     for atom, item in ATOM_ITEM.items():
@@ -191,7 +154,7 @@ def unavailable_atoms(D):
 
 
 def atom_catalog(exclude=()):
-    """Atom list for the UI: [{id, group, label}]."""
+    """Atom list for the editor UI: [{id, group, label}]."""
     out = []
     labels = {"HU": "Hu (human form)", "X": "Model X", "ZX": "Model ZX", "HX": "Model HX",
               "FX": "Model FX", "LX": "Model LX", "PX": "Model PX", "OX": "Model OX"}
@@ -225,7 +188,7 @@ def atom_catalog(exclude=()):
 
 
 def canonical_atom(tok: str):
-    """Normalizes an atom; returns None if it does not exist."""
+    """Normalized atom, or None if it does not exist."""
     t = tok.strip().upper().replace(" ", "")
     if (t in ATOM_ITEM or t in MISSION_EVENT or t in MACRO_ATOMS
             or t in FULL_MODEL_ATOMS or t in BOSS_ATOMS):
@@ -240,15 +203,14 @@ def canonical_atom(tok: str):
 
 
 def is_valid_atom(tok: str) -> bool:
+    """Whether tok is a known atom."""
     return isinstance(tok, str) and canonical_atom(tok) is not None
 
 
-# --------------------------------------------------------------------------
-# DNF: list of alternatives (OR) of lists of atoms (AND)
-# --------------------------------------------------------------------------
+# DNF: a list of alternatives, each a list of atoms
 
 def dnf_normalize(dnf):
-    """Dedupe of atoms and alternatives; absorption (A subset of B => B is redundant)."""
+    """Drops duplicate atoms and alternatives, and any alternative that contains another."""
     alts = []
     for alt in dnf:
         s = []
@@ -273,10 +235,12 @@ def dnf_normalize(dnf):
 
 
 def dnf_and(a, b):
+    """AND of two DNFs."""
     return dnf_normalize([x + y for x in a for y in b])
 
 
 def dnf_or(a, b):
+    """OR of two DNFs."""
     return dnf_normalize(list(a) + list(b))
 
 
@@ -299,8 +263,7 @@ def _tokens(expr: str):
 
 
 def parse_expr(expr: str):
-    """Text expression -> DNF. Syntax: atoms, & (or AND, +, ','),
-    | (or OR), parentheses; TRUE/ANY/FREE and FALSE/NEVER."""
+    """Parses a text requirement into a DNF; ValueError on bad syntax or an unknown atom."""
     if expr is None:
         return DNF_TRUE
     toks = _tokens(expr)
@@ -357,6 +320,7 @@ def _parse_atom(toks, i):
 
 
 def dnf_to_text(dnf) -> str:
+    """Renders a DNF as text: 'free', 'never', or alternatives joined by '|'."""
     if not dnf:
         return "never"
     if any(len(alt) == 0 for alt in dnf):
@@ -364,20 +328,20 @@ def dnf_to_text(dnf) -> str:
     return " | ".join(" & ".join(alt) for alt in dnf)
 
 
-# --------------------------------------------------------------------------
 # REQ: {tier: DNF}
-# --------------------------------------------------------------------------
 
 def req_free():
+    """A requirement that asks for nothing."""
     return {"normal": [[]]}
 
 
 def req_from_expr(expr, tier="normal"):
+    """Requirement holding the parsed expression in one tier."""
     return {tier: parse_expr(expr)}
 
 
 def req_alternatives(req, tier="expert"):
-    """Effective DNF at `tier` (cumulative). None = free."""
+    """Effective DNF at tier, tiers being cumulative; None means free."""
     if req is None:
         return DNF_TRUE
     alts = []
@@ -387,16 +351,17 @@ def req_alternatives(req, tier="expert"):
 
 
 def req_is_free(req, tier="normal"):
+    """Whether the requirement is free at tier."""
     return any(len(a) == 0 for a in req_alternatives(req, tier))
 
 
 def req_is_never(req, tier="expert"):
+    """Whether the requirement has no alternative at tier."""
     return len(req_alternatives(req, tier)) == 0
 
 
 def req_to_lines(req):
-    """['normal: HX & LX', 'expert: FX'] (one line per alternative; tiers
-    without alternatives are omitted; 'never' if there is none)."""
+    """One 'tier: atoms' line per alternative, or ['never'] when there is none."""
     lines = []
     if req is None:
         return ["free"]
@@ -411,6 +376,7 @@ def req_to_lines(req):
 
 
 def req_atoms(req):
+    """All atoms used by a requirement."""
     out = set()
     for t in TIERS:
         for alt in (req or {}).get(t) or []:
@@ -419,8 +385,7 @@ def req_atoms(req):
 
 
 def document_atoms(doc, skip_edges=()):
-    """All atoms used in the document (checks, connections, edges, rooms,
-    gates). `skip_edges`: edge names to ignore."""
+    """All atoms used in the document, ignoring the edges named in skip_edges."""
     out = set()
     skip = set(skip_edges)
     for rl in doc.get("rooms", {}).values():
@@ -436,10 +401,10 @@ def document_atoms(doc, skip_edges=()):
 
 
 def progression_items(atoms):
-    """`useful` items that a set of atoms turns into PROGRESSION:
-    Life Up / Sub Tank (count atoms) and ITEM B chips. Archipelago only
-    counts progression items in the state, so if some requirement demands
-    them they must be reclassified (worlds/mmzx/__init__.create_item)."""
+    """Useful items that these atoms turn into progression.
+
+    Archipelago only tracks progression items in its state, so anything a rule needs must be one.
+    """
     used = set()
     for a in atoms:
         if a in CHIP_ATOMS:
@@ -452,13 +417,12 @@ def progression_items(atoms):
 
 
 def count_items_used(doc):
-    """progression_items() of the atoms used in the logic document."""
+    """progression_items() of the atoms used in the document."""
     return progression_items(document_atoms(doc))
 
 
 def req_and(a, b):
-    """AND of two REQs tier by tier (correctly cumulative: the effective
-    DNFs of each tier are combined and the inherited ones subtracted)."""
+    """AND of two requirements tier by tier, keeping the tiers cumulative."""
     if a is None:
         return b
     if b is None:
@@ -472,13 +436,13 @@ def req_and(a, b):
     return out
 
 
-# --------------------------------------------------------------------------
-# Compilation to callable(state) -> bool (Archipelago)
-# --------------------------------------------------------------------------
+# Compilation to Archipelago rules
 
 def compile_req(req, tier, player, hu_in_pool=False, extra_atoms=None):
-    """Effective DNF -> callable (None = no rule / always true).
-    extra_atoms: {atom: callable(state)->bool} for the host's atoms."""
+    """Compiles a requirement at tier into a rule callable; None means no rule.
+
+    extra_atoms maps atom names to callables for the atoms the host resolves, such as BOSS_*.
+    """
     alts = req_alternatives(req, tier)
     if any(len(a) == 0 for a in alts):
         return None
@@ -506,6 +470,7 @@ def compile_req(req, tier, player, hu_in_pool=False, extra_atoms=None):
 
 
 def atom_predicate(atom, player, hu_in_pool=False, extra_atoms=None):
+    """Callable for one atom, or None when the atom resolves to nothing."""
     if extra_atoms and atom in extra_atoms:
         return extra_atoms[atom]
     if atom == "HU":
@@ -519,8 +484,7 @@ def atom_predicate(atom, player, hu_in_pool=False, extra_atoms=None):
         items = [ATOM_ITEM[m] for m in ALL6]
         return lambda state: state.has_all(items, player)
     if atom in BOSS_ATOMS:
-        # Without a requirement in the YAML the boss asks for nothing: free
-        # (None). The host (regions.py) passes it in extra_atoms when there is one.
+        # no YAML requirement: the boss asks for nothing
         return None
     if atom in ATOM_ITEM:
         name = ATOM_ITEM[atom]
@@ -541,11 +505,10 @@ def atom_predicate(atom, player, hu_in_pool=False, extra_atoms=None):
     raise ValueError("unknown atom %r" % atom)
 
 
-# --------------------------------------------------------------------------
 # Geometry
-# --------------------------------------------------------------------------
 
 def point_in_poly(pt, poly) -> bool:
+    """Ray-casting point-in-polygon test."""
     if not poly or len(poly) < 3:
         return False
     x, y = pt
@@ -564,6 +527,7 @@ def point_in_poly(pt, poly) -> bool:
 
 
 def poly_area(poly) -> float:
+    """Shoelace area of a polygon."""
     if not poly or len(poly) < 3:
         return 0.0
     s = 0.0
@@ -576,7 +540,7 @@ def poly_area(poly) -> float:
 
 
 def region_of_point(room_logic, pt):
-    """rid of the smallest polygon containing pt; 'main' if none."""
+    """Region id of the smallest polygon containing pt; 'main' if none."""
     best, best_area = "main", None
     for rid, r in (room_logic.get("regions") or {}).items():
         poly = r.get("poly")
@@ -589,11 +553,10 @@ def region_of_point(room_logic, pt):
     return best
 
 
-# --------------------------------------------------------------------------
-# World data (data.py) in neutral form
-# --------------------------------------------------------------------------
+# World data
 
 def room_label(code: str) -> str:
+    """Display label of a room code: a01 is A-1, z01 is Hub, z02 is Hub-2."""
     m = re.match(r"^([a-z])(\d{2})$", code)
     if not m:
         return code
@@ -604,7 +567,7 @@ def room_label(code: str) -> str:
 
 
 def build_world(D):
-    """Neutral view of worlds/mmzx/data.py for this module."""
+    """Neutral view of data.py for this module: rooms, labels, locations, edges, hub."""
     edges = list(D.DOORS)
     rooms = sorted({e["src"] for e in edges} | {e["dst"] for e in edges})
     locs = {}
@@ -625,17 +588,17 @@ def build_world(D):
     }
 
 
-# --------------------------------------------------------------------------
 # Logic document
-# --------------------------------------------------------------------------
 
 def empty_room():
+    """A room with only its main region."""
     return {"req": None, "note": "",
             "regions": {"main": {"name": "Main", "poly": None, "color": "#8ab4f8", "note": ""}},
             "conns": [], "members": {}}
 
 
 def empty_logic(world=None):
+    """An empty document, with an entry for every room of world."""
     doc = {"format": FORMAT_VERSION, "tiers": list(TIERS), "rooms": {}, "placed": {},
            "edges": {}, "checks": {}, "gates": {}}
     for r in (world or {}).get("rooms", []):
@@ -643,10 +606,7 @@ def empty_logic(world=None):
     return doc
 
 
-# Edges renamed in data.DOORS: the curated ones without position replaced by
-# their synthesized RETURN DOOR (RE 2026-09-03, docs/v02_notes.md, section
-# 1t). Old documents (or an editor open with the old data) are migrated when
-# normalizing.
+# Edge names the data no longer uses; normalize_logic rewrites them in old documents.
 LEGACY_EDGE_NAMES = {
     "a04 curated to j01": "a04 door (2016,752)",
     "b02 curated to d01": "b02 door (5088,496)",
@@ -670,8 +630,7 @@ def _migrate_edge_names(doc):
 
 
 def normalize_logic(doc, world=None):
-    """Fills in missing keys (partial or old document) and migrates retired
-    edge names."""
+    """Fills in missing keys and rewrites retired edge names and boss ids, in place."""
     base = empty_logic()
     for k, v in base.items():
         if k not in doc:
@@ -693,6 +652,7 @@ def normalize_logic(doc, world=None):
 
 
 def load_logic(path, world=None):
+    """Loads and normalizes a document; a missing file yields an empty one."""
     try:
         with open(path, encoding="utf-8") as f:
             doc = json.load(f)
@@ -702,18 +662,19 @@ def load_logic(path, world=None):
 
 
 def save_logic(path, doc):
+    """Writes the document with sorted keys and one-space indentation."""
     with open(path, "w", encoding="utf-8", newline="\n") as f:
         json.dump(doc, f, ensure_ascii=False, indent=1, sort_keys=True)
         f.write("\n")
 
 
 def region_name(room, rid):
+    """Archipelago region name: the room code for main, room/rid otherwise."""
     return room if rid == "main" else "%s/%s" % (room, rid)
 
 
 def edge_endpoints(world, doc, edge):
-    """(exit pos in src, landing pos in dst) with the document's hand-placed
-    positions taking precedence over data's."""
+    """(exit pos, landing pos) of an edge; hand-placed positions win over the data's."""
     ov = doc.get("edges", {}).get(edge["name"], {})
     pos = ov.get("pos") or edge.get("pos")
     dst_pos = ov.get("dst_pos") or edge.get("dst_pos")
@@ -723,9 +684,7 @@ def edge_endpoints(world, doc, edge):
 
 
 def check_placements(world, doc, name):
-    """[(room, pos)] of a location: its data.pos, or the ones hand-placed in
-    `placed` (a {room, pos} object or a LIST of them: biometals are obtained
-    from either of two bosses -> two rooms, OR rule)."""
+    """[(room, pos)] where a location counts: its data position, or its hand placements."""
     v = world["locations"].get(name)
     if v is None:
         return []
@@ -738,14 +697,13 @@ def check_placements(world, doc, name):
 
 
 def check_position(world, doc, name):
-    """(room, pos) of a location's FIRST placement; (None, None) if none."""
+    """(room, pos) of a location's first placement, or (None, None)."""
     pl = check_placements(world, doc, name)
     return pl[0] if pl else (None, None)
 
 
 def resolve_members(world, doc):
-    """{room: {node: rid}} for checks, exits ('<edge>') and landings
-    ('<edge>@in'); honors overrides (rooms[r].members)."""
+    """{room: {node: rid}} for checks, exits and '<edge>@in' landings, honoring members."""
     out = {r: {} for r in doc["rooms"]}
 
     def put(room, node, pos):
@@ -773,8 +731,7 @@ NON_TRANSITION_KINDS = ("save",)
 
 
 def room_graph(world, doc, room, members, tier="expert"):
-    """Region->region edges inside a room: curated connections + internal
-    doors (if they join different regions). [(from, to, kind, ref)]."""
+    """[(from, to, kind, ref)] inside a room: connections and internal doors that change region."""
     rl = doc["rooms"][room]
     edges = []
     for c in rl.get("conns", []):
@@ -792,7 +749,7 @@ def room_graph(world, doc, room, members, tier="expert"):
 
 
 def room_entries(world, doc, room, members, start_room=None):
-    """Regions through which the room is ENTERED from outside."""
+    """Regions through which the room is entered from outside."""
     entries = set()
     for e in world["edges"]:
         if e["dst"] == room and e["src"] != room and e["kind"] not in NON_TRANSITION_KINDS:
@@ -803,8 +760,7 @@ def room_entries(world, doc, room, members, start_room=None):
 
 
 def local_reachability(world, doc, room, members, tier="expert", start_room=None):
-    """Regions reachable inside the room ignoring requirements (topology
-    only): detects regions with no possible entry."""
+    """Regions reachable inside the room by topology alone, ignoring requirements."""
     reach = set(room_entries(world, doc, room, members, start_room))
     graph = room_graph(world, doc, room, members, tier)
     changed = True
@@ -817,13 +773,13 @@ def local_reachability(world, doc, room, members, tier="expert", start_room=None
     return reach
 
 
-# --------------------------------------------------------------------------
 # Validation
-# --------------------------------------------------------------------------
 
 def validate(world, doc, start_room=None, unavailable=()):
-    """unavailable: atoms of items outside the pool (unavailable_atoms): the
-    rules using them are never met -> warning."""
+    """Validates the document against the world; returns {errors, warnings, unsure, unplaced}.
+
+    unavailable: atoms whose item is not in the pool; a rule that uses one gets a warning.
+    """
     errors, warnings = [], []
     unavailable = set(unavailable)
     boss_tags = {}
@@ -928,7 +884,7 @@ def validate(world, doc, start_room=None, unavailable=()):
             for rid in rooms[r]["regions"]:
                 nodes = [n for n, m in members[r].items() if m == rid]
                 if rid not in reach and (nodes or conns_of.get(rid)):
-                    # (empty Main with no connections = "all in polygons" pattern: no warning)
+                    # an empty unconnected main is a pattern, not a mistake
                     warnings.append("%s/%s: region with no possible entry (%d nodes: %s)" % (
                         r, rid, len(nodes), ", ".join(sorted(nodes)[:6]) + ("..." if len(nodes) > 6 else "")))
                 if rid != "main" and not nodes and not conns_of.get(rid):
@@ -943,10 +899,7 @@ def validate(world, doc, start_room=None, unavailable=()):
 
 
 def _region_flow_warnings(world, doc, room, members):
-    """Per-region flow warnings: (a) region with entries but NO EXIT (dead
-    end: in the game you can always go back); (b) nodes in Main with no
-    connection to the other regions of the room (edge endpoints unplaced or
-    outside the polygons) when the room has regions."""
+    """Warnings for regions with no way out, isolated regions and unconnected main nodes."""
     out = []
     rl = doc["rooms"][room]
     regs = rl["regions"]
@@ -986,9 +939,7 @@ def _region_flow_warnings(world, doc, room, members):
         if has_in and not has_out:
             out.append("%s/%s: region with NO EXIT (entered through %s but there is no door or connection back)" % (
                 room, rid, ", ".join(label(n) for n in ins[:3]) or "a connection"))
-        # isolated vestibule: only doors to OTHER rooms, no connections or
-        # internal doors towards the rest of the room (you enter and leave
-        # through the same door; the rest of the room is unreachable from there)
+        # only doors to other rooms and no way into the rest of the room: an isolated vestibule
         if rid != "main" and len(regs) > 1 and nodes and not conn_in[rid] and not conn_out[rid]:
             internal_link = any(
                 (n in edges and edges[n]["src"] == edges[n]["dst"] and members[room].get(n + "@in", "main") != rid)
@@ -1034,9 +985,7 @@ def _check_req(req, where, errors, allow_none=False):
                     errors.append("%s: unknown atom %r" % (where, a))
 
 
-# --------------------------------------------------------------------------
-# Text twin (readable; GENERATED)
-# --------------------------------------------------------------------------
+# Text twin
 
 def _req_block(L, req, unsure, note, indent="      "):
     for rq in req_to_lines(req):
@@ -1046,6 +995,7 @@ def _req_block(L, req, unsure, note, indent="      "):
 
 
 def export_txt(world, doc, start_room=None):
+    """Renders the document and world as the readable logic.txt."""
     L = []
     members = resolve_members(world, doc)
     L.append("# Mega Man ZX logic - GENERATED by tools/logic_editor (do not edit by hand:")
@@ -1099,7 +1049,7 @@ def export_txt(world, doc, start_room=None):
             if reg.get("note"):
                 title += "   # " + reg["note"]
             L.append(title)
-            # edges LEAVING this region
+            # edges leaving this region
             for e in world["edges"]:
                 if e["src"] != room or members[room].get(e["name"], "main") != rid:
                     continue
@@ -1128,7 +1078,7 @@ def export_txt(world, doc, start_room=None):
                     _req_block(L, ov["req"], ov.get("unsure"), ov.get("note"))
                 elif ov.get("note"):
                     L[-1] += "   # " + ov["note"]
-            # landings in this region from OTHER rooms
+            # landings from other rooms
             for e in world["edges"]:
                 if e["dst"] != room or e["src"] == room or e["kind"] in NON_TRANSITION_KINDS:
                     continue

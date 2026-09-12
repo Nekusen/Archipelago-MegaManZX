@@ -1,27 +1,13 @@
 #!/usr/bin/env python3
-"""logic_probe.py - LOCAL probe of the apworld's logic (without generating a seed).
+"""Evaluate the logic of this apworld against an inventory, without generating a seed.
 
-Loads the Archipelago core from a source checkout (0.6.7; by default
-$AP_SRC, or ../ArchipelagoDW next to the lab) with the venv's Python, registers
-this apworld as it is in the working tree and builds a 1-player multiworld
-with the given options. Then, with a concrete inventory, it computes which
-rooms/regions and which locations are IN LOGIC and what the FRONTIER is:
-edges leaving a reachable region towards an unreachable one, with the rule
-(key / room entrance / edge cost / gate / curated connection / Transerver,
-read from logic/logic.json) that blocks them. Answers "why can't I go to
-F-5 with HX?" without opening the tracker. Useful options:
---opt logic_difficulty=expert, --world <folder of another apworld>,
---json <output> (comparisons).
+Builds a one-player multiworld from an Archipelago source checkout (--ap or $AP_SRC)
+with the given options, collects the items and prints the reachable rooms, the
+locations in logic and the frontier: edges out of a reachable region into an
+unreachable one, each with the rule that blocks it. --loc explains one location.
 
-Usage (from the workspace root):
-  .venv/Scripts/python.exe tools/logic_probe.py \
-      --opt starting_model=model_hx --opt hu_in_pool=true \
-      --items "Blue Card Key" "Transerver Access - Area C" \
-      [--all-keys] [--all-models] [--all-access] [--loc "Mission - Find The Survivors"] \
-      [--rooms] [--locs] [--frontier] [--ap AP_CHECKOUT]
-
-Without --rooms/--locs/--frontier everything is printed. --loc explains one
-specific location (region, rule, rooms of its label that are missing).
+Usage (from the apworld root):
+  python tools/logic_probe.py --opt starting_model=model_hx --items "Blue Card Key" [--frontier]
 """
 import argparse
 import contextlib
@@ -32,12 +18,11 @@ import os
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent      # apworld root (mmzx package)
+ROOT = Path(__file__).resolve().parent.parent      # apworld root
 
 
 def _default_ap() -> str:
-    """Archipelago source checkout: $AP_SRC; otherwise, ArchipelagoDW as a
-    sibling of the lab root (worlds/mmzx/tools -> 4 levels up)."""
+    """Archipelago source checkout: $AP_SRC, else a checkout beside the parent repository."""
     if os.environ.get("AP_SRC"):
         return os.environ["AP_SRC"]
     try:
@@ -71,15 +56,10 @@ def parse_args():
 
 
 def load_core(ap_src: str, world_dir=None):
-    """Imports the AP core and registers worlds.mmzx from the working tree.
-    AP's world loader tries to import ALL the worlds of the checkout (noise:
-    worlds with uninstalled deps); it is silenced.
+    """Import the Archipelago core and register this package as worlds.mmzx.
 
-    The process cwd is changed to the AP checkout ONLY during the imports and
-    is ALWAYS restored on exit. Leaving the process "parked" inside another
-    repo made a relative output (--out work/...) land in ArchipelagoDW/work/
-    and the later cleanup delete that whole work/ (incident 2026-09-03).
-    Output paths are resolved BEFORE calling.
+    The cwd moves to the checkout only during the imports and is always restored,
+    so resolve any output path before calling.
     """
     if not ap_src:
         raise SystemExit("an Archipelago source checkout is needed: --ap PATH or the AP_SRC variable")
@@ -87,9 +67,7 @@ def load_core(ap_src: str, world_dir=None):
     world_dir = str(Path(world_dir).resolve()) if world_dir else None   # before the chdir
     sys.path.insert(0, ap_src)
     logging.disable(logging.CRITICAL)
-    # worlds/__init__.py imports ALL the worlds of the checkout (75, minutes and
-    # noise from missing deps): os.scandir is filtered during that import so
-    # that it only sees 'generic' (Archipelago core). Restored afterwards.
+    # worlds/__init__.py imports every world of the checkout: hide all but 'generic'
     real_scandir = os.scandir
     worlds_dir = os.path.normcase(os.path.join(ap_src, "worlds"))
 
@@ -100,7 +78,7 @@ def load_core(ap_src: str, world_dir=None):
         return iter([e for e in it if e.name == "generic"])
 
     prev_cwd = os.getcwd()
-    os.chdir(ap_src)   # AP resolves relative paths (host.yaml, data/) from cwd during the import
+    os.chdir(ap_src)   # AP reads host.yaml and data/ from the cwd
     os.scandir = scandir_only_generic
     try:
         with contextlib.redirect_stderr(io.StringIO()), contextlib.redirect_stdout(io.StringIO()):
@@ -149,7 +127,7 @@ def main():
     world = mw.worlds[1]
     player = 1
 
-    # raw data to describe rules (same working tree)
+    # raw data to describe the rules
     mm = sys.modules["worlds.mmzx"]
     data = mm.data
     logic = mm.logic
@@ -190,8 +168,7 @@ def main():
     if events:
         print("== reached events:", events)
 
-    # reachable room = any of its regions reachable (Main may be empty if
-    # everything is in polygons)
+    # a room is reachable when any of its regions is
     rooms = sorted(r for r in logic.ROOM_NAMES if r in reach or any(x.startswith(r + "/") for x in reach))
     subs = sorted(r for r in reach if "/" in r)
     if show_all or a.rooms:
@@ -203,7 +180,7 @@ def main():
         print("== rooms NOT reachable (%d): %s" % (len(missing), " ".join(missing)))
 
     def describe_edge(ent):
-        """Rule text of an entrance of the region graph."""
+        """Rule text of one entrance of the region graph."""
         name = ent.name
         parts = []
         for d in data.DOORS:
@@ -227,7 +204,7 @@ def main():
                         parts.append("warp: %s" % (it or "NO Transport destination"))
                 break
         else:
-            # curated connection "<room>: <from> -> <to>", or "Start"
+            # a drawn connection, named "<room>: <from> -> <to>", or "Start"
             if ": " in name and " -> " in name:
                 room, rest = name.split(": ", 1)
                 a_, b_ = rest.split(" -> ", 1)

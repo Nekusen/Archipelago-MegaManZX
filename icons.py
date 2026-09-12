@@ -1,14 +1,11 @@
-"""In-game item icons: the "AP" sprite set that rom.py inserts into the ROM as
-set 261 (one sprite per icon, drawn on pickups by the icon caves; see rom.py).
+"""The "AP" sprite set: item icons cut from the player's ROM at patch time.
 
-None of these graphics ship with the world. At patch time the icons are cut
-out of the player's own ROM (obj_fnt.bin / obj_dat.bin, the game's object
-sprite sets) following the recipe in ICONS, quantised to the palette of set 58
-(which the AP set shares in VRAM, see PALSHARE in rom.py) and packed into a
-static 4bpp set. The only graphics in the package are the three Archipelago
-logos in gfx/ (ap_logo*.gfx, MIT, from the Metroid: Zero Mission apworld).
+rom.py inserts the set as set 261 and its icon caves draw it on pickups. Only
+the three Archipelago logos in gfx/ ship with the world (MIT, from the Metroid:
+Zero Mission apworld); every other icon is a frame of the game's own sets
+(ICONS), quantised to the palette of set 58, which the AP set shares in VRAM.
 
-Sprite set formats (Mega Man ZX USA, reverse-engineered):
+Sprite set formats:
   obj_fnt.bin / obj_dat.bin: u32 count, u32 offset[count + 1]; set i is the
     slice [offset[i], offset[i + 1]).
   fnt set, static: a 0x14-byte header (u32 tile offset = 0x14, u16 tile
@@ -16,7 +13,7 @@ Sprite set formats (Mega Man ZX USA, reverse-engineered):
     8bpp, u32 tile length + 8, u16 palette length, u16) + tiles + palette
     (BGR555). Tiles are 8x8, 1D mapped, low nibble = left pixel.
   fnt set, chained (dynamic): N such headers back to back, one per chunk,
-    each RELATIVE TO ITSELF: chunk k's tiles are at k*0x14 + its u32, its
+    each relative to itself: chunk k's tiles are at k*0x14 + its u32, its
     palette at k*0x14 + (the u32 at +0xC) + 12.
   dat set: u32 8, u32 table length, u32 4, then the frame table at +0xC
     (per frame: u16 offset from the table start, u8 entry count, u8 chunk),
@@ -29,10 +26,9 @@ import struct
 
 PALETTE_SET = 58                 # the AP set shares this set's palette in VRAM
 
-# The recipe, in the order of the animations of the AP set (animation i =
-# frame i = icon i; ICON_CODES in data.py is this order, 1-based).
-#   ("logo", file)          one of the Archipelago logos in gfx/ (frame 0)
-#   ("frame", set, frame)   frame of a sprite set of the player's ROM
+# The recipe, in animation order of the AP set (animation i = frame i = icon i;
+# ICON_CODES in data.py is this order, 1-based): ("logo", gfx file) for an
+# Archipelago logo, ("frame", set, frame) for a frame of the player's ROM.
 ICONS = [
     ("logo_useful", ("logo", "ap_logo_useful.gfx")),
     ("logo_progression", ("logo", "ap_logo_progression.gfx")),
@@ -74,16 +70,15 @@ DIMS = {(0, 0): (8, 8), (0, 1): (16, 16), (0, 2): (32, 32), (0, 3): (64, 64),
         (1, 0): (16, 8), (1, 1): (32, 8), (1, 2): (32, 16), (1, 3): (64, 32),
         (2, 0): (8, 16), (2, 1): (8, 32), (2, 2): (16, 32), (2, 3): (32, 64)}
 
-# Colours the palette indices of the Archipelago logos stand for (the .gfx
-# files are indexed; the MZM apworld pairs them with its own palette, this is
-# the equivalent in our colours, later quantised to the set 58 palette).
+# Colours behind the palette indices of the Archipelago logos; the .gfx files
+# are indexed, and the colours get quantised to the set 58 palette anyway.
 LOGO_COLOURS = [
     (248, 248, 248), (192, 192, 200), (120, 120, 136), (40, 40, 64),
     (232, 48, 48), (144, 24, 64), (240, 136, 32), (248, 216, 48),
     (56, 184, 72), (24, 104, 56), (56, 88, 224), (128, 176, 248),
     (64, 208, 208), (144, 64, 200), (240, 128, 176),
 ]
-# MZM logo index -> LOGO_COLOURS index (1-based; 0 = transparent): white
+# MZM logo index to LOGO_COLOURS index (1-based; 0 = transparent): white
 # outline, then the six "islands" of the logo.
 LOGO_MAP = {0: 0, 1: 1, 2: 15, 3: 6, 4: 7, 5: 8, 6: 8, 7: 10, 8: 9, 9: 9,
             10: 11, 11: 11, 12: 12, 13: 14, 14: 14, 15: 14}
@@ -109,8 +104,7 @@ def _set_block(container, setno):
 
 
 def _chunk(fnt_block, k):
-    """(tiles, palette as RGB, bits per pixel) of chunk k of a set (k = 0 for a
-    static set)."""
+    """(tiles, palette as RGB, bits per pixel) of chunk k of a set; k = 0 for a static set."""
     tile_off, tile_len, _, _, flags, pal_ptr, pal_len, _ = \
         struct.unpack_from("<IHHHHIHH", fnt_block, k * 0x14)
     base = k * 0x14
@@ -163,8 +157,10 @@ def _draw_entry(canvas, tiles, bpp, pal, attr, dx, dy, ox, oy):
 
 
 def render_frame(fnt_file, dat_file, setno, frame, palette=None, size=96):
-    """The frame of a set as the game composes it, cropped to its drawn
-    pixels: (width, height, rows) with rows[y][x] = (r, g, b) or None."""
+    """A frame of a set as the game composes it, cropped to its drawn pixels.
+
+    Returns (width, height, rows) with rows[y][x] = (r, g, b) or None.
+    """
     fnt_block = _set_block(fnt_file, setno)
     dat_block = _set_block(dat_file, setno)
     chunk, ents = _frame(dat_block, frame)
@@ -227,8 +223,10 @@ def _pick_shape(w, h):
 
 def build_icon_set(fnt_file, dat_file, logo_data):
     """Build the AP set from the player's obj_fnt.bin / obj_dat.bin.
-    `logo_data(file)` returns the bytes of a logo .gfx from gfx/.
-    Returns (fnt block, dat block) ready for rom.py to insert as a new set."""
+
+    `logo_data(file)` returns the bytes of a logo .gfx from gfx/. Returns
+    (fnt block, dat block) ready for rom.py to insert as a new set.
+    """
     colours = set_palette(fnt_file)
     nearest = _quantiser(colours)
     tiles = bytearray()

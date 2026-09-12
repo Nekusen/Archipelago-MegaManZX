@@ -1,21 +1,12 @@
 #!/usr/bin/env python3
-"""tag_bosses.py - migration of the logic document for the YAML-configurable
-boss difficulty (boss_logic option, 2026-09-04).
+"""Tag the boss arenas of logic/logic.json and anchor the D-4 boss rush.
 
-Does three things to logic/logic.json (idempotent):
+Tags the drawn region of each boss in ARENAS as its arena, leaves the Omega Zero
+door with a bare model requirement, and makes each boss rush door require its
+Pseudoroid and the exit to D-5 require all eight. Idempotent; the current
+document already has all of it. Run check_logic.py afterwards for logic.txt.
 
- 1. TAGS as boss arena the drawn region of each of the 15 bosses of the
-    roster (`logic_format.BOSSES`). If the editor renames a region, ARENAS
-    has to be updated here.
- 2. REMOVES the SUBTANK/LIFEUP requirement that was hard-wired on the
-    Omega Zero door (n01): that setting is now up to the player.
- 3. ANCHORS the D-4 boss rush: each of the 8 doors to z02 requires its
-    Pseudoroid, and the exit to D-5 (Serpent) requires all 8 - the game does
-    not let you through without beating them, and besides, a required boss
-    is required in BOTH of its encounters.
-
-Usage (from the root):  python tools/tag_bosses.py [--dry-run]
-Then:                   python tools/check_logic.py     (regenerates logic.txt)
+Usage (from the apworld root): python tools/tag_bosses.py [--dry-run]
 """
 import argparse
 import importlib.util
@@ -26,7 +17,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.append(str(ROOT))
 import logic_format as F  # noqa: E402
 
-# boss -> (room, name of the drawn region that is its arena)
+# boss id: (room, name of the drawn region that is its arena)
 ARENAS = {
     "rayfly": ("b02", "Boss Arena"),
     "lurerre": ("f05", "Boss Arena"),
@@ -44,10 +35,9 @@ ARENAS = {
     "prometheus": ("x03", "Boss Room"),
     "omega_zero": ("n01", "Omega Zero Arena"),
 }
-# Without a drawn arena (none since 2026-09-04: the user drew B-2, F-5 and
-# G-5; Giga Aspis left the roster for being the boss of the skipped tutorial).
+# bosses of the roster without a drawn arena
 PENDING = []
-OMEGA_DOOR = "n01 door (3520,512)"      # Omega Zero Door -> Omega Zero Arena
+OMEGA_DOOR = "n01 door (3520,512)"
 
 
 def load_data():
@@ -67,7 +57,7 @@ def main():
     doc = F.load_logic(path, world)
     changes = []
 
-    # 1. arena tags
+    # arena tags
     for boss, (room, region_name) in ARENAS.items():
         regs = doc["rooms"][room]["regions"]
         rid = next((k for k, v in regs.items() if v.get("name") == region_name), None)
@@ -78,13 +68,13 @@ def main():
             regs[rid]["boss"] = boss
             changes.append("arena %s/%s = %s" % (room, rid, F.BOSSES[boss]["name"]))
 
-    # 2. Omega Zero: drop the hard-wired SUBTANK/LIFEUP
+    # Omega Zero door: drop the hard-wired Sub Tank / Life Up
     ov = doc["edges"].get(OMEGA_DOOR)
     if ov is not None and ov.get("req") != {"normal": [["MODEL"]]}:
         ov["req"] = {"normal": [["MODEL"]]}
         changes.append("%s: requirement -> MODEL (the Sub Tank / Life Up comes from the YAML)" % OMEGA_DOOR)
 
-    # 3. D-4 boss rush
+    # D-4 boss rush
     by_index = {F.BOSSES[b]["index"]: b for b in F.PSEUDOROIDS}
     for door, idx in F.BOSS_RUSH_DOORS.items():
         boss = by_index[idx]

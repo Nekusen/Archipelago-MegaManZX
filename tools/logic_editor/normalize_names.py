@@ -1,26 +1,14 @@
 #!/usr/bin/env python3
-"""normalize_names.py - normalizes the region NAMES (and rids) of
-logic/logic.json to a fixed standard WITHOUT changing the logic:
-polygons, connections, requirements, checks and placements stay the same;
-only `regions[rid].name`, the `rid` (slug of the new name) and the rid
-references (conns from/to, members) change. User decision (2026-09-04):
-"I prefer a fixed standard even if I am a mess with names". Standard
-(docs/logic_editor.md, Names section):
+"""Normalize the region names and rids of logic/logic.json to one naming standard.
 
-  <Room> Entrance      region whose doors to OTHER rooms all lead to the
-                       same room (e.g. "E-5 Entrance"); if two regions of
-                       the room lead to the same one, the original name is
-                       kept in parentheses: "E-4 Entrance (Bottom Area)"
-  Hub Entrance         region with the Transerver pad (warp to the hub)
-  Save Pad             region with a save-only pad (no Transport)
-  Boss Room / Mini-Boss Room / Before Boss Room / After Boss Room
-  Middle Area          passage zone between entrances ("Middle Part")
-  Upper/Lower/Left/Right Area (and combinations: "Upper Right Area")
-  Nth Floor / Nth Floor Room / Nth Floor Room (Outside) / Basement Room
-  Descriptive names: Title Case, room codes with a hyphen ("A-2")
+Polygons, connections, requirements and placements do not change; only the name,
+the rid (a slug of the new name) and the references to the rid do. A region whose
+doors all lead to one other room becomes "<Room> Entrance", the Transerver pad
+region "Hub Entrance", zones "Upper/Lower/Left/Right/Middle Area" and boss regions
+"Boss Room"; ZONE_MAP lists the spellings folded into those. Colliding names
+inside a room keep their original name in parentheses.
 
-Usage: python tools/logic_editor/normalize_names.py [--dry-run] [--json path]
-Prints the rename table. With --dry-run nothing is written.
+Usage: python tools/logic_editor/normalize_names.py [--dry-run] [--json PATH]
 """
 import argparse
 import importlib.util
@@ -52,7 +40,7 @@ ZONE_MAP = OrderedDict([
     (r"^Left Side of Door Switch$", "Left Area (Door Switch)"),
     (r"^F3- Entrance$", "F-3 Entrance"),
 ])
-ROOM_CODE = re.compile(r"\b([A-OX])(\d)\b")          # "A2" -> "A-2"
+ROOM_CODE = re.compile(r"\b([A-OX])(\d)\b")          # "A2" becomes "A-2"
 
 
 def slugify(name):
@@ -61,9 +49,10 @@ def slugify(name):
 
 
 def door_targets(world, doc, members, room, rid):
-    """Destination rooms of the doors/warps that LEAVE the region (no internal ones)."""
+    """Destination rooms of the doors and warps leaving the region."""
     out, hub_warp, save_pad = set(), False, False
-    hubish = lambda e: e["kind"] in ("warp", "save") or "corridor" in e["name"]   # pad + floor corridors
+    # the Transerver pad and the hub floor corridors
+    hubish = lambda e: e["kind"] in ("warp", "save") or "corridor" in e["name"]
     for e in world["edges"]:
         if e["src"] != room or members[room].get(e["name"], "main") != rid:
             continue
@@ -74,7 +63,7 @@ def door_targets(world, doc, members, room, rid):
             save_pad = save_pad or e["kind"] == "save"
         else:
             out.add(e["dst"])
-    for e in world["edges"]:   # arrivals from other rooms (for arrival-only lobbies)
+    for e in world["edges"]:   # arrivals, for arrival-only lobbies
         if e["dst"] != room or e["src"] == room:
             continue
         if members[room].get(e["name"] + "@in", "main") == rid:
@@ -109,11 +98,12 @@ def normalize(world, doc):
                     name = re.sub(pat, rep_, name, flags=re.I)
                     break
             targets, hub_warp, save_pad = door_targets(world, doc, members, room, rid)
-            # entrance: by name, or by structure (no checks and only doors to one room / to the hub)
+            # entrance-like: by name, or no checks and doors to a single room or the hub
             is_entrance_like = bool(DIRECTIONAL.match(name)) or name.endswith("Entrance") or name in ("Hub Entrance", "Save Pad")
             if name == "I-5" and room == "i02":
                 is_entrance_like = True
-            series = bool(re.match(r"^(\d+(st|nd|rd|th) Floor|Basement)", name))   # series names: kept as they are
+            # floor series keep their names
+            series = bool(re.match(r"^(\d+(st|nd|rd|th) Floor|Basement)", name))
             only_doors = (not series and not region_has_checks(world, doc, members, room, rid)
                           and (targets or hub_warp or save_pad))
             if is_entrance_like or only_doors:
@@ -123,9 +113,7 @@ def normalize(world, doc):
                 elif not targets and (hub_warp or save_pad):
                     name = "Hub Entrance"
             new_names[rid] = name
-        # collisions inside the room: keep the original name in parentheses
-        # collisions by BASE name (without the trailing parenthesis): "A-2 Entrance" and
-        # "A-2 Entrance (Top Part)" form a group -> all of them get a tag
+        # collisions inside the room, grouped by base name: every member gets a tag
         base_of = lambda n: re.sub(r"\s*\([^()]*\)$", "", n).strip()
         seen = {}
         for rid, name in new_names.items():
@@ -138,7 +126,7 @@ def normalize(world, doc):
                     tag = cur[len(base):].strip(" ()") if cur.startswith(base) and len(cur) > len(base) else ""
                     if not tag:
                         tag = orig[len(base):].strip(" ()") if orig.startswith(base) else orig
-                        tag = re.sub(r"\s*Entrance$", "", tag).strip()   # "After Mini-Boss Entrance" -> "After Mini-Boss"
+                        tag = re.sub(r"\s*Entrance$", "", tag).strip()
                     new_names[rid] = "%s (%s)" % (base, tag) if tag and tag != base else "%s (%s)" % (base, rid)
         # new unique rids
         rid_map = {}
@@ -185,7 +173,7 @@ def main():
     before = F.resolve_members(W, doc)
     changes = normalize(W, doc)
     after = F.resolve_members(W, doc)
-    # check: the (translated) membership does not change
+    # the node set of each room must not change
     for room in W["rooms"]:
         names_b = {n: doc["rooms"][room]["regions"].get(r, {}).get("name", r) for n, r in after[room].items()}
         if set(before[room]) != set(after[room]):

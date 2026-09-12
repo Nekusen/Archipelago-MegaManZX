@@ -1,23 +1,12 @@
 #!/usr/bin/env python3
-"""test_boss_logic.py - HERMETICITY test of the `boss_logic` option.
+"""Check that a boss_logic requirement closes exactly what lies behind that boss.
 
-Checks, boss by boss, that a requirement set in the YAML really closes
-everything behind that boss and NOTHING else:
+A witness item that no other rule uses is required of one boss at a time, of all
+bosses at once, and of each pair of bosses sharing a biometal; with the witness
+in hand the logic must equal the reference. Needs an Archipelago source checkout
+(--ap or $AP_SRC); no seed is generated.
 
-  1. Per-boss scenario: only that boss asks for a "witness" item (a chip not
-     needed for anything else) and the inventory has EVERYTHING but the
-     witness. Its arena must end up out of logic, and the regions and
-     locations it loses are reported (what the boss really gates).
-  2. Positive control: with the witness in hand, that same scenario must
-     give exactly the same as the logic without `boss_logic` (the requirement
-     is an ADDITION: it can never open or close anything on its own).
-  3. Hard scenario: all 15 bosses ask for the witness at once and it is not
-     owned -> nothing behind a boss is in logic and the goal is unreachable.
-  4. The eight Pseudoroids are fought twice: unable to beat one of them, the
-     exit of the D-4 boss rush to Serpent must be closed.
-
-Usage (from the apworld root):
-  python test/test_boss_logic.py [--verbose]
+Usage (from the apworld root): python test/test_boss_logic.py [--verbose]
 """
 import argparse
 import importlib.util
@@ -42,7 +31,7 @@ class Harness:
         self.F = sys.modules["worlds.mmzx"].logic_format
 
     def run(self, boss_logic, without=(), options=None):
-        """Reachability with the WHOLE pool except the items in `without`."""
+        """Reachability with the whole pool minus the items in `without`."""
         opts = dict(options or {})
         opts["boss_logic"] = boss_logic
         mw = self._setup(self.world_type, options=opts)
@@ -85,7 +74,7 @@ def main():
     print("reference (without boss_logic, whole pool): %d regions, %d locations, victory=%s"
           % (len(base["regions"]), len(base["locs"]), base["victory"]))
 
-    # 1 + 2: one boss at a time
+    # one boss at a time
     print("\n== per boss (only that one asks for %r; inventory = everything but the witness)" % WITNESS)
     for bid in tagged:
         name = F.BOSSES[bid]["name"]
@@ -114,7 +103,7 @@ def main():
         if a.verbose:
             print("        regions:   " + ", ".join(lost_r))
             print("        locations: " + ", ".join(lost_l))
-        # 4: the Pseudoroids also close the boss rush -> Serpent
+        # a Pseudoroid also closes the boss rush exit to Serpent
         if "index" in F.BOSSES[bid]:
             if off["victory"]:
                 fails.append("%s: is a Pseudoroid and the goal is still reachable without beating it "
@@ -124,7 +113,7 @@ def main():
         else:
             notes.append("%s: not a Pseudoroid; victory without it = %s" % (name, off["victory"]))
 
-    # 3: all at once
+    # all bosses at once
     print("\n== all bosses require the witness and it is not owned")
     cfg_all = {F.BOSSES[b]["name"]: WITNESS_ATOM for b in tagged}
     off_all = H.run(cfg_all, without=[WITNESS])
@@ -143,8 +132,7 @@ def main():
     print("   with the witness: identical to the reference = %s"
           % (on_all["regions"] == base["regions"] and on_all["locs"] == base["locs"]))
 
-    # 5: paired biometals (each one comes from TWO bosses). With one blocked
-    # it must stay in logic through the other; with both, out.
+    # each biometal comes from two bosses: one blocked keeps it in logic, both take it out
     print("\n== biometals: each one comes from two bosses")
     for letter, pair in (("H", ("hivolt", "hurricaune")), ("L", ("lurerre", "leganchor")),
                          ("F", ("fistleo", "flammole")), ("P", ("purprill", "protectos"))):

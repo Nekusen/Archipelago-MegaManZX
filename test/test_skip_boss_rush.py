@@ -1,17 +1,9 @@
 #!/usr/bin/env python3
-"""test_skip_boss_rush.py - the QoL option `skip_boss_rush` in the LOGIC.
+"""Check that skip_boss_rush changes only the D-4 tower in the logic.
 
-Checks, with the AP core (tools/logic_probe.py::load_core) and without
-generating a seed, that:
-  1. without the option, a Pseudoroid with an impossible requirement in
-     `boss_logic` blocks the victory (the game forces you through the boss
-     rush: requires all eight to go from D-4 to D-5) and the 8 doors to z02
-     exist;
-  2. with the option, the same requirement NO longer blocks the victory (only
-     its story fight), z02 (Hub-2) disappears from the graph and, except for
-     z02, the logic with the whole pool is identical to the reference;
-  3. with the option and without boss_logic, the logic is identical to the
-     reference except for z02 (0 locations gained or lost).
+Without the option an unbeatable Pseudoroid blocks the victory through the boss
+rush; with it, only the story fight closes, Hub-2 leaves the graph and nothing
+else moves. Needs an Archipelago source checkout (--ap or $AP_SRC).
 
 Usage (from the apworld root): python test/test_skip_boss_rush.py [--verbose]
 """
@@ -57,7 +49,7 @@ def main():
     if not skip["victory"]:
         fails.append("skip: no victory with the whole pool")
 
-    # a Pseudoroid with an impossible requirement (witness out of the inventory)
+    # a Pseudoroid with an unmeetable requirement: the witness is not owned
     for bid in F.PSEUDOROIDS:
         name = F.BOSSES[bid]["name"]
         cfg = {name: WITNESS}

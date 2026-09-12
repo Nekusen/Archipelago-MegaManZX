@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
-"""check_logic.py - validates the apworld's logic/logic.json against data.py
-(regions, connections, atoms, placements, regions without an entrance) and
-regenerates logic.txt if there are no errors.
-Usage (from the apworld root): python tools/check_logic.py [--no-txt]"""
+"""Validate logic/logic.json against data.py and regenerate logic.txt.
+
+The text twin is rewritten only when there are no errors; --no-txt skips it.
+
+Usage (from the apworld root): python tools/check_logic.py [--no-txt] [--quiet]
+"""
 import argparse
 import importlib.util
 import sys

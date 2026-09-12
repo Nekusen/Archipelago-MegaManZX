@@ -15,7 +15,9 @@ from .addresses import (
     D05_ROOM_TERMINAL, DESC_FACING_OFF,
     DOM, ENDING_HANDLER_ID, ENDING_HANDLER_STATE, ENDING_SERPENT, ENDING_SUBAREA,
     ENDING_UNSTICK_TICKS, GAME_CLEARED, HUB_FLOOR_NEAR, HUB_PAD_DY, HUB_SUBAREA, LIVE_BLOCK_LEN,
-    MISSION_ACCEPTED_MASK, MISSION_ACTIVE_BYTE, PLAYER_FACING_MASK, PLAYER_FACING_OFF,
+    MISSION_ACCEPTED_MASK, MISSION_ACTIVE_BYTE, PEOPLE_FREED, PEOPLE_HANDLER_CELL_WAIT,
+    PEOPLE_HANDLER_ENTRANCE_DONE, PEOPLE_HANDLER_ID, PEOPLE_HURRICAUNE, PEOPLE_NAME, PEOPLE_STATE,
+    PEOPLE_SUBAREA, PLAYER_FACING_MASK, PLAYER_FACING_OFF,
     PLAYER_OBJ, PLAYER_PERSIST, PLAYER_POS, PLAYER_SCENE_WORD_OFF, ROOM_SCRIPT_STATE, SCENE_DESC,
     SCENE_DESC_LEN, SCENE_DESC_MIRROR, STORY_BLOCK, STORY_BLOCK_CANON, STORY_BLOCK_LEN,
     STORY_BLOCK_MIRROR, STORY_HANDLER_ID, STORY_HANDLER_STATE, TROOP_MERGE, TROOP_MERGE_SUBAREA,
@@ -35,6 +37,7 @@ logger = logging.getLogger("Client")
 async def repair_missions(client: "MMZXClient", ctx, tick: Tick) -> None:
     """Undo what the game does to an active mission, and what a fight leaves behind."""
     await troop_unstick(client, ctx, tick)
+    await people_unstick(client, ctx, tick)
     await restore_mission_bits(client, ctx, tick.guard)
     await release_boss_locks(client, ctx, tick)
 
@@ -104,6 +107,46 @@ async def troop_unstick(client: "MMZXClient", ctx, tick: Tick) -> None:
     if writes and await bizhawk.guarded_write(ctx.bizhawk_ctx, writes, [tick.guard]):
         client._debug("[mmzx] Troop Reinforcement was half done: %s; the Giro scene "
                       "can trigger again" % " and ".join(what))
+
+
+async def people_unstick(client: "MMZXClient", ctx, tick: Tick) -> None:
+    """Move the Save The People story handler past the I-1 entrance.
+
+    The cell of I-3 and the prisoners are created by the handler's cell scene,
+    which only triggers once the handler has seen the I-1 entrance. Arriving by
+    the Transerver pad of I-3 skips that, so the handler stays at its first
+    state and the cell never appears. Once Hurricaune is beaten the handler is
+    set to the state that follows the entrance, as if the player had come in
+    the front way; the cell scene then plays on the way back to the cell. If
+    the player leaves I-3 with the scene played and the people still locked,
+    the scene is re-armed the same way, since only it creates the cell.
+    """
+    r = await bizhawk.read(ctx.bizhawk_ctx, [
+        (MISSION_STATE_ADDR, 4, DOM), (STORY_HANDLER_ID, 4, DOM), (STORY_HANDLER_STATE, 1, DOM),
+        (CUTSCENE_FLAG, 1, DOM), (PEOPLE_HURRICAUNE[0], 1, DOM), (PEOPLE_FREED[0], 1, DOM)])
+    if (int.from_bytes(r[0], "little") != PEOPLE_STATE
+            or int.from_bytes(r[1], "little") != PEOPLE_HANDLER_ID or r[3][0] & 1):
+        return
+    state = r[2][0]
+    beaten = bool(r[4][0] & (1 << PEOPLE_HURRICAUNE[1]))
+    freed = bool(r[5][0] & (1 << PEOPLE_FREED[1]))
+    if freed:
+        return          # the handler finishes on its own from here
+    if state == 0 and beaten:
+        why = "Hurricaune beaten without the I-1 entrance scene"
+    elif state == PEOPLE_HANDLER_CELL_WAIT and tick.subarea != PEOPLE_SUBAREA:
+        why = "left I-3 with the people still locked"
+    else:
+        return
+    if await mission_completed(ctx, PEOPLE_NAME):
+        return
+    writes = story_handler_writes(PEOPLE_HANDLER_ID, PEOPLE_HANDLER_ENTRANCE_DONE)
+    if not await bizhawk.guarded_write(ctx.bizhawk_ctx, writes, [tick.guard]):
+        return
+    story = (await bizhawk.read(ctx.bizhawk_ctx, [(STORY_BLOCK, STORY_BLOCK_LEN, DOM)]))[0]
+    await bizhawk.guarded_write(ctx.bizhawk_ctx, [(STORY_BLOCK_CANON, story, DOM)], [tick.guard])
+    client._debug("[mmzx] Save The People: %s; the cell scene of I-3 is armed (story handler "
+                  "%d -> %d)" % (why, state, PEOPLE_HANDLER_ENTRANCE_DONE))
 
 
 async def restore_mission_bits(client: "MMZXClient", ctx, guard) -> None:

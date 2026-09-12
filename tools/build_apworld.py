@@ -13,7 +13,7 @@ import zipfile
 from pathlib import Path
 
 PKG = Path(__file__).resolve().parents[1]
-EXCLUDE_DIRS = {"tools", "test", "build", ".git", ".github", "__pycache__", "tracker/images"}
+EXCLUDE_DIRS = {"tools", "test", "build", "src", ".git", ".github", "__pycache__", "tracker/images"}
 EXCLUDE_FILES = {"README.md", "CHANGELOG.md", ".gitignore", ".apignore", ".gitmodules", ".git"}
 
 

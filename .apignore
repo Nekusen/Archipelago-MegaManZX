@@ -11,3 +11,4 @@ tracker/images/
 build/
 __pycache__/
 *.pyc
+src/

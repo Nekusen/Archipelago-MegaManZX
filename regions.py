@@ -69,16 +69,57 @@ def create_regions(world) -> None:
         bid = boss_of.get((room, rid))
         return boss_rules.get(F.boss_atom(bid)) if bid else None
 
+    start = starting_room(world)
+    # skip_boss_rush drops the eight rush teleporters and the extra cost of the exit to D-5;
+    # the client marks the pairs as beaten while the player climbs the tower.
+    skip_rush = bool(world.options.skip_boss_rush.value)
+    active = locations_for_options(
+        include_quests=bool(world.options.submission_checks.value),
+        include_level4=bool(world.options.level4_victories.value),
+        pickups=pickup_flags_from_options(world.options),
+    )
+    final = "Mission - Destroy Model W"
+
+    def door_edges():
+        """Doors that join two different regions, as (source region, destination region, door)."""
+        for d in DOORS:
+            if d["kind"] in F.NON_TRANSITION_KINDS:
+                continue
+            if skip_rush and d["name"] in F.BOSS_RUSH_DOORS:
+                continue
+            src_rid = members[d["src"]].get(d["name"], "main")
+            dst_rid = members[d["dst"]].get(d["name"] + "@in", "main")
+            if d["src"] == d["dst"] and src_rid == dst_rid:
+                continue                   # internal door within the same region
+            yield F.region_name(d["src"], src_rid), F.region_name(d["dst"], dst_rid), d, dst_rid
+
+    def placed_regions(name):
+        return [F.region_name(room, members[room].get(name, "main"))
+                for room, _ in F.check_placements(WORLD, doc, name)]
+
+    # A room's "main" region exists only when a door, a connection, a location or the start
+    # uses it; an empty region nothing leads to would be unreachable by construction.
+    needed = {F.region_name(start, "main")}
+    for room, rl in doc["rooms"].items():
+        needed.update(F.region_name(room, rid) for rid in rl["regions"] if rid != "main")
+        for c in rl.get("conns", []):
+            needed.update((F.region_name(room, c["from"]), F.region_name(room, c["to"])))
+    for src_name, dst_name, _d, _rid in door_edges():
+        needed.update((src_name, dst_name))
+    missions = [n for n, v in LOCATIONS.items() if v.get("category") == "mission"]
+    for name in [*active, *missions, final]:
+        needed.update(placed_regions(name))
+
     menu = Region("Menu", player, mw)
     field = Region("Field", player, mw)   # unplaced missions/quests
     regions = {}
     for room, rl in doc["rooms"].items():
         for rid in rl["regions"]:
             name = F.region_name(room, rid)
-            regions[name] = Region(name, player, mw)
+            if name in needed:
+                regions[name] = Region(name, player, mw)
     mw.regions += [menu, field, *regions.values()]
 
-    start = starting_room(world)
     menu.connect(regions[start], "Start",
                  and_rules(rule(doc["rooms"][start].get("req")), arena_rule(start, "main")))
     menu.connect(field, "Field access")
@@ -94,18 +135,7 @@ def create_regions(world) -> None:
     # door table edges
     gates = doc.get("gates", {})
     edge_ov = doc.get("edges", {})
-    # skip_boss_rush drops the eight rush teleporters and the extra cost of the exit to D-5;
-    # the client marks the pairs as beaten while the player climbs the tower.
-    skip_rush = bool(world.options.skip_boss_rush.value)
-    for d in DOORS:
-        if d["kind"] in F.NON_TRANSITION_KINDS:
-            continue
-        if skip_rush and d["name"] in F.BOSS_RUSH_DOORS:
-            continue
-        src_rid = members[d["src"]].get(d["name"], "main")
-        dst_rid = members[d["dst"]].get(d["name"] + "@in", "main")
-        if d["src"] == d["dst"] and src_rid == dst_rid:
-            continue                       # internal door within the same region
+    for src_name, dst_name, d, dst_rid in door_edges():
         gate_req = gates.get(str(d["gate"]), {}).get("req") if d.get("gate") is not None else None
         entry_req = doc["rooms"][d["dst"]].get("req") if d["src"] != d["dst"] else None
         edge_req = edge_ov.get(d["name"], {}).get("req")
@@ -114,8 +144,7 @@ def create_regions(world) -> None:
         r = and_rules(door_rule(d, player), rule(entry_req), rule(edge_req),
                       transerver_rule(d, player), rule(gate_req),
                       arena_rule(d["dst"], dst_rid))
-        regions[F.region_name(d["src"], src_rid)].connect(
-            regions[F.region_name(d["dst"], dst_rid)], d["name"], r)
+        regions[src_name].connect(regions[dst_name], d["name"], r)
 
     # locations
     checks = doc.get("checks", {})
@@ -135,11 +164,6 @@ def create_regions(world) -> None:
             return field, (lambda state, _n=names: any(state.can_reach_region(x, player) for x in _n))
         return field, label_rule(v.get("room"), player)
 
-    active = locations_for_options(
-        include_quests=bool(world.options.submission_checks.value),
-        include_level4=bool(world.options.level4_victories.value),
-        pickups=pickup_flags_from_options(world.options),
-    )
     for name, v in active.items():
         parent, base = place(name, v)
         loc = MMZXLocation(player, name, v["id"], parent)
@@ -164,7 +188,6 @@ def create_regions(world) -> None:
     # goal: Victory event anchored to the final mission
     victory = MMZXLocation(player, "Defeat Serpent", None, field)
     victory.place_locked_item(world.create_event("Victory"))
-    final = "Mission - Destroy Model W"
     parent, base = place(final, LOCATIONS.get(final, {"room": "D-4D-5"}))
     # Nothing in the game gates Serpent beyond the Green Card Key door into D-4; ALL6 is a
     # design requirement standing in for the vanilla six-biometal seal.

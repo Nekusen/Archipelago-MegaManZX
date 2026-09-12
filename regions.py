@@ -9,7 +9,7 @@ from .logic import document as F
 from .logic import load_document
 from .data import DOORS, LOCATIONS
 from .locations import MMZXLocation, locations_for_options, pickup_flags_from_options
-from .logic.rules import (WORLD, and_rules, door_rule, label_rule, starting_room,
+from .logic.rules import (TIER, WORLD, and_rules, door_rule, label_rule, starting_room,
                           transerver_rule)
 
 def boss_requirements(world) -> dict:
@@ -34,7 +34,7 @@ def create_regions(world) -> None:
     """
     player, mw = world.player, world.multiworld
     hu_in_pool = bool(world.options.hu_in_pool.value)
-    tier = world.options.logic_difficulty.current_key
+    tier = TIER
     doc = load_document()
     members = F.resolve_members(WORLD, doc)
 
@@ -55,11 +55,7 @@ def create_regions(world) -> None:
     # skip_boss_rush drops the eight rush teleporters and the extra cost of the exit to D-5;
     # the client marks the pairs as beaten while the player climbs the tower.
     skip_rush = bool(world.options.skip_boss_rush.value)
-    active = locations_for_options(
-        include_quests=bool(world.options.submission_checks.value),
-        include_level4=bool(world.options.level4_victories.value),
-        pickups=pickup_flags_from_options(world.options),
-    )
+    active = locations_for_options(pickups=pickup_flags_from_options(world.options))
     final = "Mission - Destroy Model W"
 
     def door_edges():

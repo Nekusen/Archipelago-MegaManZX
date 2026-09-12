@@ -56,7 +56,7 @@ async def seed_golden_image(client: "MMZXClient", ctx) -> None:
     if not (gs == STATE_INGAME or (gs & 0xFF) == STATE_GAME_OVER_LOW):
         return
     # the image is patched per slot: starting model and character
-    img = build_image(str(ctx.slot_data.get("starting_model", "model_x")),
+    img = build_image(str(ctx.slot_data.get("starting_model", "model_zx")),
                       int(ctx.slot_data.get("character", 0) or 0), STARTING_MODELS)
     await bizhawk.guarded_write(
         ctx.bizhawk_ctx,
@@ -73,7 +73,7 @@ async def apply_start_state(client: "MMZXClient", ctx, tick: Tick) -> None:
     while the start is another model) is a new save: the state is re-armed.
     """
     if client.start_state == 3 and tick.subarea == HUB_SUBAREA:
-        rec = STARTING_MODELS.get(str(ctx.slot_data.get("starting_model", "model_x")))
+        rec = STARTING_MODELS.get(str(ctx.slot_data.get("starting_model", "model_zx")))
         got_x = any(ITEM_ID_TO_NAME.get(net.item) == "Model X" for net in ctx.items_received)
         if rec and rec.get("revoke_x") and not got_x:
             xa, xb = MODEL_X_POSSESSION
@@ -111,7 +111,7 @@ async def write_start_state(client: "MMZXClient", ctx, guard) -> int | None:
     Returns the desired active model, -1 for an unknown one, or None if the
     guard rejected the writes.
     """
-    key = str(ctx.slot_data.get("starting_model", "model_x"))
+    key = str(ctx.slot_data.get("starting_model", "model_zx"))
     rec = STARTING_MODELS.get(key)
     if rec is None:
         logger.info("[mmzx] unknown starting_model: %r (ignored)" % key)

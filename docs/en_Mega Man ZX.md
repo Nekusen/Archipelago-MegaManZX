@@ -39,7 +39,7 @@ Locations:
 - Optionally, the 133 refill pickups of the levels (energy capsules, weapon energy, E-Crystals and 1-Ups): the first
   pickup sends the check, then the object respawns and refills as usual.
 
-Quests and Level 4 victories have options in the template but are not implemented yet; turning them on adds nothing.
+NPC quests and Level 4 victories are not checks yet; they will come in a later version.
 
 ## What other changes are made to the game?
 
@@ -58,11 +58,10 @@ the game's popup shows "Got <item> from <player>" without stopping play; `/mmzx_
 
 ## Which difficulties and logic levels exist?
 
-The game always runs on Normal difficulty. What varies is the logic:
+The game always runs on Normal difficulty. The logic only uses safe routes: a passage that needs a specific model
+(HX's air dash, PX's wall climb, LX's swimming) requires that model, and no trick or damage boost is ever expected.
+What you can tune:
 
-- `logic_difficulty`: `normal` only uses safe routes. `expert` adds the alternatives marked as expert in the logic: a
-  few passages and checks that normal reserves for a specific model (HX's air dash, PX's wall climb, LX's swimming)
-  are allowed with any model or with none, through tight jumps, damage boosts and swimming between spikes.
 - `boss_logic` (see [boss_logic.md](boss_logic.md)): for each story boss, what you must be carrying before the logic considers you able to beat it, for
   example `Hivolt: "HX & Life Up x2"`. It never restricts what you may fight in the game; it only keeps the seed from
   forcing you through a boss you are not equipped for by your own standard. A Life Up, Sub Tank or chip named in a

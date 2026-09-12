@@ -52,7 +52,7 @@ def build_image(start_key: str, character: int, starting_models: dict) -> bytes:
     Pure and idempotent; no Archipelago objects involved.
     """
     img = bytearray(GOLDEN_IMAGE)
-    rec = starting_models.get(start_key) or starting_models.get("model_x")
+    rec = starting_models.get(start_key) or starting_models.get("model_zx")
     # Model X unless revoked, plus the starting model's ownership bits
     _set_bit(img, BLOCK_OFF + (MODEL_X_ADDR - LIVE_BLOCK), MODEL_X_BIT, not rec.get("revoke_x", False), BLOCK_MIRROR)
     for addr, bit in rec.get("grant", []):

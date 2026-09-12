@@ -2,6 +2,7 @@
 import unittest
 from collections import Counter
 
+from Options import OptionError
 from test.general import setup_multiworld
 
 from .bases import MMZXTestBase, WITNESS
@@ -11,10 +12,8 @@ from ..data import ITEMS, STARTING_MODEL_ITEM
 # option sets the pool must fit under
 OPTION_SETS = {
     "default": {},
-    "expert": {"logic_difficulty": "expert"},
     "no_starting_model": {"starting_model": "none"},
     "hu_in_pool": {"hu_in_pool": True},
-    "start_with_hu": {"hu_in_pool": True, "starting_model": "model_hu"},
     "skip_boss_rush": {"skip_boss_rush": True},
     "all_pickups": {"pickup_checks_1up": True, "pickup_checks_energy": True,
                     "pickup_checks_weapon": True, "pickup_checks_crystals": True},
@@ -40,15 +39,15 @@ class TestPool(MMZXTestBase):
         counts = Counter(item.name for item in self.multiworld.itempool)
         for letter in "HFLP":
             self.assertEqual(counts["Progressive Model %sX" % letter], 2)
-        self.assertEqual(counts["Model ZX"], 1)
+        self.assertEqual(counts["Model X"], 1)
         self.assertEqual(counts["Model OX"], 1)
 
     def test_starting_items_are_precollected(self) -> None:
-        """Model X and the starting floor's Transerver Access are granted, not in the pool."""
+        """Model ZX (the default start) and the starting floor's Transerver Access are granted, not in the pool."""
         precollected = sorted(item.name for item in self.multiworld.precollected_items[1])
-        self.assertEqual(precollected, ["Model X", "Transerver Access - Area A"])
+        self.assertEqual(precollected, ["Model ZX", "Transerver Access - Area A"])
         names = {item.name for item in self.multiworld.itempool}
-        self.assertNotIn("Model X", names)
+        self.assertNotIn("Model ZX", names)
         self.assertNotIn("Transerver Access - Area A", names)
 
     def test_unpooled_items_stay_out(self) -> None:
@@ -91,23 +90,23 @@ class TestPoolCombinations(unittest.TestCase):
         """The starting model is precollected and one copy fewer is in the pool."""
         for key, item_name in STARTING_MODEL_ITEM.items():
             with self.subTest(starting_model=key):
-                options = {"starting_model": key}
-                if key == "model_hu":
-                    options["hu_in_pool"] = True
-                multiworld = setup_multiworld(MMZXWorld, options=options)
+                multiworld = setup_multiworld(MMZXWorld, options={"starting_model": key})
                 precollected = [item.name for item in multiworld.precollected_items[1]]
                 self.assertIn(item_name, precollected)
                 in_pool = sum(1 for item in multiworld.itempool if item.name == item_name)
                 self.assertEqual(in_pool, int(ITEMS[item_name].get("count", 1)) - 1)
 
-    def test_model_hu_without_the_gate_means_none(self) -> None:
-        """starting_model model_hu without hu_in_pool grants no model and leaves Model X findable."""
-        multiworld = setup_multiworld(MMZXWorld, options={"starting_model": "model_hu"})
+    def test_no_starting_model_leaves_model_x_findable(self) -> None:
+        """starting_model none grants no model; Model X stays in the pool."""
+        multiworld = setup_multiworld(MMZXWorld, options={"starting_model": "none"})
         precollected = [item.name for item in multiworld.precollected_items[1]]
         self.assertEqual([n for n in precollected if "Model" in n], [])
-        names = [item.name for item in multiworld.itempool]
-        self.assertIn("Model X", names)
-        self.assertNotIn("Model Hu", names)
+        self.assertIn("Model X", [item.name for item in multiworld.itempool])
+
+    def test_none_with_hu_in_pool_is_rejected(self) -> None:
+        """starting_model none with hu_in_pool would start without any form: generation fails."""
+        with self.assertRaises(OptionError):
+            setup_multiworld(MMZXWorld, options={"starting_model": "none", "hu_in_pool": True})
 
     def test_pickup_options_add_their_locations(self) -> None:
         """Each pickup option adds as many locations as its description says."""

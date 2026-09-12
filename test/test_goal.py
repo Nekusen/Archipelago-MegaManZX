@@ -18,10 +18,10 @@ class TestGoal(MMZXTestBase):
         self.assertBeatable(True)
 
     def test_six_biometals_seal(self) -> None:
-        """Serpent needs every biometal: without Model ZX the goal stays closed."""
-        collect_pool_but(self, ["Model ZX"])
+        """Serpent needs every biometal: without Model X the goal stays closed."""
+        collect_pool_but(self, ["Model X"])
         self.assertBeatable(False)
-        self.collect_by_name("Model ZX")
+        self.collect_by_name("Model X")
         self.assertBeatable(True)
 
     def test_one_half_opens_the_seal(self) -> None:

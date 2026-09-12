@@ -1,7 +1,7 @@
-"""Which items open which parts of the map, at both logic levels."""
+"""Which items open which parts of the map."""
 from BaseClasses import CollectionState
 
-from .bases import ExpertLogic, MMZXTestBase, NormalLogic
+from .bases import MMZXTestBase
 from ..data import DOORS, HUB_ROOM, TRANSERVER_ACCESS
 
 # Everything behind the Blue Card Key door of A-4: the whole J area.
@@ -27,7 +27,7 @@ ACCESS_X_LOCATIONS = [
 ACCESS_L_LOCATIONS = ["L-3: Disk E-5", "L-4: Disk B-13", "Mission - Protect The Lab",
                       "Cleared: Protect The Lab"]
 TOWER_LOCATIONS = ["D-4: Disk B-5", "D-5: Disk B-6"]
-POOL_BIOMETALS = ["Model ZX", "Progressive Model HX", "Progressive Model FX",
+POOL_BIOMETALS = ["Model X", "Progressive Model HX", "Progressive Model FX",
                   "Progressive Model LX", "Progressive Model PX"]
 
 
@@ -130,32 +130,16 @@ class BiometalTests:
                 self.assertAccessDependency(TOWER_LOCATIONS, [[name]], only_check_listed=True)
 
 
-class TestCardKeysNormal(NormalLogic, CardKeyTests, MMZXTestBase):
+class TestCardKeys(CardKeyTests, MMZXTestBase):
     pass
 
 
-class TestCardKeysExpert(ExpertLogic, CardKeyTests, MMZXTestBase):
+class TestTranserver(TranserverTests, MMZXTestBase):
     pass
 
 
-class TestTranserverNormal(NormalLogic, TranserverTests, MMZXTestBase):
-    pass
-
-
-class TestTranserverExpert(ExpertLogic, TranserverTests, MMZXTestBase):
-    pass
-
-
-class TestBiometalsNormal(NormalLogic, BiometalTests, MMZXTestBase):
+class TestBiometals(BiometalTests, MMZXTestBase):
     def test_model_px_dark_rooms(self) -> None:
-        """In normal logic the dark rooms of I-2 and I-4 need Model PX."""
+        """The dark rooms of I-2 and I-4 need Model PX."""
         self.assertAccessDependency(["I-2: Disk E-34", "I-4: Disk E-14", "I-4: Disk M-1"],
                                     [["Progressive Model PX"]], only_check_listed=True)
-
-
-class TestBiometalsExpert(ExpertLogic, BiometalTests, MMZXTestBase):
-    def test_model_px_dark_rooms_have_tricks(self) -> None:
-        """In expert logic the dark rooms of I-2 and I-4 have a route without Model PX."""
-        self.collect_all_but(["Progressive Model PX"])
-        for name in ("I-2: Disk E-34", "I-4: Disk E-14", "I-4: Disk M-1"):
-            self.assertTrue(self.can_reach_location(name), name)

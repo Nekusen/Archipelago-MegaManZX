@@ -41,7 +41,6 @@ class MMZXClient(BizHawkClient):
         super().__init__()
         # slot options, read once per connection (_setup)
         self.death_link_enabled = False
-        self.mission_auto_accept = False   # open-world mode
         self.skip_boss_rush = False        # QoL: skip the D-4 boss rush
         self.mailbox_enabled = False       # some pickup category is a check
         # settings the player changes from the console; they outlive a reconnect
@@ -141,7 +140,6 @@ class MMZXClient(BizHawkClient):
         self.death_link_enabled = bool(opts.get("death_link", False))
         if self.death_link_enabled:
             await ctx.update_death_link(True)
-        self.mission_auto_accept = bool(opts.get("mission_auto_accept", False))
         self.skip_boss_rush = bool(opts.get("skip_boss_rush", False))
         if self.skip_boss_rush:
             logger.info("[mmzx] skip_boss_rush: the D-4 boss rush is skipped (each pair of "
@@ -219,8 +217,7 @@ class MMZXClient(BizHawkClient):
             await self._stage("items", grant_items(self, ctx, tick))
             await self._stage("notifications", push_notices(self, ctx))
             await self._stage("models", revert_unowned_models(self, ctx, tick))
-            if self.mission_auto_accept:
-                await self._stage("auto-accept", auto_accept_mission(self, ctx, tick))
+            await self._stage("auto-accept", auto_accept_mission(self, ctx, tick))
             if self.skip_boss_rush:
                 await self._stage("boss rush", skip_boss_rush(self, ctx, tick))
             if self.death_link_enabled:

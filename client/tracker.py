@@ -52,10 +52,10 @@ async def log_where(client: "MMZXClient", ctx) -> None:
         (MISSION_ACTIVE_BYTE, 1, DOM), (STORY_HANDLER_ID, 4, DOM), (ACTIVE_MODEL_ADDR, 1, DOM),
         (STORY_HANDLER_STATE, 1, DOM), (TROOP_MERGE[0], 1, DOM), (CUTSCENE_FLAG, 1, DOM)])
     x, y = decode_position(r[1])
-    logger.info("[mmzx] where: sub=%d pos=(%d,%d) gs=%06X hp=%d step=%d mission(state)=%d 462B=%02X handler=%d model=%d auto_accept=%s items=%d"
+    logger.info("[mmzx] where: sub=%d pos=(%d,%d) gs=%06X hp=%d step=%d mission(state)=%d 462B=%02X handler=%d model=%d items=%d"
                 % (r[0][0], x, y, int.from_bytes(r[2], "little"), r[3][0], r[4][0],
                    int.from_bytes(r[5], "little"), r[6][0], int.from_bytes(r[7], "little"), r[8][0],
-                   client.mission_auto_accept, len(ctx.items_received)))
+                   len(ctx.items_received)))
     logger.info("[mmzx] where+: handler_state=%02X megamerge(0x02104602.1)=%d cutscene=%d"
                 % (r[9][0], (r[10][0] >> TROOP_MERGE[1]) & 1, r[11][0] & 1))
 

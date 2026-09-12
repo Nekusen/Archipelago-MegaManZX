@@ -26,7 +26,7 @@ starts, what you find and receive, how you get around and a few conveniences.
 
 ## Getting around
 
-- The mission of an area is accepted automatically when you enter it (`mission_auto_accept`), so you can play the
+- The mission of an area is accepted automatically when you enter it, so you can play the
   areas in any order without going back to the hub.
 - The MISSION tab of the pause menu gains "Y Button: Go to Transerver". It opens the game's Target Area list wherever
   you are, with the destinations you have unlocked.

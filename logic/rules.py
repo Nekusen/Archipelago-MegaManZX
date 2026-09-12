@@ -7,6 +7,10 @@ from . import document as F
 from ..data import (HUB_ROOM, ROOM_SUBAREA, STARTING_TRANSERVERS,
                    TRANSERVER_ACCESS, TRANSERVER_ALWAYS)
 
+# Logic level the world ships. The document also carries expert alternatives (tricks,
+# tight jumps); they are not offered as an option yet.
+TIER = "normal"
+
 WORLD = F.build_world(_data)
 ROOM_NAMES = WORLD["rooms"]
 

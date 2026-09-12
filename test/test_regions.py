@@ -1,4 +1,4 @@
-from .bases import ExpertLogic, MMZXTestBase, NormalLogic
+from .bases import MMZXTestBase
 
 
 class RegionsReachable:
@@ -19,9 +19,5 @@ class RegionsReachable:
                 self.assertTrue(region.entrances or region.exits or region.locations)
 
 
-class TestRegionsNormal(NormalLogic, RegionsReachable, MMZXTestBase):
-    pass
-
-
-class TestRegionsExpert(ExpertLogic, RegionsReachable, MMZXTestBase):
+class TestRegions(RegionsReachable, MMZXTestBase):
     pass

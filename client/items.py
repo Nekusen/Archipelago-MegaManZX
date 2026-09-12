@@ -215,7 +215,7 @@ def fallback_model(client: "MMZXClient", ctx, owned: dict[int, bool]) -> int:
     """Model to revert to: last legitimate, YAML start, any owned, else Hu."""
     if owned.get(client.last_legit_model, False):
         return client.last_legit_model
-    rec = STARTING_MODELS.get(str(ctx.slot_data.get("starting_model", "model_x")))
+    rec = STARTING_MODELS.get(str(ctx.slot_data.get("starting_model", "model_zx")))
     if rec and owned.get(int(rec.get("active", 0)), False):
         return int(rec["active"])
     for m in sorted(owned):

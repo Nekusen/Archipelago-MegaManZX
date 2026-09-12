@@ -86,7 +86,8 @@ The terms you will meet first.
 - boss rush: the eight refights in the D-4 tower before Serpent.
 - Data Disk, Secret Disk: the game's collectable disks; each one is a check.
 - room code: `a01`, `e07`: area letter plus room number. The game's own label is `A-1`, `E-7`.
-- tier: a logic level, `normal` or `expert`; expert adds alternatives to normal.
+- tier: a logic level of the document, `normal` or `expert`; expert adds alternatives to normal. Only normal
+  ships for now.
 - requirement, atom: what an edge or check demands, written as alternatives of atoms such as `HX`, `YELLOW` or
   `LIFEUP>=2`.
 - detect recipe, grant recipe: how the client recognises a check in RAM, and how it gives an item.

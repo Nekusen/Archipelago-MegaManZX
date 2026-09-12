@@ -2,8 +2,8 @@
 
 from dataclasses import dataclass
 
-from Options import (Choice, DeathLink, DefaultOnToggle, OptionDict,
-                     PerGameCommonOptions, StartInventoryPool, Toggle)
+from Options import (Choice, DeathLink, OptionDict, PerGameCommonOptions,
+                     StartInventoryPool, Toggle)
 
 
 class Character(Choice):
@@ -21,27 +21,14 @@ class Goal(Choice):
     default = 0
 
 
-class Level4Victories(Toggle):
-    """Adds the "Level 4 Victory" of each Pseudoroid (beating it with the top
-    rank) as checks. NOT IMPLEMENTED YET: this option has no effect for now;
-    Level 4 detection will arrive in a later version."""
-    display_name = "Level 4 Victory Checks"
-
-
-class SubmissionChecks(Toggle):
-    """Includes the NPC side quests as checks. NOT IMPLEMENTED YET: quest
-    completion detection is not validated, so quests are excluded from the
-    seed for now (they will be added without breaking old seeds)."""
-    display_name = "Submission Checks"
-    default = 0
-
-
 class StartingModel(Choice):
     """Model you start with. The tutorial is skipped and you start at the
-    Guardian Transerver with this model (or none = human form, without a
-    biometal, until you find one). The chosen model is pre-granted (start
-    inventory) and takes no slot in the pool; Model X becomes a findable item
-    unless you start with it. "random" picks one at random."""
+    Transerver of the starting area with this model already granted: it takes
+    no slot in the pool, and Model X becomes a findable item unless you start
+    with it. none = the human form only, without a biometal until you find one;
+    it cannot be combined with hu_in_pool (Hu would then be an item you do not
+    have yet). "random" may pick none: with hu_in_pool, weight the models you
+    want instead."""
     display_name = "Starting Model"
     option_model_x = 0
     option_none = 1
@@ -51,18 +38,25 @@ class StartingModel(Choice):
     option_model_lx = 5
     option_model_px = 6
     option_model_ox = 7
-    option_model_hu = 8   # only with hu_in_pool on (otherwise = none)
+    default = 2
+
+
+class HuInPool(Toggle):
+    """The human form (Hu) becomes an item of the pool instead of being always
+    available: a ROM patch locks it behind a flag, like the biometals. Some
+    missions require the human form (e.g. Pass The Test) and the transform
+    menu needs two owned forms; the logic and the client cover both. Needs a
+    starting_model other than none."""
+    display_name = "Human Form (Hu) In Pool"
     default = 0
 
 
-class LogicDifficulty(Choice):
-    """Level of the access logic. normal: safe routes only. expert: also the
-    alternatives marked as expert in the logic (tricks, damage boosts, tight
-    jumps). It is cumulative: everything allowed in normal is still allowed
-    in expert."""
-    display_name = "Logic Difficulty"
-    option_normal = 0
-    option_expert = 1
+class StartingTranserver(Choice):
+    """Transerver where you start. Only one for now: the Guardian base, on the
+    floor of the Area A Transerver (A-2), whose Transerver Access you have from
+    the start."""
+    display_name = "Starting Transerver"
+    option_guardian_hub = 0
     default = 0
 
 
@@ -119,34 +113,6 @@ class SkipBossRush(Toggle):
     """
     display_name = "Skip Boss Rush"
     default = 0
-
-
-class HuInPool(Toggle):
-    """(EXPERIMENTAL) The human form (Hu) becomes an item of the pool instead
-    of being always available: a ROM patch locks it behind a flag, like the
-    biometals. Some missions require the human form (e.g. Pass The Test) and
-    the transform menu needs two owned forms; the logic and the client cover
-    the known cases, but treat this option as experimental."""
-    display_name = "Human Form (Hu) In Pool"
-    default = 0
-
-
-class StartingTranserver(Choice):
-    """Transerver where you start. Only the Guardian base hub for now."""
-    display_name = "Starting Transerver"
-    option_guardian_hub = 0
-    default = 0
-
-
-class MissionAutoAccept(DefaultOnToggle):
-    """Open-world missions. When on, the client accepts the mission of the
-    area you enter automatically (no trip to the Transerver), so missions can
-    be done in any order. Missions the game launches by itself (Model ZX in
-    the Guardian base, Protect HQ) still trigger on their own. Turning it off
-    (manual acceptance at the Transerver, as in vanilla) is NOT supported by
-    the logic: mission availability would follow the game's story sequence,
-    which the logic does not model."""
-    display_name = "Mission Auto-Accept (Open World)"
 
 
 class PickupChecks1Up(Toggle):
@@ -224,14 +190,10 @@ class MMZXOptions(PerGameCommonOptions):
     character: Character
     goal: Goal
     starting_model: StartingModel
-    starting_transerver: StartingTranserver
     hu_in_pool: HuInPool
-    logic_difficulty: LogicDifficulty
+    starting_transerver: StartingTranserver
     boss_logic: BossLogic
     skip_boss_rush: SkipBossRush
-    level4_victories: Level4Victories
-    submission_checks: SubmissionChecks
-    mission_auto_accept: MissionAutoAccept
     pickup_checks_1up: PickupChecks1Up
     pickup_checks_energy: PickupChecksEnergy
     pickup_checks_weapon: PickupChecksWeapon

@@ -361,7 +361,7 @@ function inspectUnplacedLoc(el, name) {
   el.append(h('h2', null, name),
     h('div', { class: 'kind' }, swatch(catColor(loc.category)), catLabel(loc.category) + where));
   el.append(kv([['Area tag', loc.room || '?'],
-    ['Current rule', already.length ? 'reach any of its rooms (OR) ∧ requirement' : 'fallback by area tag (v0.2)']]));
+    ['Current rule', already.length ? 'reach any of its rooms (OR) ∧ requirement' : 'fallback by area tag']]));
   el.append(actions(h('button', { class: 'primary', title: 'Click on the canvas of the current room to place it',
     onclick: () => startPlacing({ kind: 'loc', id: name }) },
   'Place in ' + roomLabel(S.room) + ' (click on the canvas)')));

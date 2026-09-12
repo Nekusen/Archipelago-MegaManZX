@@ -6,16 +6,6 @@ class MMZXTestBase(WorldTestBase):
     game = "Mega Man ZX"
 
 
-# Logic-level mixins: list one FIRST in the bases of a test class so that its
-# options win over WorldTestBase's empty default.
-class NormalLogic:
-    options = {"logic_difficulty": "normal"}
-
-
-class ExpertLogic:
-    options = {"logic_difficulty": "expert"}
-
-
 WITNESS = "Absorber Chip"   # a useful item that no rule of the document asks for
 
 

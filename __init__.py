@@ -15,6 +15,7 @@ from .locations import (location_name_to_id, locations_for_options, LOCATION_GRO
                         pickup_flags_from_options)
 from .options import MMZXOptions
 from .logic import load_document
+from .logic.rules import TIER
 from .regions import boss_requirements, create_regions, progression_overrides
 from .rom import MMZXPatch, write_patch_tokens, MMZX_US_MD5
 from . import client  # registers the BizHawkClient  # noqa: F401
@@ -88,7 +89,12 @@ class MMZXWorld(World):
     }
 
     def generate_early(self) -> None:
-        """Parses boss_logic first, so a YAML mistake fails with a clear message."""
+        """Checks the option combinations and parses boss_logic first, so a YAML mistake fails
+        with a clear message."""
+        if self.options.starting_model.current_key == "none" and self.options.hu_in_pool.value:
+            raise OptionError(
+                "[%s] starting_model 'none' cannot be combined with hu_in_pool: with Hu in the pool "
+                "you would start without any form. Choose a starting model." % self.player_name)
         try:
             reqs = boss_requirements(self)
         except ValueError as e:
@@ -123,11 +129,7 @@ class MMZXWorld(World):
 
     def create_items(self) -> None:
         """Fills the pool: every fixed item minus the pre-granted start items, then filler."""
-        active_locs = locations_for_options(
-            include_quests=bool(self.options.submission_checks.value),
-            include_level4=bool(self.options.level4_victories.value),
-            pickups=pickup_flags_from_options(self.options),
-        )
+        active_locs = locations_for_options(pickups=pickup_flags_from_options(self.options))
         n_locations = len(active_locs)  # not counting the Victory event
 
         # every pooled non-filler item, count copies each; progressive biometals are two
@@ -142,10 +144,7 @@ class MMZXWorld(World):
             fixed.append("Model Hu")
 
         # the starting model is pre-granted and leaves the pool; 'none' leaves Model X findable
-        start_key = self.options.starting_model.current_key
-        if start_key == "model_hu" and not self.options.hu_in_pool.value:
-            start_key = "none"   # Hu not gated: 'model_hu' == 'none'
-        start_item = STARTING_MODEL_ITEM.get(start_key)
+        start_item = STARTING_MODEL_ITEM.get(self.options.starting_model.current_key)
         if start_item and start_item in fixed:
             fixed.remove(start_item)   # one copy: the first half of a progressive item
             self.multiworld.push_precollected(self.create_item(start_item))
@@ -182,8 +181,7 @@ class MMZXWorld(World):
         state = self.multiworld.get_all_state()
         if self.multiworld.completion_condition[self.player](state):
             return
-        rules = bosses.compile_rules(reqs, self.options.logic_difficulty.current_key,
-                                     self.player, bool(self.options.hu_in_pool.value))
+        rules = bosses.compile_rules(reqs, TIER, self.player, bool(self.options.hu_in_pool.value))
         from .logic import document as F
         blocked = [F.BOSSES[b]["name"] for b in sorted(reqs)
                    if not rules.get(F.boss_atom(b), lambda s: True)(state)]
@@ -207,13 +205,9 @@ class MMZXWorld(World):
             "character": self.options.character.value,
             "goal": self.options.goal.value,
             "death_link": bool(self.options.death_link.value),
-            "level4_victories": bool(self.options.level4_victories.value),
-            "submission_checks": bool(self.options.submission_checks.value),
-            "mission_auto_accept": bool(self.options.mission_auto_accept.value),
             "starting_model": self.options.starting_model.current_key,
             "starting_transerver": self.options.starting_transerver.current_key,
             "hu_in_pool": bool(self.options.hu_in_pool.value),
-            "logic_difficulty": self.options.logic_difficulty.current_key,
             "boss_logic": bosses.describe(boss_requirements(self)),
             # the client marks the rush pairs as beaten; the logic stops requiring them
             "skip_boss_rush": bool(self.options.skip_boss_rush.value),

@@ -28,8 +28,11 @@ def pickup_flags_from_options(options) -> dict[str, bool]:
             for cat, opt in PICKUP_OPTION_BY_CATEGORY.items()}
 
 
-def locations_for_options(include_quests: bool, include_level4: bool,
-                          include_undetectable: bool = False,
+# Categories whose detection is not validated in game yet: they stay out of every seed.
+DEFERRED_CATEGORIES = ("quest", "level4")
+
+
+def locations_for_options(include_undetectable: bool = False,
                           pickups: dict[str, bool] | None = None) -> dict[str, dict]:
     """Subset of LOCATIONS enabled by the options.
 
@@ -42,9 +45,7 @@ def locations_for_options(include_quests: bool, include_level4: bool,
     out = {}
     for name, v in LOCATIONS.items():
         cat = v["category"]
-        if cat == "quest" and not include_quests:
-            continue
-        if cat == "level4" and not include_level4:
+        if cat in DEFERRED_CATEGORIES:
             continue
         if cat in PICKUP_OPTION_BY_CATEGORY and not pickups.get(cat, False):
             continue
@@ -59,7 +60,6 @@ LOCATION_GROUPS = {
     "Life Ups": {n for n, v in LOCATIONS.items() if v["category"] == "life_up"},
     "Sub Tanks": {n for n, v in LOCATIONS.items() if v["category"] == "sub_tank"},
     "Missions": {n for n, v in LOCATIONS.items() if v["category"] == "mission"},
-    "Quests": {n for n, v in LOCATIONS.items() if v["category"] == "quest"},
     "Pickups": {n for n, v in LOCATIONS.items() if v["category"] in PICKUP_OPTION_BY_CATEGORY},
     "1-Ups": {n for n, v in LOCATIONS.items() if v["category"] == "pickup_1up"},
     "Energy Capsules": {n for n, v in LOCATIONS.items() if v["category"] == "pickup_energy"},

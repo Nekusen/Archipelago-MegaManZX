@@ -21,7 +21,6 @@ import _ap  # noqa: E402
 # option sets to evaluate: name to YAML options
 OPTION_SETS = {
     "default": {},
-    "expert": {"logic_difficulty": "expert"},
     "hu_in_pool": {"hu_in_pool": True},
     "no_start_model": {"starting_model": "none"},
 }
@@ -34,12 +33,12 @@ def fixed_inventories(all_items):
     access = [n for n in all_items if n.startswith("Transerver Access")]
     inv = {
         "empty": [],
-        "zx": ["Model ZX"],
-        "zx+keys": ["Model ZX"] + KEYS,
-        "half_models": ["Model ZX"] + HALVES,
-        "full_models": ["Model ZX"] + HALVES * 2,
-        "models+keys": ["Model ZX"] + HALVES * 2 + KEYS,
-        "access": ["Model ZX"] + access,
+        "x+zx": ["Model X", "Model ZX"],
+        "x+zx+keys": ["Model X", "Model ZX"] + KEYS,
+        "half_models": ["Model X", "Model ZX"] + HALVES,
+        "full_models": ["Model X", "Model ZX"] + HALVES * 2,
+        "models+keys": ["Model X", "Model ZX"] + HALVES * 2 + KEYS,
+        "access": ["Model X", "Model ZX"] + access,
         "everything": ["Model X", "Model ZX", "Model OX"] + HALVES * 2 + KEYS + access
                       + ["Life Up"] * 4 + ["Sub Tank"] * 4
                       + [n for n in all_items if n.endswith(" Chip")],

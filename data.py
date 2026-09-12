@@ -432,14 +432,13 @@ STARTING_MODELS = {
     'model_lx': {'grant': [[0x02104627, 2]], 'revoke_x': True, 'active': 5},
     'model_px': {'grant': [[0x02104627, 3]], 'revoke_x': True, 'active': 6},
     'model_ox': {'grant': [[0x021045D2, 1]], 'revoke_x': True, 'active': 7},
-    'model_hu': {'grant': [[0x021045DD, 0]], 'revoke_x': True, 'active': 0},
 }
 # starting_model key -> equivalent AP item (for precollect)
 STARTING_MODEL_ITEM = {
     'model_x': 'Model X', 'model_zx': 'Model ZX',
     'model_hx': 'Progressive Model HX', 'model_fx': 'Progressive Model FX',
     'model_lx': 'Progressive Model LX', 'model_px': 'Progressive Model PX',
-    'model_ox': 'Model OX', 'model_hu': 'Model Hu',
+    'model_ox': 'Model OX',
 }
 # Starting Transervers: key -> (subarea, x_px, y_px).
 STARTING_TRANSERVERS = {

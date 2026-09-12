@@ -34,8 +34,7 @@ logger = logging.getLogger("Client")
 async def repair_missions(client: "MMZXClient", ctx, tick: Tick) -> None:
     """Undo what the game does to an active mission: Troop's flags, then the extra bits."""
     await troop_unstick(client, ctx, tick)
-    if client.mission_auto_accept:
-        await restore_mission_bits(client, ctx, tick.guard)
+    await restore_mission_bits(client, ctx, tick.guard)
 
 
 async def troop_unstick(client: "MMZXClient", ctx, tick: Tick) -> None:

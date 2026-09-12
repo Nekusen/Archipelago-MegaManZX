@@ -66,7 +66,7 @@ def main():
     logic = mm.logic.rules
     F = mm.logic.document
     doc = mm.logic.load_document()
-    tier = world.options.logic_difficulty.current_key
+    tier = logic.TIER
     members = F.resolve_members(logic.WORLD, doc)
 
     def req_txt(req):

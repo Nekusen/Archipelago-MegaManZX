@@ -1010,8 +1010,8 @@ def export_txt(world, doc, start_room=None):
     L.append("# Atoms: HU X ZX HX FX LX PX OX MODEL ALL6 ; YELLOW GREEN RED BLUE WHITE PURPLE ;")
     L.append("#   LIFEUP>=n SUBTANK>=n ; <MISSION> (cleared) ; ACCESS_<area> ; CHIP_<chip> ;")
     L.append("#   BOSS_<BOSS> (requirement set by the player in their YAML; free if unset).")
-    L.append("# Doors: one line each, no positions; (xN) = N alike; a plain door back into its")
-    L.append("#   own region is not listed.")
+    L.append("# Doors: one line each, no positions; (xN) = N alike. Not listed: a plain door back")
+    L.append("#   into its own region, and a region with nothing in it.")
     L.append("")
     gates = doc.get("gates", {})
     if gates:
@@ -1052,7 +1052,7 @@ def export_txt(world, doc, start_room=None):
                 title += "   [ARENA: %s]" % BOSSES.get(reg["boss"], {}).get("name", reg["boss"])
             if reg.get("note"):
                 title += "   # " + reg["note"]
-            L.append(title)
+            body = []
             # edges leaving this region; a plain door back into the same region says nothing
             blocks = []
             for e in world["edges"]:
@@ -1091,7 +1091,7 @@ def export_txt(world, doc, start_room=None):
                 if members[room].get(e["name"] + "@in", "main") != rid:
                     continue
                 blocks.append(["    <- %s" % world["room_label"].get(e["src"], e["src"])])
-            _emit_counted(L, blocks)
+            _emit_counted(body, blocks)
             # checks
             for name in sorted(by_room_checks.get(room, [])):
                 if members[room].get(name, "main") != rid:
@@ -1099,17 +1099,20 @@ def export_txt(world, doc, start_room=None):
                 ch = doc.get("checks", {}).get(name, {})
                 req = ch.get("req")
                 others = [world["room_label"].get(r, r) for r in n_places.get(name, []) if r != room]
-                L.append("    check %s%s" % (name, ("   (also in %s: any of them counts)" % ", ".join(others)) if others else ""))
+                body.append("    check %s%s" % (name, ("   (also in %s: any of them counts)" % ", ".join(others)) if others else ""))
                 if req is not None and not (req_is_free(req) and len(req_alternatives(req)) == 1):
-                    _req_block(L, req, ch.get("unsure"), ch.get("note"))
+                    _req_block(body, req, ch.get("unsure"), ch.get("note"))
                 elif ch.get("note"):
-                    L[-1] += "   # " + ch["note"]
+                    body[-1] += "   # " + ch["note"]
             # connections
             for c in rl.get("conns", []):
                 if c["from"] != rid:
                     continue
-                L.append("    conn -> %s" % reg_title(room, c["to"]))
-                _req_block(L, c.get("req"), c.get("unsure"), c.get("note"))
+                body.append("    conn -> %s" % reg_title(room, c["to"]))
+                _req_block(body, c.get("req"), c.get("unsure"), c.get("note"))
+            if body or reg.get("boss") or reg.get("note"):
+                L.append(title)
+                L.extend(body)
         L.append("")
     unplaced = sorted(n for n in world["locations"] if check_position(world, doc, n)[0] is None)
     if unplaced:

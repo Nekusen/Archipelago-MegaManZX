@@ -545,6 +545,7 @@ TRANSERVER_ALWAYS = []
 EVENT_GATES = {
     191: [0x021045E3, 7],
     205: [0x021045E5, 5],
+    221: [0x021045E7, 5],
     225: [0x021045E8, 1],
     378: [0x021045FB, 2],
     379: [0x021045FB, 3],
@@ -554,7 +555,7 @@ EVENT_GATES = {
     768: [0x0210462C, 0],
     769: [0x0210462C, 1],
 }
-EVENT_GATES_OPEN = [205, 379, 381, 382, 395]
+EVENT_GATES_OPEN = [205, 221, 379, 381, 382, 395]
 EVENT_GATES_ALL6 = [225, 378]
 START_TRANSERVER_AREA = 'A'
 # Warp menu destinations (map badges) and save-only pads (DATA rooms).

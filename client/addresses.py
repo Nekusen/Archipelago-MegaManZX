@@ -99,6 +99,11 @@ PLAYER_FACING_MASK = 0x10
 PLAYER_STATE_OFF = 0x11         # 0 = the player has control
 DEATH_STATE = 0x0A              # state byte while hurt or dying
 DEATH_SUBSTATE = 2              # with DEATH_STATE: the death animation is running
+# The hit flags of the frame; a lethal one makes the model code turn the hurt
+# state into the death sequence. Forcing the death substate by hand skips that
+# and leaves the human form hanging.
+LETHAL_HIT_OFF = 0x13B
+LETHAL_HIT_MASK = 0x78
 PLAYER_SCENE_WORD_OFF = 0x15C   # subarea of the current room
 HP = 0x0214FBB2
 # Persistent block; the scene descriptor uses the same layout
@@ -145,6 +150,11 @@ SCENE_DESC_LEN = 0x6C
 # Missions and story
 MISSION_ACTIVE_BYTE = 0x0210462B   # .1 mission accepted, .2 story mission
 MISSION_ACCEPTED_MASK = 0x02
+# Boss room scripts set these while a fight runs and clear them when the boss
+# dies; doors everywhere check them. Leaving the fight by teleport carries them
+# out of the room, so the client releases them once the player is elsewhere.
+BOSS_LOCKDOWN = (0x0210462A, 7)
+BOSS_ACTIVE = (0x0210462B, 0)
 STORY_BLOCK = 0x0214F6BC           # +4 mission id, +8 handler object
 STORY_BLOCK_LEN = 0x11C
 STORY_BLOCK_CANON = 0x02160554     # checkpoint copy, restored on death

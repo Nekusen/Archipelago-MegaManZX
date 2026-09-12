@@ -31,9 +31,10 @@ starts, what you find and receive, how you get around and a few conveniences.
 - The MISSION tab of the pause menu gains "Y Button: Go to Transerver". It opens the game's Target Area list wherever
   you are, with the destinations you have unlocked.
 - Every area can be reached on foot. Warping from the hub to an area needs that area's Transerver Access item.
-- Some story gates are open from the start: the F-3 door, the G-2 door to G-4, the M-1 seal, the D-1 bridge and the
-  sand fall that hides the pit from K-1 to K-2. The gate from D-2 into the Slither Inc. tower opens once you hold the
-  six biometals.
+- Some story gates are open from the start: the F-3 door, the G-2 door to G-4, the M-1 seal, the D-1 bridge, the
+  sand fall that hides the pit from K-1 to K-2, and the D-3 ladder up to the walkway that leads to Area O (the game
+  only lowers it while Repel The Army is in progress or done). The gate from D-2 into the Slither Inc. tower opens
+  once you hold the six biometals.
 - Troop Reinforcement can be started from D-1, D-2 or D-3 without the base cutscene. Protect HQ starts by itself, as in
   the original game, when you have completed four area missions.
 - With `skip_boss_rush` the Pseudoroid refights of the D-4 tower are skipped and the elevator climbs straight to D-5.

@@ -11,7 +11,8 @@ from ..data import (
     MISSION_ACTIVE_FLAG, MISSION_STATE_ADDR)
 from . import bossrush as BR
 from .addresses import (
-    BLOCK_MIRROR, CANON_OFF, CUTSCENE_FLAG, D02_ROOM_MERGED, D05_ROOM_TERMINAL, DESC_FACING_OFF,
+    BLOCK_MIRROR, BOSS_ACTIVE, BOSS_LOCKDOWN, CANON_OFF, CUTSCENE_FLAG, D02_ROOM_MERGED,
+    D05_ROOM_TERMINAL, DESC_FACING_OFF,
     DOM, ENDING_HANDLER_ID, ENDING_HANDLER_STATE, ENDING_SERPENT, ENDING_SUBAREA,
     ENDING_UNSTICK_TICKS, GAME_CLEARED, HUB_FLOOR_NEAR, HUB_PAD_DY, HUB_SUBAREA, LIVE_BLOCK_LEN,
     MISSION_ACCEPTED_MASK, MISSION_ACTIVE_BYTE, PLAYER_FACING_MASK, PLAYER_FACING_OFF,
@@ -32,9 +33,36 @@ logger = logging.getLogger("Client")
 
 
 async def repair_missions(client: "MMZXClient", ctx, tick: Tick) -> None:
-    """Undo what the game does to an active mission: Troop's flags, then the extra bits."""
+    """Undo what the game does to an active mission, and what a fight leaves behind."""
     await troop_unstick(client, ctx, tick)
     await restore_mission_bits(client, ctx, tick.guard)
+    await release_boss_locks(client, ctx, tick)
+
+
+async def release_boss_locks(client: "MMZXClient", ctx, tick: Tick) -> None:
+    """Clear the boss lock bits once the player has left the room that set them.
+
+    A boss room script raises the lockdown and boss-active bits for its fight
+    and drops them when the boss dies. The game never lets the player leave
+    in between; a teleport does, and then every door in the game stays shut
+    until Abort Mission. Back in the room, its script starts the fight over.
+    """
+    addrs = [BOSS_LOCKDOWN[0], BOSS_ACTIVE[0]]
+    masks = bits_by_byte([BOSS_LOCKDOWN, BOSS_ACTIVE])
+    live, canon = await read_copies(ctx, addrs)
+    if not any((live[a] | canon[a]) & masks[a] for a in addrs):
+        client.lock_subarea = None
+        return
+    if client.lock_subarea is None:
+        client.lock_subarea = tick.subarea      # the room of the fight
+        return
+    if tick.subarea == client.lock_subarea:
+        return
+    writes = copies_writes(addrs, live, canon, clear_masks=masks)
+    if writes and await bizhawk.guarded_write(ctx.bizhawk_ctx, writes, [tick.guard]):
+        client._debug("[mmzx] boss fight left behind in subarea %d: lock bits cleared, doors open again"
+                      % client.lock_subarea)
+        client.lock_subarea = None
 
 
 async def troop_unstick(client: "MMZXClient", ctx, tick: Tick) -> None:

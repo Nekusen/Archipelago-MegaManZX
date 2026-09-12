@@ -62,6 +62,7 @@ class MMZXClient(BizHawkClient):
         self.start_retries = 0
         # what the watcher remembers between ticks
         self.last_accept_sub = None        # subarea or hub floor whose mission was handled
+        self.lock_subarea: int | None = None   # subarea whose boss fight raised the lock bits
         self.last_legit_model = 1          # last owned active model seen, to revert to
         self.transport_wait = False        # Target Area list open: read the pick on return
         self._stage_failed: set[str] = set()   # stages whose exception was already logged

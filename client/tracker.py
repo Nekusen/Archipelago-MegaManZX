@@ -7,7 +7,7 @@ import worlds._bizhawk as bizhawk
 
 from ..data import ACTIVE_MODEL_ADDR, MISSION_STATE_ADDR
 from .addresses import (
-    CUTSCENE_FLAG, DEATH_STATE, DEATH_SUBSTATE, DOM, GAME_STATE, HP, MISSION_ACTIVE_BYTE,
+    CUTSCENE_FLAG, DEATH_STATE, DOM, GAME_STATE, HP, LETHAL_HIT_MASK, LETHAL_HIT_OFF, MISSION_ACTIVE_BYTE,
     PLAYER_OBJ, PLAYER_POS, PLAYER_STATE_OFF, POS_INTERVAL, POS_KEY, POS_MIN_DELTA,
     STORY_HANDLER_ID, STORY_HANDLER_STATE, SUBAREA_STABLE, TITLE_CAROUSEL_STEP, TROOP_MERGE)
 from .ram import Tick, decode_position
@@ -79,8 +79,10 @@ async def report_death(client: "MMZXClient", ctx, tick: Tick) -> None:
 async def receive_death_link(client: "MMZXClient", ctx, tick: Tick) -> None:
     """Apply a received death the way the game does it, once the player has control.
 
-    HP 0 plus the dying state bytes; HP alone does not kill. The death stays
-    pending through cutscenes and interactions.
+    HP 0, the hurt state and a lethal hit flag: the model code then runs its
+    own death sequence, which every form has. HP alone does not kill, and the
+    death substate written by hand leaves the human form stuck. The death
+    stays pending through cutscenes and interactions.
     """
     if client.prev_death_link is None:
         client.prev_death_link = ctx.last_death_link
@@ -89,11 +91,12 @@ async def receive_death_link(client: "MMZXClient", ctx, tick: Tick) -> None:
         client.pending_death = True
     if not client.pending_death:
         return
-    cutscene = (await bizhawk.read(ctx.bizhawk_ctx, [(CUTSCENE_FLAG, 1, DOM)]))[0][0] & 1
-    if cutscene or tick.player_state != 0:
+    r = await bizhawk.read(ctx.bizhawk_ctx, [(CUTSCENE_FLAG, 1, DOM), (PLAYER_OBJ + LETHAL_HIT_OFF, 1, DOM)])
+    if r[0][0] & 1 or tick.player_state != 0:
         return                      # no control: retried on the next tick
     writes = [(HP, b"\x00", DOM),
-              (PLAYER_OBJ + PLAYER_STATE_OFF, bytes([DEATH_STATE, DEATH_SUBSTATE, 0]), DOM)]
+              (PLAYER_OBJ + PLAYER_STATE_OFF, bytes([DEATH_STATE, 0, 0]), DOM),
+              (PLAYER_OBJ + LETHAL_HIT_OFF, bytes([r[1][0] | LETHAL_HIT_MASK]), DOM)]
     if await bizhawk.guarded_write(ctx.bizhawk_ctx, writes, [tick.guard]):
         client.pending_death = False
         client.death_induced = True

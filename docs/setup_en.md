@@ -2,7 +2,7 @@
 
 ## Required Software
 
-- [Archipelago](https://github.com/ArchipelagoMW/Archipelago/releases) 0.6.x.
+- [Archipelago](https://github.com/ArchipelagoMW/Archipelago/releases) 0.6.7 or later.
 - [BizHawk](https://tasvideos.org/BizHawk/ReleaseHistory) 2.10 or later, with its NDS core (melonDS).
   The world is tested with BizHawk 2.11.
 - Your own Mega Man ZX (USA) ROM, game code `ARZE`. The Archipelago community cannot provide it.

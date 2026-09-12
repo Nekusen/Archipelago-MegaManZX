@@ -10,7 +10,7 @@ boss fights and missions are checks.
 - What the randomizer does and how the options work: [docs/en_Mega Man ZX.md](docs/en_Mega%20Man%20ZX.md).
 - What changes in the game: [docs/rom_changes.md](docs/rom_changes.md).
 
-You need Archipelago 0.6.x, BizHawk 2.10 or later with its NDS core, and your own Mega Man ZX (USA) ROM (game code
+You need Archipelago 0.6.7 or later, BizHawk 2.10 or later with its NDS core, and your own Mega Man ZX (USA) ROM (game code
 `ARZE`). Everything the randomizer needs is read from that ROM at patch time; this repository ships no ROM, game code
 or game asset. Download `mmzx.apworld` from the
 [Releases](https://github.com/Nekusen/Archipelago-MegaManZX/releases) page.
@@ -65,7 +65,7 @@ tools. Open an issue for data corrections.
 
 ## Running from source
 
-Clone this repository into `worlds/mmzx` (or `custom_worlds/mmzx`) of an Archipelago source checkout, 0.6.x. From
+Clone this repository into `worlds/mmzx` (or `custom_worlds/mmzx`) of an Archipelago source checkout, 0.6.7 or later. From
 the checkout root, `python -m unittest worlds.mmzx.test` runs the tests. `tools/` holds the visual logic editor, the
 logic validator and probe and the `.apworld` packager; each script documents its usage in its header. The logic is
 never written in Python: it is drawn in the editor, which writes `logic/logic.json`. The editor draws rooms on renders

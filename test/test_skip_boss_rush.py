@@ -5,8 +5,8 @@ from test.general import setup_multiworld
 
 from .bases import MMZXTestBase, WITNESS, reach
 from .. import MMZXWorld
-from .. import logic_format as F
-from ..regions import load_document
+from ..logic import document as F
+from ..logic import load_document
 
 HUB2 = F.region_name("z02", "main")     # the tower's teleporter floor
 

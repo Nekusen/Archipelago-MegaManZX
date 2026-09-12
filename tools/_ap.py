@@ -3,7 +3,7 @@
 The tools run from the apworld folder, outside any Archipelago tree, so they
 cannot import the core the usual way. load_core() puts a checkout on sys.path,
 imports the core and registers this package as worlds.mmzx. standalone_modules()
-loads logic_format.py and data.py by path for the tools that need no Archipelago
+loads logic/document.py and data.py by path for the tools that need no Archipelago
 at all. The rest wraps the one-player multiworld the logic tools evaluate.
 """
 import contextlib
@@ -42,8 +42,8 @@ def _module_from_path(name: str, path: Path):
 
 
 def standalone_modules():
-    """(logic_format, data) loaded by path; neither imports anything from Archipelago."""
-    return (_module_from_path("mmzx_logic_format", ROOT / "logic_format.py"),
+    """(logic.document, data) loaded by path; neither imports anything from Archipelago."""
+    return (_module_from_path("mmzx_logic_document", ROOT / "logic" / "document.py"),
             _module_from_path("mmzx_data", ROOT / "data.py"))
 
 

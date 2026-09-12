@@ -39,11 +39,11 @@ LOGIC_TXT = LOGIC_DIR / "logic.txt"
 
 
 def _load_logic_format():
-    """Load logic_format.py by path.
+    """Load logic/document.py by path.
 
     Putting the package on sys.path would shadow the venv with its vendored packages.
     """
-    spec = importlib.util.spec_from_file_location("mmzx_logic_format", ROOT / "logic_format.py")
+    spec = importlib.util.spec_from_file_location("mmzx_logic_document", ROOT / "logic" / "document.py")
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)  # type: ignore[union-attr]
     return mod

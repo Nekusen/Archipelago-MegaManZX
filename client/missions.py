@@ -9,7 +9,7 @@ import worlds._bizhawk as bizhawk
 from ..data import (
     CANON_BLOCK, HUB_FLOOR_BOSS, HUB_FLOOR_DOOR_X, LIVE_BLOCK, MISSION_ACCEPT,
     MISSION_ACTIVE_FLAG, MISSION_STATE_ADDR)
-from .. import bossrush as BR
+from . import bossrush as BR
 from .addresses import (
     BLOCK_MIRROR, CANON_OFF, CUTSCENE_FLAG, D02_ROOM_MERGED, D05_ROOM_TERMINAL, DESC_FACING_OFF,
     DOM, ENDING_HANDLER_ID, ENDING_HANDLER_STATE, ENDING_SERPENT, ENDING_SUBAREA,

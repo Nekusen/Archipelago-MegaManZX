@@ -2,32 +2,15 @@
 
 """
 
-import json
-import pkgutil
-
 from BaseClasses import Region
 
-from . import bosses as B
-from . import logic_format as F
+from .logic import bosses as B
+from .logic import document as F
+from .logic import load_document
 from .data import DOORS, LOCATIONS
 from .locations import MMZXLocation, locations_for_options, pickup_flags_from_options
-from .logic import (WORLD, and_rules, door_rule, label_rule, starting_room,
-                    transerver_rule)
-
-_DOC = None
-
-
-def load_document():
-    """The bundled logic/logic.json, normalized and cached."""
-    global _DOC
-    if _DOC is None:
-        raw = pkgutil.get_data(__name__, "logic/logic.json")
-        if raw is None:
-            raise FileNotFoundError("logic/logic.json not found: "
-                                    "create the logic with tools/logic_editor/")
-        _DOC = F.normalize_logic(json.loads(raw.decode("utf-8")), WORLD)
-    return _DOC
-
+from .logic.rules import (WORLD, and_rules, door_rule, label_rule, starting_room,
+                          transerver_rule)
 
 def boss_requirements(world) -> dict:
     """{boss id: REQ} from the boss_logic option, cached on the world for the other hooks."""

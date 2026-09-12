@@ -6,13 +6,12 @@ applies the slot's starting model and character on top. Layout in
 the field offsets below.
 """
 
-import pkgutil
-
-from .data import LIVE_BLOCK, MODEL_X_POSSESSION
+from ..assets import read as read_asset
+from ..data import LIVE_BLOCK, MODEL_X_POSSESSION
 
 GOLDEN_IMAGE_ADDR = 0x021602A8
 GOLDEN_IMAGE_SIZE = 0x4F4
-GOLDEN_IMAGE = pkgutil.get_data(__name__, "assets/golden_image.bin")
+GOLDEN_IMAGE = read_asset("golden_image.bin")
 assert len(GOLDEN_IMAGE) == GOLDEN_IMAGE_SIZE
 
 # Offsets within the image; every field has a mirror copy.

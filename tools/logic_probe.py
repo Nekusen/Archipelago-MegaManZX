@@ -63,9 +63,9 @@ def main():
     # raw data to describe the rules
     mm = sys.modules["worlds.mmzx"]
     data = mm.data
-    logic = mm.logic
-    F = mm.logic_format
-    doc = mm.regions.load_document()
+    logic = mm.logic.rules
+    F = mm.logic.document
+    doc = mm.logic.load_document()
     tier = world.options.logic_difficulty.current_key
     members = F.resolve_members(logic.WORLD, doc)
 

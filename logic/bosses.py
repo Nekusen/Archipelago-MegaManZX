@@ -6,7 +6,7 @@ equipped for by their own standard. The YAML uses the same syntax as the logic e
 
 import re
 
-from . import logic_format as F
+from . import document as F
 
 # YAML keys: boss name, id, room code or room label, compared without case, spaces or punctuation.
 

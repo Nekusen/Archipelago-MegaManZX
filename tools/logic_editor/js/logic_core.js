@@ -1,10 +1,10 @@
-/* logic_core.js - requirement algebra shared with logic_format.py: the default atom catalog, the
+/* logic_core.js - requirement algebra shared with logic/document.py: the default atom catalog, the
  * expression parser, DNF normalization, tier accumulation and point-in-polygon membership.
  * No DOM access. Exposed as LE.Logic; every other module goes through it. */
 (function (LE) {
 'use strict';
 
-// Fallback catalog used until /api/world delivers the real one (logic_format.atom_catalog).
+// Fallback catalog used until /api/world delivers the real one (logic/document.py atom_catalog).
 const DEFAULT_ATOMS = (() => {
   const out = [];
   const models = {

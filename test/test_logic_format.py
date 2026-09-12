@@ -1,6 +1,6 @@
 """The logic document format: parser, requirements, validator and text twin.
 
-logic_format.py and data.py import nothing from Archipelago, so they are loaded
+logic/document.py and data.py import nothing from Archipelago, so they are loaded
 by path and these tests run without a checkout.
 """
 import copy
@@ -18,7 +18,7 @@ def _load(name):
     return module
 
 
-F = _load("logic_format")
+F = _load("logic/document")
 D = _load("data")
 WORLD = F.build_world(D)
 DOC = F.load_logic(PKG / "logic" / "logic.json", WORLD)

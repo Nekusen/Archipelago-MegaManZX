@@ -27,7 +27,7 @@ the PATH.
   works on a blank canvas of the right size.
 - **Gimmicks**: `data/gimmicks.json` (or `--gimmicks FILE`): names and positions of the enemies and
   gimmicks of every room, drawn as an informational layer. The editor works without it.
-- **World data**: `data.py` and `logic_format.py` of the apworld, served as `/api/world` (rooms,
+- **World data**: `data.py` and `logic/document.py` of the apworld, served as `/api/world` (rooms,
   locations, edges, atom catalog, boss roster). The atom catalog is built when the server starts, so a
   new atom needs a restart to appear.
 
@@ -47,7 +47,7 @@ object, `window.LogicEditor` (`LE` inside the files), which is also handy from t
 
 | File | Contents |
 |---|---|
-| `logic_core.js` | requirement algebra mirrored from `logic_format.py`: atoms, parser, DNF, tiers, point in polygon |
+| `logic_core.js` | requirement algebra mirrored from `logic/document.py`: atoms, parser, DNF, tiers, point in polygon |
 | `util.js` | DOM builder `h()`, `$`, geometry helpers, slugs, rgba colors |
 | `state.js` | shared state (`W` world, `DOC` document, `S` UI, `V` viewport, `CV` canvas) and visual constants |
 | `document.js` | document shape, accessors, hand placements, `edit` / `undo` / `redo` / `changed` |

@@ -1,7 +1,7 @@
 """Universal Tracker callbacks: map tab and player icon from the position the client publishes."""
 
-from .tracker_meta import ROOMS, SUB_TO_ROOM, OVERALL_MAP, OVERALL_POINTS, OVERALL_ROOM_POINTS
-from .data import HUB_FLOOR_Y, HUB_ROOM, ROOM_SUBAREA
+from ..data import HUB_FLOOR_Y, HUB_ROOM, ROOM_SUBAREA
+from .meta import ROOMS, SUB_TO_ROOM, OVERALL_MAP, OVERALL_POINTS, OVERALL_ROOM_POINTS
 
 PLAYER_ICON = "images/player.png"
 HUB_SUB = ROOM_SUBAREA[HUB_ROOM]

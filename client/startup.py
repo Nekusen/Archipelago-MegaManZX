@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 import worlds._bizhawk as bizhawk
 
 from ..data import ACTIVE_MODEL_ADDR, MODEL_X_POSSESSION, STARTING_MODELS, STARTING_TRANSERVERS
-from ..golden import GOLDEN_IMAGE_ADDR, build_image
+from .golden import GOLDEN_IMAGE_ADDR, build_image
 from .addresses import (
     DOM, GAME_STATE, HUB_SUBAREA, ITEM_ID_TO_NAME, START_CONFIRM_TICKS, START_MAX_RETRIES,
     STATE_GAME_OVER_LOW, STATE_INGAME, TITLE_CAROUSEL_STEP, TITLE_STEPS_SEEDABLE,

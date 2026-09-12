@@ -1,8 +1,8 @@
 """The ROM patch helpers, without a ROM: BLZ round trips, Thumb `bl` encoding and the patch tables.
 
-rom.py imports the Archipelago core, so a checkout is needed, but no multiworld
-is built. TestVanillaBytes reads the player's ROM when MMZX_ROM points at it (or
-roms/mmzx_us.nds lies three folders up) and is skipped otherwise.
+The rom package imports the Archipelago core, so a checkout is needed, but no
+multiworld is built. TestVanillaBytes reads the player's ROM when MMZX_ROM points
+at it (or roms/mmzx_us.nds lies three folders up) and is skipped otherwise.
 """
 import hashlib
 import os
@@ -14,10 +14,12 @@ from pathlib import Path
 from .. import rom
 from ..apnds import lz
 from ..data import NOTIFY_ADDR, NOTIFY_BUF_MAX, PICKUP_MAILBOX_ADDR, PICKUP_MAILBOX_SLOTS
+from ..rom import arm9, blz, nds, pickups, sprites, ui
 
+PATCH_MODULES = (pickups, sprites, ui)     # the modules that hold patch tables and caves
 ARM9_RAM = (0x02000000, 0x02400000)
 # Zero stretches of the vanilla ARM9 that take the caves.
-FREE_STRETCHES = [(0x020CB434, 0x020CB9D4), (0x020C8150, rom.GFX_CAVES_END)]
+FREE_STRETCHES = [(0x020CB434, 0x020CB9D4), (0x020C8150, sprites.GFX_CAVES_END)]
 ROM_PATH = os.environ.get("MMZX_ROM") or str(Path(__file__).resolve().parents[3] / "roms" / "mmzx_us.nds")
 
 
@@ -29,7 +31,7 @@ def as_bytes(value) -> bytes:
 def decode_bl(src: int, code: bytes) -> int:
     """Target of a Thumb `bl` pair placed at src."""
     hi, lo = struct.unpack("<HH", code)
-    off = ((hi & rom.THUMB_BL_OFFSET_MASK) << 12) | ((lo & rom.THUMB_BL_OFFSET_MASK) << 1)
+    off = ((hi & arm9.THUMB_BL_OFFSET_MASK) << 12) | ((lo & arm9.THUMB_BL_OFFSET_MASK) << 1)
     if off & (1 << 22):
         off -= 1 << 23
     return src + 4 + off
@@ -39,44 +41,49 @@ def is_bl(code: bytes) -> bool:
     if len(code) != 4:
         return False
     hi, lo = struct.unpack("<HH", code)
-    return (hi & 0xF800) == rom.THUMB_BL_HIGH and (lo & 0xF800) == rom.THUMB_BL_LOW
+    return (hi & 0xF800) == arm9.THUMB_BL_HIGH and (lo & 0xF800) == arm9.THUMB_BL_LOW
+
+
+def constants():
+    """(module, name, value) of every module-level name of the patch modules."""
+    for mod in PATCH_MODULES:
+        for name in dir(mod):
+            yield mod, name, getattr(mod, name)
 
 
 def patch_sites():
-    """[(table, ram, orig)] of every patch site whose vanilla bytes rom.py records."""
+    """[(table, ram, orig)] of every patch site whose vanilla bytes the patch modules record."""
     out = []
-    for name in dir(rom):
-        value = getattr(rom, name)
+    for mod, name, value in constants():
         if isinstance(value, list) and value and all(isinstance(t, tuple) and isinstance(t[0], int) for t in value):
             for entry in value:
                 if len(entry) >= 2 and isinstance(entry[1], (bytes, str)):
                     out.append((name, entry[0], as_bytes(entry[1])))
-        elif name.endswith("_ORIG") and isinstance(getattr(rom, name[:-5] + "_RAM", None), int):
-            out.append((name, getattr(rom, name[:-5] + "_RAM"), as_bytes(value)))
-    for ram in rom.SPRITEGUARD_SITES:
-        out.append(("SPRITEGUARD_SITES", ram, rom.SPRITEGUARD_ORIG))
+        elif name.endswith("_ORIG") and isinstance(getattr(mod, name[:-5] + "_RAM", None), int):
+            out.append((name, getattr(mod, name[:-5] + "_RAM"), as_bytes(value)))
+    for ram in sprites.SPRITEGUARD_SITES:
+        out.append(("SPRITEGUARD_SITES", ram, sprites.SPRITEGUARD_ORIG))
     return out
 
 
 def replacement_pairs():
     """[(table, orig, new)] of every in-place replacement."""
     out = []
-    for name in dir(rom):
-        value = getattr(rom, name)
+    for mod, name, value in constants():
         if isinstance(value, list) and value and all(isinstance(t, tuple) and len(t) == 3 for t in value):
             for _ram, orig, new in value:
                 out.append((name, as_bytes(orig), as_bytes(new)))
-        elif name.endswith("_ORIG") and hasattr(rom, name[:-5] + "_NEW"):
-            out.append((name, as_bytes(value), as_bytes(getattr(rom, name[:-5] + "_NEW"))))
+        elif name.endswith("_ORIG") and hasattr(mod, name[:-5] + "_NEW"):
+            out.append((name, as_bytes(value), as_bytes(getattr(mod, name[:-5] + "_NEW"))))
     return out
 
 
 def caves():
     """{name: (ram, bytes)} of every cave body (X_CAVE, X_CAVES, X_CAVE_A...) with its X_..._RAM address."""
-    return {name: (getattr(rom, name + "_RAM"), getattr(rom, name))
-            for name in dir(rom)
-            if "_CAVE" in name and isinstance(getattr(rom, name), bytes)
-            and isinstance(getattr(rom, name + "_RAM", None), int)}
+    return {name: (getattr(mod, name + "_RAM"), value)
+            for mod, name, value in constants()
+            if "_CAVE" in name and isinstance(value, bytes)
+            and isinstance(getattr(mod, name + "_RAM", None), int)}
 
 
 def cave_at(ram: int):
@@ -89,13 +96,13 @@ def cave_at(ram: int):
 
 class TestBLZ(unittest.TestCase):
     def round_trip(self, data: bytes) -> bytes:
-        body = rom._blz_compress(data)
+        body = blz.compress(data)
         self.assertIsNotNone(body, "the data did not compress")
         self.assertLess(len(body), len(data))
-        code = bytes(rom.BLZ_HEADER_LEN) + body
+        code = bytes(blz.BLZ_HEADER_LEN) + body
         out, rem = lz.decompress_code(code, len(code))
         self.assertEqual(rem, b"")
-        self.assertEqual(out[rom.BLZ_HEADER_LEN:], data)
+        self.assertEqual(out[blz.BLZ_HEADER_LEN:], data)
         return body
 
     def test_text(self) -> None:
@@ -119,7 +126,7 @@ class TestBLZ(unittest.TestCase):
     def test_incompressible_data_is_refused(self) -> None:
         """Random bytes gain nothing, so the encoder returns None instead of growing the image."""
         rng = random.Random(1)
-        self.assertIsNone(rom._blz_compress(bytes(rng.getrandbits(8) for _ in range(4096))))
+        self.assertIsNone(blz.compress(bytes(rng.getrandbits(8) for _ in range(4096))))
 
     def test_stream_layout(self) -> None:
         """The region ends with the footer the DS loader reads: stream length, footer length, growth."""
@@ -137,16 +144,17 @@ class TestThumbBL(unittest.TestCase):
     def test_known_hooks(self) -> None:
         """The recorded `bl` encodings of the hooks match the addresses they join."""
         cases = [
-            (rom.PICKUP_MAILBOX_HOOK_RAM, rom.PICKUP_MAILBOX_CAVE_RAM, rom.PICKUP_MAILBOX_HOOK_NEW),
-            (rom.NOTIFY_HOOK_RAM, rom.NOTIFY_CAVE_RAM, rom.NOTIFY_HOOK_NEW),
-            (rom.MENU_WARP_HOOKS[0][0], rom.MENU_WARP_CAVE_A_RAM, rom.MENU_WARP_HOOKS[0][2]),
-            (rom.MENU_WARP_HOOKS[1][0], rom.MENU_WARP_CAVE_B_RAM, rom.MENU_WARP_HOOKS[1][2]),
-            (rom.CUTSCENE_SKIP_PATCH[1][0], rom.CUTSCENE_SKIP_CAVE_RAM, rom.CUTSCENE_SKIP_PATCH[1][2]),
-            (rom.DATASELECT_ICON_PATCH[4][0], rom.DATASELECT_CAVE_RAM, as_bytes(rom.DATASELECT_ICON_PATCH[4][2])[:4]),
+            (pickups.PICKUP_MAILBOX_HOOK_RAM, pickups.PICKUP_MAILBOX_CAVE_RAM, pickups.PICKUP_MAILBOX_HOOK_NEW),
+            (ui.NOTIFY_HOOK_RAM, ui.NOTIFY_CAVE_RAM, ui.NOTIFY_HOOK_NEW),
+            (ui.MENU_WARP_HOOKS[0][0], ui.MENU_WARP_CAVE_A_RAM, ui.MENU_WARP_HOOKS[0][2]),
+            (ui.MENU_WARP_HOOKS[1][0], ui.MENU_WARP_CAVE_B_RAM, ui.MENU_WARP_HOOKS[1][2]),
+            (ui.CUTSCENE_SKIP_PATCH[1][0], ui.CUTSCENE_SKIP_CAVE_RAM, ui.CUTSCENE_SKIP_PATCH[1][2]),
+            (pickups.DATASELECT_ICON_PATCH[4][0], pickups.DATASELECT_CAVE_RAM,
+             as_bytes(pickups.DATASELECT_ICON_PATCH[4][2])[:4]),
         ]
         for src, dst, expected in cases:
             with self.subTest(src=hex(src)):
-                self.assertEqual(rom._thumb_bl(src, dst), as_bytes(expected))
+                self.assertEqual(arm9.thumb_bl(src, dst), as_bytes(expected))
 
     def test_vanilla_calls_round_trip(self) -> None:
         """Every recorded vanilla `bl` decodes to an even ARM9 address and re-encodes to itself."""
@@ -159,14 +167,14 @@ class TestThumbBL(unittest.TestCase):
                 target = decode_bl(ram, orig)
                 self.assertEqual(target % 2, 0)
                 self.assertTrue(ARM9_RAM[0] <= target < ARM9_RAM[1], hex(target))
-                self.assertEqual(rom._thumb_bl(ram, target), orig)
+                self.assertEqual(arm9.thumb_bl(ram, target), orig)
         self.assertGreater(seen, 10)
 
     def test_backward_and_forward(self) -> None:
         """Both branch directions encode within the 4 MiB range."""
         for src, dst in ((0x02001000, 0x02000000), (0x02000000, 0x023FFFFE), (0x020A30A2, 0x020CB4A0)):
             with self.subTest(src=hex(src), dst=hex(dst)):
-                code = rom._thumb_bl(src, dst)
+                code = arm9.thumb_bl(src, dst)
                 self.assertTrue(is_bl(code))
                 self.assertEqual(decode_bl(src, code), dst)
 
@@ -183,14 +191,14 @@ class TestPatchTables(unittest.TestCase):
 
     def test_pickup_ap_hooks(self) -> None:
         """Each PICKUP_AP hook rebuilds exactly the bytes it displaces around a `bl` into a known entry."""
-        for ram, orig, entry, pre, post in rom.PICKUP_AP_HOOKS:
+        for ram, orig, entry, pre, post in pickups.PICKUP_AP_HOOKS:
             with self.subTest(ram=hex(ram)):
-                self.assertIn(entry, rom.PICKUP_AP_ENTRIES)
+                self.assertIn(entry, pickups.PICKUP_AP_ENTRIES)
                 self.assertEqual(len(pre) + 4 + len(post), len(orig))
-        for entry, offset in rom.PICKUP_AP_ENTRIES.items():
+        for entry, offset in pickups.PICKUP_AP_ENTRIES.items():
             with self.subTest(entry=entry):
                 self.assertEqual(offset % 2, 0)
-                self.assertLess(offset, len(rom.PICKUP_AP_CAVE))
+                self.assertLess(offset, len(pickups.PICKUP_AP_CAVE))
 
     def test_sites_are_halfword_aligned(self) -> None:
         """Thumb code is patched at even addresses inside the ARM9."""
@@ -202,8 +210,8 @@ class TestPatchTables(unittest.TestCase):
     def test_caves_fit_the_free_stretches(self) -> None:
         """Caves and the client's data blocks lie in the zero stretches and never overlap."""
         blocks = {name: (ram, len(body)) for name, (ram, body) in caves().items()}
-        blocks["HUGATE_ARRAY"] = (rom.HUGATE_ARRAY_RAM, 4)
-        blocks["MENU_WARP_FLAGS"] = (rom.MENU_WARP_FLAGS_RAM, 2)
+        blocks["HUGATE_ARRAY"] = (pickups.HUGATE_ARRAY_RAM, 4)
+        blocks["MENU_WARP_FLAGS"] = (ui.MENU_WARP_FLAGS_RAM, 2)
         blocks["PICKUP_MAILBOX"] = (PICKUP_MAILBOX_ADDR, 4 + 4 * PICKUP_MAILBOX_SLOTS)
         blocks["NOTIFY"] = (NOTIFY_ADDR, NOTIFY_BUF_MAX + 4)
         self.assertGreaterEqual(len(blocks), 16)
@@ -219,7 +227,7 @@ class TestPatchTables(unittest.TestCase):
     def test_icon_entry_points(self) -> None:
         """The ATTACH and ANIM entries are inside the icon cave, on a halfword."""
         start, body = caves()["ICON_CAVES"]
-        for entry in (rom.ICON_ATTACH_CAVE_RAM, rom.ICON_ANIM_CAVE_RAM):
+        for entry in (sprites.ICON_ATTACH_CAVE_RAM, sprites.ICON_ANIM_CAVE_RAM):
             self.assertTrue(start < entry < start + len(body), hex(entry))
             self.assertEqual(entry % 2, 0)
 
@@ -229,7 +237,7 @@ class TestPatchTables(unittest.TestCase):
         self.assertLessEqual(rom.AP_MARKER_VERSION_OFF + 4, rom.AP_MARKER_SLOT_OFF)
         self.assertLessEqual(rom.AP_MARKER_SLOT_OFF + rom.AP_MARKER_SLOT_MAX + 1, rom.AP_MARKER_SEED_OFF)
         self.assertLessEqual(rom.AP_MARKER_SEED_OFF + rom.AP_MARKER_SEED_MAX + 1, rom.AP_MARKER_LEN)
-        self.assertLessEqual(rom.AP_MAGIC_OFFSET + rom.AP_MARKER_LEN, rom.BLZ_HEADER_LEN)
+        self.assertLessEqual(rom.AP_MAGIC_OFFSET + rom.AP_MARKER_LEN, blz.BLZ_HEADER_LEN)
 
     def test_patch_tokens(self) -> None:
         """write_patch_tokens stores the marker with the slot name and the option blob."""
@@ -247,17 +255,17 @@ class TestPatchTables(unittest.TestCase):
 
 @unittest.skipUnless(os.path.isfile(ROM_PATH), "set MMZX_ROM to the vanilla Mega Man ZX (USA) ROM")
 class TestVanillaBytes(unittest.TestCase):
-    """The vanilla bytes rom.py records match the real ROM, and the caves land on zeros."""
+    """The vanilla bytes the patch modules record match the real ROM, and the caves land on zeros."""
 
     @classmethod
     def setUpClass(cls) -> None:
         with open(ROM_PATH, "rb") as f:
             cls.rom = f.read()
-        arm9_off, _entry, arm9_ram, arm9_len = struct.unpack_from("<4I", cls.rom, rom.NDS_HDR_ARM9)
-        cls.arm9 = rom.Arm9(cls.rom[arm9_off:arm9_off + arm9_len], arm9_ram)
+        arm9_off, _entry, arm9_ram, arm9_len = struct.unpack_from("<4I", cls.rom, nds.NDS_HDR_ARM9)
+        cls.code = arm9.Arm9(cls.rom[arm9_off:arm9_off + arm9_len], arm9_ram)
 
     def read(self, ram: int, size: int) -> bytes:
-        for base, buf in self.arm9.sections:
+        for base, buf in self.code.sections:
             if base <= ram < base + len(buf):
                 return bytes(buf[ram - base:ram - base + size])
         self.fail("0x%08X is outside the ARM9 sections" % ram)
@@ -276,11 +284,11 @@ class TestVanillaBytes(unittest.TestCase):
                     self.assertEqual(caves()[name][1][offset:offset + len(orig)], orig)
                 else:
                     self.assertEqual(self.read(ram, len(orig)), orig)
-        for cnt_a, lst_a, _flag1, orig1, _flag2, orig2 in rom.BIOMETAL_CAT_PATCH.values():
+        for cnt_a, lst_a, _flag1, orig1, _flag2, orig2 in pickups.BIOMETAL_CAT_PATCH.values():
             with self.subTest(list=hex(lst_a)):
                 self.assertEqual(self.read(lst_a, 4), orig1.to_bytes(4, "little"))
                 self.assertEqual(self.read(lst_a + 4, 4), orig2.to_bytes(4, "little"))
-                self.assertEqual(self.read(cnt_a, 1), bytes([rom.BIOMETAL_CAT_COUNT]))
+                self.assertEqual(self.read(cnt_a, 1), bytes([pickups.BIOMETAL_CAT_COUNT]))
 
     def test_caves_land_on_zeros(self) -> None:
         """The free stretches really are zero in the vanilla ARM9."""
@@ -290,11 +298,12 @@ class TestVanillaBytes(unittest.TestCase):
 
     def test_rom_level_edits(self) -> None:
         """The help texts and the disk tile have the digests the ROM steps check."""
-        for off in rom.MENU_WARP_TEXT_OFFS:
+        for off in ui.MENU_WARP_TEXT_OFFS:
             with self.subTest(text=hex(off)):
-                cur = self.rom[rom.MENU_WARP_TEXT_ROM + off:rom.MENU_WARP_TEXT_ROM + off + len(rom.MENU_WARP_TEXT_NEW)]
-                self.assertEqual(hashlib.sha256(cur).hexdigest(), rom.MENU_WARP_TEXT_SHA256)
-        fat = struct.unpack_from("<I", self.rom, rom.NDS_HDR_FAT)[0]
-        fnt_start = struct.unpack_from("<I", self.rom, fat + rom.ICON_FNT_FILE_ID * rom.FAT_ENTRY_LEN)[0]
-        tile = self.rom[fnt_start + rom.DISK_LOGO_FNT_OFF:fnt_start + rom.DISK_LOGO_FNT_OFF + len(rom.DISK_LOGO_NEW)]
-        self.assertEqual(hashlib.sha256(tile).hexdigest(), rom.DISK_LOGO_SHA256)
+                cur = self.rom[ui.MENU_WARP_TEXT_ROM + off:ui.MENU_WARP_TEXT_ROM + off + len(ui.MENU_WARP_TEXT_NEW)]
+                self.assertEqual(hashlib.sha256(cur).hexdigest(), ui.MENU_WARP_TEXT_SHA256)
+        fat = struct.unpack_from("<I", self.rom, nds.NDS_HDR_FAT)[0]
+        fnt_start = struct.unpack_from("<I", self.rom, fat + sprites.ICON_FNT_FILE_ID * nds.FAT_ENTRY_LEN)[0]
+        tile = self.rom[fnt_start + sprites.DISK_LOGO_FNT_OFF:
+                        fnt_start + sprites.DISK_LOGO_FNT_OFF + len(sprites.DISK_LOGO_NEW)]
+        self.assertEqual(hashlib.sha256(tile).hexdigest(), sprites.DISK_LOGO_SHA256)

@@ -2,9 +2,9 @@
 
 import re
 
-from . import data as _data
-from . import logic_format as F
-from .data import (HUB_ROOM, ROOM_SUBAREA, STARTING_TRANSERVERS,
+from .. import data as _data
+from . import document as F
+from ..data import (HUB_ROOM, ROOM_SUBAREA, STARTING_TRANSERVERS,
                    TRANSERVER_ACCESS, TRANSERVER_ALWAYS)
 
 WORLD = F.build_world(_data)

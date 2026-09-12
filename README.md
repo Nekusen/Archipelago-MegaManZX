@@ -26,25 +26,29 @@ UT loads from a zip you download once (`ut_pack_path` in `host.yaml`).
     __init__.py                 World, WebWorld and host settings (ROM path, tracker pack path)
     options.py                  YAML options; their docstrings are the player's option help
     items.py, locations.py      item and location classes, groups and option filters over data.py
-    regions.py, logic.py        regions and entrances from the logic document; the rules that are not drawn
-    logic_format.py             the logic document: atoms, requirement parsing, validation, text export
-    bosses.py, bossrush.py      the boss_logic option; which boss rush pairs the client marks as beaten
-    rom.py                      builds the patched ROM from the player's copy (APProcedurePatch)
-    client/                     the BizHawk client: the watcher in __init__.py, one module per stage group
-    golden.py, icons.py         the starting save image; the in-game icon set cut from the player's ROM
-    tracker_pos.py              Universal Tracker callbacks (map tab and position icon)
-    data.py, tracker_meta.py    generated tables (see below)
-    logic/                      logic.json (source of truth) and logic.txt (its readable twin)
-    tracker/, assets/           UT map layout; the starting save image and the three Archipelago logos
+    regions.py                  regions, entrances, locations and events from the logic document
+    data.py                     generated tables that every package below shares (see below)
+    logic/                      the access logic: logic.json (source of truth) and logic.txt (its readable
+                                twin); document.py parses, validates and exports it, rules.py holds the
+                                rules that are not drawn, bosses.py the boss_logic option
+    rom/                        the .apmmzx patch: the patch class and AP marker in __init__.py, one module
+                                per domain (pickups, sprites, ui), the ARM9 image (arm9.py), the BLZ
+                                encoder (blz.py), the ROM container (nds.py) and the icon set cut from
+                                the player's ROM (icons.py)
+    client/                     the BizHawk client: the watcher in __init__.py, one module per stage group,
+                                the starting save image (golden.py) and the boss rush skip (bossrush.py)
+    tracker/                    Universal Tracker: map layout (maps.json, locations.json), the callbacks in
+                                __init__.py and the generated meta.py
+    assets/                     the starting save image and the three Archipelago logos; read() loads them
     apnds/                      vendored apnds (MIT)
-    docs/, tools/, test/        documentation; maintainer tools; tests
+    docs/, tools/, test/        player documentation; maintainer tools; tests
 
 `tools/`, `test/` and the git files are left out of the `.apworld` (see `.apignore`).
 
 ## Generated files
 
 `data.py` (locations with their detection recipe, items with their grant recipe, the room graph and the RAM structures
-shared with the patched ROM), `tracker_meta.py` (map indices and transforms for the tracker),
+shared with the patched ROM), `tracker/meta.py` (map indices and transforms for the tracker),
 `tools/logic_editor/data/gimmicks.json` (enemy and switch positions shown in the editor) and `assets/golden_image.bin`
 (the starting save image) are generated. The generators belong to the maintainers' reverse-engineering toolkit, which
 needs the game, an emulator harness and a Ghidra project, and are not in this repository; so is the technical

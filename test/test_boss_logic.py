@@ -5,9 +5,9 @@ from Options import OptionError
 from test.general import setup_multiworld
 
 from .bases import WITNESS, reach
-from .. import MMZXWorld, bosses
-from .. import logic_format as F
-from ..regions import load_document
+from .. import MMZXWorld
+from ..logic import bosses, load_document
+from ..logic import document as F
 
 # Blocking these bosses also closes the goal: the Pseudoroids through the D-4
 # boss rush, Model Z because D-2 is the only way into the tower, Serpent himself.

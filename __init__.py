@@ -8,17 +8,17 @@ from BaseClasses import ItemClassification, Tutorial
 from Options import OptionError
 from worlds.AutoWorld import WebWorld, World
 
-from . import bosses
+from .logic import bosses
 from .data import LOCATIONS, ITEMS, STARTING_MODEL_ITEM, START_TRANSERVER_AREA
 from .items import MMZXItem, item_name_to_id, get_classification, ITEM_GROUPS
 from .locations import (location_name_to_id, locations_for_options, LOCATION_GROUPS,
                         pickup_flags_from_options)
 from .options import MMZXOptions
-from .regions import (boss_requirements, create_regions, load_document,
-                      progression_overrides)
+from .logic import load_document
+from .regions import boss_requirements, create_regions, progression_overrides
 from .rom import MMZXPatch, write_patch_tokens, MMZX_US_MD5
 from . import client  # registers the BizHawkClient  # noqa: F401
-from . import tracker_pos  # auto-tab / position icon for Universal Tracker
+from . import tracker  # auto-tab / position icon for Universal Tracker
 
 
 class MMZXSettings(settings.Group):
@@ -82,9 +82,9 @@ class MMZXWorld(World):
         "map_page_maps": "maps.json",
         "map_page_locations": "locations.json",
         "map_page_setting_key": "mmzx_pos_{player}",
-        "map_page_index": tracker_pos.map_page_index,
+        "map_page_index": tracker.map_page_index,
         "location_setting_key": "mmzx_pos_{player}",
-        "location_icon_coords": tracker_pos.location_icon_coords,
+        "location_icon_coords": tracker.location_icon_coords,
     }
 
     def generate_early(self) -> None:
@@ -184,7 +184,7 @@ class MMZXWorld(World):
             return
         rules = bosses.compile_rules(reqs, self.options.logic_difficulty.current_key,
                                      self.player, bool(self.options.hu_in_pool.value))
-        from . import logic_format as F
+        from .logic import document as F
         blocked = [F.BOSSES[b]["name"] for b in sorted(reqs)
                    if not rules.get(F.boss_atom(b), lambda s: True)(state)]
         raise OptionError(

@@ -99,7 +99,7 @@ function altRow(tier, alts, ai, setTier) {
 function exprField(tier, dnf, setTier) {
   const inp = h('input', { type: 'text', value: dnf === null ? '' : Logic.dnfToText(dnf),
     placeholder: 'expression: HX & (LX | FX) · free · never',
-    title: 'Enter applies. Grammar of logic_format.parse_expr' });
+    title: 'Enter applies. Grammar of parse_expr in logic/document.py' });
   const err = h('div', { class: 'expr-err' });
   inp.addEventListener('keydown', (e) => {
     if (e.key !== 'Enter') return;

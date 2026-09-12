@@ -10,36 +10,16 @@ Usage (from the apworld root):
   python tools/logic_probe.py --opt starting_model=model_hx --items "Blue Card Key" [--frontier]
 """
 import argparse
-import contextlib
-import importlib.util
-import io
-import logging
-import os
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent      # apworld root
-
-
-def _default_ap() -> str:
-    """Archipelago source checkout: $AP_SRC, else a checkout beside the parent repository."""
-    if os.environ.get("AP_SRC"):
-        return os.environ["AP_SRC"]
-    try:
-        cand = Path(__file__).resolve().parents[4] / "ArchipelagoDW"
-        if cand.exists():
-            return str(cand)
-    except IndexError:
-        pass
-    return ""
-
-
-DEFAULT_AP = _default_ap()
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import _ap  # noqa: E402
 
 
 def parse_args():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--ap", default=DEFAULT_AP, help="Archipelago source checkout (0.6.7)")
+    ap.add_argument("--ap", default=_ap.DEFAULT_AP, help="Archipelago source checkout (0.6.7)")
     ap.add_argument("--opt", action="append", default=[], metavar="KEY=VALUE",
                     help="YAML option (e.g. starting_model=model_hx, hu_in_pool=true)")
     ap.add_argument("--items", nargs="*", default=[], help="received items (exact names)")
@@ -53,51 +33,6 @@ def parse_args():
     ap.add_argument("--world", default=None, help="apworld folder to load (by default this very package)")
     ap.add_argument("--json", default=None, help="dump {rooms, locations in logic} as JSON to this file (comparisons)")
     return ap.parse_args()
-
-
-def load_core(ap_src: str, world_dir=None):
-    """Import the Archipelago core and register this package as worlds.mmzx.
-
-    The cwd moves to the checkout only during the imports and is always restored,
-    so resolve any output path before calling.
-    """
-    if not ap_src:
-        raise SystemExit("an Archipelago source checkout is needed: --ap PATH or the AP_SRC variable")
-    ap_src = str(Path(ap_src).resolve())
-    world_dir = str(Path(world_dir).resolve()) if world_dir else None   # before the chdir
-    sys.path.insert(0, ap_src)
-    logging.disable(logging.CRITICAL)
-    # worlds/__init__.py imports every world of the checkout: hide all but 'generic'
-    real_scandir = os.scandir
-    worlds_dir = os.path.normcase(os.path.join(ap_src, "worlds"))
-
-    def scandir_only_generic(path=".", *a, **k):
-        it = real_scandir(path, *a, **k)
-        if os.path.normcase(os.path.abspath(str(path))) != worlds_dir:
-            return it
-        return iter([e for e in it if e.name == "generic"])
-
-    prev_cwd = os.getcwd()
-    os.chdir(ap_src)   # AP reads host.yaml and data/ from the cwd
-    os.scandir = scandir_only_generic
-    try:
-        with contextlib.redirect_stderr(io.StringIO()), contextlib.redirect_stdout(io.StringIO()):
-            import BaseClasses  # noqa: F401
-            from worlds.AutoWorld import AutoWorldRegister
-        os.scandir = real_scandir
-        with contextlib.redirect_stderr(io.StringIO()), contextlib.redirect_stdout(io.StringIO()):
-            wdir = Path(world_dir) if world_dir else (ROOT)
-            p = str(wdir / "__init__.py")
-            spec = importlib.util.spec_from_file_location(
-                "worlds.mmzx", p, submodule_search_locations=[str(wdir)])
-            m = importlib.util.module_from_spec(spec)
-            sys.modules["worlds.mmzx"] = m
-            spec.loader.exec_module(m)
-    finally:
-        os.scandir = real_scandir
-        os.chdir(prev_cwd)   # never leave the process inside the AP checkout
-    logging.disable(logging.NOTSET)
-    return AutoWorldRegister.world_types["Mega Man ZX"]
 
 
 def parse_value(v: str):
@@ -115,15 +50,13 @@ def parse_value(v: str):
 def main():
     a = parse_args()
     show_all = not (a.rooms or a.locs or a.frontier or a.loc)
-    world_type = load_core(a.ap, a.world)
-    from test.general import setup_multiworld
-    from BaseClasses import CollectionState
+    world_type = _ap.load_core(a.ap, a.world)
 
     opts = {}
     for kv in a.opt:
         k, _, v = kv.partition("=")
         opts[k.strip()] = parse_value(v.strip())
-    mw = setup_multiworld(world_type, options=opts)
+    mw = _ap.solo_multiworld(world_type, opts)
     world = mw.worlds[1]
     player = 1
 
@@ -149,14 +82,9 @@ def main():
     if a.all_access:
         items += [n for n in data.ITEMS if n.startswith("Transerver Access")]
 
-    state = CollectionState(mw)
-    for name in items:
-        if name not in world.item_name_to_id:
-            print("!! unknown item:", name)
-            continue
-        state.collect(world.create_item(name), prevent_sweep=True)
-    state.sweep_for_advancements()       # collects reachable events ("Cleared: ...")
-    state.update_reachable_regions(player)
+    state, unknown = _ap.collect_state(mw, items)
+    for name in unknown:
+        print("!! unknown item:", name)
     reach = {r.name for r in state.reachable_regions[player]}
 
     precollected = [i.name for i in mw.precollected_items[player]]
@@ -229,15 +157,14 @@ def main():
                 seen.add(key)
                 print("   %-4s -> %-12s [%s]  %s" % (reg.name, dst.name, ent.name, describe_edge(ent)))
 
-    locs_in = [l for l in mw.get_locations(player) if l.address is not None and l.can_reach(state)]
-    locs_out = [l for l in mw.get_locations(player) if l.address is not None and not l.can_reach(state)]
+    in_logic = _ap.in_logic(mw, state)
     if show_all or a.locs:
-        print("\n== locations IN LOGIC (%d):" % len(locs_in))
-        for l in sorted(locs_in, key=lambda l: l.name):
-            print("   " + l.name)
-        print("\n== locations OUT of logic (%d):" % len(locs_out))
-        for l in sorted(locs_out, key=lambda l: l.name):
-            print("   " + l.name)
+        print("\n== locations IN LOGIC (%d):" % len(in_logic["locs_in"]))
+        for name in in_logic["locs_in"]:
+            print("   " + name)
+        print("\n== locations OUT of logic (%d):" % len(in_logic["locs_out"]))
+        for name in in_logic["locs_out"]:
+            print("   " + name)
 
     for name in a.loc:
         loc = next((l for l in mw.get_locations(player) if l.name == name), None)
@@ -266,8 +193,8 @@ def main():
     if a.json:
         import json
         with open(a.json, "w", encoding="utf-8") as f:
-            json.dump({"rooms": rooms, "regions": sorted(reach), "locs_in": sorted(l.name for l in locs_in),
-                       "locs_out": sorted(l.name for l in locs_out), "events": events}, f, ensure_ascii=False, indent=1)
+            json.dump({"rooms": rooms, "regions": sorted(reach), "locs_in": in_logic["locs_in"],
+                       "locs_out": in_logic["locs_out"], "events": events}, f, ensure_ascii=False, indent=1)
 
 
 if __name__ == "__main__":

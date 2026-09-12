@@ -1,0 +1,26 @@
+# Random YAMLs generated against the world with Eijebong's Archipelago fuzzer.
+# Option errors the world raises on purpose (an impossible boss_logic) are
+# ignored; anything else that breaks generation fails the run.
+name: Fuzz
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  fuzz:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: mmzx
+
+      - uses: Eijebong/ap-actions/fuzz@main
+        with:
+          apworld-path: mmzx
+          ap-version: '0.6.7'
+          python-version: '3.12'
+          checkout: false
+          runs: 200

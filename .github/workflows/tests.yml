@@ -1,0 +1,24 @@
+# Unit tests of the world on an Archipelago source checkout, through
+# Eijebong/ap-actions: the general tests of the core plus test/ of this world.
+name: Tests
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: mmzx
+
+      - uses: Eijebong/ap-actions/ap-tests@main
+        with:
+          apworld-path: mmzx
+          ap-version: '0.6.7'
+          python-version: '3.12'
+          checkout: false

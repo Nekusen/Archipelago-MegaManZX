@@ -3,23 +3,20 @@
 
 Stores the reachable regions and the locations in logic of every cell, so that
 --compare can prove that a change alters nothing it should not. Needs an
-Archipelago source checkout (--ap or $AP_SRC), loaded through logic_probe.py.
+Archipelago source checkout (--ap or $AP_SRC).
 
 Usage (from the apworld root):
   python tools/logic_snapshot.py --out build/base.json
   python tools/logic_snapshot.py --compare build/base.json build/new.json
 """
 import argparse
-import importlib.util
 import json
 import random
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
-_spec = importlib.util.spec_from_file_location("mmzx_logic_probe", Path(__file__).resolve().parent / "logic_probe.py")
-_probe = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(_probe)  # type: ignore[union-attr]
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import _ap  # noqa: E402
 
 # option sets to evaluate: name to YAML options
 OPTION_SETS = {
@@ -57,34 +54,24 @@ def fixed_inventories(all_items):
 
 
 def snapshot(ap_src, world_dir=None, extra_options=None):
-    world_type = _probe.load_core(ap_src, world_dir)
-    from test.general import setup_multiworld
-    from BaseClasses import CollectionState
-
+    world_type = _ap.load_core(ap_src, world_dir)
     out = {}
     sets = dict(OPTION_SETS)
     for name, opts in (extra_options or {}).items():
         sets[name] = opts
     for set_name, opts in sets.items():
-        mw = setup_multiworld(world_type, options=opts)
-        world, player = mw.worlds[1], 1
+        mw = _ap.solo_multiworld(world_type, opts)
+        world = mw.worlds[1]
         inventories = fixed_inventories(list(world.item_name_to_id))
         cell = {}
         for inv_name, items in inventories.items():
-            state = CollectionState(mw)
-            for it in items:
-                if it in world.item_name_to_id:
-                    state.collect(world.create_item(it), prevent_sweep=True)
-            state.sweep_for_advancements()
-            state.update_reachable_regions(player)
-            reach = sorted(r.name for r in state.reachable_regions[player])
-            locs = sorted(l.name for l in mw.get_locations(player)
-                          if l.address is not None and l.can_reach(state))
+            state, _unknown = _ap.collect_state(mw, items)   # unknown names are skipped
+            logic = _ap.in_logic(mw, state)
             cell[inv_name] = {
                 "items": sorted(items),
-                "regions": reach,
-                "locs_in": locs,
-                "victory": bool(mw.completion_condition[player](state)),
+                "regions": logic["regions"],
+                "locs_in": logic["locs_in"],
+                "victory": logic["victory"],
             }
         # classification of every pool item
         cls = {}
@@ -123,7 +110,7 @@ def compare(a, b):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--ap", default=_probe.DEFAULT_AP)
+    ap.add_argument("--ap", default=_ap.DEFAULT_AP)
     ap.add_argument("--world", default=None)
     ap.add_argument("--out", default=None, help="save the snapshot here")
     ap.add_argument("--compare", nargs=2, metavar=("BASE", "NEW"))

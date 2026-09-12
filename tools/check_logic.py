@@ -2,17 +2,16 @@
 """Validate logic/logic.json against data.py and regenerate logic.txt.
 
 The text twin is rewritten only when there are no errors; --no-txt skips it.
+Needs no Archipelago checkout.
 
 Usage (from the apworld root): python tools/check_logic.py [--no-txt] [--quiet]
 """
 import argparse
-import importlib.util
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
-sys.path.append(str(ROOT))   # appended last: vendored packages must not shadow the venv
-import logic_format as F  # noqa: E402
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import _ap  # noqa: E402
 
 
 def main():
@@ -20,11 +19,9 @@ def main():
     ap.add_argument("--no-txt", action="store_true")
     ap.add_argument("--quiet", action="store_true")
     a = ap.parse_args()
-    spec = importlib.util.spec_from_file_location("mmzx_data_chk", ROOT / "data.py")
-    D = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(D)  # type: ignore[union-attr]
+    F, D = _ap.standalone_modules()
     W = F.build_world(D)
-    path = ROOT / "logic" / "logic.json"
+    path = _ap.ROOT / "logic" / "logic.json"
     doc = F.load_logic(path, W)
     rep = F.validate(W, doc, D.HUB_ROOM, F.unavailable_atoms(D))
     for e in rep["errors"]:

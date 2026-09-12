@@ -1,104 +1,112 @@
-# Mega Man ZX — Archipelago world
+# Mega Man ZX for Archipelago
 
-[Archipelago](https://archipelago.gg) multiworld randomizer for **Mega Man ZX**
-(Nintendo DS, Inti Creates / Capcom, 2006), played on BizHawk with the melonDS
-core. Everything the randomizer needs is read from **your own** Mega Man ZX (USA)
-ROM at patch time: this repository ships no ROM, no game code and no game
-assets.
-
-**Status: private alpha.** The world generates real seeds, has been played end to
-end and is being polished before a first public release. Expect rough edges.
-
-## What it does
-
-- 270+ locations: Data Disks, Life Ups, Sub Tanks, biometal victories,
-  missions, and (optionally) the fixed refill pickups.
-- Items: the biometals (Model X / ZX / OX and progressive HX / FX / LX / PX),
-  Card Keys, Transerver Access per area, Life Ups, Sub Tanks, ITEM B chips,
-  and filler.
-- The tutorial is skipped; you start in the Guardian hub with the model you
-  chose. Missions are accepted automatically so they can be done in any order.
-- In-game item icons on every pickup, on-screen notifications for items sent
-  and received, "Go to Transerver" from the pause menu, optional boss rush
-  skip, per-boss logic requirements written in your YAML, DeathLink.
-- A Universal Tracker map tab (one map per area and per room, auto-tab and
-  player position); the map images come from the separate
-  [tracker pack](https://github.com/Nekusen/MegaManZX-Tracker).
+An [Archipelago](https://archipelago.gg) world for Mega Man ZX (Nintendo DS, 2006), played on BizHawk with the melonDS
+core. The game becomes an open world: biometals, Card Keys and Transerver destinations are items, and disks, upgrades,
+boss fights and missions are checks.
 
 ## Playing
 
-See the setup guide in [`docs/setup_en.md`](docs/setup_en.md): required
-software, one-time BizHawk settings, YAML options, how the randomized game
-behaves and the client commands.
+- Setup guide: [docs/setup_en.md](docs/setup_en.md).
+- What the randomizer does and how the options work: [docs/en_Mega Man ZX.md](docs/en_Mega%20Man%20ZX.md).
+- What changes in the game: [docs/rom_changes.md](docs/rom_changes.md).
 
-You need your own legally obtained **Mega Man ZX (USA)** ROM (`ARZE`). The
-patcher modifies that copy on your machine; the resulting `.nds` is never
-distributed.
+You need Archipelago 0.6.x, BizHawk 2.10 or later with its NDS core, and your own Mega Man ZX (USA) ROM (game code
+`ARZE`). Everything the randomizer needs is read from that ROM at patch time; this repository ships no ROM, game code
+or game asset. Download `mmzx.apworld` from the
+[Releases](https://github.com/Nekusen/Archipelago-MegaManZX/releases) page.
 
-## Building the `.apworld`
+## Universal Tracker
 
-```
-python tools/build_apworld.py          # -> build/mmzx.apworld
-```
+The world ships the map layout for Universal Tracker (one map per area and per room, auto-tab and player position).
+The map images come from the separate [MegaManZX-Tracker](https://github.com/Nekusen/MegaManZX-Tracker) pack, which
+UT loads from a zip you download once (`ut_pack_path` in `host.yaml`).
 
-or use the "Build APWorlds" component of the Archipelago launcher with this
-repository checked out (or symlinked) as `worlds/mmzx` in an Archipelago
-source tree. `.apignore` keeps the development files out of the package.
+## Project structure
 
-## Assets
+    __init__.py                 World, WebWorld and host settings (ROM path, tracker pack path)
+    options.py                  YAML options; their docstrings are the player's option help
+    items.py, locations.py      item and location classes, groups and option filters over data.py
+    regions.py, logic.py        regions and entrances from the logic document; the rules that are not drawn
+    logic_format.py             the logic document: atoms, requirement parsing, validation, text export
+    bosses.py, bossrush.py      the boss_logic option; which boss rush pairs the client marks as beaten
+    rom.py                      builds the patched ROM from the player's copy (APProcedurePatch)
+    client.py                   the BizHawk client
+    golden.py, icons.py         the starting save image; the in-game icon set cut from the player's ROM
+    tracker_pos.py              Universal Tracker callbacks (map tab and position icon)
+    data.py, tracker_meta.py    generated tables (see below)
+    logic/                      logic.json (source of truth) and logic.txt (its readable twin)
+    tracker/, assets/, gfx/     UT map layout; the starting save image; the three Archipelago logos
+    apnds/, src/asm/            vendored apnds (MIT); commented assembly of the ROM patches
+    docs/, tools/, test/        documentation; maintainer tools; tests
 
-Nothing derived from the game is stored in this repository or packaged into
-the `.apworld`:
+`tools/`, `test/`, `src/` and the git files are left out of the `.apworld` (see `.apignore`).
 
-- The in-game item icons are cut out of the player's own ROM at patch time
-  (`icons.py` holds the recipe); only the three Archipelago logos in `gfx/`
-  (MIT, see `CREDITS.md`) ship with the world.
-- The tracker map images live in the separate
-  [MegaManZX-Tracker](https://github.com/Nekusen/MegaManZX-Tracker) pack,
-  which Universal Tracker loads from a zip the player downloads once. This
-  repository only holds the map layout JSON in `tracker/`.
+## Generated files
 
-## Development
+`data.py` (locations with their detection recipe, items with their grant recipe, the room graph and the RAM structures
+shared with the patched ROM), `tracker_meta.py` (map indices and transforms for the tracker),
+`tools/logic_editor/data/gimmicks.json` (enemy and switch positions shown in the editor) and `assets/golden_image.bin`
+(the starting save image) are generated. The generators belong to the maintainers' reverse-engineering toolkit, which
+needs the game, an emulator harness and a Ghidra project, and are not in this repository. The formats they produce are
+documented: addresses and layouts in [docs/memory_map.md](docs/memory_map.md), the room graph and the logic document
+in [docs/logic_format.md](docs/logic_format.md). `logic/logic.txt` is regenerated from `logic.json` by the logic
+tools. Open an issue for data corrections.
 
-The logic of this world is **not written in Python**. It is drawn in the
-visual logic editor in `tools/logic_editor/` (plain JavaScript, no
-dependencies), which writes `logic/logic.json` (the source of truth) and a
-readable `logic/logic.txt`. Never edit `logic.json` by hand.
+## Documentation for contributors
 
-```
-python tools/logic_editor/serve.py     # opens http://127.0.0.1:8765/
-python tools/check_logic.py            # validates logic.json, regenerates logic.txt
-python tools/logic_probe.py --items "Model HX" --frontier   # evaluates the logic with the AP core
-python test/test_boss_logic.py         # boss_logic hermeticity tests
-python test/test_skip_boss_rush.py
-```
+- [docs/memory_map.md](docs/memory_map.md): every RAM address, ROM offset and data layout the world relies on.
+- [docs/rom_patches.md](docs/rom_patches.md): each change made to the ROM, what it does and why.
+- [docs/client_protocol.md](docs/client_protocol.md): how the client detects checks, grants items and keeps the game
+  in step with the multiworld.
+- [docs/logic_format.md](docs/logic_format.md): the logic document, its requirements, how it becomes regions and
+  how it is validated.
+- [docs/glossary.md](docs/glossary.md): the vocabulary of the code and the documents.
+- [src/asm/](src/asm/README.md): the assembly sources of the ROM patches, one file per patch.
 
-`logic_probe.py` and the tests need an Archipelago source checkout (0.6.7):
-pass `--ap <path>` or set `AP_SRC`.
+## Running from source
 
-The editor draws each room on a 1:1 render of its level. Those renders are
-game graphics, so they are **not** in the repository: put your own in
-`tools/logic_editor/local/renders/<room>.png` (for example `a01.png`), or
-point the server at a folder with `--renders <dir>`. They can be produced
-from your ROM with the [Mega Man ZX Editor](https://github.com/AlaryVanEeckhout/Mega_Man_ZX_Editor)
-(GPL-3) — the private development toolkit of this project has a script that
-exports every room headlessly. Without renders the editor still works on a
-blank canvas of the right size. The names and positions of the gimmicks
-shown on the canvas come from `tools/logic_editor/data/gimmicks.json`,
-generated by the toolkit.
+Clone this repository into `worlds/mmzx` (or `custom_worlds/mmzx`) of an Archipelago source checkout, 0.6.x. From
+the checkout root, `python -m unittest worlds.mmzx.test` runs the tests. `tools/` holds the visual logic editor, the
+logic validator and probe and the `.apworld` packager; each script documents its usage in its header. The logic is
+never written in Python: it is drawn in the editor, which writes `logic/logic.json`. The editor draws rooms on renders
+of the game's levels, which are not in the repository; without them it works on a blank canvas.
 
-`data.py` (locations, doors, missions, RAM addresses) is **generated** by the
-reverse-engineering toolkit, which lives in a separate private repository
-together with the experiments, the emulator harness and the Ghidra project.
-Open an issue for data corrections.
+## Glossary
 
-## License and credits
+The terms you will meet first; the full list is in [docs/glossary.md](docs/glossary.md).
 
-The code in this repository is released under the MIT License (see
-[`LICENSE`](LICENSE)). Third-party components and the sources this work
-builds on are listed in [`CREDITS.md`](CREDITS.md).
+- biometal, model: a transformable form. Model X, ZX and OX are single items; HX, FX, LX and PX are progressive items
+  whose two copies are the biometal's two halves.
+- Card Key: one of the game's coloured keys (Yellow, Green, Red, Blue, Purple); progression items.
+- Transerver: the game's teleport and mission console. The hub is the one in the Guardian base, with one floor per
+  area; Transerver Access items unlock its destinations.
+- Pseudoroid: one of the eight biometal bosses. Pairs share a biometal.
+- boss rush: the eight refights in the D-4 tower before Serpent.
+- Data Disk, Secret Disk: the game's collectable disks; each one is a check.
+- room code: `a01`, `e07`: area letter plus room number. The game's own label is `A-1`, `E-7`.
+- tier: a logic level, `normal` or `expert`; expert adds alternatives to normal.
+- requirement, atom: what an edge or check demands, written as alternatives of atoms such as `HX`, `YELLOW` or
+  `LIFEUP>=2`.
+- detect recipe, grant recipe: how the client recognises a check in RAM, and how it gives an item.
+- live vs canonical: the two copies the game keeps of its progress block; grants are written to both.
+- golden image: the save image of a fresh post-tutorial game that the client hands to New Game.
+- cave: a small routine the patch places in unused space of the game's code.
+- mailbox: a structure in free RAM where the patched game reports events to the client (collected pickups, notices).
 
-Mega Man ZX is a trademark of Capcom Co., Ltd. This project is a fan-made
-randomizer, not affiliated with or endorsed by Capcom or Inti Creates. No
-ROM, game code or game asset is distributed; players must supply their own
-copy of the game.
+## Credits
+
+Built on [apnds](https://github.com/ljtpetersen/apnds) (MIT) for the ARM9 handling and on the Archipelago logo
+sprites of the [Metroid: Zero Mission apworld](https://github.com/lilDavid/Archipelago-Metroid-Zero-Mission) (MIT).
+The [Mega Man ZX Editor](https://github.com/AlaryVanEeckhout/Mega_Man_ZX_Editor) and its wiki, published Action
+Replay codes, The Cutting Room Floor and the Pokemon Platinum apworld were the main sources. Everyone is listed in
+[CREDITS.md](CREDITS.md).
+
+## AI usage disclosure
+
+_To be written by the maintainer before the first release._
+
+## License
+
+MIT, see [LICENSE](LICENSE). Mega Man ZX is a trademark of Capcom Co., Ltd.; this is a fan project, not affiliated
+with Capcom or Inti Creates. No game art, code or data is in this repository or in the `.apworld`: the in-game icons
+and the tracker maps are produced from the player's own copy of the game.

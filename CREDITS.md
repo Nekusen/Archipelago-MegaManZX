@@ -16,7 +16,7 @@ logic, data, tracker code) was written for this project.
 
 ## Archipelago
 
-[Archipelago](https://github.com/ArchipelagoMW/Archipelago) (MIT) — the
+[Archipelago](https://github.com/ArchipelagoMW/Archipelago) (MIT) - the
 multiworld framework, the `BizHawkClient` base and `worlds/_bizhawk`, the
 `APProcedurePatch` machinery and the BizHawk Lua connector.
 
@@ -25,14 +25,14 @@ multiworld framework, the `BizHawkClient` base and `worlds/_bizhawk`, the
 | Resource | Author | License / terms | What it gave us |
 |---|---|---|---|
 | [Mega Man ZX Editor](https://github.com/AlaryVanEeckhout/Mega_Man_ZX_Editor) and its wiki | AlaryVanEeckhout | GPL-3.0 | Level layout and entity format (inherited from the rmz3 decomp), RAM/ROM map of the USA version, entity nomenclature, headless room renders for the logic editor. Used as an external tool; not vendored. |
-| [MMZX_Adjustments_Lua](https://github.com/GameDJ/MMZX_Adjustments_Lua) | GameDJ / Meta_X | — | Many RAM addresses of the USA version (via the editor's wiki). |
-| Action Replay codes on [gamehacking.org](https://gamehacking.org/game/24982) and Neoseeker | Dybbles, nolberto82, Helder, VisitntX and others | — | Starting addresses and the location of several ARM9 routines (pickups, damage, NPC checks). |
+| [MMZX_Adjustments_Lua](https://github.com/GameDJ/MMZX_Adjustments_Lua) | GameDJ / Meta_X | - | Many RAM addresses of the USA version (via the editor's wiki). |
+| Action Replay codes on [gamehacking.org](https://gamehacking.org/game/24982) and Neoseeker | Dybbles, nolberto82, Helder, VisitntX and others | - | Starting addresses and the location of several ARM9 routines (pickups, damage, NPC checks). |
 | [The Cutting Room Floor](https://tcrf.net/Mega_Man_ZX) | TCRF contributors | CC BY 3.0 | Debug room, unused White Card Key, Model O notes. |
 | [Prof9 / MMZX-Slot2-Patch](https://github.com/Prof9/MMZX-Slot2-Patch) | Prof9 | Unlicense | Reference for hooking this game's ARM9. |
-| [Pokémon Platinum apworld](https://github.com/ljtpetersen/platinum_archipelago) | James Petersen | MIT | The template for a DS BizHawk client and for shipping an NDS library inside an apworld. |
+| [Pokemon Platinum apworld](https://github.com/ljtpetersen/platinum_archipelago) | James Petersen | MIT | The template for a DS BizHawk client and for shipping an NDS library inside an apworld. |
 | [py-desmume](https://github.com/SkyTemple/py-desmume) / DeSmuME, [Ghidra](https://github.com/NationalSecurityAgency/ghidra), [BizHawk](https://github.com/TASEmulators/BizHawk), [melonDS](https://melonds.kuribo64.net) | their authors | GPL / Apache-2.0 / MIT / GPL | Reverse-engineering bench and emulators. |
-| [GBATek](https://problemkaputt.de/gbatek.htm) | Martin Korth | — | DS hardware and ROM format reference (linked, not reproduced). |
-| RetroAchievements (game 9818), GameFAQs guides by Yeblos and snkupo, MMKB | their authors | — | Consulted for cross-checking; nothing reproduced. |
+| [GBATek](https://problemkaputt.de/gbatek.htm) | Martin Korth | - | DS hardware and ROM format reference (linked, not reproduced). |
+| RetroAchievements (game 9818), GameFAQs guides by Yeblos and snkupo, MMKB | their authors | - | Consulted for cross-checking; nothing reproduced. |
 
 ## Trademarks
 

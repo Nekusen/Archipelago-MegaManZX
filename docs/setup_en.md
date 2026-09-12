@@ -1,158 +1,85 @@
-# Mega Man ZX — Multiworld Setup Guide
+# Mega Man ZX Setup Guide
 
-## Required software
+## Required Software
 
-- **Archipelago** 0.6.x (`ArchipelagoLauncher`).
-- **BizHawk 2.9+** with the NDS (melonDS) core.
-- Your own **Mega Man ZX (USA)** ROM (`ARZE`). It is never distributed.
-- Optional: **Universal Tracker** plus the
-  [Mega Man ZX tracker pack](https://github.com/Nekusen/MegaManZX-Tracker/releases)
-  (`mmzx_tracker.zip`; keep it zipped). The world ships the map layout (one
-  map per area and one per room, with auto-tab and a player position icon)
-  and loads the map images from that pack: the first time you open the map
-  tab UT asks for the zip; you can also set its path in `host.yaml`
-  (`mmzx_settings` → `ut_pack_path`).
+- [Archipelago](https://github.com/ArchipelagoMW/Archipelago/releases) 0.6.x.
+- [BizHawk](https://tasvideos.org/BizHawk/ReleaseHistory) 2.10 or later, with its NDS core (melonDS).
+  The world is tested with BizHawk 2.11.
+- Your own Mega Man ZX (USA) ROM, game code `ARZE`. The Archipelago community cannot provide it.
+- Optional: [Universal Tracker](https://github.com/FarisTheAncient/Archipelago/releases) and the
+  [Mega Man ZX tracker pack](https://github.com/Nekusen/MegaManZX-Tracker/releases) (`mmzx_tracker.zip`).
+  Keep the pack zipped. UT asks for it the first time it opens the map tab.
+  You can also set its path in `host.yaml`, key `ut_pack_path` under `mmzx_settings`.
 
-## One-time setup
+## Configuring BizHawk
 
-1. Copy `mmzx.apworld` into `custom_worlds/` (or double-click it).
-2. First run asks for your ROM (Settings → Mega Man ZX ROM File).
-3. In BizHawk: **Config → Customize → Advanced → turn AutoSaveRAM OFF**
-   and make sure the NDS core is melonDS.
+Once you have installed BizHawk, open `EmuHawk.exe` and change the following settings:
 
-## Generating and playing
+- Go to `Config > Customize`. On the Advanced tab, turn `AutoSaveRAM` off.
+  With it on, BizHawk may not save NDS games correctly.
+- Under `Config > Customize`, check "Run in background". Otherwise the client disconnects while you are tabbed out.
+- Open any `.nds` file and go to `Config > Controllers...` to set up your inputs.
+  Mega Man ZX needs no touch screen.
+- Consider clearing the hotkeys you will not use in `Config > Hotkeys...`.
 
-1. Create a YAML (Launcher → Generate Template Options → Mega Man ZX).
-2. Generate. You get an `AP_*_P#_<name>.apmmzx` patch.
-3. Open the `.apmmzx` with the launcher: it builds the patched `.nds` and
-   opens the **BizHawk Client**. Load the `.nds` in BizHawk and connect.
-4. Start a **New Game**: the tutorial is skipped. You appear in the Guardian
-   Transerver hub with your starting model, on Normal difficulty.
+## Generating and Patching a Game
 
-## Options
+1. Copy `mmzx.apworld` into the `custom_worlds` folder of your Archipelago install, or double-click it.
+2. Create your options file (YAML). Use the Archipelago Launcher's "Generate Template Options" and edit
+   `Mega Man ZX.yaml`.
+3. Follow the general Archipelago instructions for
+   [generating a game](https://archipelago.gg/tutorial/Archipelago/setup/en#on-your-local-installation).
+   Your patch file ends in `.apmmzx` and sits inside the output zip.
+4. Open `ArchipelagoLauncher.exe`, select "Open Patch" and pick your `.apmmzx` file.
+5. The first time, the launcher asks for your Mega Man ZX (USA) ROM. It is checked against the known USA hash.
+6. A patched `.nds` file is created next to the patch file. It is your copy of the game and must not be shared.
+7. The first time, the BizHawk Client also asks where `EmuHawk.exe` is.
 
-- `starting_model` (Model X / none / ZX / HX / FX / LX / PX / OX / Hu) and
-  `character` (Vent / Aile).
-- `mission_auto_accept` (default on): missions are accepted automatically
-  when you enter their area (or approach a boss floor door in the hub), so
-  they can be done in any order. Turning it off is not supported by the
-  logic.
-- `boss_logic`: per-boss difficulty, your call. For each story boss you can
-  state what you must be carrying before the *logic* considers you able to
-  beat it, so the seed never requires you to fight something you consider
-  too hard for your current gear. It only restricts logic — in game you may
-  fight whatever you like with whatever you have.
+## Connecting to a Server
 
-  ```yaml
-  boss_logic:
-    Hivolt: "HX & Life Up x2"          # one half of Biometal H, 2 Life Ups
-    Flammole: "Model FX (full) & Absorber Chip"   # both halves + a chip
-    Serpent: "ALL6 & Sub Tank x2 & Life Up x4"
-    Omega Zero: "OX | (ALL6 & SUBTANK>=2)"
-  ```
+Opening the patch file normally does steps 1 to 5 for you. Keep them in mind in case you have to reconnect.
 
-  Bosses: Rayfly (B-2), Model Z (D-2), Hivolt (E-7), Lurerre (F-5),
-  Fistleo (G-5), Purprill (H-4), Hurricaune (I-3), Leganchor (J-5),
-  Flammole (K-4), Protectos (L-4), Prometheus (X-3), Pandora (M-3),
-  Prometheus & Pandora (O-2), Serpent (D-5), Omega Zero (N-1). The room code
-  ("E-7") works as a key too. Anything you leave out asks for nothing.
+1. Mega Man ZX uses Archipelago's BizHawk Client. If it is not open, start it from the launcher.
+2. Make sure EmuHawk is running the patched `.nds`.
+3. In EmuHawk, go to `Tools > Lua Console`. This window must stay open while playing.
+4. In the Lua Console, go to `Script > Open Script...`.
+5. Open `data/lua/connector_bizhawk_generic.lua` from your Archipelago install folder.
+6. The client window should say it connected and recognised Mega Man ZX. The slot name is read from the ROM.
+7. Enter your room's address and port (for example `archipelago.gg:38281`) in the top field and click Connect.
 
-  Requirements can name models (`X ZX HX FX LX PX OX`; `HX2` or
-  `Model HX (full)` means both halves of the progressive item, i.e. the
-  level-2 charge), `MODEL` (any), `ALL6`, `Life Up xN`, `Sub Tank xN`,
-  ITEM B chips by name, and Card Keys, combined with `&`, `|` and
-  parentheses. A required Life Up / Sub Tank / chip is promoted to
-  progression automatically. The eight Pseudoroids are fought twice — their
-  own area and the boss rush in the D-4 tower, which the game makes you clear
-  before it lets you through to D-5 — and the requirement applies to both, so
-  reaching Serpent means being able to handle all eight.
-- `skip_boss_rush` (default off): skips the boss rush of the Slither Inc.
-  tower (D-4). As you climb the tower each pair of Pseudoroid capsules shows
-  up as already cleared (capsules off, doors open) and the elevator keeps
-  going up to D-5, so you never refight the eight bosses. The tower cutscenes
-  still play (skippable with START). With it on, `boss_logic` requirements
-  for the eight Pseudoroids only apply to their story fight, not to reaching
-  Serpent.
-- `hu_in_pool`: human form becomes an item (experimental).
-- `submission_checks` (quests), `level4_victories`.
-- `pickup_checks_1up` / `_energy` / `_weapon` / `_crystals` (default off):
-  the 133 fixed refill pickups become checks (first pickup sends the check;
-  the pickup keeps respawning and healing).
-- `notify_received` / `notify_sent` (default `useful`): which item classes
-  pop up on screen (the game's small non-blocking message) when you receive
-  an item / when one of your checks sends an item to another player: `off`,
-  `progression`, `useful` (progression + useful), `all` (also filler such as
-  E-Crystals and 1-Ups). Change it mid-game with `/mmzx_notify`.
-- `notify_style` (default `full`): `full` shows the whole message ("Got
-  Progressive Model HX from Alice") as consecutive pages of the same popup;
-  `short` keeps a single 30-character line (the player name is dropped and
-  the item name cut if it does not fit). Change it with `/mmzx_notify short|full`.
-- `death_link`, `goal` (defeat Serpent).
+Connect before you start playing. Then, on the title screen, choose New Game. The tutorial is skipped: you appear in
+the Guardian hub with your starting model. Your character and the Normal difficulty come from your options, whatever
+you pick in the New Game menu. Continue resumes a saved game as usual.
 
-## How it works (what to expect)
-
-- **Transerver network**: each area has a "Transerver Access - Area X" item
-  that unlocks that destination in the in-game Transport list; you can
-  also reach areas on foot. With a single destination the console shows
-  no Transport option (that is vanilla behaviour).
-- **Biometals** come only from items, named after the form they unlock
-  (`Model X`, `Model ZX`, `Model OX`, and the progressive `Progressive
-  Model HX/FX/LX/PX`: the first copy gives you the form, the second copy
-  is the biometal's other half and unlocks the level-2 charged attack, e.g.
-  HX's hurricane, plus the full Weapon Energy bar); beating either
-  Pseudoroid of a pair is the "Obtain Biometal" check. Weapon Energy is
-  initialised when you receive a model. The client
-  enforces ownership: a form you have not received is reverted and removed
-  from the model menu, so if you ever see a model you do not own, it goes
-  away on the next client tick.
-- **Life Ups / Sub Tanks / Data Disks** are checks; the items give the
-  capacity. Card Keys and Transerver Access are progression.
-- **Picking up a check** (a Disk, Life Up, Sub Tank or one of the optional
-  respawning pickups) plays the Disk chime and nothing else: no healing, no
-  extra life, no "Found a Life Up!" popup and no "E-04" label, because the
-  object has been replaced by an Archipelago item. The client then announces
-  what was found/sent. A respawning pickup whose check was already sent
-  comes back as the normal refill and heals as usual.
-- **ITEM B chips** (Absorber, Featherweight, Extender, Quick Charger, Ice
-  Boots, Wind Boots, Frog, Eraser) are useful items: when received they
-  appear in the ITEM B tab of the pause menu, where you activate them.
-  The NPCs and quests that give them in vanilla still do.
-- **Go to Transerver (in-game option)**: open the pause menu (START), go
-  to the **MISSION** tab (the area map, L/R to switch tabs) and press **Y**
-  ("Y Button: Go to Transerver" is shown under the map). The menu closes
-  and the game's own **Target Area** list opens, with every Transerver you
-  have unlocked (by item or by having reached it); pick one and you arrive
-  on that area's floor of the Guardian hub, exactly like the console's
-  Transport. B cancels. The `/mmzx_teleport` command still works from the client.
-- **Goal**: with all six models the Slither Inc. gate in D-2 opens (press
-  Up); defeat Serpent in D-5.
-- Some story gates are opened automatically (F-3, G-2, the M-1 seal, the
-  D-1 bridge, and the sand fall that hides the pit from K-1 to K-2). Troop
-  Reinforcement runs from D-1/D-2/D-3 without the base cutscene. Protect HQ
-  starts by itself when you report a mission with at least four of the
-  eight area missions (E-7 … L-4) completed.
+The client must stay connected while you play. It grants every item, accepts the mission of each area you enter and
+handles teleports. If the connection drops, reconnect: your checks and items are restored from the game and the
+server.
 
 ## Client commands
 
-- `/mmzx_teleport` (to the hub), `/mmzx_teleport K` (hub floor of area K),
-  `/mmzx_teleport <subarea> <x> <y>`: anti-softlock fast travel.
-- `/mmzx_accept`: force-accept the mission of the current area / hub floor.
-- `/mmzx_where`: log your position and state (for bug reports).
-- `/mmzx_start`: re-apply the YAML starting state.
-- `/mmzx_notify all` (or `off` / `progression` / `useful`): which item
-  classes are announced on screen, for received and sent items at once;
-  `/mmzx_notify received all` / `/mmzx_notify sent off` set one side only;
-  `/mmzx_notify short|full` picks between one cut line and the full text in
-  pages. With no arguments it prints the current setting. The starting value
-  comes from the YAML (`notify_received` / `notify_sent` / `notify_style`)
-  and the command does not persist across client sessions.
-- `/mmzx_icons on|off`: draw every pickup in the world (Secret Disks, Life
-  Ups, Sub Tanks and the optional respawning pickups) as the item it holds:
-  Life Up, Sub Tank, chips, biometal badges and Card Keys use their own
-  in-game icons; everything else shows the Archipelago logo, coloured by
-  class (arrow = progression, cross = useful, grey = filler). Items are
-  revealed as the client scouts them; a respawning pickup whose check was
-  already sent shows its normal appearance again. Default: on.
-- `/mmzx_debug on|off`: show the client's diagnostic messages (missions
-  auto-accepted, flags restored, model reverts...). Off by default; turn it
-  on before reproducing a problem you want to report, and include the log.
+Type these in the BizHawk Client's text field.
+
+- `/mmzx_teleport`: warp to the hub. `/mmzx_teleport K` warps to the hub floor of area K. Use it if you get stuck.
+- `/mmzx_accept`: accept the mission of the current area or hub floor by force.
+- `/mmzx_where`: write your position and state to the log, for bug reports.
+- `/mmzx_start`: apply the starting state of your options again.
+- `/mmzx_notify <off|progression|useful|all>`: which item classes the in-game popup announces.
+  `/mmzx_notify received all` or `/mmzx_notify sent off` sets one side; `/mmzx_notify short|full` picks the style.
+- `/mmzx_icons on|off`: draw each pickup in the world as the item it holds (default on).
+- `/mmzx_debug on|off`: show the client's diagnostic messages. Turn it on before reproducing a problem you report.
+
+In the game itself, the MISSION tab of the pause menu offers "Y Button: Go to Transerver". It opens the game's own
+Target Area list with every destination you have unlocked.
+
+## Troubleshooting
+
+- "No handler was found for this game": update BizHawk to 2.10 or later, or check that the loaded `.nds` is the
+  patched one. A vanilla ROM is rejected; open the `.apmmzx` first.
+- New Game played the intro instead of starting in the hub: the client was not connected while the title screen
+  was up. Connect, return to the title screen and choose New Game again.
+- The game does not save or loads an old save: turn `AutoSaveRAM` off (see above) and restart EmuHawk.
+- You cannot get out of a room or a shutter stays closed: use "Go to Transerver" from the pause menu or
+  `/mmzx_teleport`.
+- The tracker's map tab is empty: give Universal Tracker the `mmzx_tracker.zip` pack, still zipped.
+- Items you received do not show up: they are applied only in gameplay, not in menus or cutscenes.
+  If the client is disconnected, reconnect.

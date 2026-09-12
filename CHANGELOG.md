@@ -45,3 +45,6 @@ will be 0.1.0.
 
 - The ending now starts after Serpent falls even when the game would have stayed on a white screen.
 - Weapon Energy of a biometal received as an item starts full instead of empty.
+- Accepting Troop Reinforcement in the open world sets all of its mission flags at once; flags sharing a byte used to overwrite each other, and the client repaired them over the following ticks.
+- DeathLink sends the player's deaths; the check only ran while the player was alive, so a death was never seen.
+- A dropped BizHawk connection abandons the current tick and the next one retries, instead of stopping the client.

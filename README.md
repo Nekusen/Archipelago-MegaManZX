@@ -30,7 +30,7 @@ UT loads from a zip you download once (`ut_pack_path` in `host.yaml`).
     logic_format.py             the logic document: atoms, requirement parsing, validation, text export
     bosses.py, bossrush.py      the boss_logic option; which boss rush pairs the client marks as beaten
     rom.py                      builds the patched ROM from the player's copy (APProcedurePatch)
-    client.py                   the BizHawk client
+    client/                     the BizHawk client: the watcher in __init__.py, one module per stage group
     golden.py, icons.py         the starting save image; the in-game icon set cut from the player's ROM
     tracker_pos.py              Universal Tracker callbacks (map tab and position icon)
     data.py, tracker_meta.py    generated tables (see below)
@@ -63,13 +63,12 @@ tools. Open an issue for data corrections.
 - [docs/glossary.md](docs/glossary.md): the vocabulary of the code and the documents.
 - [tools/logic_editor/README.md](tools/logic_editor/README.md): the visual logic editor, how to run it and
   how its modules are laid out.
-- [src/asm/README.md](src/asm/README.md): the assembly sources of the ROM patches.
 - [src/asm/](src/asm/README.md): the assembly sources of the ROM patches, one file per patch.
 
 ## Running from source
 
 Clone this repository into `worlds/mmzx` (or `custom_worlds/mmzx`) of an Archipelago source checkout, 0.6.7 or later. From
-the checkout root, `python -m unittest worlds.mmzx.test` runs the tests. `tools/` holds the visual logic editor, the
+the checkout root, `python -m unittest discover -s worlds/mmzx/test -t .` runs the tests (or `python worlds/mmzx/tools/run_tests.py` from anywhere). `tools/` holds the visual logic editor, the
 logic validator and probe and the `.apworld` packager; each script documents its usage in its header. The logic is
 never written in Python: it is drawn in the editor, which writes `logic/logic.json`. The editor draws rooms on renders
 of the game's levels, which are not in the repository; without them it works on a blank canvas.

@@ -9,9 +9,10 @@ vocabulary in `glossary.md`.
 
 The client is a `BizHawkClient` (`worlds/_bizhawk`). Every 125 ms the framework calls its watcher,
 which reads the game's RAM through the "ARM9 System Bus" domain of the melonDS core, sends new
-checks, applies received items and keeps the game in a state the multiworld can live with. Reads
-are batched per stage. Every write in gameplay is a guarded write on the game-state word: if a
-scene load started in between, the write is dropped and the stage retries on the next tick.
+checks, applies received items and keeps the game in a state the multiworld can live with. The
+signals every stage checks first are read once per tick; the other reads are batched per stage.
+Every write in gameplay is a guarded write on the game-state word: if a scene load started in
+between, the write is dropped and the stage retries on the next tick.
 
 The patched ROM does not place items. It exposes small structures in free RAM that the game and
 the client share: a mailbox for collected pickups, a per-room icon table, a notice mailbox for the
@@ -67,34 +68,42 @@ fill right after launch.
 
 ## 3. The watcher loop
 
-Each stage runs isolated: an exception is logged once per stage and the loop carries on; only a
-connector failure aborts the tick. In order:
+The client is the package `client/`: the watcher and its stage order live in `__init__.py`,
+the addresses in `addresses.py`, the RAM helpers in `ram.py`, and every stage is a function
+`(client, ctx, ...)` in the module named after its responsibility. Each stage runs isolated: an
+exception is logged once per stage and the loop carries on; a connector failure aborts the tick
+and the next one retries. In order:
 
-1. Connection guard (server and slot data), then one-time setup: DeathLink tag, options,
-   notice thresholds and console commands.
-2. Starting-state resolve: advances the datastore state machine, also in menus.
-3. Golden image seeding, title and menus only.
-4. In-game guard and startup debounce; if not in game, reset per-tick state and return.
-5. Position report to the datastore for Universal Tracker.
-6. Check detection: one read of the progress-block window plus the far bytes, one `detect` each.
-7. Pickup mailbox poll (if a pickup category is on); its ids join the set. If the set grew,
-   `check_locations` gets the whole set and "Sent" notices are queued.
-8. Icon table sync for the current subarea, `present` bitmap included, plus the scout requests
-   that icons and notices need. After the mailbox, so a just-collected refill reads as sent.
-9. Troop Reinforcement unstick.
-10. Mission bits restore (open world only): re-set the active mission's extra bits.
-11. Diagnostics requested from the console.
-12. Starting-state apply, one shot.
-13. Grant items: recompute the desired state from `items_received`, write the differences.
-14. Notices: queue "Got" for newly received items, push one notice if the popup is free.
-15. Revert models the player does not own; after the grant, so a model just received is owned.
-16. Auto-accept the mission of the current subarea or hub floor (open world only).
-17. Boss rush skip (option only).
-18. DeathLink send and receive (option only).
-19. "Go to Transerver" request, and the selection it produces.
-20. Pending teleport, from a command or from stage 19 in the same tick.
-21. Goal: when the goal bits are set, send `CLIENT_GOAL` once.
-22. Ending unstick; after the goal, because it only matters once Serpent is dead.
+1. Connection guard (server and slot data), then one-time setup (`_setup`): DeathLink tag,
+   options, notice thresholds and console commands.
+2. `startup.resolve_start_state`: advances the datastore state machine, also in menus.
+3. `startup.seed_golden_image`: title and menus only.
+4. One read of the tick's signals (`ram.Tick`: subarea, HP, game-state word, title carousel
+   step, message bank, player state). With DeathLink on, `tracker.report_death` runs on it
+   before anything else, because a dead player fails the next guard.
+5. In-game guard and startup debounce (`_in_play`); if not in game, return.
+6. `tracker.log_where`, when `/mmzx_where` asked for it.
+7. `tracker.send_position`: position report to the datastore for Universal Tracker.
+8. One read of the progress-block window plus the far bytes (`ram.ProgressWindow`).
+9. `checks.detect_checks`: one `detect` per location over the window, then the pickup mailbox
+   poll (if a pickup category is on). If the set grew, `check_locations` gets the whole set and
+   "Sent" notices are queued.
+10. `notices.sync_icon_table`: icon table for the current subarea, `present` bitmap included,
+    plus the scout requests that icons and notices need. After the mailbox, so a just-collected
+    refill reads as sent.
+11. `missions.repair_missions`: Troop Reinforcement unstick, then (open world only) the active
+    mission's extra bits.
+12. `startup.apply_start_state`: starting-state apply, one shot.
+13. `items.grant_items`: recompute the desired state from `items_received`, write the differences.
+14. `notices.push_notices`: queue "Got" for newly received items, push one if the popup is free.
+15. `items.revert_unowned_models`; after the grant, so a model just received is owned.
+16. `missions.auto_accept_mission`: the mission of the current subarea or hub floor (open world only).
+17. `missions.skip_boss_rush` (option only).
+18. `tracker.receive_death_link` (option only): apply a pending received death.
+19. `warps.handle_warps`: the "Go to Transerver" request and the selection it produces, then any
+    pending teleport, from a command or from the request in the same tick.
+20. `missions.handle_ending`: the goal (`CLIENT_GOAL` once, when the goal bits are set), then the
+    ending unstick, which only matters once Serpent is dead.
 
 ## 4. Detecting checks
 
@@ -205,8 +214,9 @@ The accept recipe replicates what the console does, in one guarded write:
    progress" bit that the game's "is mission X active" query requires.
 3. Story handler: a zeroed handler object with no pending cutscene and the mission's initial
    state, plus the mission id. Without it the mission's cutscenes and rectangle flags never run.
-4. Extra bits, the "step taken" flags that room scripts check first. Troop needs four of them or
-   the X-2 auto-report takes the first-visit dialogue branch.
+4. Extra bits, the "step taken" flags that room scripts check first, composed per byte together
+   with the start flag so that one write carries every bit of a byte. Troop needs four of them
+   or the X-2 auto-report takes the first-visit dialogue branch.
 5. Checkpoint commit: live block to canonical and story block to its checkpoint copy, as the
    game does on a pad; otherwise a death ahead of the first milestone restores a checkpoint
    without the mission.
@@ -283,12 +293,15 @@ not race the spawner.
 
 ### DeathLink
 
-Sending: an HP transition from above zero to zero is a death, unless the client caused it.
+Sending: the player going from alive to dead while a game is running is a death, unless the
+client caused it. Dead means HP zero, or the player state `0x0A` with sub-state 2 (the death
+animation). The detector runs before the in-game guard, which a dead player fails; the title and
+a reload leave the state unknown, so the first tick after them never counts.
 Receiving: when the context's last DeathLink advances, the death is pending until the player has
-control (HP above zero, no cutscene, player state normal); then the client writes HP 0 and the
-player's dying state bytes, which is what the player tick does on a lethal hit. Writing HP alone
-does not kill. The result is a full death (animation, one life less, reload at the checkpoint)
-and the HP transition it causes is not echoed back.
+control (in game, no cutscene, player state normal); then the client writes HP 0 and the player's
+dying state bytes, which is what the player tick does on a lethal hit. Writing HP alone does not
+kill. The result is a full death (animation, one life less, reload at the checkpoint) and the
+death it causes is not echoed back.
 
 ### Universal Tracker
 
@@ -330,9 +343,6 @@ values start from the YAML and are not kept between sessions.
 
 `/mmzx_debug on|off` raises the client's diagnostic messages from the debug level to the log the
 player sees. It is off by default and meant to be turned on before reproducing a problem.
-
-The client also registers development-only commands that dump RAM regions to the log; they are not
-part of the player-facing contract.
 
 ## 8. Persistence and synchronization
 

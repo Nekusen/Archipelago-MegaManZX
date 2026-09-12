@@ -4,10 +4,9 @@ import re
 
 from . import data as _data
 from . import logic_format as F
-from .data import (DOORS, HUB_ROOM, ROOM_SUBAREA, STARTING_TRANSERVERS,
+from .data import (HUB_ROOM, ROOM_SUBAREA, STARTING_TRANSERVERS,
                    TRANSERVER_ACCESS, TRANSERVER_ALWAYS)
 
-ALL_EDGES = DOORS
 WORLD = F.build_world(_data)
 ROOM_NAMES = WORLD["rooms"]
 

@@ -20,9 +20,6 @@ for _bid, _v in F.BOSSES.items():
     for _alias in (_bid, _v["name"], _v["room"], F.room_label(_v["room"])):
         BOSS_BY_KEY[_norm(_alias)] = _bid
 BOSS_NAMES = [v["name"] for v in F.BOSSES.values()]
-VALID_KEYS = frozenset(
-    [b["name"] for b in F.BOSSES.values()] + list(F.BOSSES)
-    + [F.room_label(b["room"]) for b in F.BOSSES.values()])
 
 # Plain-language aliases rewritten to atoms before parsing.
 _CHIP_BY_WORD = {_n.split(" Chip")[0].lower(): _a for _a, _n in F.CHIP_ATOMS.items()}

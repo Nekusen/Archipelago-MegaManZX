@@ -7,20 +7,21 @@ See docs/client_protocol.md and docs/memory_map.md.
 
 import collections
 import time
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 import worlds._bizhawk as bizhawk
 from worlds._bizhawk.client import BizHawkClient
 
 from .data import (LOCATIONS, ITEMS, GOAL_BITS, GOAL_BITS_SERPENT, MISSION_ACCEPT,
                    MISSION_STATE_ADDR, MISSION_ACTIVE_FLAG,
-                   STARTING_MODELS, STARTING_MODEL_ITEM, STARTING_TRANSERVERS,
+                   STARTING_MODELS, STARTING_TRANSERVERS,
                    MODEL_X_POSSESSION, ACTIVE_MODEL_ADDR)
+from .data import LIVE_BLOCK, CANON_BLOCK
 from .data import EVENT_GATES, EVENT_GATES_OPEN, EVENT_GATES_ALL6
 from .data import HUB_FLOOR_BOSS, HUB_FLOOR_DOOR_X, HUB_FLOOR_Y, WARP_DESTINATIONS
 from .data import PICKUP_MAILBOX_ADDR, PICKUP_MAILBOX_SLOTS
 from .data import ICON_TABLE_ADDR, ICON_TABLE_SIZE, ICON_TABLE_PRESENT_OFF, ICON_CODES, NOTIFY_ADDR, NOTIFY_BUF_MAX, NOTIFY_POPUP_GLYPHS
-from .golden import GOLDEN_IMAGE, GOLDEN_IMAGE_ADDR, build_image
+from .golden import GOLDEN_IMAGE_ADDR, build_image
 from . import bossrush as BR
 ITEM_ID_TO_NAME = {v["id"]: n for n, v in ITEMS.items()}
 # Items with their own sprite in the AP graphics set; anything else is drawn
@@ -44,16 +45,19 @@ if TYPE_CHECKING:
 
 DOM = "ARM9 System Bus"
 
-# Progress block
-LIVE_BLOCK = 0x021045CC       # live copy
+# Progress block (LIVE_BLOCK and its canonical copy CANON_BLOCK come from data.py)
 # The game hands out Card Keys as mission rewards, so the received set is
 # written as-is over these bits every tick.
 CARDKEY_MASKS: dict[int, int] = {}
 for _kn, _kv in ITEMS.items():
     if _kn.endswith("Card Key") and _kv["grant"][0] == "live_bit":
         CARDKEY_MASKS[_kv["grant"][1]] = CARDKEY_MASKS.get(_kv["grant"][1], 0) | (1 << _kv["grant"][2])
-CANON_BLOCK = 0x021602B4      # canonical copy, restored on death
-LIVE_LEN = 0x60
+CANON_OFF = CANON_BLOCK - LIVE_BLOCK
+LIVE_BLOCK_LEN = 0xE4
+DETECT_WINDOW_RADIUS = 0x1000   # detect bits this close to the block share one read
+TRANSPORT_ACCESS = 0x02104627   # Transport bitfield, first byte
+TRANSPORT_ACCESS_A = 0x10       # its bit 4: destination A-2
+DIFFICULTY = 0x02104630         # 0 Easy, 1 Normal, 2 Hard
 PLAYER_POS = 0x0214FB64      # two u32: x << 8, y << 8
 POS_KEY = "mmzx_pos_%d"     # data storage: [subarea, x, y] for UT
 POS_INTERVAL = 1.0
@@ -77,28 +81,53 @@ WE_BASE = 0x0214FC92          # + active model = current WE
 WE_FULL = 16
 MSG_BANK = 0x02104588         # 0xFFFFFFFF until boot has finished
 
-# Player object
-LIFEUP_BYTE = 0x0214FC77
-SUBTANK_BYTE = 0x0214FC78
-ECRYSTALS = 0x0214FC70        # u24
+# Player object (the active model byte is data.ACTIVE_MODEL_ADDR)
+PLAYER_OBJ = 0x0214FB08
+PLAYER_FACING_OFF = 0x0A        # bit 4 = facing
+PLAYER_FACING_MASK = 0x10
+PLAYER_STATE_OFF = 0x11         # 0 = the player has control
+DEATH_STATE = 0x0A              # state byte while hurt or dying
+PLAYER_SCENE_WORD_OFF = 0x15C   # subarea of the current room
 HP = 0x0214FBB2
-MODEL = 0x0214FC74
+# Persistent block; the scene descriptor uses the same layout
+PLAYER_PERSIST = 0x0214FC5C
+DESC_SPAWN_X_OFF = 0x00         # x << 8
+DESC_SPAWN_Y_OFF = 0x04         # y << 8
+DESC_SUBAREA_OFF = 0x08
+DESC_FACING_OFF = 0x11          # bit 0
+LIVES = 0x0214FC6C
+LIVES_CAP = 99
+ECRYSTALS = 0x0214FC70          # u24; the high byte of the word is kept
+ECRYSTALS_MASK = 0x00FFFFFF
+ECRYSTALS_HIGH_MASK = 0xFF000000
+ECRYSTALS_PER_ITEM = 50
+ECRYSTALS_CAP = 99999
+HPMAX = 0x0214FC76
+HP_BASE = 0x10
+HP_PER_LIFEUP = 4
+HP_CAP = 0x20
+LIFEUP_BYTE = 0x0214FC77        # low nibble capacity, high nibble slots collected
+SUBTANK_BYTE = 0x0214FC78
+CAPACITY_NIBBLE = 0x0F
+COLLECTED_NIBBLE = 0xF0
+LIFEUP_SLOTS = 4
+SUBTANK_SLOTS = 4
 
 # Scene and title
 SUBAREA_STABLE = 0x02108228
 GAME_STATE = 0x0215E6D8
 STATE_INGAME = 0x500
 STATE_LOAD = 0x400            # scene load (teleport)
+STATE_GAME_OVER_LOW = 0x07    # low byte of the state word in the Game Over menus
+STARTUP_TICKS = 3             # in-game ticks to wait before the first read
 # The title and its menus share the gameplay state word; the carousel step
 # tells them apart. Steps 3 and 5 are safe to seed the golden image, 6 is a
 # launched game.
 TITLE_CAROUSEL_STEP = 0x0214CD70
 TITLE_STEPS_SEEDABLE = (3, 5)
-SCENE_DESC = 0x0216047C       # spawn x, y and subarea
-LIVES = 0x0214FC6C
-HPMAX = 0x0214FC76
-
-CANON_OFF = CANON_BLOCK - LIVE_BLOCK
+TITLE_STEP_LAUNCHED = 6
+SCENE_DESC = 0x0216047C       # spawn x, y and subarea; layout of PLAYER_PERSIST
+SCENE_DESC_LEN = 0x6C
 
 # Models: active value to (item, possession bit only that item sets). Owning a
 # form comes from its item alone; anything the game sets on its own is undone.
@@ -112,21 +141,31 @@ MODEL_POSSESSION = {
     7: ("Model OX", 0x021045D2, 1),
 }
 # Second copy of a progressive model: level-2 charged attack and the larger WE cap.
-MODEL_PART2 = {
+MODEL_SECOND_HALF = {
     3: (0x02104626, 0), 4: (0x02104626, 1), 5: (0x02104626, 2), 6: (0x02104626, 3),
 }
 
 # Missions and story
 MISSION_ACTIVE_BYTE = 0x0210462B   # .1 mission accepted, .2 story mission
+MISSION_ACCEPTED_MASK = 0x02
 STORY_BLOCK = 0x0214F6BC           # +4 mission id, +8 handler object
+STORY_BLOCK_LEN = 0x11C
 STORY_BLOCK_CANON = 0x02160554     # checkpoint copy, restored on death
 # Abort Mission restores these three mirrors, so a forced accept refreshes them
 # first or the abort would bring back whatever the golden image held.
 BLOCK_MIRROR = 0x02160398
 SCENE_DESC_MIRROR = 0x021604E8
 STORY_BLOCK_MIRROR = 0x02160670
-SCENE_DESC_LEN, STORY_BLOCK_LEN, LIVE_BLOCK_LEN = 0x6C, 0x11C, 0xE4
 CUTSCENE_FLAG = 0x0214F502         # bit 0 = cutscene running
+# Script objects: the room script and the story handler share the layout
+ROOM_SCRIPT_OBJ = 0x0214F3EC       # room script object of the loaded room
+STORY_HANDLER_ID = 0x0214F6C0
+STORY_HANDLER_OBJ = 0x0214F6C4
+STORY_HANDLER_LEN = 0x114
+SCRIPT_CUTSCENE_OFF = 9            # pending cutscene id
+SCRIPT_STATE_OFF = 0xB
+CUTSCENE_NONE = 0xFF
+STORY_HANDLER_STATE = STORY_HANDLER_OBJ + SCRIPT_STATE_OFF
 # Troop Reinforcement: the Giro scene at the end of D-2 only arms with the
 # start flag set and the megamerge flag clear. Dying after the megamerge
 # without the Report would leave D-2 empty for good, so the client repairs
@@ -135,10 +174,8 @@ TROOP_STATE = 162                  # mission state "Troop accepted"
 TROOP_MERGE = (0x02104602, 1)
 TROOP_START = (0x021045E0, 2)
 TROOP_ROOMS = (15, 16, 17)         # D-1 to D-3, where the scene arms
-TROOP_ROOM_OBJ = 0x0214F3EC        # room script object of the loaded room
-TROOP_ROOM_MERGED = 7              # D-2 script state once merged
-STORY_HANDLER_ID = 0x0214F6C0
-STORY_HANDLER_OBJ = 0x0214F6C4     # +9 cutscene id (0xFF none), +0xB state
+TROOP_MERGE_SUBAREA = 16           # D-2
+D02_ROOM_MERGED = 7                # D-2 script state once merged
 
 # Game ending: the credits are driven by the story handler of mission 16, not
 # by the D-5 room. In the open world Serpent can die with that handler missing
@@ -152,38 +189,64 @@ ENDING_HANDLER_ID = 16                # Destroy Model W
 ENDING_HANDLER_STATE = 0x0D           # waiting for Serpent 2 to die
 ENDING_UNSTICK_TICKS = 5
 
-# Player object, for the boss rush skip (see bossrush.py) and DeathLink
-PLAYER_OBJ = 0x0214FB08
-PLAYER_PERSIST = 0x0214FC5C          # spawn position and facing
-DEATH_STATE = 0x0A                   # player state byte: dying
-
-BOSS_SUBAREAS = {26, 32, 37, 44, 55, 60, 63, 66, 41, 51, 19}   # unused
-
+# ROM header
 ROM_GAME_CODE = b"ARZE"       # MMZX USA
+ROM_GAME_CODE_OFF = 0x0C
+ROM_AP_MAGIC = b"MZXAP\x00"   # start of the AP header written by rom.py
+ROM_AP_MAGIC_OFF = 0x1000
+ROM_AP_MAGIC_LEN = len(ROM_AP_MAGIC)
+ROM_SLOT_NAME_OFF = 0x1010    # 63 bytes plus NUL
+ROM_SLOT_NAME_LEN = 64
 
 # Hub and warps
 # Default teleport: the console pad of floor A, so UP opens the console.
 HUB_SUBAREA, HUB_X, HUB_Y = 70, 384, 335
+HUB_PAD_DY = 17                # console pad height above the floor
+HUB_FLOOR_NEAR = 64            # px around a pad's y that still count as that floor
+START_CONFIRM_TICKS = 4        # ticks the starting model must hold
+START_MAX_RETRIES = 600
 
 # "Go to Transerver" from the pause menu: the ROM raises WARP_REQ, the client
 # opens the game's own Target Area list and reads the chosen station back.
 WARP_REQ = 0x020CB9D0          # 1 = pending; the client clears it
-PAD_HELD = 0x020F2768          # unused
 TRANSPORT_SEL = 0x021046A8     # Target Area selection, -1 = none
+TRANSPORT_SEL_NONE = 0xFFFFFFFF
 STATE_TARGET_AREA = 0x00050700 # opens the Target Area list
 STATION_ROOMS = list(WARP_DESTINATIONS) + ["x01"]   # room per station index
-HUB_PAD_DY = 17                # console pad height above the floor
 
+# Diagnostics (/mmzx_flags and /mmzx_dump)
 FLAG_WATCH_BASE, FLAG_WATCH_LEN = 0x021045C0, 0x84   # /mmzx_flags window
+DUMP_MISSIONS = 0x021045DE     # start flags of the 16 missions
+DUMP_MISSIONS_LEN = 0x0C
+DUMP_TRANSERVER = 0x02104620   # Transport bits and difficulty
+DUMP_TRANSERVER_LEN = 0x14
+DUMP_ACCESS_OFF = TRANSPORT_ACCESS - DUMP_TRANSERVER
+DUMP_DIFFICULTY_OFF = DIFFICULTY - DUMP_TRANSERVER
+MISSION_START_FLAGS = [   # (address, bit, mission)
+    (0x021045DE, 2, "Catch The Maverick"), (0x021045DE, 5, "Locate Giro"),
+    (0x021045DF, 1, "Pass The Test"), (0x021045E0, 2, "Troop Reinforcement"),
+    (0x021045E1, 3, "Search The Plant"), (0x021045E1, 6, "Find The Survivors"),
+    (0x021045E2, 1, "Fight The Mavericks"), (0x021045E4, 1, "Secure The Biometal"),
+    (0x021045E4, 5, "Save The People"), (0x021045E5, 1, "Recover The Disk"),
+    (0x021045E5, 4, "Attack The Excavators"), (0x021045E6, 0, "Protect The Lab"),
+    (0x021045E6, 3, "Protect HQ"), (0x021045E7, 2, "Stop The Dig"),
+    (0x021045E7, 5, "Repel The Army"), (0x021045E8, 1, "Destroy Model W"),
+]
 
 # Pickup mailbox, polled only if the slot enables a pickup category
 PICKUP_OPTION_KEYS = ("pickup_checks_1up", "pickup_checks_energy",
                       "pickup_checks_weapon", "pickup_checks_crystals")
+# Icon table: header, one code per coords index, then the two bitmaps
+ICON_TABLE_CODE_OFF = 4
+ICON_TABLE_CODES = 128
+ICON_TABLE_CHECKED_OFF = 0x84   # refills already sent keep the vanilla look
 
 
 # On-screen notices: text left in the NOTIFY mailbox, shown by the ROM in the
 # game's small popup
 NOTIFY_DUR = 90                 # frames
+NOTIFY_DUR_OFF = 2              # u16 in the mailbox
+NOTIFY_BUF_OFF = 4
 NOTIFY_LEVELS = ("off", "progression", "useful", "all")
 NOTIFY_PUNCT = {ch: ord(ch) - 0x20 for ch in "!\"#$%&'()*+,-./:"}   # glyphs seen on screen
 NOTIFY_PUNCT["?"] = 0x1F
@@ -357,15 +420,15 @@ class MMZXClient(BizHawkClient):
         from CommonClient import logger
         try:
             reads = await bizhawk.read(ctx.bizhawk_ctx, [
-                (0x0C, 4, "ROM"),      # game code ARZE
-                (0x1000, 6, "ROM"),    # AP magic (rom.py)
-                (0x1010, 64, "ROM"),   # slot name
+                (ROM_GAME_CODE_OFF, 4, "ROM"),
+                (ROM_AP_MAGIC_OFF, ROM_AP_MAGIC_LEN, "ROM"),
+                (ROM_SLOT_NAME_OFF, ROM_SLOT_NAME_LEN, "ROM"),
             ])
         except bizhawk.RequestFailedError:
             return False
         if reads[0] != ROM_GAME_CODE:
             return False
-        if reads[1] != b"MZXAP\x00":
+        if reads[1] != ROM_AP_MAGIC:
             logger.info("ERROR: this Mega Man ZX ROM is not patched for "
                         "Archipelago. Generate the .apmmzx patch and open it "
                         "with the launcher to create the patched ROM.")
@@ -373,7 +436,7 @@ class MMZXClient(BizHawkClient):
         raw = reads[2]
         end = raw.find(b"\x00")
         try:
-            self.slot_name = raw[:end if end >= 0 else 64].decode("utf-8")
+            self.slot_name = raw[:end if end >= 0 else ROM_SLOT_NAME_LEN].decode("utf-8")
         except UnicodeDecodeError:
             self.slot_name = None
         ctx.game = self.game
@@ -424,8 +487,8 @@ class MMZXClient(BizHawkClient):
                 addrs.append(det[1])
             elif det[0] in ("all", "any"):
                 addrs += [a for a, _ in det[1]]
-        near = [a for a in addrs if abs(a - LIVE_BLOCK) < 0x1000]
-        self._extra_addrs = sorted({a for a in addrs if abs(a - LIVE_BLOCK) >= 0x1000})
+        near = [a for a in addrs if abs(a - LIVE_BLOCK) < DETECT_WINDOW_RADIUS]
+        self._extra_addrs = sorted({a for a in addrs if abs(a - LIVE_BLOCK) >= DETECT_WINDOW_RADIUS})
         lo, hi = min(near), max(near) + 1
         self._win = (lo, hi)
         return self._win
@@ -443,7 +506,7 @@ class MMZXClient(BizHawkClient):
         state_bytes = reads[2]
         state = int.from_bytes(state_bytes, "little")
         # the title and its menus also show gs=0x500, sub=1 and hp=16
-        launched = reads[3][0] == 6
+        launched = reads[3][0] == TITLE_STEP_LAUNCHED
         return (launched and sub != 0 and hp > 0 and state == STATE_INGAME), state_bytes
 
     def _debug(self, msg: str) -> None:
@@ -534,7 +597,7 @@ class MMZXClient(BizHawkClient):
         guard = (GAME_STATE, state_bytes, DOM)   # only write if still in game
         # Startup debounce: right after launch some structures still hold the boot fill
         self.ingame_ticks = getattr(self, "ingame_ticks", 0) + 1
-        if self.ingame_ticks < 3:
+        if self.ingame_ticks < STARTUP_TICKS:
             return
         try:
             msg = (await bizhawk.read(ctx.bizhawk_ctx, [(MSG_BANK, 4, DOM)]))[0]
@@ -666,8 +729,8 @@ class MMZXClient(BizHawkClient):
         r = await bizhawk.read(ctx.bizhawk_ctx, [
             (SUBAREA_STABLE, 1, DOM), (PLAYER_POS, 8, DOM), (GAME_STATE, 4, DOM),
             (HP, 1, DOM), (TITLE_CAROUSEL_STEP, 1, DOM), (MISSION_STATE_ADDR, 4, DOM),
-            (MISSION_ACTIVE_BYTE, 1, DOM), (0x0214F6C0, 4, DOM), (0x0214FC74, 1, DOM),
-            (0x0214F6CF, 1, DOM), (TROOP_MERGE[0], 1, DOM), (CUTSCENE_FLAG, 1, DOM)])
+            (MISSION_ACTIVE_BYTE, 1, DOM), (STORY_HANDLER_ID, 4, DOM), (ACTIVE_MODEL_ADDR, 1, DOM),
+            (STORY_HANDLER_STATE, 1, DOM), (TROOP_MERGE[0], 1, DOM), (CUTSCENE_FLAG, 1, DOM)])
         x = int.from_bytes(r[1][0:4], "little") >> 8
         y = int.from_bytes(r[1][4:8], "little") >> 8
         logger.info("[mmzx] where: sub=%d pos=(%d,%d) gs=%06X hp=%d step=%d mission(state)=%d 462B=%02X handler=%d model=%d auto_accept=%s items=%d"
@@ -746,7 +809,6 @@ class MMZXClient(BizHawkClient):
                 new_ids.append(loc_id)
         self.mailbox_count = count
         if new_ids:
-            from CommonClient import logger
             names = []
             for i in new_ids:
                 try:
@@ -786,7 +848,7 @@ class MMZXClient(BizHawkClient):
             self.icon_by_sub = {}
             for v in LOCATIONS.values():
                 ic = v.get("icon")
-                if ic and int(ic[1]) < 128:
+                if ic and int(ic[1]) < ICON_TABLE_CODES:
                     det = v.get("detect") or [None]
                     self.icon_by_sub.setdefault(int(ic[0]), []).append((v["id"], int(ic[1]), det[0] == "mailbox"))
         try:
@@ -806,10 +868,10 @@ class MMZXClient(BizHawkClient):
                 table[ICON_TABLE_PRESENT_OFF + (idx >> 3)] |= 1 << (idx & 7)
             if loc_id in done:
                 if respawns:
-                    table[0x84 + (idx >> 3)] |= 1 << (idx & 7)
+                    table[ICON_TABLE_CHECKED_OFF + (idx >> 3)] |= 1 << (idx & 7)
                 continue
             if self.icons_enabled:
-                table[4 + idx] = self._icon_code(ctx, loc_id)
+                table[ICON_TABLE_CODE_OFF + idx] = self._icon_code(ctx, loc_id)
         want = (sub, bytes(table))
         if want == self.icon_written and head[0] == sub and head[1] == 1:
             return
@@ -884,8 +946,8 @@ class MMZXClient(BizHawkClient):
             return                              # the previous notice is still on screen
         data = self.notify_queue.popleft()
         await bizhawk.write(ctx.bizhawk_ctx, [
-            (NOTIFY_ADDR + 4, data, DOM),
-            (NOTIFY_ADDR + 2, NOTIFY_DUR.to_bytes(2, "little"), DOM)])
+            (NOTIFY_ADDR + NOTIFY_BUF_OFF, data, DOM),
+            (NOTIFY_ADDR + NOTIFY_DUR_OFF, NOTIFY_DUR.to_bytes(2, "little"), DOM)])
         await bizhawk.write(ctx.bizhawk_ctx, [(NOTIFY_ADDR, b"\x01", DOM)])   # REQ last
 
     async def _flag_watch_tick(self, ctx) -> None:
@@ -915,32 +977,22 @@ class MMZXClient(BizHawkClient):
     async def _dump_transerver(self, ctx) -> None:
         """/mmzx_dump: log the mission and Transerver flag regions."""
         from CommonClient import logger
-        MISSIONS = [  # start flag per mission
-            (0x021045DE, 2, "Catch The Maverick"), (0x021045DE, 5, "Locate Giro"),
-            (0x021045DF, 1, "Pass The Test"), (0x021045E0, 2, "Troop Reinforcement"),
-            (0x021045E1, 3, "Search The Plant"), (0x021045E1, 6, "Find The Survivors"),
-            (0x021045E2, 1, "Fight The Mavericks"), (0x021045E4, 1, "Secure The Biometal"),
-            (0x021045E4, 5, "Save The People"), (0x021045E5, 1, "Recover The Disk"),
-            (0x021045E5, 4, "Attack The Excavators"), (0x021045E6, 0, "Protect The Lab"),
-            (0x021045E6, 3, "Protect HQ"), (0x021045E7, 2, "Stop The Dig"),
-            (0x021045E7, 5, "Repel The Army"), (0x021045E8, 1, "Destroy Model W"),
-        ]
         try:
             r = await bizhawk.read(ctx.bizhawk_ctx, [
-                (0x021045DE, 0x0C, DOM), (0x02104620, 0x14, DOM)])
+                (DUMP_MISSIONS, DUMP_MISSIONS_LEN, DOM), (DUMP_TRANSERVER, DUMP_TRANSERVER_LEN, DOM)])
         except bizhawk.RequestFailedError:
             return
         mis_region, ts_region = r[0], r[1]
 
         def bit_of(addr, bit):
-            base = 0x021045DE
+            base = DUMP_MISSIONS
             return bool(mis_region[addr - base] & (1 << bit)) if 0 <= addr - base < len(mis_region) else False
 
-        started = [name for (a, b, name) in MISSIONS if bit_of(a, b)]
+        started = [name for (a, b, name) in MISSION_START_FLAGS if bit_of(a, b)]
         logger.info("[mmzx_dump] mission(0x021045DE): " + mis_region.hex(" "))
         logger.info("[mmzx_dump] transerver(0x02104620): " + ts_region.hex(" "))
         logger.info("[mmzx_dump] idx 0x02104630 = 0x%02X | access 0x02104627/28 = %02X %02X" % (
-            ts_region[0x10], ts_region[0x07], ts_region[0x08]))
+            ts_region[DUMP_DIFFICULTY_OFF], ts_region[DUMP_ACCESS_OFF], ts_region[DUMP_ACCESS_OFF + 1]))
         logger.info("[mmzx_dump] missions with their start flag set: "
                     + (", ".join(started) if started else "none"))
 
@@ -982,7 +1034,6 @@ class MMZXClient(BizHawkClient):
             if not cur[n + i][0] & (1 << eb):
                 writes.append((ea + CANON_OFF, bytes([cur[n + i][0] | (1 << eb)]), DOM))
         if writes and await bizhawk.guarded_write(ctx.bizhawk_ctx, writes, [guard]):
-            from CommonClient import logger
             self._debug("[mmzx] %s: restored %d mission bits that something had cleared"
                         % (rec["name"], len(writes)))
 
@@ -1003,12 +1054,12 @@ class MMZXClient(BizHawkClient):
         # The start flag is always restored; the megamerge flag only until the
         # D-2 script has passed the merge, since the X-2 report needs it set.
         merged = False
-        if sub == 16:
+        if sub == TROOP_MERGE_SUBAREA:
             try:
-                rs = (await bizhawk.read(ctx.bizhawk_ctx, [(TROOP_ROOM_OBJ + 0xB, 1, DOM)]))[0][0]
+                rs = (await bizhawk.read(ctx.bizhawk_ctx, [(ROOM_SCRIPT_OBJ + SCRIPT_STATE_OFF, 1, DOM)]))[0][0]
             except bizhawk.RequestFailedError:
                 return
-            merged = rs >= TROOP_ROOM_MERGED
+            merged = rs >= D02_ROOM_MERGED
         try:
             r = await bizhawk.read(ctx.bizhawk_ctx, [
                 (MISSION_STATE_ADDR, 4, DOM), (addr, 1, DOM),
@@ -1047,7 +1098,6 @@ class MMZXClient(BizHawkClient):
         if not (r[4][0] & r[5][0] & smask):
             what.append("restored the mission start flag 0x021045E0.2 (the game itself clears it)")
         if writes and await bizhawk.guarded_write(ctx.bizhawk_ctx, writes, [guard]):
-            from CommonClient import logger
             self._debug("[mmzx] Troop Reinforcement was half done: %s; the Giro scene "
                         "can trigger again" % " and ".join(what))
 
@@ -1070,8 +1120,8 @@ class MMZXClient(BizHawkClient):
         try:
             r = await bizhawk.read(ctx.bizhawk_ctx, [
                 (saddr, 1, DOM), (caddr, 1, DOM), (CUTSCENE_FLAG, 1, DOM),
-                (TROOP_ROOM_OBJ + 0xB, 1, DOM),      # room script of the loaded room
-                (STORY_HANDLER_ID, 4, DOM), (STORY_HANDLER_OBJ + 0xB, 1, DOM)])
+                (ROOM_SCRIPT_OBJ + SCRIPT_STATE_OFF, 1, DOM),
+                (STORY_HANDLER_ID, 4, DOM), (STORY_HANDLER_OBJ + SCRIPT_STATE_OFF, 1, DOM)])
         except bizhawk.RequestFailedError:
             return
         handler_id = int.from_bytes(r[4], "little")
@@ -1087,9 +1137,9 @@ class MMZXClient(BizHawkClient):
         self.ending_ticks += 1
         if self.ending_ticks < ENDING_UNSTICK_TICKS:
             return
-        obj = bytearray(0x114)
-        obj[9] = 0xFF                          # no pending cutscene
-        obj[0xB] = ENDING_HANDLER_STATE
+        obj = bytearray(STORY_HANDLER_LEN)
+        obj[SCRIPT_CUTSCENE_OFF] = CUTSCENE_NONE
+        obj[SCRIPT_STATE_OFF] = ENDING_HANDLER_STATE
         ok = await bizhawk.guarded_write(ctx.bizhawk_ctx, [
             (STORY_HANDLER_OBJ, bytes(obj), DOM),
             (STORY_HANDLER_ID, ENDING_HANDLER_ID.to_bytes(4, "little"), DOM)], [guard])
@@ -1110,7 +1160,7 @@ class MMZXClient(BizHawkClient):
         try:
             r = await bizhawk.read(ctx.bizhawk_ctx, [
                 (SUBAREA_STABLE, 1, DOM), (CUTSCENE_FLAG, 1, DOM),
-                (STORY_HANDLER_ID, 4, DOM), (STORY_HANDLER_OBJ + 0xB, 1, DOM),
+                (STORY_HANDLER_ID, 4, DOM), (STORY_HANDLER_OBJ + SCRIPT_STATE_OFF, 1, DOM),
                 (BR.STAGE, 1, DOM), (PLAYER_POS, 8, DOM),
                 (BR.FLAG_LEFT, 1, DOM), (BR.FLAG_RIGHT, 1, DOM)])
         except bizhawk.RequestFailedError:
@@ -1124,8 +1174,8 @@ class MMZXClient(BizHawkClient):
             return
         # reads for the commit and the repaint (all in one batch)
         reads = [(LIVE_BLOCK, LIVE_BLOCK_LEN, DOM), (STORY_BLOCK, STORY_BLOCK_LEN, DOM),
-                 (PLAYER_PERSIST, SCENE_DESC_LEN, DOM), (PLAYER_OBJ + 0xA, 1, DOM),
-                 (PLAYER_OBJ + 0x15C, 4, DOM)]
+                 (PLAYER_PERSIST, SCENE_DESC_LEN, DOM), (PLAYER_OBJ + PLAYER_FACING_OFF, 1, DOM),
+                 (PLAYER_OBJ + PLAYER_SCENE_WORD_OFF, 4, DOM)]
         patch_addrs = [src for k in pairs for (_tx, _ty, src) in BR.PATCHES[k]]
         reads += [(a, 4 + BR.PATCH_W * BR.PATCH_H * 2, DOM) for a in patch_addrs]
         try:
@@ -1139,7 +1189,7 @@ class MMZXClient(BizHawkClient):
         persist = bytearray(q[2])
         persist[0:4] = (x << 8).to_bytes(4, "little")       # spawn without fraction, like the doors
         persist[4:8] = (y << 8).to_bytes(4, "little")
-        persist[0x11] = (persist[0x11] & 0xFE) | (1 if q[3][0] & 0x10 else 0)
+        persist[DESC_FACING_OFF] = (persist[DESC_FACING_OFF] & 0xFE) | (1 if q[3][0] & PLAYER_FACING_MASK else 0)
         desc = bytes(persist[:8]) + q[4] + bytes(persist[12:])   # +8 = player's scene word
         patches = {a: q[5 + i] for i, a in enumerate(patch_addrs)}
         writes = [(BR.FLAG_LEFT, bytes([fl]), DOM), (BR.FLAG_RIGHT, bytes([fr]), DOM),
@@ -1152,7 +1202,6 @@ class MMZXClient(BizHawkClient):
         except bizhawk.RequestFailedError:
             return
         if ok:
-            from CommonClient import logger
             for k in pairs:
                 self._debug("[mmzx] boss rush skipped: %s marked as beaten (player at %d,%d); "
                             "checkpoint saved" % (BR.PAIR_NAMES[k], x, y))
@@ -1179,7 +1228,7 @@ class MMZXClient(BizHawkClient):
                 return
             x = int.from_bytes(r[0][0:4], "little") >> 8
             y = int.from_bytes(r[0][4:8], "little") >> 8
-            floor = next((fy for fy in HUB_FLOOR_BOSS if abs(y - (fy - 17)) <= 64), None)
+            floor = next((fy for fy in HUB_FLOOR_BOSS if abs(y - (fy - HUB_PAD_DY)) <= HUB_FLOOR_NEAR), None)
             if floor is None or (x > HUB_FLOOR_DOOR_X and not self.force_accept):
                 self.last_accept_sub = None
                 return
@@ -1187,7 +1236,6 @@ class MMZXClient(BizHawkClient):
                 return
             key = ("hub", floor)
             rec = MISSION_ACCEPT.get(HUB_FLOOR_BOSS[floor])
-            from CommonClient import logger
             self._debug("[mmzx] hub floor y=%d (player at %d,%d): mission %s"
                         % (floor, x, y, rec["name"] if rec else "?"))
         else:
@@ -1208,7 +1256,6 @@ class MMZXClient(BizHawkClient):
                 return
             if all(vals[i][0] & (1 << b) for i, (_, b) in enumerate(done_bits)):
                 self.last_accept_sub = key
-                from CommonClient import logger
                 self._debug("[mmzx] %s already completed: not accepted again" % rec["name"])
                 return
         try:
@@ -1234,13 +1281,12 @@ class MMZXClient(BizHawkClient):
                     if not cur[len(extras) + i][0] & (1 << eb):
                         w.append((ea + CANON_OFF, bytes([cur[len(extras) + i][0] | (1 << eb)]), DOM))
                 if w and await bizhawk.guarded_write(ctx.bizhawk_ctx, w, [guard]):
-                    from CommonClient import logger
                     self._debug("[mmzx] %s was already accepted: restored %d missing mission bits"
                                 % (rec["name"], len(w)))
             return
         addr, bit = rec["flag"]
-        canon = addr + (CANON_BLOCK - LIVE_BLOCK)
-        act, act_c = MISSION_ACTIVE_BYTE, MISSION_ACTIVE_BYTE + (CANON_BLOCK - LIVE_BLOCK)
+        canon = addr + CANON_OFF
+        act, act_c = MISSION_ACTIVE_BYTE, MISSION_ACTIVE_BYTE + CANON_OFF
         cur = await bizhawk.read(ctx.bizhawk_ctx, [
             (addr, 1, DOM), (canon, 1, DOM), (act, 1, DOM), (act_c, 1, DOM),
             (LIVE_BLOCK, LIVE_BLOCK_LEN, DOM), (SCENE_DESC, SCENE_DESC_LEN, DOM),
@@ -1255,13 +1301,13 @@ class MMZXClient(BizHawkClient):
             (MISSION_STATE_ADDR, rec["state"].to_bytes(4, "little"), DOM),
             (MISSION_ACTIVE_FLAG, b"\x01", DOM),
             # "mission in progress" bit, tested by the game's "is mission X active"
-            (act, bytes([cur[2][0] | 0x02]), DOM),
-            (act_c, bytes([cur[3][0] | 0x02]), DOM),
+            (act, bytes([cur[2][0] | MISSION_ACCEPTED_MASK]), DOM),
+            (act_c, bytes([cur[3][0] | MISSION_ACCEPTED_MASK]), DOM),
         ]
         # story handler: without it the mission's cutscenes and flags never run
-        obj = bytearray(0x114)
-        obj[9] = 0xFF                           # no pending cutscene
-        obj[0xB] = int(rec.get("hstate", 0))   # initial handler state
+        obj = bytearray(STORY_HANDLER_LEN)
+        obj[SCRIPT_CUTSCENE_OFF] = CUTSCENE_NONE
+        obj[SCRIPT_STATE_OFF] = int(rec.get("hstate", 0))   # initial handler state
         writes.append((STORY_HANDLER_OBJ, bytes(obj), DOM))
         writes.append((STORY_HANDLER_ID, int(rec["id"]).to_bytes(4, "little"), DOM))
         # extra bits: the "step taken" flags the room scripts test first
@@ -1270,13 +1316,12 @@ class MMZXClient(BizHawkClient):
             writes.append((ea, bytes([ecur[0][0] | (1 << eb)]), DOM))
             writes.append((ea + CANON_OFF, bytes([ecur[1][0] | (1 << eb)]), DOM))
         ok = await bizhawk.guarded_write(ctx.bizhawk_ctx, writes, [guard])
-        from CommonClient import logger
         if ok:
             # Checkpoint commit like a pad, or a death before the first milestone
             # would restore a checkpoint without the mission.
             try:
                 cur = await bizhawk.read(ctx.bizhawk_ctx, [
-                    (LIVE_BLOCK, 0xE4, DOM), (STORY_BLOCK, 0x11C, DOM)])
+                    (LIVE_BLOCK, LIVE_BLOCK_LEN, DOM), (STORY_BLOCK, STORY_BLOCK_LEN, DOM)])
                 await bizhawk.guarded_write(ctx.bizhawk_ctx, [
                     (CANON_BLOCK, cur[0], DOM), (STORY_BLOCK_CANON, cur[1], DOM)], [guard])
             except bizhawk.RequestFailedError:
@@ -1323,7 +1368,7 @@ class MMZXClient(BizHawkClient):
         step = r[1][0]
         if step not in TITLE_STEPS_SEEDABLE:
             return
-        if not (gs == STATE_INGAME or (gs & 0xFF) == 0x07):
+        if not (gs == STATE_INGAME or (gs & 0xFF) == STATE_GAME_OVER_LOW):
             return
         try:
             # the image is patched per slot: starting model and character
@@ -1367,25 +1412,25 @@ class MMZXClient(BizHawkClient):
         # apply when the game is in the eligible state
         try:
             r = await bizhawk.read(ctx.bizhawk_ctx, [
-                (SUBAREA_STABLE, 1, DOM), (0x02104627, 1, DOM)])
+                (SUBAREA_STABLE, 1, DOM), (TRANSPORT_ACCESS, 1, DOM)])
         except bizhawk.RequestFailedError:
             return
         sub, ts_access = r[0][0], r[1][0]
-        if sub != HUB_SUBAREA or not (ts_access & 0x10):
+        if sub != HUB_SUBAREA or not (ts_access & TRANSPORT_ACCESS_A):
             return
         desired_active = await self._apply_start_state(ctx, guard)
         if desired_active is None:
             return   # write did not go through (guard) - retry next tick
         if desired_active == -1:      # unknown model: nothing to confirm
-            self.start_confirm = 4
+            self.start_confirm = START_CONFIRM_TICKS
         # the LOAD may overwrite the model once; confirm it holds
         try:
-            active_now = (await bizhawk.read(ctx.bizhawk_ctx, [(MODEL, 1, DOM)]))[0][0]
+            active_now = (await bizhawk.read(ctx.bizhawk_ctx, [(ACTIVE_MODEL_ADDR, 1, DOM)]))[0][0]
         except bizhawk.RequestFailedError:
             return
         self.start_retries += 1
         self.start_confirm = self.start_confirm + 1 if active_now == desired_active else 0
-        if self.start_confirm >= 4 or self.start_retries > 600:
+        if self.start_confirm >= START_CONFIRM_TICKS or self.start_retries > START_MAX_RETRIES:
             self.start_state = 3
             await ctx.send_msgs([{
                 "cmd": "Set", "key": self.start_key, "default": False,
@@ -1452,7 +1497,6 @@ class MMZXClient(BizHawkClient):
         The request byte comes from the ROM's menu cave; the selection is read
         on the first tick back in gameplay (-1 = cancelled).
         """
-        from CommonClient import logger
         try:
             r = await bizhawk.read(ctx.bizhawk_ctx, [(WARP_REQ, 1, DOM), (TRANSPORT_SEL, 4, DOM)])
         except bizhawk.RequestFailedError:
@@ -1476,7 +1520,7 @@ class MMZXClient(BizHawkClient):
         # open the game's list with no current station; retried if the guard fails
         ok = await bizhawk.guarded_write(ctx.bizhawk_ctx, [
             (WARP_REQ, b"\x00", DOM),
-            (TRANSPORT_SEL, (0xFFFFFFFF).to_bytes(4, "little"), DOM),
+            (TRANSPORT_SEL, TRANSPORT_SEL_NONE.to_bytes(4, "little"), DOM),
             (GAME_STATE, STATE_TARGET_AREA.to_bytes(4, "little"), DOM),
             (GAME_STATE + 4, b"\x00\x00\x00\x00", DOM),
             (GAME_STATE + 8, b"\x00\x00\x00\x00", DOM),
@@ -1488,10 +1532,10 @@ class MMZXClient(BizHawkClient):
     async def _teleport(self, ctx, sub, x, y, guard) -> None:
         """Request a scene load at (sub, x, y), guarded on gameplay."""
         writes = [
-            (SCENE_DESC + 0x00, (x << 8).to_bytes(4, "little"), DOM),
-            (SCENE_DESC + 0x04, (y << 8).to_bytes(4, "little"), DOM),
-            (SCENE_DESC + 0x08, sub.to_bytes(4, "little"), DOM),
-            (SCENE_DESC + 0x11, b"\x01", DOM),
+            (SCENE_DESC + DESC_SPAWN_X_OFF, (x << 8).to_bytes(4, "little"), DOM),
+            (SCENE_DESC + DESC_SPAWN_Y_OFF, (y << 8).to_bytes(4, "little"), DOM),
+            (SCENE_DESC + DESC_SUBAREA_OFF, sub.to_bytes(4, "little"), DOM),
+            (SCENE_DESC + DESC_FACING_OFF, b"\x01", DOM),
             (GAME_STATE, STATE_LOAD.to_bytes(4, "little"), DOM),
             (GAME_STATE + 4, b"\x00\x00\x00\x00", DOM),
             (GAME_STATE + 8, b"\x00\x00\x00\x00", DOM),
@@ -1614,22 +1658,22 @@ class MMZXClient(BizHawkClient):
 
         # Life Up capacity is exactly the received count; the physical pickup
         # only marks its "collected" nibble (the check) and grants nothing.
-        nlu = min(4, n_lifeup)
+        nlu = min(LIFEUP_SLOTS, n_lifeup)
         lu_mask = (1 << nlu) - 1
         cur_lu, cur_hpmax = (await bizhawk.read(
             ctx.bizhawk_ctx, [(LIFEUP_BYTE, 1, DOM), (HPMAX, 1, DOM)]))
-        if (cur_lu[0] & 0x0F) != lu_mask:
-            writes.append((LIFEUP_BYTE, bytes([(cur_lu[0] & 0xF0) | lu_mask]), DOM))
-        hpmax = min(0x20, 0x10 + 4 * nlu)   # max HP follows the AP count
+        if (cur_lu[0] & CAPACITY_NIBBLE) != lu_mask:
+            writes.append((LIFEUP_BYTE, bytes([(cur_lu[0] & COLLECTED_NIBBLE) | lu_mask]), DOM))
+        hpmax = min(HP_CAP, HP_BASE + HP_PER_LIFEUP * nlu)   # max HP follows the AP count
         if cur_hpmax[0] != hpmax:
             writes.append((HPMAX, bytes([hpmax]), DOM))
 
         # Sub Tanks: same rule
-        nst = min(4, n_subtank)
+        nst = min(SUBTANK_SLOTS, n_subtank)
         st_mask = (1 << nst) - 1
         cur_st = (await bizhawk.read(ctx.bizhawk_ctx, [(SUBTANK_BYTE, 1, DOM)]))[0][0]
-        if (cur_st & 0x0F) != st_mask:
-            writes.append((SUBTANK_BYTE, bytes([(cur_st & 0xF0) | st_mask]), DOM))
+        if (cur_st & CAPACITY_NIBBLE) != st_mask:
+            writes.append((SUBTANK_BYTE, bytes([(cur_st & COLLECTED_NIBBLE) | st_mask]), DOM))
 
         # Consumables are applied once per game. Each batch is stamped with the
         # play time, which grows every frame, never goes back on death and returns
@@ -1646,15 +1690,15 @@ class MMZXClient(BizHawkClient):
                     new_consumables = consumables[_consumables_present(self.cons_log, pt):]
         if new_consumables:
             raw = int.from_bytes((await bizhawk.read(ctx.bizhawk_ctx, [(ECRYSTALS, 4, DOM)]))[0], "little")
-            ec = raw & 0xFFFFFF
-            add = sum(50 for k in new_consumables if k == "ecrystals")
-            ec = min(99999, ec + add)
-            writes.append((ECRYSTALS, ((raw & 0xFF000000) | ec).to_bytes(4, "little"), DOM))
+            ec = raw & ECRYSTALS_MASK
+            add = sum(ECRYSTALS_PER_ITEM for k in new_consumables if k == "ecrystals")
+            ec = min(ECRYSTALS_CAP, ec + add)
+            writes.append((ECRYSTALS, ((raw & ECRYSTALS_HIGH_MASK) | ec).to_bytes(4, "little"), DOM))
             # 1-Up: one life each, cap 99
             n1 = sum(1 for k in new_consumables if k == "oneup")
             if n1:
                 lives = (await bizhawk.read(ctx.bizhawk_ctx, [(LIVES, 1, DOM)]))[0][0]
-                writes.append((LIVES, bytes([min(99, lives + n1)]), DOM))
+                writes.append((LIVES, bytes([min(LIVES_CAP, lives + n1)]), DOM))
 
         if writes:
             ok = await bizhawk.guarded_write(ctx.bizhawk_ctx, writes, [guard])
@@ -1717,7 +1761,7 @@ class MMZXClient(BizHawkClient):
         for net in ctx.items_received:
             counts[net.item] = counts.get(net.item, 0) + 1
         try:
-            r = await bizhawk.read(ctx.bizhawk_ctx, [(MODEL, 1, DOM), (CUTSCENE_FLAG, 1, DOM)])
+            r = await bizhawk.read(ctx.bizhawk_ctx, [(ACTIVE_MODEL_ADDR, 1, DOM), (CUTSCENE_FLAG, 1, DOM)])
         except bizhawk.RequestFailedError:
             return
         if r[1][0] & 1:
@@ -1727,7 +1771,7 @@ class MMZXClient(BizHawkClient):
                  for m, (item, _a, _b) in MODEL_POSSESSION.items()}
         # 2nd half (progressive): only with 2 copies received
         full = {m: counts.get(ITEMS.get(MODEL_POSSESSION[m][0], {}).get("id"), 0) >= 2
-                for m in MODEL_PART2}
+                for m in MODEL_SECOND_HALF}
         # With hu_in_pool Hu is just another form. The game refuses to transform
         # with a single owned category, so a scene that ends in Hu (the M-1 seal
         # one does) would leave the player stuck in Hu for good.
@@ -1740,11 +1784,11 @@ class MMZXClient(BizHawkClient):
         else:
             fallback = self._fallback_model(ctx, owned)
             if fallback != active:   # with nothing better (Hu gated and 0 biometals) leave it
-                writes.append((MODEL, bytes([fallback]), DOM))
+                writes.append((ACTIVE_MODEL_ADDR, bytes([fallback]), DOM))
                 notes.append("model %d not owned -> reverting to %d" % (active, fallback))
         # possession bits without their item are cleared in both copies
         addrs = sorted({a for _i, a, _b in MODEL_POSSESSION.values()}
-                       | {a for a, _b in MODEL_PART2.values()})
+                       | {a for a, _b in MODEL_SECOND_HALF.values()})
         try:
             cur = await bizhawk.read(
                 ctx.bizhawk_ctx,
@@ -1760,7 +1804,7 @@ class MMZXClient(BizHawkClient):
                     vals[a][k] &= ~(1 << bit) & 0xFF
                     notes.append("%s owned without its item -> clearing 0x%08X.%d%s"
                                  % (item, a, bit, "" if k == 0 else " (canonical)"))
-        for m, (a, bit) in MODEL_PART2.items():
+        for m, (a, bit) in MODEL_SECOND_HALF.items():
             if full.get(m, False):
                 continue
             for k in (0, 1):
@@ -1777,7 +1821,6 @@ class MMZXClient(BizHawkClient):
             return
         ok = await bizhawk.guarded_write(ctx.bizhawk_ctx, writes, [guard])
         if ok:
-            from CommonClient import logger
             for n in notes:
                 self._debug("[mmzx] %s" % n)
 
@@ -1790,7 +1833,7 @@ class MMZXClient(BizHawkClient):
         """
         try:
             r = await bizhawk.read(ctx.bizhawk_ctx, [
-                (HP, 1, DOM), (CUTSCENE_FLAG, 1, DOM), (PLAYER_OBJ + 0x11, 1, DOM)])
+                (HP, 1, DOM), (CUTSCENE_FLAG, 1, DOM), (PLAYER_OBJ + PLAYER_STATE_OFF, 1, DOM)])
         except bizhawk.RequestFailedError:
             return
         hp, cut, state = r[0][0], r[1][0], r[2][0]
@@ -1817,7 +1860,7 @@ class MMZXClient(BizHawkClient):
         if hp == 0 or (cut & 1) or state != 0:
             return                      # no control: retried on the next tick
         writes = [(HP, b"\x00", DOM),
-                  (PLAYER_OBJ + 0x11, bytes([DEATH_STATE, 2, 0]), DOM)]
+                  (PLAYER_OBJ + PLAYER_STATE_OFF, bytes([DEATH_STATE, 2, 0]), DOM)]
         try:
             ok = await bizhawk.guarded_write(ctx.bizhawk_ctx, writes, [guard])
         except bizhawk.RequestFailedError:

@@ -196,7 +196,7 @@ class MMZXWorld(World):
     def generate_output(self, output_directory: str) -> None:
         """Writes the .apmmzx patch of this player."""
         patch = MMZXPatch(player=self.player, player_name=self.player_name)
-        write_patch_tokens(patch, self.player_name, self.multiworld.seed_name,
+        write_patch_tokens(patch, self.player_name, self.multiworld.seed_name, self.world_version,
                            hu_in_pool=bool(self.options.hu_in_pool.value))
         out_name = self.multiworld.get_out_file_name_base(self.player)
         patch.write(os.path.join(output_directory, out_name + patch.patch_file_ending))

@@ -10,10 +10,10 @@ from BaseClasses import Region
 
 from . import bosses as B
 from . import logic_format as F
-from .data import LOCATIONS
+from .data import DOORS, LOCATIONS
 from .locations import MMZXLocation, locations_for_options, pickup_flags_from_options
-from .logic import (ALL_EDGES, WORLD, and_rules, door_rule, label_rule,
-                    starting_room, transerver_rule)
+from .logic import (WORLD, and_rules, door_rule, label_rule, starting_room,
+                    transerver_rule)
 
 _DOC = None
 
@@ -97,7 +97,7 @@ def create_regions(world) -> None:
     # skip_boss_rush drops the eight rush teleporters and the extra cost of the exit to D-5;
     # the client marks the pairs as beaten while the player climbs the tower.
     skip_rush = bool(world.options.skip_boss_rush.value)
-    for d in ALL_EDGES:
+    for d in DOORS:
         if d["kind"] in F.NON_TRANSITION_KINDS:
             continue
         if skip_rush and d["name"] in F.BOSS_RUSH_DOORS:

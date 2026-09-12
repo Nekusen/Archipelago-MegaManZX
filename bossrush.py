@@ -7,13 +7,16 @@ contract is in docs/client_protocol.md and docs/memory_map.md.
 
 SUBAREA = 18                     # D-4 (tower)
 HANDLER_ID = 16                  # mission "Destroy Model W"
+PAIR_COUNT = 4                   # Pseudoroid pairs k = 0..3
 FLAG_LEFT = 0x021045FF           # bit 4+k = pair k, left teleporter
 FLAG_RIGHT = 0x02104600          # bit k   = pair k, right teleporter
+LEFT_PAIR_BIT = 4                # pair 0 is bit 4 of FLAG_LEFT and bit 0 of FLAG_RIGHT
 STAGE = 0x0212FBA1               # elevator stage (u8)
 
 TILEMAP = 0x02112B78             # metatile map of the loaded room
 TILEMAP_STRIDE = 192             # D-4: 12 screens x 16 metatiles
 TILEMAP_DIRTY = 0x0212DB54 + 0x28   # 1 = re-upload the visible map
+TILE_BYTES = 2                   # one u16 per metatile
 # [pair] = (left, right) capsules as (tx, ty, patch address in overlay 61).
 PATCHES = {
     0: ((0x10, 0x0E, 0x02195A58), (0x1B, 0x0E, 0x02195B98)),
@@ -22,6 +25,7 @@ PATCHES = {
     3: ((0x30, 0x26, 0x02195AD8), (0x3B, 0x26, 0x02195A98)),
 }
 PATCH_W, PATCH_H = 5, 6
+PATCH_HEADER = 4                 # u16 width and s16 height, then the rows
 
 SHAFT1 = (1536, 1792)            # elevator shaft 1 (x)
 SHAFT2 = (2560, 2816)            # elevator shaft 2 (x)
@@ -45,7 +49,7 @@ PAIR_NAMES = {0: "Hivolt/Hurricaune", 1: "Lurerre/Leganchor",
 
 def pair_set(flag_left: int, flag_right: int, k: int) -> bool:
     """Whether both teleporters of pair k are flagged as beaten."""
-    return bool((flag_left >> (4 + k)) & 1 and (flag_right >> k) & 1)
+    return bool((flag_left >> (LEFT_PAIR_BIT + k)) & 1 and (flag_right >> k) & 1)
 
 
 def pairs_to_set(x: int, y: int, hstate: int, stage: int,
@@ -55,7 +59,7 @@ def pairs_to_set(x: int, y: int, hstate: int, stage: int,
     The caller checks that the player is in D-4 with the mission 16 handler and no cutscene.
     """
     out = []
-    for k in range(4):
+    for k in range(PAIR_COUNT):
         if pair_set(flag_left, flag_right, k):
             continue
         x0, x1, y0, y1 = ROOMS[k]
@@ -71,7 +75,7 @@ def pairs_to_set(x: int, y: int, hstate: int, stage: int,
 def apply_pairs(flag_left: int, flag_right: int, pairs) -> tuple:
     """The two flag bytes with the given pairs set."""
     for k in pairs:
-        flag_left |= 1 << (4 + k)
+        flag_left |= 1 << (LEFT_PAIR_BIT + k)
         flag_right |= 1 << k
     return flag_left & 0xFF, flag_right & 0xFF
 
@@ -89,7 +93,7 @@ def paint_writes(k: int, patch_bytes) -> list:
         if w != PATCH_W or h != PATCH_H:      # foreign overlay loaded: do not touch
             return []
         for row in range(h):
-            out.append((TILEMAP + (tx + (ty + row) * TILEMAP_STRIDE) * 2,
-                        data[4 + row * w * 2: 4 + (row + 1) * w * 2]))
+            out.append((TILEMAP + (tx + (ty + row) * TILEMAP_STRIDE) * TILE_BYTES,
+                        data[PATCH_HEADER + row * w * TILE_BYTES: PATCH_HEADER + (row + 1) * w * TILE_BYTES]))
     out.append((TILEMAP_DIRTY, (1).to_bytes(2, "little")))
     return out

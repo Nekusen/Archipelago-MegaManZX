@@ -26,6 +26,17 @@ import struct
 
 PALETTE_SET = 58                 # the AP set shares this set's palette in VRAM
 
+# Set format fields (module docstring): the fnt chunk header and the dat tables.
+FNT_HEADER_LEN = 0x14
+FNT_HEADER_FIXED = 0x18          # same in every header; meaning unknown
+FNT_PALETTE_PTR_OFF = 0xC        # the palette pointer counts from its own field
+FNT_FLAGS_4BPP = 0x8020
+FNT_FLAG_8BPP = 0x40
+FNT_PALETTE_LEN = 0x20           # 16 BGR555 colours
+DAT_TABLE_OFF = 0xC
+ATTR_TILE_MASK = 0x3FF
+ANIM_END = 0xFF
+
 # The recipe, in animation order of the AP set (animation i = frame i = icon i;
 # ICON_CODES in data.py is this order, 1-based): ("logo", gfx file) for an
 # Archipelago logo, ("frame", set, frame) for a frame of the player's ROM.
@@ -106,26 +117,26 @@ def _set_block(container, setno):
 def _chunk(fnt_block, k):
     """(tiles, palette as RGB, bits per pixel) of chunk k of a set; k = 0 for a static set."""
     tile_off, tile_len, _, _, flags, pal_ptr, pal_len, _ = \
-        struct.unpack_from("<IHHHHIHH", fnt_block, k * 0x14)
-    base = k * 0x14
-    if tile_off == 0x14 and k == 0:          # static: palette at the very end
-        tiles = fnt_block[0x14:0x14 + tile_len]
+        struct.unpack_from("<IHHHHIHH", fnt_block, k * FNT_HEADER_LEN)
+    base = k * FNT_HEADER_LEN
+    if tile_off == FNT_HEADER_LEN and k == 0:          # static: palette at the very end
+        tiles = fnt_block[FNT_HEADER_LEN:FNT_HEADER_LEN + tile_len]
         pal = fnt_block[len(fnt_block) - pal_len:] if pal_len else b""
     else:
         tiles = fnt_block[base + tile_off:base + tile_off + tile_len]
-        pal = fnt_block[base + pal_ptr + 12:base + pal_ptr + 12 + pal_len]
-    return tiles, _bgr555(pal), (8 if flags & 0x40 else 4)
+        pal = fnt_block[base + pal_ptr + FNT_PALETTE_PTR_OFF:base + pal_ptr + FNT_PALETTE_PTR_OFF + pal_len]
+    return tiles, _bgr555(pal), (8 if flags & FNT_FLAG_8BPP else 4)
 
 
 def _frame(dat_block, frame):
     """(chunk, [(attr, dx, dy), ...]) of a frame of a set's dat block."""
-    off, count, chunk = struct.unpack_from("<HBB", dat_block, 0xC + frame * 4)
-    ents = [struct.unpack_from("<Hbb", dat_block, 0xC + off + e * 4) for e in range(count)]
+    off, count, chunk = struct.unpack_from("<HBB", dat_block, DAT_TABLE_OFF + frame * 4)
+    ents = [struct.unpack_from("<Hbb", dat_block, DAT_TABLE_OFF + off + e * 4) for e in range(count)]
     return chunk, ents
 
 
 def _draw_entry(canvas, tiles, bpp, pal, attr, dx, dy, ox, oy):
-    tile = attr & 0x3FF
+    tile = attr & ATTR_TILE_MASK
     hflip, vflip = (attr >> 10) & 1, (attr >> 11) & 1
     w, h = DIMS[((attr >> 14) & 3, (attr >> 12) & 3)]
     tw = w // 8
@@ -262,8 +273,8 @@ def build_icon_set(fnt_file, dat_file, logo_data):
         unit += units
     # fnt block: static, 4bpp, one 16-colour palette (index 0 = transparent)
     tile_len = len(tiles)
-    header = struct.pack("<IHHHHIHH", 0x14, tile_len, 0x18, tile_len // 4, 0x8020,
-                         0x14 + tile_len - 0xC, 0x20, 8)
+    header = struct.pack("<IHHHHIHH", FNT_HEADER_LEN, tile_len, FNT_HEADER_FIXED, tile_len // 4,
+                         FNT_FLAGS_4BPP, FNT_HEADER_LEN + tile_len - FNT_PALETTE_PTR_OFF, FNT_PALETTE_LEN, 8)
     palette = b"".join(struct.pack("<H", (r >> 3) | ((g >> 3) << 5) | ((b >> 3) << 10))
                        for r, g, b in [(0, 0, 0)] + list(colours))
     fnt_block = header + bytes(tiles) + palette
@@ -272,6 +283,6 @@ def build_icon_set(fnt_file, dat_file, logo_data):
     table = b"".join(struct.pack("<HBB", 4 * n + 4 * i, 1, 0) for i in range(n))
     table += b"".join(struct.pack("<Hbb", attr, dx, dy) for attr, dx, dy in frames)
     scripts = b"".join(struct.pack("<H", 2 * n + 4 * i) for i in range(n))
-    scripts += b"".join(struct.pack("<BBBB", i, 1, 0, 0xFF) for i in range(n))
+    scripts += b"".join(struct.pack("<BBBB", i, 1, 0, ANIM_END) for i in range(n))
     dat_block = struct.pack("<III", 8, 8 + len(table), 4) + table + scripts
     return fnt_block, dat_block

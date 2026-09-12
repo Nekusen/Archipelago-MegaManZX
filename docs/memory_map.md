@@ -51,12 +51,12 @@ sub-sections below expand the bitfields.
 | 0x021045FC.5-7, FD.0-2 | bits | CARDKEY_MASKS | Card Keys (1.2) | client |
 | 0x021045FF.4-7, 0x02104600.0-3 | bits | FLAG_LEFT, FLAG_RIGHT | boss rush pairs beaten (1.8) | client |
 | 0x02104602.1 | bit | TROOP_MERGE | Troop megamerge done; blocks the Giro scene while set | client |
-| 0x02104602.2-3 | bits | ENDING_SERPENT, GOAL_BITS_ALT | Serpent form 1 and form 2 defeated | client |
+| 0x02104602.2-3 | bits | ENDING_SERPENT, GOAL_BITS_SERPENT | Serpent form 1 and form 2 defeated | client |
 | 0x02104603..0F | 13 | LOCATIONS detect | Secret Disk bits (1.7) | client |
 | 0x0210461D.5-7, 1E.0-4 | bits | ITEMS grant | ITEM B chips owned (1.6) | client |
 | 0x02104626.0-3 | bits | MODEL_PART2 | second half of HX, FX, LX, PX (flags 720-723) | both |
 | 0x02104627.0-3 | bits | MODEL_POSSESSION | first half of HX, FX, LX, PX (flags 728-731) | both |
-| 0x02104627.4-7, 28, 29.0 | 13 bits | TRANSERVER_UNLOCK_BITS | Transport destinations (1.5) | client |
+| 0x02104627.4-7, 28, 29.0 | 13 bits | ITEMS[...]["grant"] of the Transerver Access items | Transport destinations (1.5) | client |
 | 0x0210462B | u8 | MISSION_ACTIVE_BYTE | .1 mission accepted, .2 story mission; the Report clears it | client |
 | 0x0210462C.0-1 | bits | EVENT_GATES | N-1 Zero 3 / Zero 4 doors, recomputed from the GBA slot | none |
 | 0x0210462D.0 | bit | GAME_CLEARED | game completed, set just before the credits | client |
@@ -485,15 +485,15 @@ writes it into a gap between overlay slots.
 | 0x020CB438 | 28 | MENU_WARP_CAVE_B | closes the menu when the request flag is set |
 | 0x020CB460 | 48 | SKIP_CAVE | New Game to LOAD when the carousel step is 6 |
 | 0x020CB4A0 | 88 | PICKUP_MAILBOX_CAVE | records collected refills |
-| 0x020CB500 | 36 | PICKUP_MAILBOX_RAM, PICKUP_MAILBOX_ADDR | pickup mailbox (layout below) |
+| 0x020CB500 | 36 | PICKUP_MAILBOX_ADDR | pickup mailbox (layout below) |
 | 0x020CB540 | 24 | CUTSCENE_SKIP_CAVE | marks the event seen when START skips |
 | 0x020CB600 | 152 | NOTIFY_CAVE | opens the popup with the client's text |
-| 0x020CB700 | 0x100 | NOTIFY_RAM, NOTIFY_ADDR | notice mailbox (layout below) |
+| 0x020CB700 | 0x100 | NOTIFY_ADDR | notice mailbox (layout below) |
 | 0x020CB800 | 236 | PICKUP_AP_CAVE | AP gate (+0) and stubs refill +88, disk +124, Life Up +172, Sub Tank +204 |
 | 0x020CB980 | 26 | DATASELECT_CAVE | hides the X icon of a slot without Model X |
 | 0x020CB99C | 32 | MENU_WARP_CAVE_A | returns the held pad, sets the flags on Y |
 | 0x020CB9D0 | 2 | MENU_WARP_FLAGS_RAM, WARP_REQ | +0 request (client clears), +1 close (cave B clears) |
-| 0x02191460 | 0xC4 | ICON_TABLE_RAM, ICON_TABLE_ADDR | per-room pickup table written by the client |
+| 0x02191460 | 0xC4 | ICON_TABLE_ADDR | per-room pickup table written by the client |
 
 Pickup mailbox (0x020CB500):
 
@@ -555,6 +555,7 @@ The save image is 0x4F4 bytes at 0x021602A8. The LOAD handler enters the
 scene from it, and the client seeds it while the title menus are open so
 that New Game (redirected to LOAD) starts in the post-tutorial hub. It also
 serves the game as DATA SELECT slot content.
+The baseline bytes ship as `assets/golden_image.bin`, which golden.py loads.
 
 | offset | size | field | RAM twin |
 |---|---|---|---|

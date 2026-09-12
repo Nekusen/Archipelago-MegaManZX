@@ -421,21 +421,6 @@ def count_items_used(doc):
     return progression_items(document_atoms(doc))
 
 
-def req_and(a, b):
-    """AND of two requirements tier by tier, keeping the tiers cumulative."""
-    if a is None:
-        return b
-    if b is None:
-        return a
-    out = {}
-    prev = []
-    for t in TIERS:
-        eff = dnf_and(req_alternatives(a, t), req_alternatives(b, t))
-        out[t] = [alt for alt in eff if alt not in prev]
-        prev = eff
-    return out
-
-
 # Compilation to Archipelago rules
 
 def compile_req(req, tier, player, hu_in_pool=False, extra_atoms=None):

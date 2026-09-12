@@ -1,18 +1,20 @@
 """Universal Tracker callbacks: map tab and player icon from the position the client publishes."""
 
 from .tracker_meta import ROOMS, SUB_TO_ROOM, OVERALL_MAP, OVERALL_POINTS, OVERALL_ROOM_POINTS
-from .data import HUB_FLOOR_Y
+from .data import HUB_FLOOR_Y, HUB_ROOM, ROOM_SUBAREA
 
 PLAYER_ICON = "images/player.png"
-HUB_SUB = 70
+HUB_SUB = ROOM_SUBAREA[HUB_ROOM]
+HUB_PAD_DY = 17                  # console pad height above the floor
+HUB_FLOOR_REACH = 96             # y distance within which a floor claims the player
 
 
 def _hub_area(y: int):
     """Area letter of the hub floor at player y; M wins over N on a tie."""
     best = None
     for letter, fy in HUB_FLOOR_Y.items():
-        d = abs(y - (fy - 17))
-        if d <= 96 and (best is None or d < best[0] or (d == best[0] and letter < best[1])):
+        d = abs(y - (fy - HUB_PAD_DY))
+        if d <= HUB_FLOOR_REACH and (best is None or d < best[0] or (d == best[0] and letter < best[1])):
             best = (d, letter)
     return best[1] if best else None
 

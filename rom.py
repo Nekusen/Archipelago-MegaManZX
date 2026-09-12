@@ -10,16 +10,48 @@ from settings import get_settings
 from worlds.Files import (APProcedurePatch, APTokenMixin, APTokenTypes,
                           APPatchExtension)
 
+from .data import ICON_SET, NOTIFY_ADDR, PICKUP_MAILBOX_ADDR
+
 MMZX_US_MD5 = "88b684b1b3eea885a07625da89f1e5b3"
-AP_MAGIC_OFFSET = 0x1000                  # zero padding after the NDS header
+
+# NDS header fields, as ROM offsets. The CRC covers every byte before its field.
+NDS_HDR_ARM9 = 0x20                       # u32 ROM offset, entry point, RAM address, size
+NDS_HDR_ARM9_SIZE = 0x2C
+NDS_HDR_ARM7 = 0x30
+NDS_HDR_FNT = 0x40
+NDS_HDR_FAT = 0x48
+NDS_HDR_FAT_SIZE = 0x4C
+NDS_HDR_OVERLAYS9 = 0x50
+NDS_HDR_BANNER = 0x68
+NDS_HDR_ROM_SIZE = 0x80                   # "used ROM size"
+NDS_HDR_CRC = 0x15E
+FAT_ENTRY_LEN = 8                         # u32 start, u32 end per NitroFS file
+FILE_ALIGN_MASK = 0x1FF                   # NitroFS files start on 512-byte boundaries
+NITROCODE_MAGIC = b"\x21\x06\xC0\xDE"     # footer(s) that follow the ARM9 in the ROM
+NITROCODE_LEN = 12
+CRC16_INIT = 0xFFFF                       # CRC-16/MODBUS of the header
+CRC16_POLY = 0xA001
+
+# AP marker: written by the token step into the zero padding after the header.
+AP_MAGIC_OFFSET = 0x1000
 AP_MAGIC = b"MZXAP\x00"
-WORLD_VERSION_INT = 1
+AP_MARKER_LEN = 0x80
+AP_MARKER_VERSION_OFF = 0x08              # u32 major << 16 | minor << 8 | build
+AP_MARKER_SLOT_OFF = 0x10
+AP_MARKER_SLOT_MAX = 63                   # bytes of UTF-8, then a NUL
+AP_MARKER_SEED_OFF = 0x50
+AP_MARKER_SEED_MAX = 31
+
+# Thumb `bl`: two halfwords, each carrying 11 bits of the halfword offset.
+THUMB_BL_HIGH = 0xF000
+THUMB_BL_LOW = 0xF800
+THUMB_BL_OFFSET_MASK = 0x7FF
 
 # Tutorial skip: New Game enters the scene through the LOAD handler, from the
 # image the client seeds. The handler also serves the attract demo, so the cave
 # checks the game mode (low 16 bits zero) and the title carousel step first.
 SKIP_ENTRY_RAM = 0x02022544
-SKIP_ENTRY = bytes.fromhex("004b184761b40c02")        # jump to SKIP_CAVE_RAM
+SKIP_ENTRY_NEW = bytes.fromhex("004b184761b40c02")    # jump to SKIP_CAVE_RAM
 SKIP_ENTRY_ORIG = bytes.fromhex("10b5041c00f020fa")
 SKIP_CAVE_RAM = 0x020CB460
 SKIP_CAVE = bytes.fromhex(
@@ -93,8 +125,7 @@ PICKUP_MAILBOX_CAVE = bytes.fromhex(
     "10b544f7b3fb94202858c0081dd3c0202858002819d00d490968002915d04a68"
     "aa4201d00968f8e70a891202084800780243287d00040243064b186807240440"
     "a400e41862600130186010bdf48110022882100200b50c02")
-PICKUP_MAILBOX_RAM = 0x020CB500          # = data.PICKUP_MAILBOX_ADDR
-PICKUP_MAILBOX_SLOTS = 8
+# The mailbox itself is data.PICKUP_MAILBOX_ADDR, right after the cave.
 
 # NOTIFY: the client's text in the game's small non-blocking popup. The cave
 # wraps the message tick; it opens the popup when the message system is idle.
@@ -108,9 +139,7 @@ NOTIFY_CAVE = bytes.fromhex(
     "2078022804d1a088618846f743fe16e0201d486260884861c889002801d03bf7"
     "61ff0c4846f7bafd0a4846f7f1fc0649087b002801d0012000e00220886146f7"
     "d5fe10bd00b70c02c4027e0202f5140206f51402cc027e02")
-NOTIFY_RAM = 0x020CB700        # = data.NOTIFY_ADDR
-NOTIFY_BUF_MAX = 0xFC
-NOTIFY_POPUP_GLYPHS = 30       # one popup line
+# The notice buffer itself is data.NOTIFY_ADDR, right after the cave.
 
 # PICKUP_AP: a pickup standing for a multiworld location (the `present` bitmap
 # of the icon table) skips its vanilla effect, popup and label; it only chimes.
@@ -125,7 +154,6 @@ PICKUP_AP_HOOKS = [
     (0x020A3CD4, "242061f701fe39485a216ef7f9fa", "lifeup", "201c", "c046" * 4),
     (0x020A3CEE, "182061f7f4fd33485a216ef7ecfa", "subtank", "201c", "c046" * 4),
 ]
-ICON_TABLE_PRESENT_OFF = 0xA4            # `present` bitmap read by the gate
 
 # Cutscene skip: START skips a story cutscene only on a replay. The "event seen"
 # test becomes a no-op and the cave marks the event seen, as watching it would.
@@ -169,7 +197,6 @@ MENU_WARP_TEXT_OFFS = (0xB14, 0xB4B, 0xB85)   # three variants of the help text
 
 # Secret Disk logo: the disk body tile of set 58 becomes the Archipelago logo of
 # the Metroid Zero Mission apworld in the disk's palette; vanilla tile by digest.
-DISK_LOGO_ROM = 0x00F5F20C   # vanilla offset; patched through DISK_LOGO_FNT_OFF
 DISK_LOGO_SHA256 = "0cf5040681e341af0f130f438c12989c4747f7b7c531792025e6e8f9d9f8c65c"
 DISK_LOGO_NEW = bytes.fromhex(
     "000000f00000009f00f0ff9900cfcc9ff0ccccfcf0ccccfcf0fcfffc005f550f"
@@ -178,13 +205,13 @@ DISK_LOGO_NEW = bytes.fromhex(
     "f04444f4ff4444f4aa4f44f4aafa440faafaff00aafa0000aa0f0000ff000000")
 
 
-# AP icon set: pickups are drawn as the item placed there. icons.py builds set 261
-# from the player's ROM; it goes into obj_fnt/obj_dat and is made resident like set 58.
-ICON_SET = 261
+# AP icon set: pickups are drawn as the item placed there. icons.py builds the set
+# (data.ICON_SET) from the player's ROM; it goes into obj_fnt/obj_dat and is made
+# resident like set 58. The graphics caves share the zero stretch that ends at
+# GFX_CAVES_END; the client's icon table is data.ICON_TABLE_ADDR.
 ICON_FNT_FILE_ID, ICON_DAT_FILE_ID = 235, 234     # NitroFS ids of obj_fnt.bin, obj_dat.bin
 DISK_LOGO_FNT_OFF = 0x5620C                       # disk body tile inside obj_fnt.bin
-ICON_TABLE_RAM = 0x02191460                       # = data.ICON_TABLE_ADDR, written by the client
-ICON_TABLE_SIZE = 0xC4
+GFX_CAVES_END = 0x020C8394
 ICON_RESIDENT_LIST_PATCH = [
     (0x020C9C36, "0000", "0501"),     # resident list [0, 1, 58] gains 261
     (0x0200BD16, "0322", "0422"),     # list length 3 -> 4 (fnt)
@@ -219,7 +246,8 @@ def _thumb_bl(src: int, dst: int) -> bytes:
     """Encode a Thumb `bl dst` placed at src (4 bytes)."""
     import struct
     off = dst - (src + 4)
-    return struct.pack("<HH", 0xF000 | ((off >> 12) & 0x7FF), 0xF800 | ((off >> 1) & 0x7FF))
+    return struct.pack("<HH", THUMB_BL_HIGH | ((off >> 12) & THUMB_BL_OFFSET_MASK),
+                       THUMB_BL_LOW | ((off >> 1) & THUMB_BL_OFFSET_MASK))
 
 
 def _gfx_data(name: str) -> bytes:
@@ -261,13 +289,14 @@ def _install_icon_set(d: bytearray) -> int:
     import struct
 
     from . import icons
-    fat = struct.unpack_from("<I", d, 0x48)[0]
-    fatsize = struct.unpack_from("<I", d, 0x4C)[0]
-    used = max(struct.unpack_from("<II", d, fat + k * 8)[1] for k in range(fatsize // 8))
-    cur = (used + 0x1FF) & ~0x1FF
+    fat = struct.unpack_from("<I", d, NDS_HDR_FAT)[0]
+    fatsize = struct.unpack_from("<I", d, NDS_HDR_FAT_SIZE)[0]
+    used = max(struct.unpack_from("<II", d, fat + k * FAT_ENTRY_LEN)[1]
+               for k in range(fatsize // FAT_ENTRY_LEN))
+    cur = (used + FILE_ALIGN_MASK) & ~FILE_ALIGN_MASK
     files = {}
     for fid in (ICON_DAT_FILE_ID, ICON_FNT_FILE_ID):
-        s0, e0 = struct.unpack_from("<II", d, fat + fid * 8)
+        s0, e0 = struct.unpack_from("<II", d, fat + fid * FAT_ENTRY_LEN)
         files[fid] = bytes(d[s0:e0])
     fnt_block, dat_block = icons.build_icon_set(files[ICON_FNT_FILE_ID], files[ICON_DAT_FILE_ID], _gfx_data)
     fnt_start = None
@@ -276,11 +305,11 @@ def _install_icon_set(d: bytearray) -> int:
         if cur + len(newfile) > len(d) or any(d[cur:cur + len(newfile)]):
             raise ValueError("MMZX: no free padding to relocate file %d" % fid)
         d[cur:cur + len(newfile)] = newfile
-        struct.pack_into("<II", d, fat + fid * 8, cur, cur + len(newfile))
+        struct.pack_into("<II", d, fat + fid * FAT_ENTRY_LEN, cur, cur + len(newfile))
         if fid == ICON_FNT_FILE_ID:
             fnt_start = cur
-        cur = (cur + len(newfile) + 0x1FF) & ~0x1FF
-    struct.pack_into("<I", d, 0x80, cur)          # "used ROM size"
+        cur = (cur + len(newfile) + FILE_ALIGN_MASK) & ~FILE_ALIGN_MASK
+    struct.pack_into("<I", d, NDS_HDR_ROM_SIZE, cur)
     return fnt_start
 
 # BLZ (DS code compression) with an optimal parse: a greedy encoder leaves no
@@ -419,7 +448,7 @@ class MMZXPatchExtension(APPatchExtension):
         hu_in_pool = bool(cfg[0] & CFG_HU_IN_POOL) if cfg else False
 
         d = bytearray(rom)
-        arm9_off, _entry, arm9_ram, arm9_len = struct.unpack_from("<4I", d, 0x20)
+        arm9_off, _entry, arm9_ram, arm9_len = struct.unpack_from("<4I", d, NDS_HDR_ARM9)
         code = bytes(d[arm9_off:arm9_off + arm9_len])
         params = CodeStartParams.from_code(code, arm9_ram)
         if params is None or params.compressed_end is None:
@@ -452,7 +481,7 @@ class MMZXPatchExtension(APPatchExtension):
             raise ValueError("MMZX: 0x%08X is outside the ARM9 sections" % ram)
 
         # Tutorial skip
-        poke(SKIP_ENTRY_RAM, SKIP_ENTRY, SKIP_ENTRY_ORIG)
+        poke(SKIP_ENTRY_RAM, SKIP_ENTRY_NEW, SKIP_ENTRY_ORIG)
         poke(SKIP_CAVE_RAM, SKIP_CAVE)
         # OAM drawer guards
         poke(OAMLOOP_BR_RAM, OAMLOOP_BR_NEW, OAMLOOP_BR_ORIG)
@@ -468,7 +497,7 @@ class MMZXPatchExtension(APPatchExtension):
         for ram, orig, new in PICKUP_FLAG_PATCH:
             poke(ram, bytes.fromhex(new), bytes.fromhex(orig))
         # Pickup mailbox
-        assert len(PICKUP_MAILBOX_CAVE) <= PICKUP_MAILBOX_RAM - PICKUP_MAILBOX_CAVE_RAM
+        assert len(PICKUP_MAILBOX_CAVE) <= PICKUP_MAILBOX_ADDR - PICKUP_MAILBOX_CAVE_RAM
         poke(PICKUP_MAILBOX_CAVE_RAM, PICKUP_MAILBOX_CAVE,
              bytes(len(PICKUP_MAILBOX_CAVE)))
         poke(PICKUP_MAILBOX_HOOK_RAM, PICKUP_MAILBOX_HOOK_NEW, PICKUP_MAILBOX_HOOK_ORIG)
@@ -484,7 +513,7 @@ class MMZXPatchExtension(APPatchExtension):
         for ram, orig, new in MENU_WARP_HOOKS:
             poke(ram, bytes.fromhex(new), bytes.fromhex(orig))
         # NOTIFY
-        assert len(NOTIFY_CAVE) <= NOTIFY_RAM - NOTIFY_CAVE_RAM
+        assert len(NOTIFY_CAVE) <= NOTIFY_ADDR - NOTIFY_CAVE_RAM
         poke(NOTIFY_CAVE_RAM, NOTIFY_CAVE, bytes(len(NOTIFY_CAVE)))
         poke(NOTIFY_HOOK_RAM, NOTIFY_HOOK_NEW, NOTIFY_HOOK_ORIG)
         # Cutscene skip
@@ -496,15 +525,15 @@ class MMZXPatchExtension(APPatchExtension):
         for ram, orig, new in ICON_RESIDENT_LIST_PATCH:
             poke(ram, bytes.fromhex(new), bytes.fromhex(orig))
         assert ICON_BOOT_CAVE_RAM + len(ICON_BOOT_CAVE) <= ICON_CAVES_RAM
-        assert ICON_CAVES_RAM + len(ICON_CAVES) <= 0x020C8394
+        assert ICON_CAVES_RAM + len(ICON_CAVES) <= GFX_CAVES_END
         poke(ICON_BOOT_CAVE_RAM, ICON_BOOT_CAVE, bytes(len(ICON_BOOT_CAVE)))
         poke(ICON_BOOT_HOOK_RAM, _thumb_bl(ICON_BOOT_HOOK_RAM, ICON_BOOT_CAVE_RAM),
              bytes.fromhex(ICON_BOOT_HOOK_ORIG))
         poke(ICON_CAVES_RAM, ICON_CAVES, bytes(len(ICON_CAVES)))
-        assert PALSHARE_CAVE_RAM + len(PALSHARE_CAVE) <= 0x020C8394
+        assert PALSHARE_CAVE_RAM + len(PALSHARE_CAVE) <= GFX_CAVES_END
         poke(PALSHARE_CAVE_RAM, PALSHARE_CAVE, bytes(len(PALSHARE_CAVE)))
         assert ICON_RETRY_CAVE_RAM >= PALSHARE_CAVE_RAM + len(PALSHARE_CAVE)
-        assert ICON_RETRY_CAVE_RAM + len(ICON_RETRY_CAVE) <= 0x020C8394
+        assert ICON_RETRY_CAVE_RAM + len(ICON_RETRY_CAVE) <= GFX_CAVES_END
         poke(ICON_RETRY_CAVE_RAM, ICON_RETRY_CAVE, bytes(len(ICON_RETRY_CAVE)))
         for ram, orig in ICON_RETRY_HOOKS:
             poke(ram, _thumb_bl(ram, ICON_RETRY_CAVE_RAM), bytes.fromhex(orig))
@@ -514,7 +543,7 @@ class MMZXPatchExtension(APPatchExtension):
             poke(ram, _thumb_bl(ram, ICON_ANIM_CAVE_RAM), bytes.fromhex(orig))
 
         # Sprite guard
-        assert SPRITEGUARD_CAVE_RAM + len(SPRITEGUARD_CAVE) <= 0x020C8394
+        assert SPRITEGUARD_CAVE_RAM + len(SPRITEGUARD_CAVE) <= GFX_CAVES_END
         assert SPRITEGUARD_CAVE_RAM >= ICON_CAVES_RAM + len(ICON_CAVES)
         poke(SPRITEGUARD_CAVE_RAM, SPRITEGUARD_CAVE, bytes(len(SPRITEGUARD_CAVE)))
         for ram in SPRITEGUARD_SITES:
@@ -542,13 +571,14 @@ class MMZXPatchExtension(APPatchExtension):
             raise ValueError("MMZX: the ARM9 did not compress")
         params.compressed_end = arm9_ram + BLZ_HEADER_LEN + len(body)
         blob = params.write_start_info(packed, arm9_ram)[:BLZ_HEADER_LEN] + body
-        # the 12-byte "nitrocode" footer(s) that follow the ARM9 in the ROM
+        # the "nitrocode" footer(s) that follow the ARM9 in the ROM
         post_off = post_end = arm9_off + arm9_len
-        while bytes(d[post_end:post_end + 4]) == b"\x21\x06\xC0\xDE":
-            post_end += 12
+        while bytes(d[post_end:post_end + 4]) == NITROCODE_MAGIC:
+            post_end += NITROCODE_LEN
         post = bytes(d[post_off:post_end])
+        # the slot ends where the next part of the ROM begins
         others = [struct.unpack_from("<I", d, o)[0]
-                  for o in (0x30, 0x40, 0x48, 0x50, 0x68)]
+                  for o in (NDS_HDR_ARM7, NDS_HDR_FNT, NDS_HDR_FAT, NDS_HDR_OVERLAYS9, NDS_HDR_BANNER)]
         slot_end = min(x for x in others if x > arm9_off)
         if len(blob) + len(post) > slot_end - arm9_off:
             raise ValueError(
@@ -558,7 +588,7 @@ class MMZXPatchExtension(APPatchExtension):
         end = arm9_off + len(blob)
         d[end:end + len(post)] = post
         d[end + len(post):slot_end] = b"\x00" * (slot_end - end - len(post))
-        struct.pack_into("<I", d, 0x2C, len(blob))
+        struct.pack_into("<I", d, NDS_HDR_ARM9_SIZE, len(blob))
 
         # AP icon set; relocates obj_dat and obj_fnt
         fnt_start = _install_icon_set(d)
@@ -581,13 +611,13 @@ class MMZXPatchExtension(APPatchExtension):
                 raise ValueError("MMZX: unexpected disk tile at ROM 0x%X (%s)" % (logo_off, cur[:8].hex()))
             d[logo_off:logo_off + len(DISK_LOGO_NEW)] = DISK_LOGO_NEW
 
-        # Header CRC16 (CRC-16/MODBUS over [0:0x15E])
-        crc = 0xFFFF
-        for b in bytes(d[:0x15E]):
+        # Header CRC
+        crc = CRC16_INIT
+        for b in bytes(d[:NDS_HDR_CRC]):
             crc ^= b
             for _ in range(8):
-                crc = (crc >> 1) ^ 0xA001 if crc & 1 else crc >> 1
-        struct.pack_into("<H", d, 0x15E, crc)
+                crc = (crc >> 1) ^ CRC16_POLY if crc & 1 else crc >> 1
+        struct.pack_into("<H", d, NDS_HDR_CRC, crc)
         return bytes(d)
 
 
@@ -610,15 +640,21 @@ class MMZXPatch(APProcedurePatch, APTokenMixin):
 
 
 def write_patch_tokens(patch: MMZXPatch, slot_name: str, seed_name: str,
-                       hu_in_pool: bool = False) -> None:
-    """Write the AP marker (magic, version, slot, seed) and the option blob read by patch_arm9."""
-    blob = bytearray(0x80)
+                       world_version: tuple[int, int, int], hu_in_pool: bool = False) -> None:
+    """Write the AP marker (magic, version, slot, seed) and the option blob read by patch_arm9.
+
+    `world_version` is the world's (major, minor, build), as the core reads it
+    from archipelago.json.
+    """
+    blob = bytearray(AP_MARKER_LEN)
     blob[0:len(AP_MAGIC)] = AP_MAGIC
-    blob[0x08:0x0C] = WORLD_VERSION_INT.to_bytes(4, "little")
-    name = slot_name.encode("utf-8")[:63]
-    blob[0x10:0x10 + len(name)] = name
-    seed = seed_name.encode("utf-8")[:31]
-    blob[0x50:0x50 + len(seed)] = seed
+    major, minor, build = world_version
+    version = major << 16 | minor << 8 | build
+    blob[AP_MARKER_VERSION_OFF:AP_MARKER_VERSION_OFF + 4] = version.to_bytes(4, "little")
+    name = slot_name.encode("utf-8")[:AP_MARKER_SLOT_MAX]
+    blob[AP_MARKER_SLOT_OFF:AP_MARKER_SLOT_OFF + len(name)] = name
+    seed = seed_name.encode("utf-8")[:AP_MARKER_SEED_MAX]
+    blob[AP_MARKER_SEED_OFF:AP_MARKER_SEED_OFF + len(seed)] = seed
     patch.write_token(APTokenTypes.WRITE, AP_MAGIC_OFFSET, bytes(blob))
     patch.write_file("token_data.bin", patch.get_token_binary())
     # option flags for patch_arm9, which runs before apply_tokens

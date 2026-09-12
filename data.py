@@ -331,13 +331,10 @@ ITEMS = {
     '1-Up': {'id': 13664769, 'classification': 'filler', 'grant': ['oneup'], 'pooled': True},
 }
 
-LOCATION_NAME_TO_ID = {n: v['id'] for n, v in LOCATIONS.items()}
-ITEM_NAME_TO_ID = {n: v['id'] for n, v in ITEMS.items()}
-
 # Goal bits: the epilogue event flag set after Serpent's final explosion,
 # and the D-5 script flags of Serpent's two forms as the alternative.
 GOAL_BITS = [(0x021045CA, 5)]
-GOAL_BITS_ALT = [(0x02104602, 2), (0x02104602, 3)]
+GOAL_BITS_SERPENT = [(0x02104602, 2), (0x02104602, 3)]
 
 # Mailbox of respawnable pickups, installed by the ROM patch: a counter and a
 # ring of (subarea, coords index, role) entries. Layout in docs/memory_map.md.
@@ -450,7 +447,7 @@ STARTING_MODEL_ITEM = {
 }
 # Starting Transervers: key -> (subarea, x_px, y_px).
 STARTING_TRANSERVERS = {
-    'guardian_hub': (70, 288, 351),
+    'guardian_hub': (70, 384, 335),
 }
 
 # Room graph: directed edges between rooms. kind is 'door' (physical door),
@@ -527,7 +524,6 @@ ROOM_SUBAREA = {
     'z01': 70,
     'z02': 71,
 }
-TRANSERVER_ROOMS = ['a02', 'b02', 'c01', 'c02', 'd02', 'd03', 'e07', 'f05', 'g05', 'i01', 'i03', 'k04', 'l04', 'm03', 'n01', 'o02', 'x01']
 # Transerver network: destination room -> the access item that opens its warp.
 TRANSERVER_ACCESS = {
     'a02': 'Transerver Access - Area A',
@@ -565,25 +561,9 @@ EVENT_GATES = {
 }
 EVENT_GATES_OPEN = [205, 379, 381, 382, 395]
 EVENT_GATES_ALL6 = [225, 378]
-TRANSERVER_UNLOCK_BITS = {
-    'a02': (0x02104627, 4),
-    'b02': (0x02104627, 5),
-    'c02': (0x02104627, 6),
-    'd02': (0x02104627, 7),
-    'e07': (0x02104628, 0),
-    'f05': (0x02104628, 1),
-    'g05': (0x02104628, 2),
-    'i03': (0x02104628, 3),
-    'k04': (0x02104628, 4),
-    'l04': (0x02104628, 5),
-    'm03': (0x02104628, 6),
-    'o02': (0x02104628, 7),
-    'x01': (0x02104629, 0),
-}
 START_TRANSERVER_AREA = 'A'
 # Warp menu destinations (map badges) and save-only pads (DATA rooms).
 WARP_DESTINATIONS = ['a02', 'b02', 'c02', 'd02', 'e07', 'f05', 'g05', 'i03', 'k04', 'l04', 'm03', 'o02']
-SAVE_ROOMS = ['c03', 'd01', 'h04', 'j01']
 DOORS = [
     {'name': 'a01 door (864,1120)', 'src': 'a01', 'dst': 'a01', 'kind': 'internal', 'key': None, 'gate': None, 'pos': [864, 1120], 'dst_pos': [6688, 352]},
     {'name': 'a01 door (1456,1120)', 'src': 'a01', 'dst': 'a04', 'kind': 'door', 'key': None, 'gate': None, 'pos': [1456, 1120], 'dst_pos': [288, 720]},

@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Any
 import worlds._bizhawk as bizhawk
 from worlds._bizhawk.client import BizHawkClient
 
-from .data import (LOCATIONS, ITEMS, GOAL_BITS, GOAL_BITS_ALT, MISSION_ACCEPT,
+from .data import (LOCATIONS, ITEMS, GOAL_BITS, GOAL_BITS_SERPENT, MISSION_ACCEPT,
                    MISSION_STATE_ADDR, MISSION_ACTIVE_FLAG,
                    STARTING_MODELS, STARTING_MODEL_ITEM, STARTING_TRANSERVERS,
                    MODEL_X_POSSESSION, ACTIVE_MODEL_ADDR)
@@ -415,7 +415,7 @@ class MMZXClient(BizHawkClient):
         """
         if self._win is not None:
             return self._win
-        addrs: list[int] = [a for a, _ in GOAL_BITS] + [a for a, _ in GOAL_BITS_ALT]
+        addrs: list[int] = [a for a, _ in GOAL_BITS] + [a for a, _ in GOAL_BITS_SERPENT]
         for v in LOCATIONS.values():
             det = v.get("detect")
             if not det:
@@ -650,7 +650,7 @@ class MMZXClient(BizHawkClient):
         # Goal: Serpent beaten, by the epilogue event or by both D-5 Serpent bits
         if not ctx.finished_game:
             done = (all(bit_set(a, b) for (a, b) in GOAL_BITS)
-                    or all(bit_set(a, b) for (a, b) in GOAL_BITS_ALT))
+                    or all(bit_set(a, b) for (a, b) in GOAL_BITS_SERPENT))
             if done:
                 from NetUtils import ClientStatus
                 ctx.finished_game = True

@@ -226,5 +226,5 @@ class MMZXWorld(World):
             "notify_received": self.options.notify_received.current_key,
             "notify_sent": self.options.notify_sent.current_key,
             "notify_style": self.options.notify_style.current_key,
-            "version": "0.1.0",
+            "version": ".".join(str(n) for n in self.world_version),
         }

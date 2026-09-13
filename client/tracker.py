@@ -79,10 +79,9 @@ async def report_death(client: "MMZXClient", ctx, tick: Tick) -> None:
 async def receive_death_link(client: "MMZXClient", ctx, tick: Tick) -> None:
     """Apply a received death the way the game does it, once the player has control.
 
-    HP 0, the hurt state and a lethal hit flag: the model code then runs its
-    own death sequence, which every form has. HP alone does not kill, and the
-    death substate written by hand leaves the human form stuck. The death
-    stays pending through cutscenes and interactions.
+    HP 0, the hurt state and a lethal hit flag, so every form runs its own
+    death sequence (HP alone does not kill). The death stays pending through
+    cutscenes and interactions.
     """
     if client.prev_death_link is None:
         client.prev_death_link = ctx.last_death_link

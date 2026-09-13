@@ -185,12 +185,9 @@ TROOP_START = (0x021045E0, 2)
 TROOP_ROOMS = (15, 16, 17)         # D-1 to D-3, where the scene arms
 TROOP_MERGE_SUBAREA = 16           # D-2
 D02_ROOM_MERGED = 7                # D-2 script state once merged
-# Save The People: the cell of I-3 and the six prisoners only exist once the
-# story handler has played its cell scene, and the handler only reaches that
-# scene through the I-1 entrance. From the Transerver pad of I-3 it never
-# leaves its first state, so the client moves it along once Hurricaune is
-# beaten, and re-arms the scene if the player teleports out with the people
-# still locked (vanilla keeps them in the room until they are freed).
+# Save The People: the cell and prisoners of I-3 exist only after the handler's
+# cell scene, which needs the I-1 entrance first; from the I-3 pad the client
+# moves the handler along itself (missions.people_unstick).
 PEOPLE_NAME = "Save The People"
 PEOPLE_STATE = 197                 # mission state "Save The People accepted"
 PEOPLE_HANDLER_ID = 9

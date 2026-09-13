@@ -63,10 +63,8 @@ async def serve_warp_request(client: "MMZXClient", ctx, guard) -> None:
 async def teleport(ctx, sub: int, x: int, y: int, guard) -> None:
     """Request a scene load at (sub, x, y), guarded on gameplay.
 
-    The descriptor takes the full scene word a door would write, not the bare
-    subarea: on entering a room the game compares the word's area index with
-    the previous room's and, when it differs, clears the per-area temporary
-    flags. A bare word (area 0) would make the next door wipe them.
+    The descriptor takes the scene word a door would write, not the bare
+    subarea: a bare one makes the next door clear the area's temporary flags.
     """
     writes = [
         (SCENE_DESC + DESC_SPAWN_X_OFF, (x << 8).to_bytes(4, "little"), DOM),

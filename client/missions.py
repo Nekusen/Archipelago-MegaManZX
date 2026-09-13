@@ -45,10 +45,8 @@ async def repair_missions(client: "MMZXClient", ctx, tick: Tick) -> None:
 async def release_boss_locks(client: "MMZXClient", ctx, tick: Tick) -> None:
     """Clear the boss lock bits once the player has left the room that set them.
 
-    A boss room script raises the lockdown and boss-active bits for its fight
-    and drops them when the boss dies. The game never lets the player leave
-    in between; a teleport does, and then every door in the game stays shut
-    until Abort Mission. Back in the room, its script starts the fight over.
+    A boss room raises them for its fight and drops them when the boss dies; a
+    teleport out leaves them set and every door in the game shut.
     """
     addrs = [BOSS_LOCKDOWN[0], BOSS_ACTIVE[0]]
     masks = bits_by_byte([BOSS_LOCKDOWN, BOSS_ACTIVE])
@@ -112,14 +110,10 @@ async def troop_unstick(client: "MMZXClient", ctx, tick: Tick) -> None:
 async def people_unstick(client: "MMZXClient", ctx, tick: Tick) -> None:
     """Move the Save The People story handler past the I-1 entrance.
 
-    The cell of I-3 and the prisoners are created by the handler's cell scene,
-    which only triggers once the handler has seen the I-1 entrance. Arriving by
-    the Transerver pad of I-3 skips that, so the handler stays at its first
-    state and the cell never appears. Once Hurricaune is beaten the handler is
-    set to the state that follows the entrance, as if the player had come in
-    the front way; the cell scene then plays on the way back to the cell. If
-    the player leaves I-3 with the scene played and the people still locked,
-    the scene is re-armed the same way, since only it creates the cell.
+    Only its cell scene creates the cell and the prisoners of I-3, and it
+    needs that entrance first; from the Transerver pad the handler would wait
+    forever. Once Hurricaune is beaten it is set as if the player had come in
+    the front way, and again if they teleport out with the people still locked.
     """
     r = await bizhawk.read(ctx.bizhawk_ctx, [
         (MISSION_STATE_ADDR, 4, DOM), (STORY_HANDLER_ID, 4, DOM), (STORY_HANDLER_STATE, 1, DOM),

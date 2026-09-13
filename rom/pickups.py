@@ -5,10 +5,8 @@ from ..data import PICKUP_MAILBOX_ADDR
 from .arm9 import Arm9, thumb_bl
 
 # Yellow Card Key dialogue: the Operator re-grants the key while Troop is
-# reported and the key unowned. The key comes from the pool, so skip it for good.
-# The console has two dialogue routines with the same test: the one behind the
-# Transerver with Transport and the one behind the plain computer (DATA floors
-# and Area C), so both branches become unconditional.
+# reported and the key unowned. The key comes from the pool, so both console
+# dialogue routines (Transerver with Transport, plain computer) skip it for good.
 YELLOWKEY_PATCH = [
     # (RAM, vanilla, patched)
     (0x02093BE4, bytes.fromhex("0cd0"), bytes.fromhex("0ce0")),   # Transerver console: beq -> b

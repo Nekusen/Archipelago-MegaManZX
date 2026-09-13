@@ -1,6 +1,6 @@
 """The "AP" sprite set: item icons cut from the player's ROM at patch time.
 
-rom.py inserts the set as set 261 and its icon caves draw it on pickups. Only
+sprites.install_icon_set inserts the set as set 261 and its icon caves draw it on pickups. Only
 the three Archipelago logos in assets/ ship with the world (MIT, from the Metroid:
 Zero Mission apworld); every other icon is a frame of the game's own sets
 (ICONS), quantised to the palette of set 58, which the AP set shares in VRAM.
@@ -26,7 +26,6 @@ import struct
 
 PALETTE_SET = 58                 # the AP set shares this set's palette in VRAM
 
-# Set format fields (module docstring): the fnt chunk header and the dat tables.
 FNT_HEADER_LEN = 0x14
 FNT_HEADER_FIXED = 0x18          # same in every header; meaning unknown
 FNT_PALETTE_PTR_OFF = 0xC        # the palette pointer counts from its own field

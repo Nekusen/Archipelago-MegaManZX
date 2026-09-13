@@ -108,7 +108,6 @@ class MMZXWorld(World):
                 "arena in tools/logic_editor/." % (self.player_name, ", ".join(loose)))
 
     def create_regions(self) -> None:
-        """Builds the regions and entrances from the logic document."""
         create_regions(self)
 
     def create_item(self, name: str) -> MMZXItem:
@@ -120,7 +119,6 @@ class MMZXWorld(World):
         return MMZXItem(name, cls, self.item_name_to_id[name], self.player)
 
     def create_event(self, name: str) -> MMZXItem:
-        """Progression event item with no id."""
         return MMZXItem(name, ItemClassification.progression, None, self.player)
 
     def get_filler_item_name(self) -> str:

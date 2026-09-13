@@ -181,7 +181,6 @@ class TestThumbBL(unittest.TestCase):
 
 class TestPatchTables(unittest.TestCase):
     def test_replacements_keep_their_length(self) -> None:
-        """Every in-place replacement is as long as the vanilla bytes it covers."""
         pairs = replacement_pairs()
         self.assertGreater(len(pairs), 10)
         for table, orig, new in pairs:
@@ -280,7 +279,6 @@ class TestVanillaBytes(unittest.TestCase):
         self.fail("0x%08X is outside the ARM9 sections" % ram)
 
     def test_rom_is_the_usa_release(self) -> None:
-        """The ROM has the MD5 the settings demand."""
         self.assertEqual(hashlib.md5(self.rom).hexdigest(), rom.MMZX_US_MD5)
 
     def test_patch_sites(self) -> None:
@@ -300,7 +298,6 @@ class TestVanillaBytes(unittest.TestCase):
                 self.assertEqual(self.read(cnt_a, 1), bytes([pickups.BIOMETAL_CAT_COUNT]))
 
     def test_caves_land_on_zeros(self) -> None:
-        """The free stretches really are zero in the vanilla ARM9."""
         for lo, hi in FREE_STRETCHES:
             with self.subTest(stretch=hex(lo)):
                 self.assertEqual(self.read(lo, hi - lo), bytes(hi - lo))

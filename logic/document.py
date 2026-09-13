@@ -117,7 +117,6 @@ LEGACY_BOSS_IDS = {"giga_aspis": "rayfly"}
 
 
 def boss_atom(boss_id: str) -> str:
-    """BOSS_<ID> atom of a boss id."""
     return "BOSS_" + boss_id.upper()
 
 
@@ -202,7 +201,6 @@ def canonical_atom(tok: str):
 
 
 def is_valid_atom(tok: str) -> bool:
-    """Whether tok is a known atom."""
     return isinstance(tok, str) and canonical_atom(tok) is not None
 
 
@@ -234,12 +232,10 @@ def dnf_normalize(dnf):
 
 
 def dnf_and(a, b):
-    """AND of two DNFs."""
     return dnf_normalize([x + y for x in a for y in b])
 
 
 def dnf_or(a, b):
-    """OR of two DNFs."""
     return dnf_normalize(list(a) + list(b))
 
 
@@ -330,12 +326,10 @@ def dnf_to_text(dnf) -> str:
 # REQ: {tier: DNF}
 
 def req_free():
-    """A requirement that asks for nothing."""
     return {"normal": [[]]}
 
 
 def req_from_expr(expr, tier="normal"):
-    """Requirement holding the parsed expression in one tier."""
     return {tier: parse_expr(expr)}
 
 
@@ -350,7 +344,6 @@ def req_alternatives(req, tier="expert"):
 
 
 def req_is_free(req, tier="normal"):
-    """Whether the requirement is free at tier."""
     return any(len(a) == 0 for a in req_alternatives(req, tier))
 
 
@@ -375,7 +368,6 @@ def req_to_lines(req):
 
 
 def req_atoms(req):
-    """All atoms used by a requirement."""
     out = set()
     for t in TIERS:
         for alt in (req or {}).get(t) or []:
@@ -416,7 +408,6 @@ def progression_items(atoms):
 
 
 def count_items_used(doc):
-    """progression_items() of the atoms used in the document."""
     return progression_items(document_atoms(doc))
 
 
@@ -646,7 +637,6 @@ def load_logic(path, world=None):
 
 
 def save_logic(path, doc):
-    """Writes the document with sorted keys and one-space indentation."""
     with open(path, "w", encoding="utf-8", newline="\n") as f:
         json.dump(doc, f, ensure_ascii=False, indent=1, sort_keys=True)
         f.write("\n")

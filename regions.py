@@ -1,6 +1,4 @@
-"""Archipelago regions, entrances, locations and events built from the logic document.
-
-"""
+"""Archipelago regions, entrances, locations and events built from the logic document."""
 
 from BaseClasses import Region
 
@@ -59,7 +57,7 @@ def create_regions(world) -> None:
     final = "Mission - Destroy Model W"
 
     def door_edges():
-        """Doors that join two different regions, as (source region, destination region, door)."""
+        """Doors that join two different regions, as (source region, destination region, door, destination region id)."""
         for d in DOORS:
             if d["kind"] in F.NON_TRANSITION_KINDS:
                 continue

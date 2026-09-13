@@ -1,5 +1,3 @@
-"""YAML options of the Mega Man ZX world."""
-
 from dataclasses import dataclass
 
 from Options import (Choice, DeathLink, OptionDict, PerGameCommonOptions,

@@ -1,5 +1,3 @@
-"""Items of the Mega Man ZX world."""
-
 from BaseClasses import Item, ItemClassification
 
 from .data import ITEMS

@@ -33,7 +33,7 @@ def map_page_index(data) -> int:
     if p is None:
         return 0
     if p[0] == HUB_SUB and OVERALL_MAP is not None:
-        return int(OVERALL_MAP)          # in the hub: overall map
+        return int(OVERALL_MAP)
     info = ROOMS.get(SUB_TO_ROOM.get(p[0], ""))
     if info and info.get("room_map") is not None:
         return int(info["room_map"])

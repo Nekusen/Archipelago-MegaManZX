@@ -201,9 +201,7 @@ class MMZXClient(BizHawkClient):
         return self.ingame_ticks >= STARTUP_TICKS and tick.msg_bank != BOOT_FILL
 
     async def game_watcher(self, ctx: "BizHawkClientContext") -> None:
-        """One tick: seed the title, then detect checks, grant items and repair the game.
-
-        """
+        """One tick: seed the title, then detect checks, grant items and repair the game."""
         if ctx.server is None or ctx.slot_data is None:
             return
         if not self.setup_done:

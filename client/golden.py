@@ -60,7 +60,6 @@ def build_image(start_key: str, character: int, starting_models: dict) -> bytes:
             _set_bit(img, BLOCK_OFF + (addr - LIVE_BLOCK), bit, True, BLOCK_MIRROR)
     active = int(rec.get("active", 1))
     _set_byte(img, OFF_ACTIVE_MODEL, active, PLAYER_MIRROR)
-    # character in the player block and in the menu copy
     ch = 1 if int(character or 0) == 1 else 0
     _set_byte(img, OFF_CHARACTER, ch, PLAYER_MIRROR)
     _set_byte(img, OFF_CHARACTER_BLOCK, ch, BLOCK_MIRROR)

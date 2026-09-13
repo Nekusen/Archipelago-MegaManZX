@@ -222,7 +222,7 @@ ROM_SLOT_NAME_LEN = 64
 # Hub and warps
 # Default teleport: the console pad of floor A, so UP opens the console.
 HUB_SUBAREA, HUB_X, HUB_Y = 70, 384, 335
-HUB_PAD_DY = 17                # console pad height above the floor
+HUB_PAD_DY = 17
 HUB_FLOOR_NEAR = 64            # px around a pad's y that still count as that floor
 START_CONFIRM_TICKS = 4        # ticks the starting model must hold
 START_MAX_RETRIES = 600

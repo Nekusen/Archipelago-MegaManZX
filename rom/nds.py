@@ -22,7 +22,6 @@ CRC16_POLY = 0xA001
 
 
 def update_header_crc(rom: bytearray) -> None:
-    """Recompute the CRC-16 of the header."""
     crc = CRC16_INIT
     for b in bytes(rom[:NDS_HDR_CRC]):
         crc ^= b

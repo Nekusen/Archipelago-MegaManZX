@@ -13,7 +13,6 @@ class TestGoal(MMZXTestBase):
         self.assertBeatable(False)
 
     def test_everything_wins(self) -> None:
-        """The whole pool beats the game."""
         self.collect(self.multiworld.itempool)
         self.assertBeatable(True)
 

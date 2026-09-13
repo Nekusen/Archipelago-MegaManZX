@@ -285,7 +285,6 @@ async def skip_boss_rush(client: "MMZXClient", ctx, tick: Tick) -> None:
     pairs = BR.pairs_to_set(x, y, r[2][0], r[3][0], flag_left, flag_right)
     if not pairs:
         return
-    # reads for the commit and the repaint, all in one batch
     reads = [(LIVE_BLOCK, LIVE_BLOCK_LEN, DOM), (STORY_BLOCK, STORY_BLOCK_LEN, DOM),
              (PLAYER_PERSIST, SCENE_DESC_LEN, DOM), (PLAYER_OBJ + PLAYER_FACING_OFF, 1, DOM),
              (PLAYER_OBJ + PLAYER_SCENE_WORD_OFF, 4, DOM)]

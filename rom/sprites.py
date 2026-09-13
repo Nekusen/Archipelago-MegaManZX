@@ -130,8 +130,6 @@ def patch_sprite_guard(arm9: Arm9) -> None:
         arm9.write(ram, thumb_bl(ram, SPRITEGUARD_CAVE_RAM), SPRITEGUARD_ORIG)
 
 
-# ROM-level steps: the icon set goes into the sprite files, the disk tile into the relocated one.
-
 def _insert_set(blob: bytes, setno: int, block: bytes) -> bytes:
     """Insert `block` as the empty set `setno` of an obj_fnt/obj_dat container."""
     n = struct.unpack_from("<I", blob, 0)[0]

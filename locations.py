@@ -1,5 +1,3 @@
-"""Locations of the Mega Man ZX world."""
-
 from BaseClasses import Location
 
 from .data import LOCATIONS

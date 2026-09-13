@@ -85,7 +85,6 @@ class TranserverTests:
         self.assertTrue(self.can_reach_entrance("z01 transerver to b02"))
 
     def test_every_hub_warp_has_an_access_item(self) -> None:
-        """Every warp leaving the hub is tied to a Transerver Access item."""
         for door in DOORS:
             if door["kind"] == "warp" and door["src"] == HUB_ROOM:
                 self.assertIn(door["dst"], TRANSERVER_ACCESS, door["name"])
@@ -140,6 +139,5 @@ class TestTranserver(TranserverTests, MMZXTestBase):
 
 class TestBiometals(BiometalTests, MMZXTestBase):
     def test_model_px_dark_rooms(self) -> None:
-        """The dark rooms of I-2 and I-4 need Model PX."""
         self.assertAccessDependency(["I-2: Disk E-34", "I-4: Disk E-14", "I-4: Disk M-1"],
                                     [["Progressive Model PX"]], only_check_listed=True)

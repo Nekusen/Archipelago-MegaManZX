@@ -31,7 +31,6 @@ def real_locations(multiworld) -> int:
 
 class TestPool(MMZXTestBase):
     def test_pool_fills_the_locations(self) -> None:
-        """One item per location, no more and no less."""
         self.assertEqual(len(self.multiworld.itempool), real_locations(self.multiworld))
 
     def test_progressive_biometals_come_in_halves(self) -> None:
@@ -77,7 +76,6 @@ class TestPoolWithBossLogic(MMZXTestBase):
 
 class TestPoolCombinations(unittest.TestCase):
     def test_pool_fills_the_locations(self) -> None:
-        """Under every option set the pool has exactly one item per location."""
         for name, options in OPTION_SETS.items():
             with self.subTest(options=name):
                 multiworld = setup_multiworld(MMZXWorld, options=options)
@@ -97,7 +95,6 @@ class TestPoolCombinations(unittest.TestCase):
                 self.assertEqual(in_pool, int(ITEMS[item_name].get("count", 1)) - 1)
 
     def test_no_starting_model_leaves_model_x_findable(self) -> None:
-        """starting_model none grants no model; Model X stays in the pool."""
         multiworld = setup_multiworld(MMZXWorld, options={"starting_model": "none"})
         precollected = [item.name for item in multiworld.precollected_items[1]]
         self.assertEqual([n for n in precollected if "Model" in n], [])

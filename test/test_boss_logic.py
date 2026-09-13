@@ -84,12 +84,10 @@ class TestBossLogic(unittest.TestCase):
 
 class TestBossLogicOption(unittest.TestCase):
     def test_unknown_boss(self) -> None:
-        """A boss name the roster does not know fails generation with an OptionError."""
         with self.assertRaises(OptionError):
             setup_multiworld(MMZXWorld, options={"boss_logic": {"Nobody": "HX"}})
 
     def test_bad_expression(self) -> None:
-        """A requirement that does not parse fails generation."""
         with self.assertRaises(OptionError):
             setup_multiworld(MMZXWorld, options={"boss_logic": {"Hivolt": "HX &"}})
 

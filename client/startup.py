@@ -55,7 +55,6 @@ async def seed_golden_image(client: "MMZXClient", ctx) -> None:
         return
     if not (gs == STATE_INGAME or (gs & 0xFF) == STATE_GAME_OVER_LOW):
         return
-    # the image is patched per slot: starting model and character
     img = build_image(str(ctx.slot_data.get("starting_model", "model_zx")),
                       int(ctx.slot_data.get("character", 0) or 0), STARTING_MODELS)
     await bizhawk.guarded_write(
@@ -127,7 +126,6 @@ async def write_start_state(client: "MMZXClient", ctx, guard) -> int | None:
     writes.append((ACTIVE_MODEL_ADDR, bytes([rec["active"]]), DOM))
     if not await bizhawk.guarded_write(ctx.bizhawk_ctx, writes, [guard]):
         return None
-    # a starting Transerver other than the hub means a teleport
     ts_key = str(ctx.slot_data.get("starting_transerver", "guardian_hub"))
     dest = STARTING_TRANSERVERS.get(ts_key)
     if dest and dest[0] != HUB_SUBAREA:

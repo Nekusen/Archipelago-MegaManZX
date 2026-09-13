@@ -34,6 +34,10 @@ room A-1 [a01]
     <- A-4
     conn -> Middle Area
       normal: MODEL
+  region Cave Entrance
+    internal -> Upper Area Cave
+    conn -> Upper Area
+      normal: FX
   region Left Area
     internal -> Left Area Cave
     check A-1: E-Crystal L
@@ -63,7 +67,6 @@ room A-1 [a01]
     conn -> A-3 Entrance
       normal: free
   region Upper Area
-    internal -> Upper Area Cave
     check A-1: 1-Up
       normal: HX
     check A-1: Disk E-31
@@ -76,8 +79,10 @@ room A-1 [a01]
       normal: free
     conn -> A-4 Entrance
       normal: free
+    conn -> Cave Entrance
+      normal: FX
   region Upper Area Cave
-    internal -> Upper Area
+    internal -> Cave Entrance
     check A-1: Disk E-1
       normal: HU
     check A-1: E-Crystal L (2)

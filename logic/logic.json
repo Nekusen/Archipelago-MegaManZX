@@ -2274,6 +2274,32 @@
      },
      "to": "a-3-entrance",
      "unsure": false
+    },
+    {
+     "from": "upper-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "FX"
+       ]
+      ]
+     },
+     "to": "cave-entrance",
+     "unsure": false
+    },
+    {
+     "from": "cave-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "FX"
+       ]
+      ]
+     },
+     "to": "upper-area",
+     "unsure": false
     }
    ],
    "members": {},
@@ -2345,6 +2371,29 @@
       [
        1419,
        1186
+      ]
+     ]
+    },
+    "cave-entrance": {
+     "color": "#fbbc04",
+     "name": "Cave Entrance",
+     "note": "",
+     "poly": [
+      [
+       2127,
+       856
+      ],
+      [
+       2126,
+       915
+      ],
+      [
+       2254,
+       914
+      ],
+      [
+       2251,
+       855
       ]
      ]
     },
@@ -2494,6 +2543,22 @@
       [
        1572,
        918
+      ],
+      [
+       1982,
+       928
+      ],
+      [
+       2020,
+       928
+      ],
+      [
+       2032,
+       836
+      ],
+      [
+       2381,
+       843
       ],
       [
        2381,

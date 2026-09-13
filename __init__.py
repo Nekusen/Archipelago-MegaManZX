@@ -157,10 +157,7 @@ class MMZXWorld(World):
             pool.append(self.create_item(name))
 
         remaining = n_locations - len(pool)
-        if remaining < 0:
-            # more fixed items than locations; progression always fits
-            pool = pool[:n_locations]
-            remaining = 0
+        assert remaining >= 0, "%d fixed items for %d locations" % (len(pool), n_locations)
         for _ in range(remaining):
             pool.append(self.create_item(self.get_filler_item_name()))
 

@@ -239,6 +239,15 @@ class TestPatchTables(unittest.TestCase):
         self.assertLessEqual(rom.AP_MARKER_SEED_OFF + rom.AP_MARKER_SEED_MAX + 1, rom.AP_MARKER_LEN)
         self.assertLessEqual(rom.AP_MAGIC_OFFSET + rom.AP_MARKER_LEN, blz.BLZ_HEADER_LEN)
 
+    def test_client_reads_the_marker_where_the_patch_writes_it(self) -> None:
+        from ..client.addresses import ROM_AP_MAGIC, ROM_AP_MAGIC_OFF, ROM_AP_VERSION_OFF, ROM_SLOT_NAME_OFF
+        self.assertEqual(ROM_AP_MAGIC, rom.AP_MAGIC)
+        self.assertEqual(ROM_AP_MAGIC_OFF, rom.AP_MAGIC_OFFSET)
+        self.assertEqual(ROM_AP_VERSION_OFF, rom.AP_MAGIC_OFFSET + rom.AP_MARKER_VERSION_OFF)
+        self.assertEqual(ROM_SLOT_NAME_OFF, rom.AP_MAGIC_OFFSET + rom.AP_MARKER_SLOT_OFF)
+        for version in ((0, 1, 0), (1, 12, 255)):
+            self.assertEqual(rom.unpack_version(rom.pack_version(version)), version)
+
     def test_patch_tokens(self) -> None:
         """write_patch_tokens stores the marker with the slot name and the option blob."""
         patch = rom.MMZXPatch(player=1, player_name="Tester")

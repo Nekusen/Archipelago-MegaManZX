@@ -28,6 +28,7 @@ will be 0.1.0.
 - DeathLink, sending and receiving.
 - Universal Tracker map tab: one map per area and per room, auto-tab and player position; the images come from the external [MegaManZX-Tracker](https://github.com/Nekusen/MegaManZX-Tracker) pack (`ut_pack_path`).
 - Client commands `/mmzx_teleport`, `/mmzx_where`, `/mmzx_accept`, `/mmzx_start`, `/mmzx_notify`, `/mmzx_icons` and `/mmzx_debug`.
+- The client refuses a ROM patched by a different version of this apworld and says which version to use.
 - The slot name is stored in the patched ROM, so the client logs in without asking for it.
 - Guards for two crashes of the original game that the open world makes reachable (a sprite loop after a teleport into a boss area, a room running out of sprite palettes).
 

@@ -215,6 +215,7 @@ ROM_GAME_CODE_OFF = 0x0C
 ROM_AP_MAGIC = b"MZXAP\x00"   # start of the AP header written by rom.py
 ROM_AP_MAGIC_OFF = 0x1000
 ROM_AP_MAGIC_LEN = len(ROM_AP_MAGIC)
+ROM_AP_VERSION_OFF = 0x1008   # u32 of the apworld version that patched the ROM (rom.pack_version)
 ROM_SLOT_NAME_OFF = 0x1010    # 63 bytes plus NUL
 ROM_SLOT_NAME_LEN = 64
 

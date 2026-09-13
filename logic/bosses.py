@@ -27,11 +27,9 @@ _CHIP_NOSPACE = {k.replace(" ", ""): v for k, v in _CHIP_BY_WORD.items()}
 _KEY_COLORS = "yellow|green|red|blue|purple|white"
 _SUBS = [
     (r"\ball\s+biometals?\b", lambda m: "ALL6"),
-    (r"\blos\s+seis\s+biometales\b", lambda m: "ALL6"),
     (r"\bany\s+model\b", lambda m: "MODEL"),
-    (r"\bcualquier\s+modelo\b", lambda m: "MODEL"),
     # "Model HX (full)": both halves of the progressive item
-    (r"\b(?:model\s+)?([hflp])x?\s*\(?\s*(?:full|complete|completo|entero)\s*\)?",
+    (r"\b(?:model\s+)?([hflp])x?\s*\(?\s*(?:full|complete)\s*\)?",
      lambda m: m.group(1).upper() + "X2"),
     (r"\bmodel\s+(x|zx|ox|hu|hx|fx|lx|px)\b", lambda m: m.group(1).upper()),
     (r"\bmodel\s+([hflp])\b", lambda m: m.group(1).upper() + "X"),

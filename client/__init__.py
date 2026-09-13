@@ -12,10 +12,11 @@ from typing import TYPE_CHECKING
 import worlds._bizhawk as bizhawk
 from worlds._bizhawk.client import BizHawkClient
 
+from ..rom import pack_version, unpack_version
 from .addresses import (
     BOOT_FILL, GAME, NOTIFY_LEVELS, NOTIFY_STYLES, PICKUP_OPTION_KEYS, ROM_AP_MAGIC,
-    ROM_AP_MAGIC_LEN, ROM_AP_MAGIC_OFF, ROM_GAME_CODE, ROM_GAME_CODE_OFF, ROM_SLOT_NAME_LEN,
-    ROM_SLOT_NAME_OFF, STARTUP_TICKS)
+    ROM_AP_MAGIC_LEN, ROM_AP_MAGIC_OFF, ROM_AP_VERSION_OFF, ROM_GAME_CODE, ROM_GAME_CODE_OFF,
+    ROM_SLOT_NAME_LEN, ROM_SLOT_NAME_OFF, STARTUP_TICKS)
 from .ram import ProgressWindow, Tick
 from .notices import push_notices, sync_icon_table
 from .startup import apply_start_state, resolve_start_state, seed_golden_image
@@ -95,11 +96,13 @@ class MMZXClient(BizHawkClient):
         self.ending_ticks = 0             # ticks with the stuck-ending signature
 
     async def validate_rom(self, ctx: "BizHawkClientContext") -> bool:
-        """Accept only a ROM patched for Archipelago; take the slot name from its header."""
+        """Accept only a ROM patched by this apworld version; take the slot name from its header."""
+        from .. import MMZXWorld
         try:
             reads = await bizhawk.read(ctx.bizhawk_ctx, [
                 (ROM_GAME_CODE_OFF, 4, "ROM"),
                 (ROM_AP_MAGIC_OFF, ROM_AP_MAGIC_LEN, "ROM"),
+                (ROM_AP_VERSION_OFF, 4, "ROM"),
                 (ROM_SLOT_NAME_OFF, ROM_SLOT_NAME_LEN, "ROM"),
             ])
         except bizhawk.RequestFailedError:
@@ -111,7 +114,14 @@ class MMZXClient(BizHawkClient):
                         "Archipelago. Generate the .apmmzx patch and open it "
                         "with the launcher to create the patched ROM.")
             return False
-        raw = reads[2]
+        rom_version = int.from_bytes(reads[2], "little")
+        if rom_version != pack_version(MMZXWorld.world_version):
+            logger.info("ERROR: this ROM was patched by the Mega Man ZX apworld %d.%d.%d and "
+                        "this client is %d.%d.%d. Open the .apmmzx again with the apworld that "
+                        "generated the seed, or generate the seed again with this one."
+                        % (*unpack_version(rom_version), *MMZXWorld.world_version))
+            return False
+        raw = reads[3]
         end = raw.find(b"\x00")
         try:
             self.slot_name = raw[:end if end >= 0 else ROM_SLOT_NAME_LEN].decode("utf-8")

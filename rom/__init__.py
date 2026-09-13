@@ -86,6 +86,16 @@ class MMZXPatch(APProcedurePatch, APTokenMixin):
             return f.read()
 
 
+def pack_version(version: tuple[int, int, int]) -> int:
+    """The world's (major, minor, build) as the u32 stored in the AP marker."""
+    major, minor, build = version
+    return major << 16 | minor << 8 | build
+
+
+def unpack_version(word: int) -> tuple[int, int, int]:
+    return word >> 16, (word >> 8) & 0xFF, word & 0xFF
+
+
 def write_patch_tokens(patch: MMZXPatch, slot_name: str, seed_name: str,
                        world_version: tuple[int, int, int], hu_in_pool: bool = False) -> None:
     """Write the AP marker (magic, version, slot, seed) and the option blob read by patch_arm9.
@@ -95,8 +105,7 @@ def write_patch_tokens(patch: MMZXPatch, slot_name: str, seed_name: str,
     """
     blob = bytearray(AP_MARKER_LEN)
     blob[0:len(AP_MAGIC)] = AP_MAGIC
-    major, minor, build = world_version
-    version = major << 16 | minor << 8 | build
+    version = pack_version(world_version)
     blob[AP_MARKER_VERSION_OFF:AP_MARKER_VERSION_OFF + 4] = version.to_bytes(4, "little")
     name = slot_name.encode("utf-8")[:AP_MARKER_SLOT_MAX]
     blob[AP_MARKER_SLOT_OFF:AP_MARKER_SLOT_OFF + len(name)] = name

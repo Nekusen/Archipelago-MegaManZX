@@ -1,0 +1,40 @@
+# Pushing a tag such as v0.1.0 builds mmzx.apworld and attaches it to the
+# GitHub release of that tag. The tag must match world_version in
+# archipelago.json, so a release never ships a package that calls itself
+# something else.
+name: Release
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  apworld:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Check that the tag matches archipelago.json
+        shell: bash
+        run: |
+          version=$(python -c "import json; print(json.load(open('archipelago.json'))['world_version'])")
+          if [ "v$version" != "${GITHUB_REF_NAME}" ]; then
+            echo "archipelago.json says $version but the tag is ${GITHUB_REF_NAME}"
+            exit 1
+          fi
+
+      - name: Build the apworld
+        run: python tools/build_apworld.py --out build/mmzx.apworld
+
+      - uses: ncipollo/release-action@v1
+        with:
+          artifacts: build/mmzx.apworld
+          allowUpdates: true
+          omitBodyDuringUpdate: true
+          omitNameDuringUpdate: true

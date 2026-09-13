@@ -186,7 +186,7 @@ class MMZXWorld(World):
         blocked = [F.BOSSES[b]["name"] for b in sorted(reqs)
                    if not rules.get(F.boss_atom(b), lambda s: True)(state)]
         raise OptionError(
-            "[%s] boss_logic: the seed cannot be completed even with EVERY item. "
+            "[%s] boss_logic: the seed cannot be completed even with every item. "
             "Bosses whose requirement is still unmet: %s. Check that you do not ask for more "
             "Life Ups / Sub Tanks than exist (4 of each) or for an item outside the pool."
             % (self.player_name, ", ".join(blocked) or "none (check the rest of the logic)"))

@@ -62,15 +62,15 @@ class StartingTranserver(Choice):
 
 class BossLogic(OptionDict):
     """Per-boss difficulty, your call: what you must be carrying before the
-    LOGIC considers you able to beat each story boss.
+    logic considers you able to beat each story boss.
 
     It only restricts the logic: in game you can fight with whatever you
-    have. What it guarantees is that the seed never FORCES you through a boss
+    have. What it guarantees is that the seed never forces you through a boss
     you are not equipped for by your own standard: not crossing its arena to
     the other side, not collecting what lies inside, not completing its
     mission, not obtaining its biometal (biometals come from two bosses: if
     you can only handle one, the logic counts that path and not the other).
-    The eight Pseudoroids are fought TWICE (their own area and the boss rush
+    The eight Pseudoroids are fought twice (their own area and the boss rush
     of the D-4 tower, which the game requires before D-5): the requirement
     applies to both encounters, so reaching Serpent means being able to
     handle all eight (unless skip_boss_rush is on).
@@ -116,7 +116,7 @@ class SkipBossRush(Toggle):
 
 
 class PickupChecks1Up(Toggle):
-    """The 1-Ups placed in the world (7) count as checks: the FIRST time you
+    """The 1-Ups placed in the world (7) count as checks: the first time you
     pick each one up it sends its location; afterwards it keeps respawning
     and giving a life as usual. Adds 7 locations (and as many filler items to
     the pool)."""
@@ -126,7 +126,7 @@ class PickupChecks1Up(Toggle):
 
 class PickupChecksEnergy(Toggle):
     """The energy capsules (Energy Capsule L/XL) placed in the world (45) count
-    as checks: the FIRST pickup of each one sends its location; afterwards
+    as checks: the first pickup of each one sends its location; afterwards
     they keep respawning and healing. Adds 45 locations."""
     display_name = "Pickup Checks: Energy Capsules"
     default = 0
@@ -134,7 +134,7 @@ class PickupChecksEnergy(Toggle):
 
 class PickupChecksWeapon(Toggle):
     """The weapon energy refills (Weapon Energy L) placed in the world (25)
-    count as checks: the FIRST pickup of each one sends its location;
+    count as checks: the first pickup of each one sends its location;
     afterwards they keep respawning. Adds 25 locations."""
     display_name = "Pickup Checks: Weapon Energy"
     default = 0
@@ -142,14 +142,14 @@ class PickupChecksWeapon(Toggle):
 
 class PickupChecksCrystals(Toggle):
     """The E-Crystal L pickups placed in the world (56) count as checks: the
-    FIRST pickup of each one sends its location; afterwards they keep
+    first pickup of each one sends its location; afterwards they keep
     respawning and giving crystals. Adds 56 locations."""
     display_name = "Pickup Checks: E-Crystals"
     default = 0
 
 
 class NotifyReceived(Choice):
-    """On-screen notifications (the game's small popup) when you RECEIVE an
+    """On-screen notifications (the game's small popup) when you receive an
     item: which item classes are shown. off: none; progression: progression
     only; useful: progression and useful; all: also filler (E-Crystals,
     1-Up). Can be changed in game with /mmzx_notify."""
@@ -162,7 +162,7 @@ class NotifyReceived(Choice):
 
 
 class NotifySent(Choice):
-    """On-screen notifications when you SEND an item to another player (one of
+    """On-screen notifications when you send an item to another player (one of
     your checks holds their item): which classes are shown (off,
     progression, useful, all). Can be changed in game with /mmzx_notify."""
     display_name = "On-screen Notifications: Sent Items"

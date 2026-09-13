@@ -6,9 +6,14 @@ from .arm9 import Arm9, thumb_bl
 
 # Yellow Card Key dialogue: the Operator re-grants the key while Troop is
 # reported and the key unowned. The key comes from the pool, so skip it for good.
-YELLOWKEY_BR_RAM = 0x02093BE4
-YELLOWKEY_BR_ORIG = bytes.fromhex("0cd0")   # beq
-YELLOWKEY_BR_NEW = bytes.fromhex("0ce0")    # b
+# The console has two dialogue routines with the same test: the one behind the
+# Transerver with Transport and the one behind the plain computer (DATA floors
+# and Area C), so both branches become unconditional.
+YELLOWKEY_PATCH = [
+    # (RAM, vanilla, patched)
+    (0x02093BE4, bytes.fromhex("0cd0"), bytes.fromhex("0ce0")),   # Transerver console: beq -> b
+    (0x02093462, bytes.fromhex("0dd0"), bytes.fromhex("0de0")),   # computer console: beq -> b
+]
 
 # Biometal ownership: the game counts set flags of a per-category list, in vanilla
 # the two boss victory bits. The list becomes two free flags set only by the item.
@@ -85,7 +90,8 @@ HUGATE_FLAG_INDEX = 136                   # 0x021045DD bit 0, unused by the game
 
 def patch_yellow_key_dialogue(arm9: Arm9) -> None:
     """Stop the Operator from re-granting the Yellow Card Key on every visit."""
-    arm9.write(YELLOWKEY_BR_RAM, YELLOWKEY_BR_NEW, YELLOWKEY_BR_ORIG)
+    for ram, orig, new in YELLOWKEY_PATCH:
+        arm9.write(ram, new, orig)
 
 
 def patch_biometal_ownership(arm9: Arm9) -> None:

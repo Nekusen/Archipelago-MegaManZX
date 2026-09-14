@@ -31,6 +31,8 @@ starts, what you find and receive, how you get around and a few conveniences.
 - The MISSION tab of the pause menu gains "Y Button: Go to Transerver". It opens the game's Target Area list wherever
   you are, with the destinations you have unlocked.
 - Every area can be reached on foot. Warping from the hub to an area needs that area's Transerver Access item.
+- Completing Locate Giro and Pass The Test no longer unlocks the Transport to Area X-1 by itself; like any other
+  destination it comes from its Transerver Access item or from reaching the X-1 Transerver floor.
 - Some story gates are open from the start: the F-3 door, the G-2 door to G-4, the M-1 seal, the D-1 bridge, the
   sand fall that hides the pit from K-1 to K-2, and the D-3 ladder up to the walkway that leads to Area O (the game
   only lowers it while Repel The Army is in progress or done). The gate from D-2 into the Slither Inc. tower opens

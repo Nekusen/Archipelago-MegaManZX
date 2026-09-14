@@ -13,6 +13,15 @@ YELLOWKEY_PATCH = [
     (0x02093462, bytes.fromhex("0dd0"), bytes.fromhex("0de0")),   # computer console: beq -> b
 ]
 
+# Area X access: reporting the second of Locate Giro and Pass The Test adds X-1
+# to the Transport list. X-1 comes from its access item or from reaching the
+# hub's X floor, like every other area, so both Reports skip that write.
+AREA_X_ACCESS_PATCH = [
+    # (RAM, vanilla, patched)
+    (0x02031254, bytes.fromhex("4a77"), bytes.fromhex("c046")),   # Locate Giro report: strb -> nop
+    (0x0203128C, bytes.fromhex("4277"), bytes.fromhex("c046")),   # Pass The Test report: strb -> nop
+]
+
 # Biometal ownership: the game counts set flags of a per-category list, in vanilla
 # the two boss victory bits. The list becomes two free flags set only by the item.
 BIOMETAL_CAT_PATCH = {
@@ -89,6 +98,12 @@ HUGATE_FLAG_INDEX = 136                   # 0x021045DD bit 0, unused by the game
 def patch_yellow_key_dialogue(arm9: Arm9) -> None:
     """Stop the Operator from re-granting the Yellow Card Key on every visit."""
     for ram, orig, new in YELLOWKEY_PATCH:
+        arm9.write(ram, new, orig)
+
+
+def patch_area_x_access(arm9: Arm9) -> None:
+    """Stop the Giro and Pass The Test Reports from unlocking X-1 in Transport."""
+    for ram, orig, new in AREA_X_ACCESS_PATCH:
         arm9.write(ram, new, orig)
 
 

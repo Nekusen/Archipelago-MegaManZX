@@ -44,6 +44,7 @@ class MMZXPatchExtension(APPatchExtension):
         ui.patch_tutorial_skip(arm9)
         sprites.patch_oam_loop_guards(arm9)
         pickups.patch_yellow_key_dialogue(arm9)
+        pickups.patch_area_x_access(arm9)
         pickups.patch_biometal_ownership(arm9)
         pickups.patch_life_up_sub_tank(arm9)
         pickups.patch_pickup_mailbox(arm9)

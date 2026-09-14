@@ -2,7 +2,6 @@
 import unittest
 from collections import Counter
 
-from Options import OptionError
 from test.general import setup_multiworld
 
 from .bases import MMZXTestBase, WITNESS
@@ -100,10 +99,14 @@ class TestPoolCombinations(unittest.TestCase):
         self.assertEqual([n for n in precollected if "Model" in n], [])
         self.assertIn("Model X", [item.name for item in multiworld.itempool])
 
-    def test_none_with_hu_in_pool_is_rejected(self) -> None:
-        """starting_model none with hu_in_pool would start without any form: generation fails."""
-        with self.assertRaises(OptionError):
-            setup_multiworld(MMZXWorld, options={"starting_model": "none", "hu_in_pool": True})
+    def test_none_ignores_hu_in_pool(self) -> None:
+        """With starting_model none, hu_in_pool is turned off: Hu stays out of the pool, the patch and the client."""
+        multiworld = setup_multiworld(MMZXWorld, options={"starting_model": "none", "hu_in_pool": True})
+        world = multiworld.worlds[1]
+        self.assertFalse(world.options.hu_in_pool.value)
+        self.assertNotIn("Model Hu", [item.name for item in multiworld.itempool])
+        self.assertEqual(len(multiworld.itempool), real_locations(multiworld))
+        self.assertFalse(world.fill_slot_data()["hu_in_pool"])
 
     def test_pickup_options_add_their_locations(self) -> None:
         """Each pickup option adds as many locations as its description says."""

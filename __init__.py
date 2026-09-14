@@ -91,10 +91,10 @@ class MMZXWorld(World):
     def generate_early(self) -> None:
         """Checks the option combinations and parses boss_logic first, so a YAML mistake fails
         with a clear message."""
-        if self.options.starting_model.current_key == "none" and self.options.hu_in_pool.value:
-            raise OptionError(
-                "[%s] starting_model 'none' cannot be combined with hu_in_pool: with Hu in the pool "
-                "you would start without any form. Choose a starting model." % self.player_name)
+        # with no starting biometal Hu is the only form, so it cannot be an item; ignored
+        # rather than rejected, so a random starting_model may land on none
+        if self.options.starting_model.current_key == "none":
+            self.options.hu_in_pool.value = 0
         try:
             reqs = boss_requirements(self)
         except ValueError as e:

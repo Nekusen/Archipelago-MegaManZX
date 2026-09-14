@@ -41,6 +41,7 @@ will be 0.1.0.
 - ROM patching uses [apnds](https://github.com/ljtpetersen/apnds) (MIT) and an original BLZ compressor instead of ndspy, so the `.apworld` is MIT throughout; the patched ROM is unchanged.
 - The patcher recognises the vanilla bytes it replaces by hash instead of storing them.
 - The client's diagnostic messages are hidden by default; `/mmzx_debug on` shows them.
+- `hu_in_pool` is ignored when `starting_model` is `none` instead of failing generation, so a random starting model can include `none`.
 
 ### Fixed
 

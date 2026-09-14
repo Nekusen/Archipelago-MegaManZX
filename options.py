@@ -24,9 +24,7 @@ class StartingModel(Choice):
     Transerver of the starting area with this model already granted: it takes
     no slot in the pool, and Model X becomes a findable item unless you start
     with it. none = the human form only, without a biometal until you find one;
-    it cannot be combined with hu_in_pool (Hu would then be an item you do not
-    have yet). "random" may pick none: with hu_in_pool, weight the models you
-    want instead."""
+    hu_in_pool is ignored with it, since Hu is then your only form."""
     display_name = "Starting Model"
     option_model_x = 0
     option_none = 1
@@ -43,8 +41,8 @@ class HuInPool(Toggle):
     """The human form (Hu) becomes an item of the pool instead of being always
     available: a ROM patch locks it behind a flag, like the biometals. Some
     missions require the human form (e.g. Pass The Test) and the transform
-    menu needs two owned forms; the logic and the client cover both. Needs a
-    starting_model other than none."""
+    menu needs two owned forms; the logic and the client cover both. Ignored
+    when starting_model is none."""
     display_name = "Human Form (Hu) In Pool"
     default = 0
 

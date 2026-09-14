@@ -3278,6 +3278,27 @@
         "name": "H-1",
         "children": [
           {
+            "name": "H-1: Disk E-47",
+            "map_locations": [
+              {
+                "map": "area_h",
+                "x": 914,
+                "y": 294
+              },
+              {
+                "map": "room_h01",
+                "x": 914,
+                "y": 204
+              }
+            ],
+            "sections": [
+              {
+                "name": "H-1: Disk E-47",
+                "item_count": 1
+              }
+            ]
+          },
+          {
             "name": "H-1: E-Crystal L",
             "map_locations": [
               {

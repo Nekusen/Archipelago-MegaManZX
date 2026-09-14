@@ -56,6 +56,7 @@ class MMZXPatchExtension(APPatchExtension):
         sprites.patch_item_icons(arm9)
         sprites.patch_palshare(arm9)
         sprites.patch_icon_retry(arm9)
+        sprites.patch_carried_disk_icon(arm9)
         sprites.patch_sprite_guard(arm9)
         pickups.patch_pickup_ap(arm9)
         pickups.patch_hu_gate(arm9, hu_in_pool)

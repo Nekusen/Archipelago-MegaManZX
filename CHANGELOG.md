@@ -9,7 +9,8 @@ will be 0.1.0.
 ### Added
 
 - Mega Man ZX (USA) as an open world for Archipelago, played on BizHawk with the melonDS core.
-- 119 locations: the 94 Secret Disks, the Life Ups and Sub Tanks of the world, the four biometals and 14 missions.
+- 120 locations: the 95 Secret Disks, the Life Ups and Sub Tanks of the world, the four biometals and 14 missions.
+- Disk E-47, the one hanging from a balloon in H-1, is a location too, and its pickup is drawn as the item it holds like any other.
 - Optional locations for the 133 refill pickups of the levels (1-Ups, energy, weapon energy, E-Crystals); the first pickup sends the check and the object keeps respawning.
 - 45 items: Model X, ZX and OX, progressive Model HX, FX, LX and PX (two halves each), the five Card Keys, Transerver Access for 13 areas, four Life Ups, four Sub Tanks and the eight ITEM B chips; E-Crystals and 1-Ups as filler.
 - Tutorial skip: New Game starts in the Guardian hub with the model and character of the YAML, on Normal difficulty.

@@ -128,6 +128,7 @@ LOCATIONS = {
     'F-2: Disk E-44': {'id': 13633531, 'category': 'disk', 'detect': ['bit', 34620940, 4], 'room': 'f02', 'pos': [1416, 1026], 'status': 'verified', 'icon': [29, 20]},
     'F-4: Disk E-45': {'id': 13633532, 'category': 'disk', 'detect': ['bit', 34620940, 5], 'room': 'f04', 'pos': [1522, 512], 'status': 'verified', 'icon': [31, 31]},
     'A-3: Disk E-46': {'id': 13633533, 'category': 'disk', 'detect': ['bit', 34620940, 6], 'room': 'a03', 'pos': [1240, 792], 'status': 'verified', 'icon': [3, 8]},
+    'H-1: Disk E-47': {'id': 13633534, 'category': 'disk', 'detect': ['bit', 34620940, 7], 'room': 'h01', 'pos': [3656, 682], 'status': 'verified', 'icon': [38, 29]},
     'F-3: Disk E-48': {'id': 13633535, 'category': 'disk', 'detect': ['bit', 34620941, 0], 'room': 'f03', 'pos': [496, 468], 'status': 'verified', 'icon': [30, 17]},
     'C-3: Disk E-49': {'id': 13633536, 'category': 'disk', 'detect': ['bit', 34620941, 1], 'room': 'c03', 'pos': [592, 552], 'status': 'verified', 'icon': [11, 3]},
     'M-1: Disk E-50': {'id': 13633537, 'category': 'disk', 'detect': ['bit', 34620941, 2], 'room': 'm01', 'pos': [6104, 744], 'status': 'verified', 'icon': [61, 40]},

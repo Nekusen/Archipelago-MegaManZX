@@ -32,7 +32,7 @@ Items:
 
 Locations:
 
-- The 94 Secret Disks.
+- The 95 Secret Disks, including Disk E-47, which hangs from a balloon in H-1.
 - The four Life Ups and the three Sub Tanks found in the world.
 - Obtaining each of the four biometals, from either Pseudoroid of its pair.
 - Completing 14 of the 15 story missions (Destroy Model W is the goal itself).

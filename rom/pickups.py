@@ -73,10 +73,13 @@ DATASELECT_CAVE = bytes.fromhex(
 
 # PICKUP_AP: a pickup standing for a multiworld location (the `present` bitmap
 # of the icon table) skips its vanilla effect, popup and label; it only chimes.
+# The disk held by the H-1 balloon has no spawn record and asks about its carrier.
 PICKUP_AP_CAVE_RAM = 0x020CB800
 PICKUP_AP_CAVE = bytes.fromhex(
-    "10b5104c2178104a1278914217d16178c90714d00d490968002910d04a68824201d00968f8e70a89802a08d2d308a433e35c07211140cb400120184010bd002010bd00bf6014190228821002f48110021a203af743f810bd00b52800fff7d0ff002805d01a203af739f801bc0248004702bc287d00280847ad310a0210b50400fff7beff002803d12000d8f7d5f810bd04202061607a810003484158206980000858a061d4e700bfb0b80e0210b50400fff7a6ff0028cbd124203af70ff802485a2146f707fd10bd2904000010b50400fff796ff0028bbd1182039f7ffff02485a2146f7f7fc10bd2a040000")
-PICKUP_AP_ENTRIES = {'apgate': 0, 'ap_tail': 80, 'refill': 88, 'disk': 124, 'lifeup': 172, 'subtank': 204}
+    "10b5104c2178104a1278914217d16178c90714d00d490968002910d04a68824201d00968f8e70a89802a08d2d308a433e35c07211140cb400120184010bd002010bd00bf6014190228821002f48110021a203af743f810bd00b52800fff7d0ff002805d01a203af739f801bc0248004702bc287d00280847ad310a0210b50400fff7beff002803d12000d8f7d5f810bd04202061607a810003484158206980000858a061d4e700bfb0b80e0210b50400fff7a6ff0028cbd124203af70ff802485a2146f707fd10bd2904000010b50400fff796ff0028bbd1182039f7ffff02485a2146f7f7fc10bd2a040000"
+    "10b50400206bfff785ff0028cad12000d8f760fb10bd")
+PICKUP_AP_ENTRIES = {'apgate': 0, 'ap_tail': 80, 'refill': 88, 'disk': 124, 'lifeup': 172, 'subtank': 204,
+                     'carried': 236}
 # (RAM, vanilla code, cave entry, code kept before the bl, code after it)
 PICKUP_AP_HOOKS = [
     (0x020A30F4, bytes.fromhex("287d0028"), "refill", b"", b""),
@@ -85,6 +88,7 @@ PICKUP_AP_HOOKS = [
      bytes.fromhex("c046") * 4),
     (0x020A3CEE, bytes.fromhex("182061f7f4fd33485a216ef7ecfa"), "subtank", bytes.fromhex("201c"),
      bytes.fromhex("c046") * 4),
+    (0x020A4058, bytes.fromhex("fff7b2ff"), "carried", b"", b""),
 ]
 
 # Hu gate (hu_in_pool): Hu is always owned because its category has no flag

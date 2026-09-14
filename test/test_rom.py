@@ -229,6 +229,11 @@ class TestPatchTables(unittest.TestCase):
         for entry in (sprites.ICON_ATTACH_CAVE_RAM, sprites.ICON_ANIM_CAVE_RAM):
             self.assertTrue(start < entry < start + len(body), hex(entry))
             self.assertEqual(entry % 2, 0)
+        start, body = caves()["ICON_CARRIED_CAVE"]
+        for entry in (sprites.ICON_CARRIED_ANIM_CAVE_RAM, sprites.ICON_CARRIED_RETRY_CAVE_RAM):
+            self.assertTrue(start < entry < start + len(body), hex(entry))
+            self.assertEqual(entry % 2, 0)
+        self.assertEqual(len(sprites.ICON_CARRIED_HOOKS), 3)
 
     def test_marker_layout(self) -> None:
         """Magic, version, slot name and seed fit the marker, which sits in the ROM header padding."""

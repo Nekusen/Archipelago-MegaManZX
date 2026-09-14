@@ -62,6 +62,21 @@ ICON_RETRY_CAVE = bytes.fromhex("30b50400628c0e4b9a4214d0fff78aff002810db0500e17
 ICON_RETRY_HOOKS = [(0x020CB4A2, bytes.fromhex("44f7b3fb")), (0x020A3A7E, bytes.fromhex("6cf7c5f8")),
                     (0x020A3CAA, bytes.fromhex("6bf7afff"))]
 
+# Carried disk: the H-1 balloon creates Disk E-47 at run time and holds it, so the
+# disk has no spawn record; attach, anim and retry look the icon up through the balloon.
+ICON_CARRIED_CAVE_RAM = 0x020C82E8
+ICON_CARRIED_CAVE = bytes.fromhex(
+    "30b504000d00206bfff768ff002802db00f032f81d4d2000290048f78ff930bd"
+    "30b504000d00628c184b9a4205d1206bfff754ff002800db05002000290047f7"
+    "9dfd30bd30b50400628c104b9a420fd0206bfff743ff00280adb050000f00cf8"
+    "20000a4948f76af92000290047f786fd200047f757fc30bde17a08229143e172"
+    "217b012291432173704700bf05010000")
+ICON_CARRIED_ANIM_CAVE_RAM = 0x020C8308
+ICON_CARRIED_RETRY_CAVE_RAM = 0x020C832C
+# (RAM, vanilla bl) of the carried disk's attach, anim and animation tick, in that order
+ICON_CARRIED_HOOKS = [(0x020A40C6, bytes.fromhex("6cf7adfa")), (0x020A40CE, bytes.fromhex("6bf7c9fe")),
+                      (0x020A3FF8, bytes.fromhex("6bf708fe"))]
+
 # Sprite guard: when the registrar rejects a set (palette budget exhausted) ten
 # drawers dereference a null slot record and data abort. The cave skips the read.
 SPRITEGUARD_CAVE_RAM = 0x020C827C
@@ -119,6 +134,16 @@ def patch_icon_retry(arm9: Arm9) -> None:
     arm9.write(ICON_RETRY_CAVE_RAM, ICON_RETRY_CAVE)
     for ram, orig in ICON_RETRY_HOOKS:
         arm9.write(ram, thumb_bl(ram, ICON_RETRY_CAVE_RAM), orig)
+
+
+def patch_carried_disk_icon(arm9: Arm9) -> None:
+    """Draw the disk the H-1 balloon holds as its item, looked up through the balloon."""
+    assert ICON_CARRIED_CAVE_RAM >= ICON_RETRY_CAVE_RAM + len(ICON_RETRY_CAVE)
+    assert ICON_CARRIED_CAVE_RAM + len(ICON_CARRIED_CAVE) <= GFX_CAVES_END
+    arm9.write(ICON_CARRIED_CAVE_RAM, ICON_CARRIED_CAVE)
+    entries = (ICON_CARRIED_CAVE_RAM, ICON_CARRIED_ANIM_CAVE_RAM, ICON_CARRIED_RETRY_CAVE_RAM)
+    for (ram, orig), entry in zip(ICON_CARRIED_HOOKS, entries):
+        arm9.write(ram, thumb_bl(ram, entry), orig)
 
 
 def patch_sprite_guard(arm9: Arm9) -> None:

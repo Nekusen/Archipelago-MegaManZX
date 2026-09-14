@@ -4,23 +4,6 @@ sprites.install_icon_set inserts the set as set 261 and its icon caves draw it o
 the three Archipelago logos in assets/ ship with the world (MIT, from the Metroid:
 Zero Mission apworld); every other icon is a frame of the game's own sets
 (ICONS), quantised to the palette of set 58, which the AP set shares in VRAM.
-
-Sprite set formats:
-  obj_fnt.bin / obj_dat.bin: u32 count, u32 offset[count + 1]; set i is the
-    slice [offset[i], offset[i + 1]).
-  fnt set, static: a 0x14-byte header (u32 tile offset = 0x14, u16 tile
-    length, u16 0x18, u16 tile length / 4, u16 flags 0x8020 = 4bpp or 0x8040 =
-    8bpp, u32 tile length + 8, u16 palette length, u16) + tiles + palette
-    (BGR555). Tiles are 8x8, 1D mapped, low nibble = left pixel.
-  fnt set, chained (dynamic): N such headers back to back, one per chunk,
-    each relative to itself: chunk k's tiles are at k*0x14 + its u32, its
-    palette at k*0x14 + (the u32 at +0xC) + 12.
-  dat set: u32 8, u32 table length, u32 4, then the frame table at +0xC
-    (per frame: u16 offset from the table start, u8 entry count, u8 chunk),
-    entries = u16 attr | s8 dx | s8 dy with attr = tile:10 hflip:1 vflip:1
-    size:2 shape:2 (one tile index = 128 bytes), then the animation scripts
-    at 4 + table length (u16 offset[n]; pairs (frame, ticks), 0xFE loop, 0xFF
-    end). The game draws a frame's entries from the last to the first.
 """
 import struct
 

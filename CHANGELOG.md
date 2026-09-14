@@ -40,14 +40,12 @@ will be 0.1.0.
 - ROM patching uses [apnds](https://github.com/ljtpetersen/apnds) (MIT) and an original BLZ compressor instead of ndspy, so the `.apworld` is MIT throughout; the patched ROM is unchanged.
 - The patcher recognises the vanilla bytes it replaces by hash instead of storing them.
 - The client's diagnostic messages are hidden by default; `/mmzx_debug on` shows them.
-- Everything the player sees is in English: option descriptions, client messages and command help, generation and patching errors, the DeathLink message.
-- The code base was reorganised and documented for contributors.
 
 ### Fixed
 
 - The ending now starts after Serpent falls even when the game would have stayed on a white screen.
 - Weapon Energy of a biometal received as an item starts full instead of empty.
-- Accepting Troop Reinforcement in the open world sets all of its mission flags at once; flags sharing a byte used to overwrite each other, and the client repaired them over the following ticks.
+- Accepting Troop Reinforcement in the open world sets the mission up completely at once, instead of the client repairing it over the next few seconds.
 - DeathLink sends the player's deaths; the check only ran while the player was alive, so a death was never seen.
 - A DeathLink received in human form no longer freezes the game.
 - Leaving a boss fight by teleport (Go to Transerver, `/mmzx_teleport`) no longer leaves every door in the game locked until Abort Mission; the fight starts over on the next visit.

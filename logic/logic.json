@@ -1,16 +1,5 @@
 {
  "checks": {
-  "A-1: 1-Up": {
-   "note": "",
-   "req": {
-    "normal": [
-     [
-      "HX"
-     ]
-    ]
-   },
-   "unsure": false
-  },
   "A-1: Disk E-1": {
    "note": "",
    "req": {
@@ -80,6 +69,11 @@
   "A-2: Disk E-27": {
    "note": "",
    "req": {
+    "expert": [
+     [
+      "LX"
+     ]
+    ],
     "normal": [
      [
       "HX"
@@ -93,7 +87,7 @@
    "req": {
     "normal": [
      [
-      "HX"
+      "MODEL"
      ]
     ]
    },
@@ -102,9 +96,17 @@
   "A-2: Energy Capsule L": {
    "note": "",
    "req": {
+    "expert": [
+     [
+      "LX"
+     ]
+    ],
     "normal": [
      [
       "HX"
+     ],
+     [
+      "PX"
      ]
     ]
    },
@@ -113,9 +115,17 @@
   "A-2: Sub Tank": {
    "note": "air dash up to the platform",
    "req": {
+    "expert": [
+     [
+      "LX"
+     ]
+    ],
     "normal": [
      [
       "HX"
+     ],
+     [
+      "PX"
      ]
     ]
    },
@@ -162,10 +172,7 @@
    "req": {
     "normal": [
      [
-      "HX"
-     ],
-     [
-      "PX"
+      "MODEL"
      ]
     ]
    },
@@ -185,6 +192,11 @@
   "B-2: Disk E-17": {
    "note": "B-2: on top of a pillar (tile y=29)",
    "req": {
+    "expert": [
+     [
+      "LX"
+     ]
+    ],
     "normal": [
      [
       "HX"
@@ -301,28 +313,6 @@
     "normal": [
      [
       "HX"
-     ]
-    ]
-   },
-   "unsure": false
-  },
-  "C-1: E-Crystal L (6)": {
-   "note": "",
-   "req": {
-    "normal": [
-     [
-      "MODEL"
-     ]
-    ]
-   },
-   "unsure": false
-  },
-  "C-1: E-Crystal L (7)": {
-   "note": "",
-   "req": {
-    "normal": [
-     [
-      "MODEL"
      ]
     ]
    },
@@ -634,6 +624,11 @@
   "F-2: Life Up": {
    "note": "ice blocks + high jump",
    "req": {
+    "expert": [
+     [
+      "MODEL"
+     ]
+    ],
     "normal": [
      [
       "LX"
@@ -651,10 +646,13 @@
     "normal": [
      [
       "FX"
+     ],
+     [
+      "OX"
      ]
     ]
    },
-   "unsure": true
+   "unsure": false
   },
   "F-3: Disk E-48": {
    "note": "F-3: at the very top, behind a row of cubes (37-45,30) and boxes (46-48,33-35)",
@@ -764,6 +762,17 @@
     ]
    },
    "unsure": true
+  },
+  "H-1: Disk E-47": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
   },
   "H-1: E-Crystal L": {
    "note": "",
@@ -1024,18 +1033,16 @@
   "J-2: Disk E-7": {
    "note": "J-2: high gap with a row of spikes under water (1360-1450,85)",
    "req": {
-    "expert": [
-     [
-      "MODEL"
-     ]
-    ],
     "normal": [
      [
       "HX"
+     ],
+     [
+      "LX"
      ]
     ]
    },
-   "unsure": true
+   "unsure": false
   },
   "J-3: Disk E-36": {
    "note": "J-3: at the top of the right structure. Life Up J-1 (Steam, LX) already covered; M-7 (J-3) in a hole you fall into; B-16 (J-5) past Leganchor up a ladder -> no requirement of its own.",
@@ -1123,13 +1130,25 @@
   },
   "L-1: Disk E-18": {
    "note": "L-1: very high floating platform (y=33 with the floor at 47); nothing to climb",
-   "req": null,
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
    "unsure": false
   },
-  "L-2: Disk E-41": {
-   "note": "L-2: same (y=29). E-5 (L-3) and B-13 (L-4) at floor level -> no requirement of their own.",
-   "req": null,
-   "unsure": true
+  "L-1: Energy Capsule L": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
   },
   "M-1: Disk E-50": {
    "note": "M-1: \"Use Model Fx Buster Edit to hit this switch\" (sub-room through the door (316,30)). B-10 (M-3) at floor level before Pandora -> no requirement.",
@@ -1421,6 +1440,22 @@
   }
  },
  "edges": {
+  "a01 door (2160,896)": {
+   "dst_pos": null,
+   "note": "",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "FX"
+     ],
+     [
+      "OX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
   "a01 door (6256,752)": {
    "dst_pos": null,
    "note": "Yellow door at the top of the right wall (tile y=47 vs floor 69): you have to climb",
@@ -1712,6 +1747,19 @@
    },
    "unsure": true
   },
+  "f03 door (1984,352)": {
+   "dst_pos": null,
+   "note": "",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
   "f03 door (384,1600)": {
    "dst_pos": null,
    "note": "ice cubes next to the event GATE (flag 381, the client opens it; NOT a Blue door: exp341d)",
@@ -1730,23 +1778,9 @@
    "note": "",
    "pos": null,
    "req": {
-    "expert": [
-     [
-      "MODEL"
-     ]
-    ],
     "normal": [
      [
-      "X"
-     ],
-     [
-      "ZX"
-     ],
-     [
-      "FX"
-     ],
-     [
-      "OX"
+      "MODEL"
      ]
     ]
    },
@@ -2109,6 +2143,11 @@
      "from": "left-area",
      "note": "",
      "req": {
+      "expert": [
+       [
+        "LX"
+       ]
+      ],
       "normal": [
        [
         "HX"
@@ -2142,19 +2181,6 @@
       ]
      },
      "to": "middle-area",
-     "unsure": false
-    },
-    {
-     "from": "middle-area",
-     "note": "",
-     "req": {
-      "normal": [
-       [
-        "HX"
-       ]
-      ]
-     },
-     "to": "upper-area",
      "unsure": false
     },
     {
@@ -2280,9 +2306,7 @@
      "note": "",
      "req": {
       "normal": [
-       [
-        "FX"
-       ]
+       []
       ]
      },
      "to": "cave-entrance",
@@ -2294,7 +2318,13 @@
      "req": {
       "normal": [
        [
-        "FX"
+        "HX"
+       ],
+       [
+        "LX"
+       ],
+       [
+        "PX"
        ]
       ]
      },
@@ -2617,6 +2647,11 @@
      "from": "main",
      "note": "",
      "req": {
+      "expert": [
+       [
+        "LX"
+       ]
+      ],
       "normal": [
        [
         "HX"
@@ -2671,6 +2706,9 @@
       "normal": [
        [
         "FX"
+       ],
+       [
+        "OX"
        ]
       ]
      },
@@ -2684,6 +2722,9 @@
       "normal": [
        [
         "FX"
+       ],
+       [
+        "OX"
        ]
       ]
      },
@@ -3325,6 +3366,9 @@
       "normal": [
        [
         "HX"
+       ],
+       [
+        "OX"
        ]
       ]
      },
@@ -3465,6 +3509,9 @@
       "normal": [
        [
         "HX"
+       ],
+       [
+        "OX"
        ]
       ]
      },
@@ -6208,6 +6255,9 @@
       "normal": [
        [
         "FX"
+       ],
+       [
+        "OX"
        ]
       ]
      },
@@ -6221,6 +6271,9 @@
       "normal": [
        [
         "FX"
+       ],
+       [
+        "OX"
        ]
       ]
      },
@@ -6408,7 +6461,9 @@
      "note": "",
      "req": {
       "normal": [
-       []
+       [
+        "MODEL"
+       ]
       ]
      },
      "to": "upper-area",
@@ -6447,6 +6502,9 @@
       "normal": [
        [
         "FX2"
+       ],
+       [
+        "OX"
        ]
       ]
      },
@@ -9232,6 +9290,9 @@
       "normal": [
        [
         "PX"
+       ],
+       [
+        "LX"
        ]
       ]
      },
@@ -9250,6 +9311,9 @@
       "normal": [
        [
         "PX"
+       ],
+       [
+        "LX"
        ]
       ]
      },
@@ -9263,6 +9327,9 @@
       "normal": [
        [
         "PX"
+       ],
+       [
+        "LX"
        ]
       ]
      },
@@ -9281,6 +9348,9 @@
       "normal": [
        [
         "PX"
+       ],
+       [
+        "LX"
        ]
       ]
      },
@@ -9508,6 +9578,9 @@
       "normal": [
        [
         "PX"
+       ],
+       [
+        "LX"
        ]
       ]
      },
@@ -9519,11 +9592,16 @@
      "note": "",
      "req": {
       "expert": [
-       []
+       [
+        "MODEL"
+       ]
       ],
       "normal": [
        [
         "PX"
+       ],
+       [
+        "LX"
        ]
       ]
      },
@@ -9535,11 +9613,16 @@
      "note": "",
      "req": {
       "expert": [
-       []
+       [
+        "MODEL"
+       ]
       ],
       "normal": [
        [
         "PX"
+       ],
+       [
+        "LX"
        ]
       ]
      },
@@ -9551,11 +9634,16 @@
      "note": "",
      "req": {
       "expert": [
-       []
+       [
+        "MODEL"
+       ]
       ],
       "normal": [
        [
         "PX"
+       ],
+       [
+        "LX"
        ]
       ]
      },
@@ -12932,6 +13020,32 @@
       ]
      },
      "to": "l-4-entrance",
+     "unsure": false
+    },
+    {
+     "from": "before-container",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "main-area",
+     "unsure": false
+    },
+    {
+     "from": "main-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "before-container",
      "unsure": false
     }
    ],

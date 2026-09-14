@@ -36,13 +36,18 @@ room A-1 [a01]
       normal: MODEL
   region Cave Entrance
     internal -> Upper Area Cave
-    conn -> Upper Area
       normal: FX
+      normal: OX
+    conn -> Upper Area
+      normal: HX
+      normal: LX
+      normal: PX
   region Left Area
     internal -> Left Area Cave
     check A-1: E-Crystal L
     conn -> Upper Area
       normal: HX
+      expert: LX
     conn -> Middle Area
       normal: MODEL
   region Left Area Cave
@@ -53,8 +58,6 @@ room A-1 [a01]
       normal: HU
     conn -> Left Area
       normal: MODEL
-    conn -> Upper Area
-      normal: HX
     conn -> A-4 Entrance
       normal: MODEL
     conn -> Right Area
@@ -68,7 +71,6 @@ room A-1 [a01]
       normal: free
   region Upper Area
     check A-1: 1-Up
-      normal: HX
     check A-1: Disk E-31
       normal: HX
     check A-1: Energy Capsule L
@@ -80,7 +82,7 @@ room A-1 [a01]
     conn -> A-4 Entrance
       normal: free
     conn -> Cave Entrance
-      normal: FX
+      normal: free
   region Upper Area Cave
     internal -> Cave Entrance
     check A-1: Disk E-1
@@ -105,16 +107,22 @@ room A-2 [a02]
     check A-2: Disk B-3
     check A-2: Disk E-27
       normal: HX
+      expert: LX
     check A-2: Disk E-29
     conn -> Upper Area
       normal: HX
+      expert: LX
   region Upper Area
     check A-2: E-Crystal L
-      normal: HX
+      normal: MODEL
     check A-2: Energy Capsule L
       normal: HX
+      normal: PX
+      expert: LX
     check A-2: Sub Tank
-      normal: HX   # air dash up to the platform
+      normal: HX
+      normal: PX
+      expert: LX   # air dash up to the platform
     conn -> Main
       normal: free
 
@@ -127,6 +135,7 @@ room A-3 [a03]
     check A-3: Disk E-46
     conn -> H-4 Entrance
       normal: FX
+      normal: OX
   region H-4 Entrance
     door -> H-4/A-3 Entrance  key Purple Card Key
       ? normal: FX   # Fire thorns (118,55) in the corridor to the Purple door (131,55): burn them. a04->m01: the "seal of the 6 biometals" of M-1 was a myth: a Stop The Dig cutscene opens it (agent exp350-359) and the client sets its flag (395); the ovl104 layers are cosmetic. No ALL6 here (the goal requires it at D-2 -> D-4).
@@ -134,6 +143,7 @@ room A-3 [a03]
     check A-3: Weapon Energy L
     conn -> Main
       normal: FX
+      normal: OX
 
 room A-4 [a04]
   region Main
@@ -178,8 +188,7 @@ room B-1 [b01]
     check B-1: Disk E-24
       normal: HX   # B-1: raised ledge at the far right
     check B-1: E-Crystal L
-      normal: HX
-      normal: PX
+      normal: MODEL
     check B-1: Energy Capsule XL
 
 room B-2 [b02]
@@ -222,7 +231,8 @@ room B-2 [b02]
       normal: MODEL
   region Right Area (Before Boss)
     check B-2: Disk E-17
-      normal: HX   # B-2: on top of a pillar (tile y=29)
+      normal: HX
+      expert: LX   # B-2: on top of a pillar (tile y=29)
     conn -> Main
       normal: free
     conn -> Boss Arena
@@ -291,9 +301,7 @@ room C-1 [c01]
     check C-1: E-Crystal L (5)
       normal: HX
     check C-1: E-Crystal L (6)
-      normal: MODEL
     check C-1: E-Crystal L (7)
-      normal: MODEL
     check C-1: E-Crystal L (8)
       normal: HU
     check C-1: Weapon Energy L
@@ -301,6 +309,7 @@ room C-1 [c01]
       normal: PX
     conn -> Under the Truck
       normal: HX
+      normal: OX
     conn -> C-2 Entrance (Top)
       normal: HX
     conn -> C-2 Entrance (Bottom)
@@ -354,6 +363,7 @@ room C-1 [c01]
       normal: HU
     conn -> Main
       normal: HX
+      normal: OX
 
 room C-2 [c02]
   region Main
@@ -816,6 +826,7 @@ room F-2 [f02]
       normal: MODEL
     conn -> Ice Cube Blocked Area
       normal: FX
+      normal: OX
   region F-1 Entrance
     door -> F-1/F-2 Entrance
     <- F-1
@@ -830,9 +841,11 @@ room F-2 [f02]
   region Ice Cube Blocked Area
     check F-2: Life Up
       normal: LX
-      normal: HX   # ice blocks + high jump
+      normal: HX
+      expert: MODEL   # ice blocks + high jump
     conn -> Main
       normal: FX
+      normal: OX
 
 room F-3 [f03]
   region F-2 Entrance
@@ -853,7 +866,8 @@ room F-3 [f03]
   region Ice Cube Room Interior
     internal -> Ice Cube Room
     check F-3: Disk E-2
-      ? normal: FX   # F-3: the disk is BETWEEN cubes (122-124,39)
+      normal: FX
+      normal: OX   # F-3: the disk is BETWEEN cubes (122-124,39)
   region Lower Area
     check F-3: Weapon Energy L
       normal: MODEL
@@ -864,16 +878,14 @@ room F-3 [f03]
     conn -> Upper Area
       normal: MODEL
   region Mini-Boss Room
+    internal -> Mini-Boss Room
+      normal: MODEL
     internal -> Top Door
   region Top Door
     internal -> Mini-Boss Room
-      normal: X
-      normal: ZX
-      normal: FX
-      normal: OX
-      expert: MODEL
+      normal: MODEL
     conn -> Upper Area
-      normal: free
+      normal: MODEL
   region Upper Area
     check F-3: Disk E-48
       normal: MODEL   # F-3: at the very top, behind a row of cubes (37-45,30) and boxes (46-48,33-35)
@@ -882,6 +894,7 @@ room F-3 [f03]
       normal: MODEL
     conn -> Ice Cube Room
       normal: FX2
+      normal: OX
     conn -> Lower Area
       normal: MODEL
 
@@ -1156,6 +1169,8 @@ room H-1 [h01]
     door -> A-3
     <- A-3
     <- H-2
+    check H-1: Disk E-47
+      normal: MODEL
     check H-1: E-Crystal L
       normal: MODEL
     check H-1: E-Crystal L (2)
@@ -1283,6 +1298,7 @@ room I-1 [i01]
       expert: MODEL
     conn -> Dark Room 2
       normal: PX
+      normal: LX
       expert: MODEL
   region Dark Room 2
     internal -> Dark Room 1
@@ -1290,9 +1306,11 @@ room I-1 [i01]
       normal: MODEL
     conn -> Dark Room 1
       normal: PX
+      normal: LX
       expert: MODEL
     conn -> I-3 Entrance
       normal: PX
+      normal: LX
   region Hub Entrance
     warp -> Hub
     path -> E-7/E-8 Entrance
@@ -1314,6 +1332,7 @@ room I-1 [i01]
       normal: MODEL
     conn -> Dark Room 2
       normal: PX
+      normal: LX
       expert: MODEL
   region Left Area
     check I-1: E-Crystal L
@@ -1338,10 +1357,12 @@ room I-2 [i02]
       normal: MODEL
     conn -> Upper Area
       normal: PX
-      expert: free
+      normal: LX
+      expert: MODEL
     conn -> I-4 Entrance
       normal: PX
-      expert: free
+      normal: LX
+      expert: MODEL
   region I-1 Entrance
     door -> I-1/I-2 Entrance
     <- I-1
@@ -1353,7 +1374,8 @@ room I-2 [i02]
     <- I-4
     conn -> Dark Area
       normal: PX
-      expert: free
+      normal: LX
+      expert: MODEL
   region I-5 Entrance
     door -> I-5/I-2 Entrance   # Steephinx (miniboss) right after entering I-5
     <- I-5
@@ -1367,6 +1389,7 @@ room I-2 [i02]
       normal: free
     conn -> Dark Area
       normal: PX
+      normal: LX
       expert: free
     conn -> Spikes
       normal: HX
@@ -1535,8 +1558,8 @@ room J-2 [j02]
       normal: free
   region Surface
     check J-2: Disk E-7
-      ? normal: HX
-      ? expert: MODEL   # J-2: high gap with a row of spikes under water (1360-1450,85)
+      normal: HX
+      normal: LX   # J-2: high gap with a row of spikes under water (1360-1450,85)
     check J-2: E-Crystal L (3)
     check J-2: Energy Capsule XL
     conn -> Water Area
@@ -1796,8 +1819,10 @@ room K-5 [k05]
 
 room L-1 [l01]
   region Main
-    check L-1: Disk E-18   # L-1: very high floating platform (y=33 with the floor at 47); nothing to climb
+    check L-1: Disk E-18
+      normal: MODEL   # L-1: very high floating platform (y=33 with the floor at 47); nothing to climb
     check L-1: Energy Capsule L
+      normal: MODEL
     conn -> H-2 Entrance
       normal: MODEL
     conn -> L-2 Entrance
@@ -1815,7 +1840,7 @@ room L-1 [l01]
 
 room L-2 [l02]
   region Main
-    check L-2: Disk E-41   # L-2: same (y=29). E-5 (L-3) and B-13 (L-4) at floor level -> no requirement of their own.
+    check L-2: Disk E-41
     conn -> L-1 Entrance
       normal: MODEL
     conn -> L-3 Entrance
@@ -1837,6 +1862,8 @@ room L-3 [l03]
     check L-3: Energy Capsule L
     conn -> L-2 Entrance
       normal: MODEL
+    conn -> Main Area
+      normal: MODEL
   region L-2 Entrance
     door -> L-2/L-3 Entrance
     <- L-2
@@ -1851,6 +1878,8 @@ room L-3 [l03]
   region Main Area
     check L-3: Weapon Energy L
     conn -> L-4 Entrance
+      normal: MODEL
+    conn -> Before Container
       normal: MODEL
 
 room L-4 [l04]

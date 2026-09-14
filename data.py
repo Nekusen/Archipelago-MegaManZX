@@ -38,7 +38,7 @@ LOCATIONS = {
     'Obtain Biometal F': {'id': 13632005, 'category': 'biometal', 'detect': ['any', [[34620880, 5], [34620881, 5]]], 'room': 'G-5/K-4', 'pos': None, 'status': 'verified'},
     'Obtain Biometal P': {'id': 13632007, 'category': 'biometal', 'detect': ['any', [[34620880, 7], [34620881, 7]]], 'room': 'H-4/L-4', 'pos': None, 'status': 'verified'},
     'Mission - Locate Giro': {'id': 13632258, 'category': 'mission', 'detect': ['all', [[34620894, 7]]], 'room': 'B-1B-2', 'pos': None, 'status': 'verified'},
-    'Mission - Pass The Test': {'id': 13632259, 'category': 'mission', 'detect': ['all', [[34620896, 3]]], 'room': 'C-1C-2', 'pos': None, 'status': 'verified'},
+    'Mission - Pass The Test': {'id': 13632259, 'category': 'mission', 'detect': ['all', [[34620896, 0]]], 'room': 'C-1C-2', 'pos': None, 'status': 'verified'},
     'Mission - Troop Reinforcement': {'id': 13632260, 'category': 'mission', 'detect': ['all', [[34620897, 1], [34620897, 2], [34620897, 5], [34620898, 0], [34620900, 0]]], 'room': 'D-2', 'pos': None, 'status': 'verified'},
     'Mission - Search The Plant': {'id': 13632261, 'category': 'mission', 'detect': ['all', [[34620897, 4]]], 'room': 'E-7', 'pos': None, 'status': 'verified'},
     'Mission - Find The Survivors': {'id': 13632262, 'category': 'mission', 'detect': ['all', [[34620897, 7], [34620901, 0]]], 'room': 'F', 'pos': None, 'status': 'verified'},

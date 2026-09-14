@@ -54,3 +54,4 @@ will be 0.1.0.
 - A dropped BizHawk connection abandons the current tick and the next one retries, instead of stopping the client.
 - The Operator no longer announces and hands out the Yellow Card Key at the Transervers without Transport (Area C and the DATA floors of H-4 and J-1).
 - Save The People can be finished when Area I is entered from the Transerver pad of I-3: the cell scene now plays once Hurricaune is beaten.
+- Pass The Test sends its check when it is reported before Locate Giro; it used to wait for Giro, and in the meantime the mission was accepted again on every visit to Area C.

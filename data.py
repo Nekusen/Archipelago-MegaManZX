@@ -981,6 +981,8 @@ DOORS = [
     {'name': 'z01 transerver to x01', 'src': 'z01', 'dst': 'x01', 'kind': 'warp', 'key': None, 'pos': [288, 5728], 'dst_pos': [640, 1120]},
     {'name': 'k01 fall to k02', 'src': 'k01', 'dst': 'k02', 'kind': 'curated', 'key': None, 'pos': None, 'dst_pos': None},
     {'name': 'k02 fall to k03', 'src': 'k02', 'dst': 'k03', 'kind': 'curated', 'key': None, 'pos': None, 'dst_pos': None},
+    {'name': 'a02 corridor to a02 (4672,928)', 'src': 'a02', 'dst': 'a02', 'kind': 'curated', 'key': None, 'pos': [3120, 928], 'dst_pos': [4672, 928]},
+    {'name': 'a02 corridor to a02 (3120,928)', 'src': 'a02', 'dst': 'a02', 'kind': 'curated', 'key': None, 'pos': [4672, 928], 'dst_pos': [3120, 928]},
     {'name': 'b02 corridor to c01', 'src': 'b02', 'dst': 'c01', 'kind': 'curated', 'key': None, 'pos': [1968, 928], 'dst_pos': [336, 672]},
     {'name': 'c01 corridor to b02', 'src': 'c01', 'dst': 'b02', 'kind': 'curated', 'key': None, 'pos': [336, 672], 'dst_pos': [1968, 928]},
     {'name': 'c02 corridor to d01', 'src': 'c02', 'dst': 'd01', 'kind': 'curated', 'key': None, 'pos': [4016, 928], 'dst_pos': [352, 592]},

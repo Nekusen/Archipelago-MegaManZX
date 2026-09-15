@@ -105,6 +105,7 @@ room A-2 [a02]
       expert: LX
   region Hub Left Exit
     warp -> Hub
+    internal -> Hub Right Side
     <- Hub
     check A-2: Disk B-3
     conn -> A-1 Entrance
@@ -113,6 +114,7 @@ room A-2 [a02]
     warp -> Hub
     door -> B-1/A-2 Entrance
     door -> C-1/A-2 Entrance (Bottom Part)
+    internal -> Hub Left Exit
     <- B-1
     <- C-1
     check A-2: Disk E-27

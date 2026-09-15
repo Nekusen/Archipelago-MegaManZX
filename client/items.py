@@ -8,7 +8,7 @@ from ..data import (
 from .addresses import (
     BOSS_LEVELS, CANON_OFF, CAPACITY_NIBBLE, CARDKEY_MASKS, COLLECTED_NIBBLE, CONS_KEY,
     CUTSCENE_FLAG, DOM, ECRYSTALS, ECRYSTALS_CAP, ECRYSTALS_HIGH_MASK, ECRYSTALS_MASK,
-    ECRYSTALS_PER_ITEM, HPMAX, HP_BASE, HP_CAP, HP_PER_LIFEUP, ITEM_BY_ID, LIFEUP_BYTE,
+    ECRYSTALS_PER_ITEM, HPMAX, HP_BASE, HP_CAP, HP_PER_LIFEUP, HU_POSSESSION, ITEM_BY_ID, LIFEUP_BYTE,
     LIFEUP_SLOTS, LIVES, LIVES_CAP, MODEL_LEVEL_IDX, MODEL_POSSESSION, MODEL_SECOND_HALF,
     PLAYTIME, SIX_MODELS, SUBTANK_BYTE, SUBTANK_SLOTS, WE_BASE, WE_FULL)
 from .ram import Tick, bits_by_byte, copies_writes, read_copies
@@ -243,7 +243,8 @@ async def revert_unowned_models(client: "MMZXClient", ctx, tick: Tick) -> None:
     # With hu_in_pool Hu is just another form. The game refuses to transform
     # with a single owned category, so a scene that ends in Hu (the M-1 seal
     # one does) would leave the player stuck in Hu for good.
-    owned[0] = not ctx.slot_data.get("hu_in_pool") or counts.get("Model Hu", 0) >= 1
+    hu_gated = bool(ctx.slot_data.get("hu_in_pool"))
+    owned[0] = not hu_gated or counts.get("Model Hu", 0) >= 1
     writes: list[tuple[int, bytes, str]] = []
     notes: list[str] = []
     if owned.get(active, False):
@@ -255,9 +256,17 @@ async def revert_unowned_models(client: "MMZXClient", ctx, tick: Tick) -> None:
             notes.append("model %d not owned -> reverting to %d" % (active, fallback))
     # possession bits without their item are cleared in both copies
     addrs = sorted({a for _i, a, _b in MODEL_POSSESSION.values()}
-                   | {a for a, _b in MODEL_SECOND_HALF.values()})
+                   | {a for a, _b in MODEL_SECOND_HALF.values()}
+                   | ({HU_POSSESSION[0]} if hu_gated else set()))
     live, canon = await read_copies(ctx, addrs)
     clear: dict[int, int] = {}
+    # the game also sets the Hu bit as the I-2/I-5 link of its world map
+    if hu_gated and not owned[0]:
+        a, bit = HU_POSSESSION
+        clear[a] = clear.get(a, 0) | (1 << bit)
+        for cur, tag in ((live, ""), (canon, " (canonical)")):
+            if cur[a] & (1 << bit):
+                notes.append("Model Hu owned without its item -> clearing 0x%08X.%d%s" % (a, bit, tag))
     for m, (item, a, bit) in MODEL_POSSESSION.items():
         if owned[m]:
             continue

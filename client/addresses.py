@@ -26,6 +26,8 @@ for _m, _item in MODEL_ITEMS.items():
         MODEL_SECOND_HALF[_m] = (int(_g[1][1][0]), int(_g[1][1][1]))
     else:
         MODEL_POSSESSION[_m] = (_item, int(_g[1]), int(_g[2]))
+# With hu_in_pool the human form is owned through this bit of the progress block.
+HU_POSSESSION = (int(ITEMS["Model Hu"]["grant"][1]), int(ITEMS["Model Hu"]["grant"][2]))
 SIX_MODELS = ("Model X", "Model ZX", "Progressive Model HX", "Progressive Model FX",
               "Progressive Model LX", "Progressive Model PX")
 # Items with their own sprite in the AP graphics set (ICON_CODES); anything else

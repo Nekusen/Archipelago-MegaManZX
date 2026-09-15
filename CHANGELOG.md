@@ -58,3 +58,4 @@ will be 0.1.0.
 - Save The People can be finished when Area I is entered from the Transerver pad of I-3: the cell scene now plays once Hurricaune is beaten.
 - Pass The Test sends its check when it is reported before Locate Giro; it used to wait for Giro, and in the meantime the mission was accepted again on every visit to Area C.
 - Completing Locate Giro and Pass The Test no longer unlocks the Transport to Area X-1 outside its Transerver Access item.
+- With `hu_in_pool`, walking from I-5 into I-2 no longer hands out the human form before its item arrives.

@@ -27,7 +27,7 @@ will be 0.1.0.
 - The DATA SELECT screen shows the biometals owned through items.
 - The Secret Disk sprite shows the Archipelago logo.
 - DeathLink, sending and receiving.
-- Universal Tracker map tab: one map per area and per room, auto-tab and player position; the images come from the external [MegaManZX-Tracker](https://github.com/Nekusen/MegaManZX-Tracker) pack (`ut_pack_path`).
+- Universal Tracker map tab: the game's world map, one map per area and per room, auto-tab and player position; the images come from the external [MegaManZX-Tracker](https://github.com/Nekusen/MegaManZX-Tracker) pack (`ut_pack_path`).
 - Client commands `/mmzx_teleport`, `/mmzx_where`, `/mmzx_accept`, `/mmzx_start`, `/mmzx_notify`, `/mmzx_icons` and `/mmzx_debug`.
 - The client refuses a ROM patched by a different version of this apworld and says which version to use.
 - The slot name is stored in the patched ROM, so the client logs in without asking for it.
@@ -36,7 +36,7 @@ will be 0.1.0.
 ### Changed
 
 - Source layout: the ROM patch lives in `rom/` (one module per domain), the logic document and its rules in `logic/`, the Universal Tracker callbacks in `tracker/`, and the starting save image and boss rush helpers in `client/`.
-- The tracker map images left the `.apworld` for the external pack; the world drops from 11 MB to under 1 MB. The overall map is gone until a schematic one of our own is drawn.
+- The tracker map images left the `.apworld` for the external pack; the world drops from 11 MB to under 1 MB. The overall map is now the game's own world map from the MISSION tab, with every room, link and Transerver shown.
 - The in-game icon set and the Secret Disk tile are built from the player's own ROM at patch time; only the three Archipelago logos ship with the world. Sub Tank and Card Key icons are the game's actual sprites.
 - ROM patching uses [apnds](https://github.com/ljtpetersen/apnds) (MIT) and an original BLZ compressor instead of ndspy, so the `.apworld` is MIT throughout; the patched ROM is unchanged.
 - The patcher recognises the vanilla bytes it replaces by hash instead of storing them.

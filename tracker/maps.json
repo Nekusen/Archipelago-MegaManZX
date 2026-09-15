@@ -1,5 +1,11 @@
 [
   {
+    "name": "overall",
+    "img": "images/overall.png",
+    "location_size": 20,
+    "location_border_thickness": 3
+  },
+  {
     "name": "area_a",
     "img": "images/area_a.png",
     "location_size": 22,

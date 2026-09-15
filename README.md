@@ -17,7 +17,8 @@ or game asset. Download `mmzx.apworld` from the
 
 ## Universal Tracker
 
-The world ships the map layout for Universal Tracker (one map per area and per room, auto-tab and player position).
+The world ships the map layout for Universal Tracker (the game's world map, one map per area and per room, auto-tab
+and player position).
 The map images come from the separate [MegaManZX-Tracker](https://github.com/Nekusen/MegaManZX-Tracker) pack, which
 UT loads from a zip you download once (`ut_pack_path` in `host.yaml`).
 

@@ -1,5 +1,2090 @@
 [
   {
+    "name": "Overall map",
+    "children": [
+      {
+        "name": "Area A",
+        "children": [
+          {
+            "name": "A-1",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 472,
+                "y": 280
+              }
+            ],
+            "sections": [
+              {
+                "name": "A-1: Disk E-1",
+                "item_count": 1
+              },
+              {
+                "name": "A-1: Disk E-31",
+                "item_count": 1
+              },
+              {
+                "name": "A-1: Disk O-9",
+                "item_count": 1
+              },
+              {
+                "name": "A-1: E-Crystal L",
+                "item_count": 1
+              },
+              {
+                "name": "A-1: 1-Up",
+                "item_count": 1
+              },
+              {
+                "name": "A-1: Energy Capsule L",
+                "item_count": 1
+              },
+              {
+                "name": "A-1: Energy Capsule L (2)",
+                "item_count": 1
+              },
+              {
+                "name": "A-1: Energy Capsule L (3)",
+                "item_count": 1
+              },
+              {
+                "name": "A-1: E-Crystal L (2)",
+                "item_count": 1
+              },
+              {
+                "name": "A-1: E-Crystal L (3)",
+                "item_count": 1
+              },
+              {
+                "name": "A-1: Weapon Energy L",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "A-2",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 536,
+                "y": 312
+              }
+            ],
+            "sections": [
+              {
+                "name": "A-2: Disk B-3",
+                "item_count": 1
+              },
+              {
+                "name": "A-2: Sub Tank",
+                "item_count": 1
+              },
+              {
+                "name": "A-2: Disk E-27",
+                "item_count": 1
+              },
+              {
+                "name": "A-2: Disk E-29",
+                "item_count": 1
+              },
+              {
+                "name": "A-2: Energy Capsule L",
+                "item_count": 1
+              },
+              {
+                "name": "A-2: E-Crystal L",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "A-3",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 536,
+                "y": 248
+              }
+            ],
+            "sections": [
+              {
+                "name": "A-3: Disk E-46",
+                "item_count": 1
+              },
+              {
+                "name": "A-3: Weapon Energy L",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "A-4",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 408,
+                "y": 248
+              }
+            ],
+            "sections": [
+              {
+                "name": "A-4: Disk E-20",
+                "item_count": 1
+              },
+              {
+                "name": "A-4: Energy Capsule L",
+                "item_count": 1
+              },
+              {
+                "name": "A-4: E-Crystal L",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "Area A: Missions / Biometals / Quests",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 557,
+                "y": 263
+              }
+            ],
+            "sections": [
+              {
+                "name": "Quest - Find The Flower",
+                "item_count": 1
+              },
+              {
+                "name": "Quest - Find Mushroom",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Area B",
+        "children": [
+          {
+            "name": "B-1",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 600,
+                "y": 344
+              }
+            ],
+            "sections": [
+              {
+                "name": "B-1: Disk E-24",
+                "item_count": 1
+              },
+              {
+                "name": "B-1: E-Crystal L",
+                "item_count": 1
+              },
+              {
+                "name": "B-1: Energy Capsule XL",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "B-2",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 536,
+                "y": 376
+              }
+            ],
+            "sections": [
+              {
+                "name": "B-2: Disk B-1",
+                "item_count": 1
+              },
+              {
+                "name": "B-2: Disk E-17",
+                "item_count": 1
+              },
+              {
+                "name": "B-2: Disk E-28",
+                "item_count": 1
+              },
+              {
+                "name": "B-2: Energy Capsule L",
+                "item_count": 1
+              },
+              {
+                "name": "B-2: E-Crystal L",
+                "item_count": 1
+              },
+              {
+                "name": "B-2: Energy Capsule L (2)",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "B-3",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 664,
+                "y": 376
+              }
+            ],
+            "sections": [
+              {
+                "name": "B-3: 1-Up",
+                "item_count": 1
+              },
+              {
+                "name": "B-3: E-Crystal L",
+                "item_count": 1
+              },
+              {
+                "name": "B-3: E-Crystal L (2)",
+                "item_count": 1
+              },
+              {
+                "name": "B-3: Energy Capsule L",
+                "item_count": 1
+              },
+              {
+                "name": "B-3: Energy Capsule XL",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "B-4",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 664,
+                "y": 312
+              }
+            ],
+            "sections": [
+              {
+                "name": "B-4: Disk E-11",
+                "item_count": 1
+              },
+              {
+                "name": "B-4: Energy Capsule L",
+                "item_count": 1
+              },
+              {
+                "name": "B-4: E-Crystal L",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "Area B: Missions / Biometals / Quests",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 557,
+                "y": 327
+              }
+            ],
+            "sections": [
+              {
+                "name": "Mission - Locate Giro",
+                "item_count": 1
+              },
+              {
+                "name": "Quest - Purify The Lakes",
+                "item_count": 1
+              },
+              {
+                "name": "Quest - Find The Purse",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Area C",
+        "children": [
+          {
+            "name": "C-1",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 472,
+                "y": 344
+              }
+            ],
+            "sections": [
+              {
+                "name": "C-1: Weapon Energy L",
+                "item_count": 1
+              },
+              {
+                "name": "C-1: E-Crystal L",
+                "item_count": 1
+              },
+              {
+                "name": "C-1: Energy Capsule L",
+                "item_count": 1
+              },
+              {
+                "name": "C-1: E-Crystal L (2)",
+                "item_count": 1
+              },
+              {
+                "name": "C-1: Weapon Energy L (2)",
+                "item_count": 1
+              },
+              {
+                "name": "C-1: E-Crystal L (3)",
+                "item_count": 1
+              },
+              {
+                "name": "C-1: E-Crystal L (4)",
+                "item_count": 1
+              },
+              {
+                "name": "C-1: E-Crystal L (5)",
+                "item_count": 1
+              },
+              {
+                "name": "C-1: Energy Capsule XL",
+                "item_count": 1
+              },
+              {
+                "name": "C-1: Weapon Energy L (3)",
+                "item_count": 1
+              },
+              {
+                "name": "C-1: E-Crystal L (6)",
+                "item_count": 1
+              },
+              {
+                "name": "C-1: E-Crystal L (7)",
+                "item_count": 1
+              },
+              {
+                "name": "C-1: E-Crystal L (8)",
+                "item_count": 1
+              },
+              {
+                "name": "C-1: Weapon Energy L (4)",
+                "item_count": 1
+              },
+              {
+                "name": "C-1: E-Crystal L (9)",
+                "item_count": 1
+              },
+              {
+                "name": "C-1: 1-Up",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "C-2",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 408,
+                "y": 376
+              }
+            ],
+            "sections": [
+              {
+                "name": "C-2: Disk E-30",
+                "item_count": 1
+              },
+              {
+                "name": "C-2: Disk O-17",
+                "item_count": 1
+              },
+              {
+                "name": "C-2: Disk O-18",
+                "item_count": 1
+              },
+              {
+                "name": "C-2: E-Crystal L",
+                "item_count": 1
+              },
+              {
+                "name": "C-2: E-Crystal L (2)",
+                "item_count": 1
+              },
+              {
+                "name": "C-2: E-Crystal L (3)",
+                "item_count": 1
+              },
+              {
+                "name": "C-2: Energy Capsule L",
+                "item_count": 1
+              },
+              {
+                "name": "C-2: Energy Capsule XL",
+                "item_count": 1
+              },
+              {
+                "name": "C-2: E-Crystal L (4)",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "C-3",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 408,
+                "y": 312
+              }
+            ],
+            "sections": [
+              {
+                "name": "C-3: Disk E-49",
+                "item_count": 1
+              },
+              {
+                "name": "C-3: Weapon Energy L",
+                "item_count": 1
+              },
+              {
+                "name": "C-3: Energy Capsule XL",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "Area C: Missions / Biometals / Quests",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 429,
+                "y": 327
+              }
+            ],
+            "sections": [
+              {
+                "name": "Mission - Pass The Test",
+                "item_count": 1
+              },
+              {
+                "name": "Quest - Trim The Weeds",
+                "item_count": 1
+              },
+              {
+                "name": "Quest - Quiz Partner",
+                "item_count": 1
+              },
+              {
+                "name": "Quest - Another Quiz",
+                "item_count": 1
+              },
+              {
+                "name": "Quest - Sending A Letter",
+                "item_count": 1
+              },
+              {
+                "name": "Quest - Sending Another Letter",
+                "item_count": 1
+              },
+              {
+                "name": "Quest - Yet Another Letter",
+                "item_count": 1
+              },
+              {
+                "name": "Quest - Not Another Letter",
+                "item_count": 1
+              },
+              {
+                "name": "Quest - Guess What A Letter",
+                "item_count": 1
+              },
+              {
+                "name": "Quest - One More Letter",
+                "item_count": 1
+              },
+              {
+                "name": "Quest - Clean The Room",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Area D",
+        "children": [
+          {
+            "name": "D-1",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 472,
+                "y": 408
+              }
+            ],
+            "sections": [
+              {
+                "name": "D-1: Life Up",
+                "item_count": 1
+              },
+              {
+                "name": "D-1: Disk E-12",
+                "item_count": 1
+              },
+              {
+                "name": "D-1: Disk E-19",
+                "item_count": 1
+              },
+              {
+                "name": "D-1: Energy Capsule XL",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "D-2",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 536,
+                "y": 440
+              }
+            ],
+            "sections": [
+              {
+                "name": "D-2: Disk B-4",
+                "item_count": 1
+              },
+              {
+                "name": "D-2: Disk M-4",
+                "item_count": 1
+              },
+              {
+                "name": "D-2: Disk E-40",
+                "item_count": 1
+              },
+              {
+                "name": "D-2: Disk O-12",
+                "item_count": 1
+              },
+              {
+                "name": "D-2: Energy Capsule L",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "D-3",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 600,
+                "y": 472
+              }
+            ],
+            "sections": [
+              {
+                "name": "D-3: Disk E-6",
+                "item_count": 1
+              },
+              {
+                "name": "D-3: E-Crystal L",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "D-4",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 472,
+                "y": 472
+              }
+            ],
+            "sections": [
+              {
+                "name": "D-4: Disk B-5",
+                "item_count": 1
+              },
+              {
+                "name": "D-4: E-Crystal L",
+                "item_count": 1
+              },
+              {
+                "name": "D-4: Energy Capsule L",
+                "item_count": 1
+              },
+              {
+                "name": "D-4: E-Crystal L (2)",
+                "item_count": 1
+              },
+              {
+                "name": "D-4: Weapon Energy L",
+                "item_count": 1
+              },
+              {
+                "name": "D-4: Energy Capsule L (2)",
+                "item_count": 1
+              },
+              {
+                "name": "D-4: 1-Up",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "D-5",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 536,
+                "y": 504
+              }
+            ],
+            "sections": [
+              {
+                "name": "D-5: Disk B-6",
+                "item_count": 1
+              },
+              {
+                "name": "D-5: Energy Capsule L",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "Area D: Missions / Biometals / Quests",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 557,
+                "y": 391
+              }
+            ],
+            "sections": [
+              {
+                "name": "Mission - Troop Reinforcement",
+                "item_count": 1
+              },
+              {
+                "name": "Mission - Destroy Model W",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Area E",
+        "children": [
+          {
+            "name": "E-1",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 312,
+                "y": 440
+              }
+            ],
+            "sections": [
+              {
+                "name": "E-1: Disk E-4",
+                "item_count": 1
+              },
+              {
+                "name": "E-1: Weapon Energy L",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "E-2",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 376,
+                "y": 472
+              }
+            ],
+            "sections": [
+              {
+                "name": "E-2: E-Crystal L",
+                "item_count": 1
+              },
+              {
+                "name": "E-2: Weapon Energy L",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "E-4",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 312,
+                "y": 504
+              }
+            ],
+            "sections": [
+              {
+                "name": "E-4: Sub Tank",
+                "item_count": 1
+              },
+              {
+                "name": "E-4: Disk E-8",
+                "item_count": 1
+              },
+              {
+                "name": "E-4: Disk E-21",
+                "item_count": 1
+              },
+              {
+                "name": "E-4: Energy Capsule L",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "E-5",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 376,
+                "y": 536
+              }
+            ],
+            "sections": [
+              {
+                "name": "E-5: Disk M-5",
+                "item_count": 1
+              },
+              {
+                "name": "E-5: Disk E-37",
+                "item_count": 1
+              },
+              {
+                "name": "E-5: E-Crystal L",
+                "item_count": 1
+              },
+              {
+                "name": "E-5: E-Crystal L (2)",
+                "item_count": 1
+              },
+              {
+                "name": "E-5: Energy Capsule L",
+                "item_count": 1
+              },
+              {
+                "name": "E-5: Weapon Energy L",
+                "item_count": 1
+              },
+              {
+                "name": "E-5: Energy Capsule XL",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "E-8",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 248,
+                "y": 600
+              }
+            ],
+            "sections": [
+              {
+                "name": "E-8: Disk B-8",
+                "item_count": 1
+              },
+              {
+                "name": "E-8: Weapon Energy L",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "Area E: Missions / Biometals / Quests",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 333,
+                "y": 519
+              }
+            ],
+            "sections": [
+              {
+                "name": "Obtain Biometal H",
+                "item_count": 1
+              },
+              {
+                "name": "Mission - Search The Plant",
+                "item_count": 1
+              },
+              {
+                "name": "Quest - Smash The Rock",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Area F",
+        "children": [
+          {
+            "name": "F-1",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 760,
+                "y": 312
+              }
+            ],
+            "sections": [
+              {
+                "name": "F-1: Disk E-39",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "F-2",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 824,
+                "y": 344
+              }
+            ],
+            "sections": [
+              {
+                "name": "F-2: Life Up",
+                "item_count": 1
+              },
+              {
+                "name": "F-2: Disk E-15",
+                "item_count": 1
+              },
+              {
+                "name": "F-2: Disk E-44",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "F-3",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 888,
+                "y": 312
+              }
+            ],
+            "sections": [
+              {
+                "name": "F-3: Disk E-2",
+                "item_count": 1
+              },
+              {
+                "name": "F-3: Disk E-48",
+                "item_count": 1
+              },
+              {
+                "name": "F-3: Weapon Energy L",
+                "item_count": 1
+              },
+              {
+                "name": "F-3: Energy Capsule L",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "F-4",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 824,
+                "y": 280
+              }
+            ],
+            "sections": [
+              {
+                "name": "F-4: Disk B-15",
+                "item_count": 1
+              },
+              {
+                "name": "F-4: Disk E-45",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "Area F: Missions / Biometals / Quests",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 781,
+                "y": 199
+              }
+            ],
+            "sections": [
+              {
+                "name": "Obtain Biometal L",
+                "item_count": 1
+              },
+              {
+                "name": "Mission - Find The Survivors",
+                "item_count": 1
+              },
+              {
+                "name": "Quest - Find The Pearl",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Area G",
+        "children": [
+          {
+            "name": "G-1",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 696,
+                "y": 536
+              }
+            ],
+            "sections": [
+              {
+                "name": "G-1: Disk E-38",
+                "item_count": 1
+              },
+              {
+                "name": "G-1: Weapon Energy L",
+                "item_count": 1
+              },
+              {
+                "name": "G-1: Energy Capsule L",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "G-2",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 632,
+                "y": 568
+              }
+            ],
+            "sections": [
+              {
+                "name": "G-2: Disk E-16",
+                "item_count": 1
+              },
+              {
+                "name": "G-2: Weapon Energy L",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "G-3",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 696,
+                "y": 600
+              }
+            ],
+            "sections": [
+              {
+                "name": "G-3: Disk E-9",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "G-4",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 568,
+                "y": 600
+              }
+            ],
+            "sections": [
+              {
+                "name": "G-4: E-Crystal L",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "G-5",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 632,
+                "y": 632
+              }
+            ],
+            "sections": [
+              {
+                "name": "G-5: Disk B-11",
+                "item_count": 1
+              },
+              {
+                "name": "G-5: Disk E-32",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "Area G: Missions / Biometals / Quests",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 653,
+                "y": 583
+              }
+            ],
+            "sections": [
+              {
+                "name": "Obtain Biometal F",
+                "item_count": 1
+              },
+              {
+                "name": "Mission - Fight The Mavericks",
+                "item_count": 1
+              },
+              {
+                "name": "Quest - Find The Boy",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Area H",
+        "children": [
+          {
+            "name": "H-1",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 632,
+                "y": 248
+              }
+            ],
+            "sections": [
+              {
+                "name": "H-1: Disk E-47",
+                "item_count": 1
+              },
+              {
+                "name": "H-1: E-Crystal L",
+                "item_count": 1
+              },
+              {
+                "name": "H-1: Energy Capsule L",
+                "item_count": 1
+              },
+              {
+                "name": "H-1: E-Crystal L (2)",
+                "item_count": 1
+              },
+              {
+                "name": "H-1: E-Crystal L (3)",
+                "item_count": 1
+              },
+              {
+                "name": "H-1: Weapon Energy L",
+                "item_count": 1
+              },
+              {
+                "name": "H-1: E-Crystal L (4)",
+                "item_count": 1
+              },
+              {
+                "name": "H-1: Energy Capsule L (2)",
+                "item_count": 1
+              },
+              {
+                "name": "H-1: E-Crystal L (5)",
+                "item_count": 1
+              },
+              {
+                "name": "H-1: E-Crystal L (6)",
+                "item_count": 1
+              },
+              {
+                "name": "H-1: Energy Capsule XL",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "H-3",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 568,
+                "y": 152
+              }
+            ],
+            "sections": [
+              {
+                "name": "H-3: Disk M-8",
+                "item_count": 1
+              },
+              {
+                "name": "H-3: Disk E-10",
+                "item_count": 1
+              },
+              {
+                "name": "H-3: E-Crystal L",
+                "item_count": 1
+              },
+              {
+                "name": "H-3: Energy Capsule XL",
+                "item_count": 1
+              },
+              {
+                "name": "H-3: E-Crystal L (2)",
+                "item_count": 1
+              },
+              {
+                "name": "H-3: E-Crystal L (3)",
+                "item_count": 1
+              },
+              {
+                "name": "H-3: Energy Capsule L",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "H-4",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 488,
+                "y": 152
+              }
+            ],
+            "sections": [
+              {
+                "name": "H-4: Disk B-7",
+                "item_count": 1
+              },
+              {
+                "name": "H-4: Weapon Energy L",
+                "item_count": 1
+              },
+              {
+                "name": "H-4: Energy Capsule L",
+                "item_count": 1
+              },
+              {
+                "name": "H-4: Energy Capsule L (2)",
+                "item_count": 1
+              },
+              {
+                "name": "H-4: E-Crystal L",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "Area H: Missions / Biometals / Quests",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 465,
+                "y": 135
+              }
+            ],
+            "sections": [
+              {
+                "name": "Obtain Biometal P",
+                "item_count": 1
+              },
+              {
+                "name": "Mission - Secure The Biometal",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Area I",
+        "children": [
+          {
+            "name": "I-1",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 376,
+                "y": 600
+              }
+            ],
+            "sections": [
+              {
+                "name": "I-1: Disk E-3",
+                "item_count": 1
+              },
+              {
+                "name": "I-1: E-Crystal L",
+                "item_count": 1
+              },
+              {
+                "name": "I-1: Weapon Energy L",
+                "item_count": 1
+              },
+              {
+                "name": "I-1: Energy Capsule L",
+                "item_count": 1
+              },
+              {
+                "name": "I-1: E-Crystal L (2)",
+                "item_count": 1
+              },
+              {
+                "name": "I-1: Weapon Energy L (2)",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "I-2",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 440,
+                "y": 632
+              }
+            ],
+            "sections": [
+              {
+                "name": "I-2: Disk E-33",
+                "item_count": 1
+              },
+              {
+                "name": "I-2: Disk E-34",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "I-3",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 440,
+                "y": 696
+              }
+            ],
+            "sections": [
+              {
+                "name": "I-3: Disk B-9",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "I-4",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 376,
+                "y": 664
+              }
+            ],
+            "sections": [
+              {
+                "name": "I-4: Disk M-1",
+                "item_count": 1
+              },
+              {
+                "name": "I-4: Disk E-14",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "I-5",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 504,
+                "y": 664
+              }
+            ],
+            "sections": [
+              {
+                "name": "I-5: Life Up",
+                "item_count": 1
+              },
+              {
+                "name": "I-5: Disk M-6",
+                "item_count": 1
+              },
+              {
+                "name": "I-5: Disk E-13",
+                "item_count": 1
+              },
+              {
+                "name": "I-5: Disk E-23",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "Area I: Missions / Biometals / Quests",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 461,
+                "y": 647
+              }
+            ],
+            "sections": [
+              {
+                "name": "Mission - Save The People",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Area J",
+        "children": [
+          {
+            "name": "J-1",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 312,
+                "y": 184
+              }
+            ],
+            "sections": [
+              {
+                "name": "J-1: Life Up",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "J-2",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 248,
+                "y": 152
+              }
+            ],
+            "sections": [
+              {
+                "name": "J-2: Disk E-7",
+                "item_count": 1
+              },
+              {
+                "name": "J-2: E-Crystal L",
+                "item_count": 1
+              },
+              {
+                "name": "J-2: E-Crystal L (2)",
+                "item_count": 1
+              },
+              {
+                "name": "J-2: E-Crystal L (3)",
+                "item_count": 1
+              },
+              {
+                "name": "J-2: Energy Capsule XL",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "J-3",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 184,
+                "y": 184
+              }
+            ],
+            "sections": [
+              {
+                "name": "J-3: Disk M-7",
+                "item_count": 1
+              },
+              {
+                "name": "J-3: Disk E-36",
+                "item_count": 1
+              },
+              {
+                "name": "J-3: E-Crystal L",
+                "item_count": 1
+              },
+              {
+                "name": "J-3: E-Crystal L (2)",
+                "item_count": 1
+              },
+              {
+                "name": "J-3: Energy Capsule L",
+                "item_count": 1
+              },
+              {
+                "name": "J-3: Weapon Energy L",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "J-4",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 184,
+                "y": 120
+              }
+            ],
+            "sections": [
+              {
+                "name": "J-4: Weapon Energy L",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "J-5",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 120,
+                "y": 152
+              }
+            ],
+            "sections": [
+              {
+                "name": "J-5: Disk B-16",
+                "item_count": 1
+              },
+              {
+                "name": "J-5: Energy Capsule L",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "Area J: Missions / Biometals / Quests",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 289,
+                "y": 167
+              }
+            ],
+            "sections": [
+              {
+                "name": "Mission - Recover The Disk",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Area K",
+        "children": [
+          {
+            "name": "K-1",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 312,
+                "y": 344
+              }
+            ],
+            "sections": [
+              {
+                "name": "K-1: Sub Tank",
+                "item_count": 1
+              },
+              {
+                "name": "K-1: Disk E-22",
+                "item_count": 1
+              },
+              {
+                "name": "K-1: Weapon Energy L",
+                "item_count": 1
+              },
+              {
+                "name": "K-1: Energy Capsule L",
+                "item_count": 1
+              },
+              {
+                "name": "K-1: Energy Capsule L (2)",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "K-3",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 184,
+                "y": 344
+              }
+            ],
+            "sections": [
+              {
+                "name": "K-3: Disk M-9",
+                "item_count": 1
+              },
+              {
+                "name": "K-3: Disk E-35",
+                "item_count": 1
+              },
+              {
+                "name": "K-3: Disk E-43",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "K-4",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 120,
+                "y": 312
+              }
+            ],
+            "sections": [
+              {
+                "name": "K-4: Disk B-12",
+                "item_count": 1
+              },
+              {
+                "name": "K-4: Disk E-26",
+                "item_count": 1
+              },
+              {
+                "name": "K-4: E-Crystal L",
+                "item_count": 1
+              },
+              {
+                "name": "K-4: 1-Up",
+                "item_count": 1
+              },
+              {
+                "name": "K-4: Energy Capsule L",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "K-5",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 248,
+                "y": 376
+              }
+            ],
+            "sections": [
+              {
+                "name": "K-5: Disk E-25",
+                "item_count": 1
+              },
+              {
+                "name": "K-5: E-Crystal L",
+                "item_count": 1
+              },
+              {
+                "name": "K-5: E-Crystal L (2)",
+                "item_count": 1
+              },
+              {
+                "name": "K-5: E-Crystal L (3)",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "Area K: Missions / Biometals / Quests",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 141,
+                "y": 263
+              }
+            ],
+            "sections": [
+              {
+                "name": "Mission - Attack The Excavators",
+                "item_count": 1
+              },
+              {
+                "name": "Quest - Find The Rock",
+                "item_count": 1
+              },
+              {
+                "name": "Quest - Gather The Screws",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Area L",
+        "children": [
+          {
+            "name": "L-1",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 696,
+                "y": 152
+              }
+            ],
+            "sections": [
+              {
+                "name": "L-1: Disk E-18",
+                "item_count": 1
+              },
+              {
+                "name": "L-1: Energy Capsule L",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "L-2",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 760,
+                "y": 184
+              }
+            ],
+            "sections": [
+              {
+                "name": "L-2: Disk E-41",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "L-3",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 824,
+                "y": 152
+              }
+            ],
+            "sections": [
+              {
+                "name": "L-3: Disk E-5",
+                "item_count": 1
+              },
+              {
+                "name": "L-3: 1-Up",
+                "item_count": 1
+              },
+              {
+                "name": "L-3: Energy Capsule L",
+                "item_count": 1
+              },
+              {
+                "name": "L-3: Weapon Energy L",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "L-4",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 760,
+                "y": 120
+              }
+            ],
+            "sections": [
+              {
+                "name": "L-4: Disk B-13",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "Area L: Missions / Biometals / Quests",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 781,
+                "y": 71
+              }
+            ],
+            "sections": [
+              {
+                "name": "Mission - Protect The Lab",
+                "item_count": 1
+              },
+              {
+                "name": "Quest - Deliver The Aid Kit",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Area M",
+        "children": [
+          {
+            "name": "M-1",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 312,
+                "y": 264
+              }
+            ],
+            "sections": [
+              {
+                "name": "M-1: Disk M-2",
+                "item_count": 1
+              },
+              {
+                "name": "M-1: Disk E-50",
+                "item_count": 1
+              },
+              {
+                "name": "M-1: Weapon Energy L",
+                "item_count": 1
+              },
+              {
+                "name": "M-1: Energy Capsule L",
+                "item_count": 1
+              },
+              {
+                "name": "M-1: E-Crystal L",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "M-2",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 248,
+                "y": 232
+              }
+            ],
+            "sections": [
+              {
+                "name": "M-2: E-Crystal L",
+                "item_count": 1
+              },
+              {
+                "name": "M-2: E-Crystal L (2)",
+                "item_count": 1
+              },
+              {
+                "name": "M-2: E-Crystal L (3)",
+                "item_count": 1
+              },
+              {
+                "name": "M-2: 1-Up",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "M-3",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 184,
+                "y": 264
+              }
+            ],
+            "sections": [
+              {
+                "name": "M-3: Disk B-10",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "Area M: Missions / Biometals / Quests",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 205,
+                "y": 215
+              }
+            ],
+            "sections": [
+              {
+                "name": "Mission - Stop The Dig",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Area N",
+        "children": [
+          {
+            "name": "N-1",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 120,
+                "y": 232
+              }
+            ],
+            "sections": [
+              {
+                "name": "N-1: Disk B-2",
+                "item_count": 1
+              },
+              {
+                "name": "N-1: Weapon Energy L",
+                "item_count": 1
+              },
+              {
+                "name": "N-1: Energy Capsule L",
+                "item_count": 1
+              },
+              {
+                "name": "N-1: E-Crystal L",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Area O",
+        "children": [
+          {
+            "name": "O-1",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 664,
+                "y": 440
+              }
+            ],
+            "sections": [
+              {
+                "name": "O-1: Disk M-3",
+                "item_count": 1
+              },
+              {
+                "name": "O-1: Disk E-42",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "O-2",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 760,
+                "y": 440
+              }
+            ],
+            "sections": [
+              {
+                "name": "O-2: Disk B-14",
+                "item_count": 1
+              },
+              {
+                "name": "O-2: Energy Capsule L",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "Area O: Missions / Biometals / Quests",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 781,
+                "y": 391
+              }
+            ],
+            "sections": [
+              {
+                "name": "Mission - Repel The Army",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Area X (Guardian HQ)",
+        "children": [
+          {
+            "name": "X-1",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 824,
+                "y": 600
+              }
+            ],
+            "sections": [
+              {
+                "name": "X-1: Disk O-1",
+                "item_count": 1
+              },
+              {
+                "name": "X-1: Disk O-2",
+                "item_count": 1
+              },
+              {
+                "name": "X-1: Disk O-4",
+                "item_count": 1
+              },
+              {
+                "name": "X-1: Disk O-5",
+                "item_count": 1
+              },
+              {
+                "name": "X-1: Disk O-6",
+                "item_count": 1
+              },
+              {
+                "name": "X-1: Disk O-7",
+                "item_count": 1
+              },
+              {
+                "name": "X-1: Disk O-8",
+                "item_count": 1
+              },
+              {
+                "name": "X-1: Disk O-10",
+                "item_count": 1
+              },
+              {
+                "name": "X-1: Disk O-13",
+                "item_count": 1
+              },
+              {
+                "name": "X-1: Disk O-14",
+                "item_count": 1
+              },
+              {
+                "name": "X-1: Disk O-15",
+                "item_count": 1
+              },
+              {
+                "name": "X-1: Disk O-19",
+                "item_count": 1
+              },
+              {
+                "name": "X-1: Disk O-20",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "X-2",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 888,
+                "y": 568
+              }
+            ],
+            "sections": [
+              {
+                "name": "X-2: Disk O-3",
+                "item_count": 1
+              },
+              {
+                "name": "X-2: Disk O-16",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "X-3",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 888,
+                "y": 632
+              }
+            ],
+            "sections": [
+              {
+                "name": "X-3: Disk O-11",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "Area X (Guardian HQ): Missions / Biometals / Quests",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 845,
+                "y": 551
+              }
+            ],
+            "sections": [
+              {
+                "name": "Mission - Protect Hq",
+                "item_count": 1
+              },
+              {
+                "name": "Quest - Deliver A Reply",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
     "name": "Area A",
     "children": [
       {

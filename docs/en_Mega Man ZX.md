@@ -83,7 +83,7 @@ like any other death: one life is lost and you return to the last checkpoint.
 
 ## Is there a tracker?
 
-Universal Tracker shows a map tab with one map per area and one per room, switches to the room you are in and marks
-your position. The world ships the map layout; the images come from the separate
+Universal Tracker shows a map tab with the game's own world map, one map per area and one per room, switches to the
+room you are in and marks your position. The world ships the map layout; the images come from the separate
 [Mega Man ZX tracker pack](https://github.com/Nekusen/MegaManZX-Tracker/releases) (`mmzx_tracker.zip`, kept zipped).
 UT asks for the file the first time it needs it; the [setup guide](setup_en.md) says where to set its path.

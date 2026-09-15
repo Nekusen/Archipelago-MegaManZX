@@ -60,3 +60,5 @@ will be 0.1.0.
 - Pass The Test sends its check when it is reported before Locate Giro; it used to wait for Giro, and in the meantime the mission was accepted again on every visit to Area C.
 - Completing Locate Giro and Pass The Test no longer unlocks the Transport to Area X-1 outside its Transerver Access item.
 - With `hu_in_pool`, walking from I-5 into I-2 no longer hands out the human form before its item arrives.
+- Talking to the townspeople of C-1 and C-2 in human form, or to the Guardian test NPC of C-1, no longer hands out halves of Model HX, FX, LX or PX; the models are owned through bits the game never touches, and the DATA SELECT icons follow them.
+- Troop Reinforcement stays completed after reporting Search The Plant, Find The Survivors, Fight The Mavericks or Secure The Biometal; the client no longer offers it again on entering D-2.

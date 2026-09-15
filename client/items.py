@@ -260,7 +260,7 @@ async def revert_unowned_models(client: "MMZXClient", ctx, tick: Tick) -> None:
                    | ({HU_POSSESSION[0]} if hu_gated else set()))
     live, canon = await read_copies(ctx, addrs)
     clear: dict[int, int] = {}
-    # the game also sets the Hu bit as the I-2/I-5 link of its world map
+    # Hu is cleared like the other forms (an old save may still carry the bit)
     if hu_gated and not owned[0]:
         a, bit = HU_POSSESSION
         clear[a] = clear.get(a, 0) | (1 << bit)

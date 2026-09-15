@@ -24,12 +24,14 @@ AREA_X_ACCESS_PATCH = [
 
 # Biometal ownership: the game counts set flags of a per-category list, in vanilla
 # the two boss victory bits. The list becomes two free flags set only by the item.
+# The flags sit one past the end of each Secret Disk series (collected and read),
+# the only bits of the progress block that no game code, script or NPC touches.
 BIOMETAL_CAT_PATCH = {
     # category: (count addr, list addr, half 1 flag, vanilla list[0], half 2 flag, vanilla list[1])
-    3: (0x020DE9AF, 0x020DE9CC, 728, 33, 720, 41),   # H
-    4: (0x020DE9B0, 0x020DE9BC, 729, 37, 721, 45),   # F
-    5: (0x020DE9B1, 0x020DE9E4, 730, 35, 722, 43),   # L
-    6: (0x020DE9B2, 0x020DE9F4, 731, 39, 723, 47),   # P
+    3: (0x020DE9AF, 0x020DE9CC, 462, 33, 561, 41),   # H
+    4: (0x020DE9B0, 0x020DE9BC, 472, 37, 571, 45),   # F
+    5: (0x020DE9B1, 0x020DE9E4, 523, 35, 622, 43),   # L
+    6: (0x020DE9B2, 0x020DE9F4, 544, 39, 62, 47),    # P
 }
 BIOMETAL_CAT_COUNT = 2   # vanilla value; checked, not changed
 
@@ -61,10 +63,10 @@ PICKUP_MAILBOX_CAVE = bytes.fromhex(
 # it ignored the free flags. Read the first-half flag; hide X when not owned.
 DATASELECT_ICON_PATCH = [
     # (RAM, vanilla, patched)
-    (0x020361FC, bytes.fromhex("2979022001400029"), bytes.fromhex("a96d090e01200140")),   # H
-    (0x02036218, bytes.fromhex("2979202001400029"), bytes.fromhex("a96d090e02200140")),   # F
-    (0x02036234, bytes.fromhex("2979082001400029"), bytes.fromhex("a96d090e04200140")),   # L
-    (0x02036250, bytes.fromhex("2979802001400029"), bytes.fromhex("a96d090e08200140")),   # P
+    (0x020361FC, bytes.fromhex("2979022001400029"), bytes.fromhex("a96b890b01200140")),   # H
+    (0x02036218, bytes.fromhex("2979202001400029"), bytes.fromhex("a96b090e01200140")),   # F
+    (0x02036234, bytes.fromhex("2979082001400029"), bytes.fromhex("296cc90a01200140")),   # L
+    (0x02036250, bytes.fromhex("2979802001400029"), bytes.fromhex("696c01200140c046")),   # P
     (0x020361E2, bytes.fromhex("201c0221d9f73dfe"), bytes.fromhex("95f0cdfb64e0c046")),   # X/ZX: bl cave; b end
 ]
 DATASELECT_CAVE_RAM = 0x020CB980
@@ -96,7 +98,7 @@ PICKUP_AP_HOOKS = [
 HUGATE_LISTS0_RAM = 0x020DEB78
 HUGATE_LISTS0_ORIG = b"\x00\x00\x00\x00"
 HUGATE_ARRAY_RAM = 0x020CB434
-HUGATE_FLAG_INDEX = 136                   # 0x021045DD bit 0, unused by the game
+HUGATE_FLAG_INDEX = 120                   # 0x021045DB bit 0: "visited" slot of the hub itself, never set
 
 
 def patch_yellow_key_dialogue(arm9: Arm9) -> None:

@@ -38,6 +38,7 @@ will be 0.1.0.
 - Source layout: the ROM patch lives in `rom/` (one module per domain), the logic document and its rules in `logic/`, the Universal Tracker callbacks in `tracker/`, and the starting save image and boss rush helpers in `client/`.
 - The tracker map images left the `.apworld` for the external pack; the world drops from 11 MB to under 1 MB.
 - The overall map is the game's own world map from the MISSION tab; missions and biometals sit on their boss's room.
+- Area and room maps show only the part of each room the game itself shows, so rooms are drawn larger; this world needs the matching release of the tracker pack.
 - The in-game icon set and the Secret Disk tile are built from the player's own ROM at patch time; only the three Archipelago logos ship with the world. Sub Tank and Card Key icons are the game's actual sprites.
 - ROM patching uses [apnds](https://github.com/ljtpetersen/apnds) (MIT) and an original BLZ compressor instead of ndspy, so the `.apworld` is MIT throughout; the patched ROM is unchanged.
 - The patcher recognises the vanilla bytes it replaces by hash instead of storing them.

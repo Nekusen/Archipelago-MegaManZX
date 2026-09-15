@@ -113,7 +113,7 @@
    "unsure": false
   },
   "A-2: Sub Tank": {
-   "note": "air dash up to the platform",
+   "note": "",
    "req": {
     "expert": [
      [
@@ -205,9 +205,12 @@
    },
    "unsure": false
   },
-  "B-2: Energy Capsule L (2)": {
+  "B-2: E-Crystal L": {
    "note": "",
    "req": {
+    "expert": [
+     []
+    ],
     "normal": [
      [
       "MODEL"
@@ -216,34 +219,26 @@
    },
    "unsure": false
   },
-  "B-3: 1-Up": {
+  "B-2: Energy Capsule L": {
    "note": "",
    "req": {
+    "expert": [
+     []
+    ],
     "normal": [
      [
-      "HX"
+      "MODEL"
      ]
     ]
    },
    "unsure": false
   },
-  "B-3: E-Crystal L": {
+  "B-2: Energy Capsule L (2)": {
    "note": "",
    "req": {
     "normal": [
      [
-      "HX"
-     ]
-    ]
-   },
-   "unsure": false
-  },
-  "B-3: E-Crystal L (2)": {
-   "note": "",
-   "req": {
-    "normal": [
-     [
-      "HX"
+      "MODEL"
      ]
     ]
    },
@@ -282,6 +277,17 @@
    },
    "unsure": false
   },
+  "B-4: E-Crystal L": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
   "C-1: 1-Up": {
    "note": "",
    "req": {
@@ -307,12 +313,54 @@
    },
    "unsure": false
   },
+  "C-1: E-Crystal L (2)": {
+   "note": "",
+   "req": {
+    "expert": [
+     []
+    ],
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
   "C-1: E-Crystal L (5)": {
    "note": "",
    "req": {
     "normal": [
      [
       "HX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "C-1: E-Crystal L (6)": {
+   "note": "",
+   "req": {
+    "expert": [
+     []
+    ],
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "C-1: E-Crystal L (7)": {
+   "note": "",
+   "req": {
+    "expert": [
+     []
+    ],
+    "normal": [
+     [
+      "MODEL"
      ]
     ]
    },
@@ -2249,9 +2297,7 @@
      "note": "",
      "req": {
       "normal": [
-       [
-        "MODEL"
-       ]
+       []
       ]
      },
      "to": "right-area",
@@ -2633,18 +2679,33 @@
   "a02": {
    "conns": [
     {
-     "from": "upper-area",
+     "from": "a-1-entrance",
      "note": "",
      "req": {
       "normal": [
-       []
+       [
+        "MODEL"
+       ]
       ]
      },
-     "to": "main",
+     "to": "hub-left-exit",
      "unsure": false
     },
     {
-     "from": "main",
+     "from": "hub-left-exit",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "a-1-entrance",
+     "unsure": false
+    },
+    {
+     "from": "a-1-entrance",
      "note": "",
      "req": {
       "expert": [
@@ -2660,11 +2721,91 @@
      },
      "to": "upper-area",
      "unsure": false
+    },
+    {
+     "from": "upper-area",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "a-1-entrance",
+     "unsure": false
     }
    ],
    "members": {},
    "note": "",
    "regions": {
+    "a-1-entrance": {
+     "color": "#fbbc04",
+     "name": "A-1 Entrance",
+     "note": "",
+     "poly": [
+      [
+       218,
+       825
+      ],
+      [
+       1425,
+       837
+      ],
+      [
+       1430,
+       1003
+      ],
+      [
+       221,
+       998
+      ]
+     ]
+    },
+    "hub-left-exit": {
+     "color": "#81c995",
+     "name": "Hub Left Exit",
+     "note": "",
+     "poly": [
+      [
+       1617,
+       806
+      ],
+      [
+       3187,
+       851
+      ],
+      [
+       3190,
+       1064
+      ],
+      [
+       1589,
+       1015
+      ]
+     ]
+    },
+    "hub-right-side": {
+     "color": "#a7ffeb",
+     "name": "Hub Right Side",
+     "note": "",
+     "poly": [
+      [
+       4324,
+       195
+      ],
+      [
+       4330,
+       1029
+      ],
+      [
+       6245,
+       1027
+      ],
+      [
+       6253,
+       182
+      ]
+     ]
+    },
     "main": {
      "color": "#8ab4f8",
      "name": "Main",
@@ -2928,15 +3069,207 @@
    "req": null
   },
   "b01": {
-   "conns": [],
+   "conns": [
+    {
+     "from": "a-2-entrance",
+     "note": "",
+     "req": {
+      "expert": [
+       []
+      ],
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "middle-area",
+     "unsure": false
+    },
+    {
+     "from": "middle-area",
+     "note": "",
+     "req": {
+      "expert": [
+       []
+      ],
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "a-2-entrance",
+     "unsure": false
+    },
+    {
+     "from": "middle-area",
+     "note": "",
+     "req": {
+      "expert": [
+       []
+      ],
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "upper-platforms",
+     "unsure": false
+    },
+    {
+     "from": "upper-platforms",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "middle-area",
+     "unsure": false
+    },
+    {
+     "from": "middle-area",
+     "note": "",
+     "req": {
+      "expert": [
+       []
+      ],
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "b-2-entrance",
+     "unsure": false
+    },
+    {
+     "from": "b-2-entrance",
+     "note": "",
+     "req": {
+      "expert": [
+       []
+      ],
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "middle-area",
+     "unsure": false
+    }
+   ],
    "members": {},
    "note": "",
    "regions": {
+    "a-2-entrance": {
+     "color": "#fbbc04",
+     "name": "A-2 Entrance",
+     "note": "",
+     "poly": [
+      [
+       241,
+       728
+      ],
+      [
+       248,
+       1010
+      ],
+      [
+       2014,
+       1005
+      ],
+      [
+       1987,
+       735
+      ]
+     ]
+    },
+    "b-2-entrance": {
+     "color": "#f28b82",
+     "name": "B-2 Entrance",
+     "note": "",
+     "poly": [
+      [
+       4935,
+       1151
+      ],
+      [
+       4926,
+       830
+      ],
+      [
+       5426,
+       841
+      ],
+      [
+       5441,
+       1230
+      ]
+     ]
+    },
     "main": {
      "color": "#8ab4f8",
      "name": "Main",
      "note": "",
      "poly": null
+    },
+    "middle-area": {
+     "color": "#81c995",
+     "name": "Middle Area",
+     "note": "",
+     "poly": [
+      [
+       2186,
+       812
+      ],
+      [
+       2187,
+       1021
+      ],
+      [
+       4770,
+       1190
+      ],
+      [
+       4763,
+       944
+      ],
+      [
+       3828,
+       789
+      ],
+      [
+       2582,
+       835
+      ]
+     ]
+    },
+    "upper-platforms": {
+     "color": "#a7ffeb",
+     "name": "Upper Platforms",
+     "note": "",
+     "poly": [
+      [
+       3203,
+       615
+      ],
+      [
+       3229,
+       801
+      ],
+      [
+       2591,
+       822
+      ],
+      [
+       2574,
+       656
+      ]
+     ]
     }
    },
    "req": null
@@ -3175,34 +3508,6 @@
   "b03": {
    "conns": [
     {
-     "from": "b-1-entrance",
-     "note": "",
-     "req": {
-      "normal": [
-       [
-        "FX"
-       ],
-       [
-        "HX"
-       ],
-       [
-        "FX"
-       ],
-       [
-        "LX"
-       ],
-       [
-        "OX"
-       ],
-       [
-        "ZX"
-       ]
-      ]
-     },
-     "to": "main",
-     "unsure": false
-    },
-    {
      "from": "f-1-entrance",
      "note": "",
      "req": {
@@ -3227,14 +3532,29 @@
      "unsure": false
     },
     {
+     "from": "alcove",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "HX"
+       ]
+      ]
+     },
+     "to": "f-1-entrance",
+     "unsure": false
+    },
+    {
      "from": "f-1-entrance",
      "note": "",
      "req": {
       "normal": [
-       []
+       [
+        "HX"
+       ]
       ]
      },
-     "to": "main",
+     "to": "alcove",
      "unsure": false
     },
     {
@@ -3245,13 +3565,70 @@
        []
       ]
      },
-     "to": "main",
+     "to": "bottom-area",
      "unsure": false
     },
     {
-     "from": "main",
+     "from": "bottom-area",
      "note": "",
      "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "middle-area",
+     "unsure": false
+    },
+    {
+     "from": "b-1-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "ZX"
+       ],
+       [
+        "HX"
+       ],
+       [
+        "FX"
+       ],
+       [
+        "LX"
+       ],
+       [
+        "OX"
+       ]
+      ]
+     },
+     "to": "bottom-area",
+     "unsure": false
+    },
+    {
+     "from": "middle-area",
+     "note": "",
+     "req": {
+      "expert": [
+       []
+      ],
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "hidden-spoit",
+     "unsure": false
+    },
+    {
+     "from": "hidden-spoit",
+     "note": "",
+     "req": {
+      "expert": [
+       []
+      ],
       "normal": [
        [
         "MODEL"
@@ -3265,6 +3642,29 @@
    "members": {},
    "note": "",
    "regions": {
+    "alcove": {
+     "color": "#a7ffeb",
+     "name": "Alcove",
+     "note": "",
+     "poly": [
+      [
+       734,
+       712
+      ],
+      [
+       861,
+       709
+      ],
+      [
+       874,
+       860
+      ],
+      [
+       721,
+       847
+      ]
+     ]
+    },
     "b-1-entrance": {
      "color": "#f28b82",
      "name": "B-1 Entrance",
@@ -3275,16 +3675,39 @@
        1378
       ],
       [
-       515,
-       1375
+       532,
+       1391
       ],
       [
-       513,
-       1563
+       526,
+       1559
       ],
       [
        259,
        1553
+      ]
+     ]
+    },
+    "bottom-area": {
+     "color": "#d7aefb",
+     "name": "Bottom Area",
+     "note": "",
+     "poly": [
+      [
+       589,
+       1376
+      ],
+      [
+       603,
+       1573
+      ],
+      [
+       1984,
+       1516
+      ],
+      [
+       1656,
+       1296
       ]
      ]
     },
@@ -3311,6 +3734,29 @@
       ]
      ]
     },
+    "hidden-spoit": {
+     "color": "#ff8bcb",
+     "name": "Hidden Spot",
+     "note": "",
+     "poly": [
+      [
+       2076,
+       1146
+      ],
+      [
+       2096,
+       1294
+      ],
+      [
+       2290,
+       1289
+      ],
+      [
+       2286,
+       1126
+      ]
+     ]
+    },
     "main": {
      "color": "#8ab4f8",
      "name": "Main",
@@ -3331,8 +3777,8 @@
        809
       ],
       [
-       2293,
-       1417
+       1780,
+       1234
       ],
       [
        1272,
@@ -4023,68 +4469,105 @@
   "d01": {
    "conns": [
     {
-     "from": "hub-entrance",
+     "from": "bottom-switch-door-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "inside-switch-door",
+     "unsure": false
+    },
+    {
+     "from": "inside-switch-door",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "bottom-switch-door-area",
+     "unsure": false
+    },
+    {
+     "from": "d-2-entrance",
+     "note": "",
+     "req": {
+      "expert": [
+       []
+      ],
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "after-bridge",
+     "unsure": false
+    },
+    {
+     "from": "after-bridge",
+     "note": "",
+     "req": {
+      "expert": [
+       []
+      ],
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "d-2-entrance",
+     "unsure": false
+    },
+    {
+     "from": "d-2-entrance",
+     "note": "",
+     "req": {
+      "expert": [
+       []
+      ],
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "east-hole",
+     "unsure": false
+    },
+    {
+     "from": "east-hole",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "d-2-entrance",
+     "unsure": false
+    },
+    {
+     "from": "after-bridge",
      "note": "",
      "req": {
       "normal": [
        []
       ]
      },
-     "to": "main",
+     "to": "east-hole",
      "unsure": false
     },
     {
-     "from": "main",
-     "note": "",
-     "req": {
-      "normal": [
-       [
-        "MODEL"
-       ]
-      ]
-     },
-     "to": "hub-entrance",
-     "unsure": false
-    },
-    {
-     "from": "b-2-entrance",
-     "note": "",
-     "req": {
-      "normal": [
-       [
-        "MODEL"
-       ]
-      ]
-     },
-     "to": "main",
-     "unsure": false
-    },
-    {
-     "from": "main",
-     "note": "",
-     "req": {
-      "normal": [
-       []
-      ]
-     },
-     "to": "b-2-entrance",
-     "unsure": false
-    },
-    {
-     "from": "main",
-     "note": "",
-     "req": {
-      "normal": [
-       [
-        "MODEL"
-       ]
-      ]
-     },
-     "to": "bridge",
-     "unsure": false
-    },
-    {
-     "from": "bridge",
+     "from": "east-hole",
      "note": "",
      "req": {
       "normal": [
@@ -4121,6 +4604,48 @@
      "unsure": false
     },
     {
+     "from": "after-bridge",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "bridge",
+     "unsure": false
+    },
+    {
+     "from": "bridge",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "after-bridge",
+     "unsure": false
+    },
+    {
+     "from": "bridge",
+     "note": "",
+     "req": {
+      "expert": [
+       []
+      ],
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "bottom-switch-door-area",
+     "unsure": false
+    },
+    {
      "from": "bottom-switch-door-area",
      "note": "",
      "req": {
@@ -4130,11 +4655,22 @@
        ]
       ]
      },
-     "to": "inside-switch-door",
+     "to": "bridge",
      "unsure": false
     },
     {
-     "from": "inside-switch-door",
+     "from": "hub-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "bridge-left-side",
+     "unsure": false
+    },
+    {
+     "from": "bridge-left-side",
      "note": "",
      "req": {
       "normal": [
@@ -4143,7 +4679,53 @@
        ]
       ]
      },
-     "to": "bottom-switch-door-area",
+     "to": "hub-entrance",
+     "unsure": false
+    },
+    {
+     "from": "bridge-left-side",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "b-2-entrance",
+     "unsure": false
+    },
+    {
+     "from": "b-2-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "bridge-left-side",
+     "unsure": false
+    },
+    {
+     "from": "bridge-left-side",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "bridge",
+     "unsure": false
+    },
+    {
+     "from": "bridge",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "bridge-left-side",
      "unsure": false
     }
    ],
@@ -4156,28 +4738,28 @@
      "note": "",
      "poly": [
       [
-       2754,
-       344
+       3066,
+       362
       ],
       [
-       4396,
-       372
+       3808,
+       421
       ],
       [
-       4391,
-       623
+       3799,
+       501
       ],
       [
-       3795,
-       681
+       3798,
+       570
       ],
       [
        3158,
        516
       ],
       [
-       2749,
-       516
+       3054,
+       514
       ]
      ]
     },
@@ -4210,8 +4792,8 @@
      "note": "",
      "poly": [
       [
-       2839,
-       563
+       2795,
+       570
       ],
       [
        2840,
@@ -4226,8 +4808,8 @@
        799
       ],
       [
-       2843,
-       793
+       2813,
+       789
       ]
      ]
     },
@@ -4251,6 +4833,75 @@
       [
        2715,
        186
+      ]
+     ]
+    },
+    "bridge-left-side": {
+     "color": "#78d9ec",
+     "name": "Bridge Left Side",
+     "note": "",
+     "poly": [
+      [
+       525,
+       474
+      ],
+      [
+       520,
+       714
+      ],
+      [
+       2203,
+       574
+      ],
+      [
+       2169,
+       394
+      ]
+     ]
+    },
+    "d-2-entrance": {
+     "color": "#fde293",
+     "name": "D-2 Entrance",
+     "note": "",
+     "poly": [
+      [
+       3894,
+       418
+      ],
+      [
+       3906,
+       563
+      ],
+      [
+       4427,
+       611
+      ],
+      [
+       4425,
+       408
+      ]
+     ]
+    },
+    "east-hole": {
+     "color": "#f28b82",
+     "name": "East Hole",
+     "note": "",
+     "poly": [
+      [
+       3757,
+       606
+      ],
+      [
+       4002,
+       611
+      ],
+      [
+       4010,
+       732
+      ],
+      [
+       3741,
+       725
       ]
      ]
     },
@@ -4513,6 +5164,9 @@
       "normal": [
        [
         "HX"
+       ],
+       [
+        "LX"
        ]
       ]
      },
@@ -4537,9 +5191,15 @@
      "from": "main",
      "note": "internal YELLOW door (2296,728): splits D-3 in two halves and the door table does not see it (entity kind5 subkind18 role 0x40; exp501)",
      "req": {
-      "normal": [
+      "expert": [
        [
         "YELLOW"
+       ]
+      ],
+      "normal": [
+       [
+        "YELLOW",
+        "MODEL"
        ]
       ]
      },

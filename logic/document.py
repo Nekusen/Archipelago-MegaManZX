@@ -913,13 +913,15 @@ def _region_flow_warnings(world, doc, room, members):
         if has_in and not has_out:
             out.append("%s/%s: region with NO EXIT (entered through %s but there is no door or connection back)" % (
                 room, rid, ", ".join(label(n) for n in ins[:3]) or "a connection"))
-        # only doors to other rooms and no way into the rest of the room: an isolated vestibule
+        # only doors to other rooms and no way into the rest of the room: an isolated vestibule,
+        # unless it joins two or more other rooms (a passage the room itself never needs to reach)
         if rid != "main" and len(regs) > 1 and nodes and not conn_in[rid] and not conn_out[rid]:
             internal_link = any(
                 (n in edges and edges[n]["src"] == edges[n]["dst"] and members[room].get(n + "@in", "main") != rid)
                 or (n.endswith("@in") and edges[n[:-3]]["src"] == room and members[room].get(n[:-3], "main") != rid)
                 for n in nodes)
-            if not internal_link and (ins or outs):
+            other_rooms = {edges[n[:-3]]["src"] for n in ins} | {edges[n]["dst"] for n in outs}
+            if not internal_link and (ins or outs) and len(other_rooms - {room}) < 2:
                 out.append("%s/%s: region ISOLATED from the rest of the room (only %s; no connections or internal doors)" % (
                     room, rid, ", ".join(label(n) for n in (ins + outs)[:3])))
         if rid == "main" and len(regs) > 1 and nodes and not conn_in[rid] and not conn_out[rid] \

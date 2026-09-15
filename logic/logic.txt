@@ -20,7 +20,7 @@ gates:  # event gates (flag): requirement or 'free' (the client opens it)
 
 room A-1 [a01]
   region A-2 Entrance
-    door -> A-2
+    door -> A-2/A-1 Entrance
     <- A-2
     conn -> Right Area
       normal: free
@@ -61,7 +61,7 @@ room A-1 [a01]
     conn -> A-4 Entrance
       normal: MODEL
     conn -> Right Area
-      normal: MODEL
+      normal: free
   region Right Area
     conn -> Middle Area
       normal: MODEL
@@ -95,23 +95,30 @@ room A-1 [a01]
       normal: HU
 
 room A-2 [a02]
-  region Main
+  region A-1 Entrance
     door -> A-1/A-2 Entrance
-    warp -> Hub  (x2)
-    door -> B-1
-    door -> C-1/A-2 Entrance (Bottom Part)
     <- A-1
-    <- B-1
-    <- C-1
+    conn -> Hub Left Exit
+      normal: MODEL
+    conn -> Upper Area
+      normal: HX
+      expert: LX
+  region Hub Left Exit
+    warp -> Hub
     <- Hub
     check A-2: Disk B-3
+    conn -> A-1 Entrance
+      normal: MODEL
+  region Hub Right Side
+    warp -> Hub
+    door -> B-1/A-2 Entrance
+    door -> C-1/A-2 Entrance (Bottom Part)
+    <- B-1
+    <- C-1
     check A-2: Disk E-27
       normal: HX
       expert: LX
     check A-2: Disk E-29
-    conn -> Upper Area
-      normal: HX
-      expert: LX
   region Upper Area
     check A-2: E-Crystal L
       normal: MODEL
@@ -122,8 +129,8 @@ room A-2 [a02]
     check A-2: Sub Tank
       normal: HX
       normal: PX
-      expert: LX   # air dash up to the platform
-    conn -> Main
+      expert: LX
+    conn -> A-1 Entrance
       normal: free
 
 room A-3 [a03]
@@ -177,23 +184,46 @@ room A-4 [a04]
 
 room B-1 [b01]
   region Main
-    door -> B-3/B-1 Entrance
-    door -> B-4  key Yellow Card Key
-    door -> B-2
-    door -> A-2
+    internal -> Middle Area
+    check B-1: Energy Capsule XL
+  region A-2 Entrance
+    door -> A-2/Hub Right Side
     <- A-2
+    conn -> Middle Area
+      normal: MODEL
+      expert: free
+  region B-2 Entrance
+    door -> B-2
     <- B-2
-    <- B-3
-    <- B-4
     check B-1: Disk E-24
       normal: HX   # B-1: raised ledge at the far right
+    conn -> Middle Area
+      normal: MODEL
+      expert: free
+  region Middle Area
+    internal -> Main
+    door -> B-4  key Yellow Card Key
+    <- B-4
     check B-1: E-Crystal L
       normal: MODEL
-    check B-1: Energy Capsule XL
+    conn -> A-2 Entrance
+      normal: MODEL
+      expert: free
+    conn -> Upper Platforms
+      normal: MODEL
+      expert: free
+    conn -> B-2 Entrance
+      normal: MODEL
+      expert: free
+  region Upper Platforms
+    door -> B-3/B-1 Entrance
+    <- B-3
+    conn -> Middle Area
+      normal: free
 
 room B-2 [b02]
   region Main
-    door -> B-1
+    door -> B-1/B-2 Entrance
     warp -> Hub
     path -> C-1
     <- B-1
@@ -201,7 +231,11 @@ room B-2 [b02]
     <- C-1
     check B-2: Disk E-28
     check B-2: E-Crystal L
+      normal: MODEL
+      expert: free
     check B-2: Energy Capsule L
+      normal: MODEL
+      expert: free
     conn -> Right Area (Before Boss)
       normal: MODEL
   region Boss Arena   [ARENA: Rayfly]
@@ -239,49 +273,56 @@ room B-2 [b02]
       normal: MODEL
 
 room B-3 [b03]
-  region Main
+  region Alcove
     check B-3: 1-Up
-      normal: HX
     check B-3: E-Crystal L
-      normal: HX
     check B-3: E-Crystal L (2)
+    conn -> F-1 Entrance
       normal: HX
-    conn -> Middle Area
-      normal: MODEL
   region B-1 Entrance
-    door -> B-1
+    door -> B-1/Upper Platforms
     <- B-1
-    conn -> Main
-      normal: FX
+    conn -> Bottom Area
+      normal: ZX
       normal: HX
       normal: FX
       normal: LX
       normal: OX
-      normal: ZX
+  region Bottom Area
+    conn -> Middle Area
+      normal: MODEL
   region F-1 Entrance
     door -> F-1/B-3 Entrance   # rising cavern with spikes up to F-1
     <- F-1
     conn -> Middle Area
       normal: free
-    conn -> Main
-      normal: free
+    conn -> Alcove
+      normal: HX
+  region Hidden Spot
+    check B-3: Energy Capsule XL
+      normal: HU
+    conn -> Middle Area
+      normal: MODEL
+      expert: free
   region Middle Area
     check B-3: Energy Capsule L
       normal: MODEL
-    check B-3: Energy Capsule XL
-      normal: HU
     conn -> F-1 Entrance
       normal: MODEL
-    conn -> Main
+    conn -> Bottom Area
       normal: free
+    conn -> Hidden Spot
+      normal: MODEL
+      expert: free
 
 room B-4 [b04]
   region Main
-    door -> B-1  key Yellow Card Key
+    door -> B-1/Middle Area  key Yellow Card Key
     <- B-1
     check B-4: Disk E-11
       normal: MODEL   # B-4: tall structure at the top right
     check B-4: E-Crystal L
+      normal: MODEL
     check B-4: Energy Capsule L
 
 room C-1 [c01]
@@ -298,10 +339,16 @@ room C-1 [c01]
       normal: HX
       normal: PX
     check C-1: E-Crystal L (2)
+      normal: MODEL
+      expert: free
     check C-1: E-Crystal L (5)
       normal: HX
     check C-1: E-Crystal L (6)
+      normal: MODEL
+      expert: free
     check C-1: E-Crystal L (7)
+      normal: MODEL
+      expert: free
     check C-1: E-Crystal L (8)
       normal: HU
     check C-1: Weapon Energy L
@@ -318,7 +365,7 @@ room C-1 [c01]
     internal -> A-2 Entrance (Top Part)  (x2)
     check C-1: Weapon Energy L (3)
   region A-2 Entrance (Bottom Part)
-    door -> A-2
+    door -> A-2/Hub Right Side
     internal -> Main
     <- A-2
     conn -> A-2 Entrance (Top Part)
@@ -436,39 +483,65 @@ room C-3 [c03]
       normal: free
 
 room D-1 [d01]
-  region Main
+  region After Bridge
+    conn -> D-2 Entrance
+      normal: MODEL
+      expert: free
+    conn -> East Hole
+      normal: free
+    conn -> Bottom Switch Door Area
+      normal: free
+    conn -> Bridge
+      normal: MODEL
+  region B-2 Entrance
+    door -> B-2/D-1 Entrance
+    <- B-2
+    conn -> Bridge Left Side
+      normal: MODEL
+  region Bottom Switch Door Area
     check D-1: Disk E-12
+    conn -> Inside Switch Door
+      normal: MODEL
+    conn -> After Bridge
+      normal: MODEL
+    conn -> Bridge
+      normal: MODEL
+  region Bridge
+    conn -> After Bridge
+      normal: MODEL
+    conn -> Bottom Switch Door Area
+      normal: MODEL
+      expert: free
+    conn -> Bridge Left Side
+      normal: free
+  region Bridge Left Side
     conn -> Hub Entrance
       normal: MODEL
     conn -> B-2 Entrance
       normal: free
     conn -> Bridge
-      normal: MODEL
-  region After Bridge
+      normal: free
+  region D-2 Entrance
     door -> D-2/D-1 Entrance
       ? normal: MODEL   # the highway bridge is lowered with a switch (Bridge switch (141,34)): it has to be hit
     <- D-2
-    check D-1: Disk E-19
-    conn -> Bottom Switch Door Area
-      normal: free
-  region B-2 Entrance
-    door -> B-2/D-1 Entrance
-    <- B-2
-    conn -> Main
-      normal: MODEL
-  region Bottom Switch Door Area
     conn -> After Bridge
       normal: MODEL
-    conn -> Inside Switch Door
+      expert: free
+    conn -> East Hole
       normal: MODEL
-  region Bridge
+      expert: free
+  region East Hole
+    check D-1: Disk E-19
+    conn -> D-2 Entrance
+      normal: MODEL
     conn -> After Bridge
       normal: MODEL
   region Hub Entrance
     pad(save) -> Hub
     path -> C-2
     <- C-2
-    conn -> Main
+    conn -> Bridge Left Side
       normal: free
   region Inside Switch Door
     check D-1: Energy Capsule XL
@@ -488,7 +561,7 @@ room D-2 [d02]
     conn -> Hub Entrance
       normal: free
   region D-1 Entrance
-    door -> D-1/After Bridge
+    door -> D-1/D-2 Entrance
     <- D-1
     conn -> Middle Area
       normal: MODEL
@@ -518,8 +591,10 @@ room D-3 [d03]
     <- D-2
     conn -> Upper Area
       normal: HX
+      normal: LX
     conn -> G-1 Entrance
-      normal: YELLOW   # internal YELLOW door (2296,728): splits D-3 in two halves and the door table does not see it (entity kind5 subkind18 role 0x40; exp501)
+      normal: YELLOW & MODEL
+      expert: YELLOW   # internal YELLOW door (2296,728): splits D-3 in two halves and the door table does not see it (entity kind5 subkind18 role 0x40; exp501)
   region G-1 Entrance
     door -> G-1/D-3 Entrance
     <- G-1
@@ -2167,7 +2242,7 @@ room Hub [z01]
     warp -> L-4/Hub Entrance  needs Transerver Access - Area L
     warp -> D-3  needs Transerver Access - Area D
     warp -> I-1/Hub Entrance  needs Transerver Access - Area E
-    warp -> A-2  needs Transerver Access - Area A
+    warp -> A-2/Hub Left Exit  needs Transerver Access - Area A
     warp -> B-2  needs Transerver Access - Area B
     warp -> C-1  needs Transerver Access - Area B
     warp -> C-2/Below Fountain  needs Transerver Access - Area C

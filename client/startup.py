@@ -1,5 +1,7 @@
-"""The starting state: the golden image seeded into the LOAD buffer while the title is up,
-and the one-shot RAM application driven by the datastore key.
+"""The starting state: the one-shot RAM application driven by the datastore key.
+
+The starting save itself is baked into the patched ROM, so New Game needs nothing
+from the client; this stage only re-asserts the model the LOAD may override.
 """
 
 import logging
@@ -7,10 +9,7 @@ from typing import TYPE_CHECKING
 import worlds._bizhawk as bizhawk
 
 from ..data import ACTIVE_MODEL_ADDR, ITEMS, MODEL_X_POSSESSION, STARTING_MODELS, STARTING_TRANSERVERS
-from .golden import GOLDEN_IMAGE_ADDR, build_image
-from .addresses import (
-    DOM, GAME_STATE, ITEM_ID_TO_NAME, START_CONFIRM_TICKS, START_MAX_RETRIES,
-    STATE_GAME_OVER_LOW, STATE_INGAME, TITLE_CAROUSEL_STEP, TITLE_STEPS_SEEDABLE)
+from .addresses import DOM, ITEM_ID_TO_NAME, START_CONFIRM_TICKS, START_MAX_RETRIES
 from .ram import Tick, bits_by_byte, copies_writes, read_copies
 
 if TYPE_CHECKING:
@@ -50,30 +49,6 @@ async def resolve_start_state(client: "MMZXClient", ctx) -> None:
         client.start_state = 3 if ctx.stored_data[client.start_key] else 2
 
 
-async def seed_golden_image(client: "MMZXClient", ctx) -> None:
-    """Seed the golden image into the LOAD buffer while the title or its menus are up.
-
-    New Game is redirected to LOAD, so every new game starts in the hub,
-    also after a Game Over. Only carousel steps 3 and 5 with the state word
-    at gameplay or at a Game Over menu are safe: the data select restores
-    the SRAM there, and in gameplay the buffer is the live scene. Guarded on both.
-    """
-    r = await bizhawk.read(ctx.bizhawk_ctx, [
-        (GAME_STATE, 4, DOM), (TITLE_CAROUSEL_STEP, 1, DOM)])
-    gs = int.from_bytes(r[0], "little")
-    if r[1][0] not in TITLE_STEPS_SEEDABLE:
-        return
-    if not (gs == STATE_INGAME or (gs & 0xFF) == STATE_GAME_OVER_LOW):
-        return
-    img = build_image(str(ctx.slot_data.get("starting_model", "model_zx")),
-                      int(ctx.slot_data.get("character", 0) or 0), STARTING_MODELS,
-                      starting_point(ctx))
-    await bizhawk.guarded_write(
-        ctx.bizhawk_ctx,
-        [(GOLDEN_IMAGE_ADDR, bytes(img), DOM)],
-        [(TITLE_CAROUSEL_STEP, r[1], DOM), (GAME_STATE, r[0], DOM)])
-
-
 async def apply_start_state(client: "MMZXClient", ctx, tick: Tick) -> None:
     """Apply the starting state once the player is in the starting room (start_state 2).
 
@@ -89,7 +64,7 @@ async def apply_start_state(client: "MMZXClient", ctx, tick: Tick) -> None:
         if rec and rec.get("revoke_x") and not got_x:
             xa, xb = MODEL_X_POSSESSION
             if (await bizhawk.read(ctx.bizhawk_ctx, [(xa, 1, DOM)]))[0][0] & (1 << xb):
-                logger.info("[mmzx] new save detected (seeded Model X): re-applying the starting state")
+                logger.info("[mmzx] new save detected (Model X of the starting save): re-applying the starting state")
                 client.start_state = 2
                 client.start_confirm = 0
                 client.start_retries = 0

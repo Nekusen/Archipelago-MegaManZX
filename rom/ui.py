@@ -3,19 +3,29 @@ cutscenes, the warp on the pause menu and the notice popup."""
 
 import hashlib
 
-from ..data import NOTIFY_ADDR
+from ..data import ICON_TABLE_ADDR, ICON_TABLE_SIZE, NOTIFY_ADDR
 from .arm9 import Arm9
+from .golden import GOLDEN_IMAGE_SIZE
 
 # Tutorial skip: New Game enters the scene through the LOAD handler, from the
-# image the client seeds. The handler also serves the attract demo, so the cave
-# checks the game mode (low 16 bits zero) and the title carousel step first.
+# slot's golden image. The handler also serves the attract demo, so the cave
+# checks the game mode (low 16 bits zero) and the title carousel step first;
+# the copy cave then fills the load buffer from the image the patch carries.
 SKIP_ENTRY_RAM = 0x02022544
 SKIP_ENTRY_ORIG = bytes.fromhex("10b5041c00f020fa")
 SKIP_ENTRY_NEW = bytes.fromhex("004b184761b40c02")    # jump to SKIP_CAVE_RAM
 SKIP_CAVE_RAM = 0x020CB460
 SKIP_CAVE = bytes.fromhex(
     "07490968090403d1064a1278062a05d010b5044657f78afa034b1847034b1847"
-    "d8e6150270cd14024d2502022d250202")
+    "d8e6150270cd14024d25020261b50c02")
+SKIP_COPY_CAVE_RAM = 0x020CB560
+SKIP_COPY_CAVE = bytes.fromhex(
+    "10b40549054a064b10c910c29942fbd110bc044b1847c04600161902a8021602f41a19022d250202")
+# The golden image travels as an autoload section the boot code places in the
+# free gap between the model overlays (which end at the icon table) and the
+# room overlays; the copy cave reads it from there.
+GOLDEN_IMAGE_RAM = 0x02191600
+ROOM_OVERLAY_SLOT_RAM = 0x02194000
 
 # Go to Transerver: Y on the MISSION tab. Cave A replaces the pad read and raises
 # two flags on Y; cave B closes the menu on its flag. The client serves the warp.
@@ -61,10 +71,17 @@ CUTSCENE_SKIP_CAVE_RAM = 0x020CB540
 CUTSCENE_SKIP_CAVE = bytes.fromhex("10b5034ce0783df76df80248417f10bd00f51402b0f61402")
 
 
-def patch_tutorial_skip(arm9: Arm9) -> None:
-    """Send New Game through the LOAD handler, so a slot starts from the image the client seeds."""
+def patch_tutorial_skip(arm9: Arm9, image: bytes) -> None:
+    """Send New Game through the LOAD handler with the slot's golden image in the load buffer."""
+    assert len(image) == GOLDEN_IMAGE_SIZE
+    assert GOLDEN_IMAGE_RAM >= ICON_TABLE_ADDR + ICON_TABLE_SIZE
+    assert GOLDEN_IMAGE_RAM + len(image) <= ROOM_OVERLAY_SLOT_RAM
+    assert CUTSCENE_SKIP_CAVE_RAM + len(CUTSCENE_SKIP_CAVE) <= SKIP_COPY_CAVE_RAM
+    assert SKIP_COPY_CAVE_RAM + len(SKIP_COPY_CAVE) <= NOTIFY_CAVE_RAM
     arm9.write(SKIP_ENTRY_RAM, SKIP_ENTRY_NEW, SKIP_ENTRY_ORIG)
     arm9.write(SKIP_CAVE_RAM, SKIP_CAVE)
+    arm9.write(SKIP_COPY_CAVE_RAM, SKIP_COPY_CAVE)
+    arm9.add_section(GOLDEN_IMAGE_RAM, image)
 
 
 def patch_menu_warp(arm9: Arm9) -> None:

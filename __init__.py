@@ -9,7 +9,7 @@ from Options import OptionError
 from worlds.AutoWorld import WebWorld, World
 
 from .logic import bosses
-from .data import LOCATIONS, ITEMS, STARTING_MODEL_ITEM
+from .data import LOCATIONS, ITEMS, STARTING_MODEL_ITEM, STARTING_MODELS
 from .items import MMZXItem, item_name_to_id, get_classification, ITEM_GROUPS
 from .locations import (location_name_to_id, locations_for_options, LOCATION_GROUPS,
                         pickup_flags_from_options)
@@ -18,6 +18,7 @@ from .logic import load_document
 from .logic.rules import TIER, starting_point
 from .regions import boss_requirements, create_regions, progression_overrides
 from .rom import MMZXPatch, write_patch_tokens, MMZX_US_MD5
+from .rom.golden import build_image
 from . import client  # registers the BizHawkClient  # noqa: F401
 from . import tracker  # auto-tab / position icon for Universal Tracker
 
@@ -187,10 +188,12 @@ class MMZXWorld(World):
             % (self.player_name, ", ".join(blocked) or "none (check the rest of the logic)"))
 
     def generate_output(self, output_directory: str) -> None:
-        """Writes the .apmmzx patch of this player."""
+        """Writes the .apmmzx patch of this player, with the starting save built from the options."""
         patch = MMZXPatch(player=self.player, player_name=self.player_name)
+        image = build_image(self.options.starting_model.current_key, self.options.character.value,
+                            STARTING_MODELS, starting_point(self))
         write_patch_tokens(patch, self.player_name, self.multiworld.seed_name, self.world_version,
-                           hu_in_pool=bool(self.options.hu_in_pool.value))
+                           image, hu_in_pool=bool(self.options.hu_in_pool.value))
         out_name = self.multiworld.get_out_file_name_base(self.player)
         patch.write(os.path.join(output_directory, out_name + patch.patch_file_ending))
 

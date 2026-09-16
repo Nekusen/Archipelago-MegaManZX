@@ -36,6 +36,7 @@ will be 0.1.0.
 
 ### Changed
 
+- The starting save is part of the patched ROM: New Game starts at your Transerver even if the client is not connected yet, also after a hard reset of the emulator.
 - Source layout: the ROM patch lives in `rom/` (one module per domain), the logic document and its rules in `logic/`, the Universal Tracker callbacks in `tracker/`, and the starting save image and boss rush helpers in `client/`.
 - The tracker map images left the `.apworld` for the external pack; the world drops from 11 MB to under 1 MB.
 - The overall map is the game's own world map from the MISSION tab; missions and biometals sit on their boss's room.

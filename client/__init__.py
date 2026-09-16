@@ -14,12 +14,13 @@ from worlds._bizhawk.client import BizHawkClient
 
 from ..rom import pack_version, unpack_version
 from .addresses import (
-    BOOT_FILL, GAME, NOTIFY_LEVELS, NOTIFY_STYLES, PICKUP_OPTION_KEYS, ROM_AP_MAGIC,
+    BOOT_FILL, DOM, GAME, NOTIFY_LEVELS, NOTIFY_STYLES, PICKUP_OPTION_KEYS, ROM_AP_MAGIC,
     ROM_AP_MAGIC_LEN, ROM_AP_MAGIC_OFF, ROM_AP_VERSION_OFF, ROM_GAME_CODE, ROM_GAME_CODE_OFF,
     ROM_SLOT_NAME_LEN, ROM_SLOT_NAME_OFF, STARTUP_TICKS)
 from .ram import ProgressWindow, Tick
 from .notices import push_notices, sync_icon_table
-from .startup import apply_start_state, resolve_start_state, seed_golden_image
+from .startup import apply_start_state, resolve_start_state
+from ..rom.ui import SKIP_COPY_CAVE, SKIP_COPY_CAVE_RAM
 from .checks import detect_checks
 from .items import grant_items, revert_unowned_models
 from .missions import auto_accept_mission, handle_ending, repair_missions, skip_boss_rush
@@ -121,6 +122,13 @@ class MMZXClient(BizHawkClient):
                         "generated the seed, or generate the seed again with this one."
                         % (*unpack_version(rom_version), *MMZXWorld.world_version))
             return False
+        # the same build can have patched a ROM before the starting save moved into it
+        cave = (await bizhawk.read(ctx.bizhawk_ctx, [(SKIP_COPY_CAVE_RAM, len(SKIP_COPY_CAVE), DOM)]))[0]
+        if cave != SKIP_COPY_CAVE:
+            logger.info("ERROR: this ROM was patched by an older build of the Mega Man ZX apworld "
+                        "%d.%d.%d, without the starting save. Open the .apmmzx again to create the "
+                        "ROM." % MMZXWorld.world_version)
+            return False
         raw = reads[3]
         end = raw.find(b"\x00")
         try:
@@ -201,14 +209,13 @@ class MMZXClient(BizHawkClient):
         return self.ingame_ticks >= STARTUP_TICKS and tick.msg_bank != BOOT_FILL
 
     async def game_watcher(self, ctx: "BizHawkClientContext") -> None:
-        """One tick: seed the title, then detect checks, grant items and repair the game."""
+        """One tick: detect checks, grant items and repair the game."""
         if ctx.server is None or ctx.slot_data is None:
             return
         if not self.setup_done:
             await self._setup(ctx)
         try:
             await self._stage("start key", resolve_start_state(self, ctx))
-            await self._stage("golden image", seed_golden_image(self, ctx))
             tick = Tick(await bizhawk.read(ctx.bizhawk_ctx, Tick.READS))
             if self.death_link_enabled:
                 await self._stage("deathlink send", report_death(self, ctx, tick))

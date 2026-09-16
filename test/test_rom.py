@@ -13,8 +13,9 @@ from pathlib import Path
 
 from .. import rom
 from ..apnds import lz
-from ..data import NOTIFY_ADDR, NOTIFY_BUF_MAX, PICKUP_MAILBOX_ADDR, PICKUP_MAILBOX_SLOTS
-from ..rom import arm9, blz, nds, pickups, sprites, ui
+from ..data import (ICON_TABLE_ADDR, ICON_TABLE_SIZE, NOTIFY_ADDR, NOTIFY_BUF_MAX, PICKUP_MAILBOX_ADDR,
+                    PICKUP_MAILBOX_SLOTS, STARTING_MODELS, STARTING_TRANSERVERS)
+from ..rom import arm9, blz, golden, nds, pickups, sprites, ui
 
 PATCH_MODULES = (pickups, sprites, ui)     # the modules that hold patch tables and caves
 ARM9_RAM = (0x02000000, 0x02400000)
@@ -253,17 +254,34 @@ class TestPatchTables(unittest.TestCase):
             self.assertEqual(rom.unpack_version(rom.pack_version(version)), version)
 
     def test_patch_tokens(self) -> None:
-        """write_patch_tokens stores the marker with the slot name and the option blob."""
+        """write_patch_tokens stores the marker with the slot name, the option blob and the golden image."""
+        image = golden.build_image("model_zx", 0, STARTING_MODELS, STARTING_TRANSERVERS["area_a"])
         patch = rom.MMZXPatch(player=1, player_name="Tester")
-        rom.write_patch_tokens(patch, "Tester", "seed-1", (0, 1, 0), hu_in_pool=True)
+        rom.write_patch_tokens(patch, "Tester", "seed-1", (0, 1, 0), image, hu_in_pool=True)
         tokens = patch.get_file("token_data.bin")
         self.assertIn(rom.AP_MAGIC, tokens)
         self.assertIn(b"Tester", tokens)
         self.assertIn(b"seed-1", tokens)
         self.assertEqual(patch.get_file("mmzx_cfg.bin")[0] & rom.CFG_HU_IN_POOL, rom.CFG_HU_IN_POOL)
+        self.assertEqual(patch.get_file("golden_image.bin"), image)
         patch = rom.MMZXPatch(player=1, player_name="Tester")
-        rom.write_patch_tokens(patch, "Tester", "seed-1", (0, 1, 0))
+        rom.write_patch_tokens(patch, "Tester", "seed-1", (0, 1, 0), image)
         self.assertEqual(patch.get_file("mmzx_cfg.bin")[0] & rom.CFG_HU_IN_POOL, 0)
+        self.assertEqual([name for name, _files in rom.MMZXPatch.procedure],
+                         ["patch_arm9", "apply_tokens"])
+        self.assertIn("golden_image.bin", rom.MMZXPatch.procedure[0][1])
+
+    def test_golden_image_section(self) -> None:
+        """The image lands in the overlay gap after the icon table, and the copy cave knows where."""
+        self.assertGreaterEqual(ui.GOLDEN_IMAGE_RAM, ICON_TABLE_ADDR + ICON_TABLE_SIZE)
+        self.assertLessEqual(ui.GOLDEN_IMAGE_RAM + golden.GOLDEN_IMAGE_SIZE, ui.ROOM_OVERLAY_SLOT_RAM)
+        self.assertEqual(ui.GOLDEN_IMAGE_RAM % 4, 0)
+        self.assertEqual(golden.GOLDEN_IMAGE_SIZE % 4, 0)
+        words = [int.from_bytes(ui.SKIP_COPY_CAVE[i:i + 4], "little") for i in range(0, len(ui.SKIP_COPY_CAVE), 4)]
+        for value in (ui.GOLDEN_IMAGE_RAM, ui.GOLDEN_IMAGE_RAM + golden.GOLDEN_IMAGE_SIZE, golden.GOLDEN_IMAGE_ADDR):
+            self.assertIn(value, words, hex(value))
+        self.assertIn(ui.SKIP_COPY_CAVE_RAM + 1, [int.from_bytes(ui.SKIP_CAVE[i:i + 4], "little")
+                                                 for i in range(0, len(ui.SKIP_CAVE), 4)])
 
 
 @unittest.skipUnless(os.path.isfile(ROM_PATH), "set MMZX_ROM to the vanilla Mega Man ZX (USA) ROM")

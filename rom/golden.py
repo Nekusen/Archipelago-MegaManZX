@@ -1,8 +1,8 @@
-"""Golden image: the save image the client seeds for the tutorial skip.
+"""Golden image: the starting save the patch bakes into the ROM for the tutorial skip.
 
 GOLDEN_IMAGE is a dump of the game's own LOAD buffer in a clean post-briefing
 state (Normal difficulty, hub floor, no mission in progress); build_image
-applies the slot's starting model and character on top. Layout in
+applies the slot's start point, starting model and character on top. Layout in
 the field offsets below.
 """
 

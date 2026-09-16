@@ -2,7 +2,7 @@
 
 import struct
 
-from ..apnds.code import CodeStartParams, START_INFO_SIGNATURE_DS
+from ..apnds.code import AutoloadSectionInfo, CodeStartParams, START_INFO_SIGNATURE_DS
 from . import blz
 from .nds import (NDS_HDR_ARM7, NDS_HDR_ARM9_SIZE, NDS_HDR_BANNER, NDS_HDR_FAT, NDS_HDR_FNT,
                   NDS_HDR_OVERLAYS9, NITROCODE_LEN, NITROCODE_MAGIC)
@@ -62,11 +62,19 @@ class Arm9:
                 return
         raise ValueError("MMZX: 0x%08X is outside the ARM9 sections" % ram)
 
+    def add_section(self, ram: int, data: bytes) -> None:
+        """Add an autoload section the boot code copies to `ram`, before the section table."""
+        if len(data) % 4:
+            raise ValueError("MMZX: an autoload section must be a whole number of words")
+        self.sections.insert(-1, (ram, bytearray(data)))
+        self.infos.insert(-1, AutoloadSectionInfo(destination=ram, size=len(data), bss_size=0))
+
     def pack(self) -> bytes:
         """Recompress into the image the game boots: raw header, BLZ body, start parameters."""
         pieces = [(bytes(buf), info) for (_, buf), info in zip(self.sections, self.infos)]
         packed = self.params.pack_code_from_sections((pieces, b""), self.ram, "9",
-                                                     try_compress=False)
+                                                     try_compress=False,
+                                                     autoload_info_write_mode="overwrite_and_expand")
         body = blz.compress(packed[blz.BLZ_HEADER_LEN:])
         if body is None:
             raise ValueError("MMZX: the ARM9 did not compress")

@@ -71,8 +71,8 @@ What you can tune:
 
 ## Can I play offline?
 
-No. The patched ROM places no items and does not know your options: the BizHawk Client grants every item, including
-your own, starts the game in the hub, accepts missions and performs the teleports. Keep it connected to the server
+No. The patched ROM places no items: the BizHawk Client grants every item, including your own, accepts missions and
+performs the teleports. Only the starting save is in the ROM, so New Game works without it. Keep it connected to the server
 while you play, also in a single-player game. If the connection drops, nothing is lost: checks are read back from the
 game's own flags and items are re-applied when you reconnect.
 

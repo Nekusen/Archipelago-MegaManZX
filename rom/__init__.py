@@ -16,7 +16,8 @@ from .arm9 import Arm9, replace_arm9
 MMZX_US_MD5 = "88b684b1b3eea885a07625da89f1e5b3"
 
 # AP marker, written by the token step into the zero padding after the header,
-# and the option blob (mmzx_cfg.bin inside the .apmmzx) that patch_arm9 reads.
+# and the option blob (mmzx_cfg.bin inside the .apmmzx) that patch_arm9 reads
+# along with the slot's golden image (golden_image.bin).
 AP_MAGIC_OFFSET = 0x1000
 AP_MAGIC = b"MZXAP\x00"
 AP_MARKER_LEN = 0x80
@@ -32,16 +33,17 @@ class MMZXPatchExtension(APPatchExtension):
     game = "Mega Man ZX"
 
     @staticmethod
-    def patch_arm9(caller: APProcedurePatch, rom: bytes, cfg_file: str) -> bytes:
+    def patch_arm9(caller: APProcedurePatch, rom: bytes, cfg_file: str, image_file: str) -> bytes:
         """Apply the code patches to the ARM9 and the ROM-level edits; returns the new image."""
         cfg = caller.get_file(cfg_file)
         hu_in_pool = bool(cfg[0] & CFG_HU_IN_POOL) if cfg else False
+        image = caller.get_file(image_file)
 
         d = bytearray(rom)
         arm9_off, _entry, arm9_ram, arm9_len = struct.unpack_from("<4I", d, nds.NDS_HDR_ARM9)
         arm9 = Arm9(bytes(d[arm9_off:arm9_off + arm9_len]), arm9_ram)
 
-        ui.patch_tutorial_skip(arm9)
+        ui.patch_tutorial_skip(arm9, image)
         sprites.patch_oam_loop_guards(arm9)
         pickups.patch_yellow_key_dialogue(arm9)
         pickups.patch_area_x_access(arm9)
@@ -78,7 +80,7 @@ class MMZXPatch(APProcedurePatch, APTokenMixin):
     result_file_ending = ".nds"
 
     procedure = [
-        ("patch_arm9", ["mmzx_cfg.bin"]),
+        ("patch_arm9", ["mmzx_cfg.bin", "golden_image.bin"]),
         ("apply_tokens", ["token_data.bin"]),
     ]
 
@@ -99,12 +101,15 @@ def unpack_version(word: int) -> tuple[int, int, int]:
 
 
 def write_patch_tokens(patch: MMZXPatch, slot_name: str, seed_name: str,
-                       world_version: tuple[int, int, int], hu_in_pool: bool = False) -> None:
-    """Write the AP marker (magic, version, slot, seed) and the option blob read by patch_arm9.
+                       world_version: tuple[int, int, int], golden_image: bytes,
+                       hu_in_pool: bool = False) -> None:
+    """Write the AP marker (magic, version, slot, seed), the option blob and the golden image.
 
     `world_version` is the world's (major, minor, build), as the core reads it
-    from archipelago.json.
+    from archipelago.json; `golden_image` is the slot's starting save, which
+    patch_arm9 bakes into the ARM9.
     """
+    patch.write_file("golden_image.bin", bytes(golden_image))
     blob = bytearray(AP_MARKER_LEN)
     blob[0:len(AP_MAGIC)] = AP_MAGIC
     version = pack_version(world_version)

@@ -75,8 +75,8 @@ Target Area list with every destination you have unlocked.
 
 - "No handler was found for this game": update BizHawk to 2.10 or later, or check that the loaded `.nds` is the
   patched one. A vanilla ROM is rejected; open the `.apmmzx` first.
-- New Game played the intro instead of starting in the hub: the client was not connected while the title screen
-  was up. Connect, return to the title screen and choose New Game again.
+- New Game played the intro instead of starting at your Transerver: the loaded `.nds` is not the one made from
+  your `.apmmzx` (the starting save is part of the patched ROM). Open the patch again and load the ROM it creates.
 - The game does not save or loads an old save: turn `AutoSaveRAM` off (see above) and restart EmuHawk.
 - You cannot get out of a room or a shutter stays closed: use "Go to Transerver" from the pause menu or
   `/mmzx_teleport`.

@@ -7,7 +7,8 @@ starts, what you find and receive, how you get around and a few conveniences.
 
 - New Game skips the whole tutorial. You start on the Transerver floor chosen in your options (next to Area A by
   default, or in the Guardian base) with the model and the character from your options, on Normal difficulty. Only
-  that floor is a known Transport destination at the start. Continue works as usual.
+  that floor is a known Transport destination at the start. The starting save is part of the patched ROM, so this
+  works with the client disconnected too. Continue works as usual.
 - You do not type a slot name: the client logs in on its own.
 
 ## What you find and receive

@@ -34,10 +34,10 @@ UT loads from a zip you download once (`ut_pack_path` in `host.yaml`).
                                 rules that are not drawn, bosses.py the boss_logic option
     rom/                        the .apmmzx patch: the patch class and AP marker in __init__.py, one module
                                 per domain (pickups, sprites, ui), the ARM9 image (arm9.py), the BLZ
-                                encoder (blz.py), the ROM container (nds.py) and the icon set cut from
-                                the player's ROM (icons.py)
-    client/                     the BizHawk client: the watcher in __init__.py, one module per stage group,
-                                the starting save image (golden.py) and the boss rush skip (bossrush.py)
+                                encoder (blz.py), the ROM container (nds.py), the icon set cut from
+                                the player's ROM (icons.py) and the starting save baked into it (golden.py)
+    client/                     the BizHawk client: the watcher in __init__.py, one module per stage group
+                                and the boss rush skip (bossrush.py)
     tracker/                    Universal Tracker: map layout (maps.json, locations.json), the callbacks in
                                 __init__.py and the generated meta.py
     assets/                     the starting save image and the three Archipelago logos; read() loads them
@@ -93,7 +93,7 @@ The terms you will meet first.
   `LIFEUP>=2`.
 - detect recipe, grant recipe: how the client recognises a check in RAM, and how it gives an item.
 - live vs canonical: the two copies the game keeps of its progress block; grants are written to both.
-- golden image: the save image of a fresh post-tutorial game that the client hands to New Game.
+- golden image: the save image of a fresh post-tutorial game, built from the options and baked into the patched ROM; New Game loads it.
 - cave: a small routine the patch places in unused space of the game's code.
 - mailbox: a structure in free RAM where the patched game reports events to the client (collected pickups, notices).
 

@@ -135,14 +135,11 @@ SUBAREA_STABLE = 0x02108228
 GAME_STATE = 0x0215E6D8
 STATE_INGAME = 0x500
 STATE_LOAD = 0x400            # scene load (teleport)
-STATE_GAME_OVER_LOW = 0x07    # low byte of the state word in the Game Over menus
 STARTUP_TICKS = 3             # in-game ticks to wait before the first read
 BOOT_FILL = b"\xff\xff\xff\xff"
 # The title and its menus share the gameplay state word; the carousel step
-# tells them apart. Steps 3 and 5 are safe to seed the golden image, 6 is a
-# launched game.
+# tells them apart: 6 is a launched game.
 TITLE_CAROUSEL_STEP = 0x0214CD70
-TITLE_STEPS_SEEDABLE = (3, 5)
 TITLE_STEP_LAUNCHED = 6
 SCENE_DESC = 0x0216047C       # spawn x, y and subarea; layout of PLAYER_PERSIST
 SCENE_DESC_LEN = 0x6C

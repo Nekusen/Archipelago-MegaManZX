@@ -1402,6 +1402,8 @@ room I-1 [i01]
       normal: free
     conn -> Tower Interior
       normal: FX
+    conn -> Platform
+      normal: free
   region I-3 Entrance
     door -> I-3/I-1 Entrance
     <- I-3
@@ -1412,8 +1414,15 @@ room I-1 [i01]
       normal: LX
       expert: MODEL
   region Left Area
-    check I-1: E-Crystal L
     conn -> Hub Entrance
+      normal: free
+    conn -> I-2 Entrance
+      normal: MODEL
+    conn -> Platform
+      normal: MODEL
+  region Platform
+    check I-1: E-Crystal L
+    conn -> Left Area
       normal: free
     conn -> I-2 Entrance
       normal: MODEL

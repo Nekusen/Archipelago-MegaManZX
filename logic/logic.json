@@ -10029,6 +10029,54 @@
      },
      "to": "tower-interior",
      "unsure": false
+    },
+    {
+     "from": "platform",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "left-area",
+     "unsure": false
+    },
+    {
+     "from": "left-area",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "platform",
+     "unsure": false
+    },
+    {
+     "from": "i-2-entrance",
+     "note": "",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "platform",
+     "unsure": false
+    },
+    {
+     "from": "platform",
+     "note": "",
+     "req": {
+      "normal": [
+       [
+        "MODEL"
+       ]
+      ]
+     },
+     "to": "i-2-entrance",
+     "unsure": false
     }
    ],
    "members": {},
@@ -10167,8 +10215,8 @@
        963
       ],
       [
-       1804,
-       623
+       1677,
+       575
       ]
      ]
     },
@@ -10177,6 +10225,29 @@
      "name": "Main",
      "note": "",
      "poly": null
+    },
+    "platform": {
+     "color": "#fde293",
+     "name": "Platform",
+     "note": "",
+     "poly": [
+      [
+       1731,
+       645
+      ],
+      [
+       1736,
+       737
+      ],
+      [
+       1789,
+       732
+      ],
+      [
+       1798,
+       619
+      ]
+     ]
     },
     "tower-interior": {
      "color": "#a7ffeb",

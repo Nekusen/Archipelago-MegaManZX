@@ -150,7 +150,7 @@ class TestTranserver(TranserverTests, MMZXTestBase):
 
 
 class TestBiometals(BiometalTests, MMZXTestBase):
-    def test_dark_rooms_need_px_or_lx(self) -> None:
-        """The dark rooms of I are crossed with Model PX or Model LX."""
+    def test_dark_rooms_need_px(self) -> None:
+        """The dark rooms of I are crossed with Model PX (any model only in expert)."""
         self.assertAccessDependency(["I-2: Disk E-34", "I-4: Disk E-14", "I-4: Disk M-1"],
-                                    [["Progressive Model PX"], ["Progressive Model LX"]], only_check_listed=True)
+                                    [["Progressive Model PX"]], only_check_listed=True)

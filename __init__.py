@@ -9,13 +9,13 @@ from Options import OptionError
 from worlds.AutoWorld import WebWorld, World
 
 from .logic import bosses
-from .data import LOCATIONS, ITEMS, STARTING_MODEL_ITEM, START_TRANSERVER_AREA
+from .data import LOCATIONS, ITEMS, STARTING_MODEL_ITEM
 from .items import MMZXItem, item_name_to_id, get_classification, ITEM_GROUPS
 from .locations import (location_name_to_id, locations_for_options, LOCATION_GROUPS,
                         pickup_flags_from_options)
 from .options import MMZXOptions
 from .logic import load_document
-from .logic.rules import TIER
+from .logic.rules import TIER, starting_point
 from .regions import boss_requirements, create_regions, progression_overrides
 from .rom import MMZXPatch, write_patch_tokens, MMZX_US_MD5
 from . import client  # registers the BizHawkClient  # noqa: F401
@@ -147,8 +147,8 @@ class MMZXWorld(World):
             fixed.remove(start_item)   # one copy: the first half of a progressive item
             self.multiworld.push_precollected(self.create_item(start_item))
 
-        # the starting hub floor's Transerver Access is pre-granted; the rest go to the pool
-        start_ts = "Transerver Access - Area %s" % START_TRANSERVER_AREA
+        # the starting floor's Transerver Access is pre-granted; the rest go to the pool
+        start_ts = starting_point(self).get("access")
         if start_ts in fixed:
             fixed.remove(start_ts)
             self.multiworld.push_precollected(self.create_item(start_ts))

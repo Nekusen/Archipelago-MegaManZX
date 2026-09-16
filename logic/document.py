@@ -723,12 +723,13 @@ def room_graph(world, doc, room, members, tier="expert"):
 
 
 def room_entries(world, doc, room, members, start_room=None):
-    """Regions through which the room is entered from outside."""
+    """Regions through which the room is entered from outside; start_room is one room or several."""
     entries = set()
     for e in world["edges"]:
         if e["dst"] == room and e["src"] != room and e["kind"] not in NON_TRANSITION_KINDS:
             entries.add(members[room].get(e["name"] + "@in", "main"))
-    if start_room == room or room == world["hub"]:
+    starts = {start_room} if isinstance(start_room, str) else set(start_room or ())
+    if room in starts or room == world["hub"]:
         entries.add("main")
     return entries
 

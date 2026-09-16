@@ -7,10 +7,10 @@ config file.
 
 ## What does randomization do to this game?
 
-Mega Man ZX becomes an open world. The tutorial is skipped: a new game starts in the Transerver hub of the Guardian
-base with the model you chose in your options, on Normal difficulty. The biometals, the Card Keys and the Transerver
-destinations are items placed somewhere in the multiworld, and the game's collectables, boss fights and missions are
-checks. Missions are accepted automatically when you enter their area, so they can be done in any order. Areas can
+Mega Man ZX becomes an open world. The tutorial is skipped: a new game starts on the Transerver floor you chose in your
+options (next to Area A, or in the Guardian base) with the model you chose, on Normal difficulty. The biometals, the
+Card Keys and the Transerver destinations are items placed somewhere in the multiworld, and the game's collectables,
+boss fights and missions are checks. Missions are accepted automatically when you enter their area, so they can be done in any order. Areas can
 always be reached on foot; a Transerver Access item lets you warp to the area from the hub.
 
 ## What is the goal?

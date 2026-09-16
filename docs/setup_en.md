@@ -47,9 +47,9 @@ Opening the patch file normally does steps 1 to 5 for you. Keep them in mind in 
 6. The client window should say it connected and recognised Mega Man ZX. The slot name is read from the ROM.
 7. Enter your room's address and port (for example `archipelago.gg:38281`) in the top field and click Connect.
 
-Connect before you start playing. Then, on the title screen, choose New Game. The tutorial is skipped: you appear in
-the Guardian hub with your starting model. Your character and the Normal difficulty come from your options, whatever
-you pick in the New Game menu. Continue resumes a saved game as usual.
+Connect before you start playing. Then, on the title screen, choose New Game. The tutorial is skipped: you appear on
+your starting Transerver floor with your starting model. Your character and the Normal difficulty come from your
+options, whatever you pick in the New Game menu. Continue resumes a saved game as usual.
 
 The client must stay connected while you play. It grants every item, accepts the mission of each area you enter and
 handles teleports. If the connection drops, reconnect: your checks and items are restored from the game and the

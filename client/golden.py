@@ -6,8 +6,10 @@ applies the slot's starting model and character on top. Layout in
 the field offsets below.
 """
 
+import struct
+
 from ..assets import read as read_asset
-from ..data import LIVE_BLOCK, MODEL_X_POSSESSION
+from ..data import ITEMS, LIVE_BLOCK, MODEL_X_POSSESSION, SCENE_WORDS
 
 GOLDEN_IMAGE_ADDR = 0x021602A8
 GOLDEN_IMAGE_SIZE = 0x4F4
@@ -15,10 +17,13 @@ GOLDEN_IMAGE = read_asset("golden_image.bin")
 assert len(GOLDEN_IMAGE) == GOLDEN_IMAGE_SIZE
 
 # Offsets within the image; every field has a mirror copy.
+OFF_SCENE_WORD = 0x08       # 0x021602B0: scene word of the room the LOAD enters
 BLOCK_OFF = 0x0C            # progress block A, RAM 0x021045CC
 BLOCK_LEN = 0xE4
 BLOCK_MIRROR = BLOCK_LEN    # block B follows block A
 PLAYER_MIRROR = 0x6C        # descriptor 2 = descriptor 1 (0x1D4, RAM 0x0214FC5C) + 0x6C
+OFF_SPAWN_X = 0x1D4         # 0x0216047C: spawn x << 8, then y << 8
+OFF_SPAWN_Y = 0x1D8
 OFF_ACTIVE_MODEL = 0x1EC    # 0x0214FC74
 OFF_CHARACTER = 0x1ED       # 0x0214FC75, the copy the game reads
 OFF_CHARACTER_BLOCK = 0x71  # 0x02104631, the copy the menus read
@@ -34,6 +39,13 @@ VICTORY_LEVEL_MAX = 4       # a level 4 win over the first boss caps the WE at W
 WE_FULL = 16
 DIFFICULTY_NORMAL = 1
 LIVES_BY_DIFFICULTY = (4, 2, 2)
+# The Transport destination bits, one per Transerver Access item; the baseline holds floor A's
+TRANSERVER_BITS = [(v["grant"][1], v["grant"][2]) for v in ITEMS.values() if v["grant"][0] == "transerver"]
+
+
+def _set_u32(img: bytearray, off: int, val: int, mirror: int) -> None:
+    for o in (off, off + mirror):
+        struct.pack_into("<I", img, o, val)
 
 
 def _set_bit(img: bytearray, off: int, bit: int, on: bool, mirror: int) -> None:
@@ -46,12 +58,22 @@ def _set_byte(img: bytearray, off: int, val: int, mirror: int) -> None:
     img[off + mirror] = val & 0xFF
 
 
-def build_image(start_key: str, character: int, starting_models: dict) -> bytes:
-    """Golden image for a slot: starting model key and character (0 Vent, 1 Aile).
+def build_image(start_key: str, character: int, starting_models: dict, start: dict | None = None) -> bytes:
+    """Golden image for a slot: starting model key, character (0 Vent, 1 Aile) and start point.
 
-    Pure and idempotent; no Archipelago objects involved.
+    Pure and idempotent; no Archipelago objects involved. The start point
+    (a STARTING_TRANSERVERS record) sets the spawn, the scene word and the one
+    Transport destination known from the start.
     """
     img = bytearray(GOLDEN_IMAGE)
+    if start:
+        _set_u32(img, OFF_SPAWN_X, int(start["x"]) << 8, PLAYER_MIRROR)
+        _set_u32(img, OFF_SPAWN_Y, int(start["y"]) << 8, PLAYER_MIRROR)
+        struct.pack_into("<I", img, OFF_SCENE_WORD, SCENE_WORDS.get(start["sub"], start["sub"]))
+        access = ITEMS.get(start.get("access") or "", {}).get("grant")
+        for addr, bit in TRANSERVER_BITS:
+            on = access is not None and (addr, bit) == (access[1], access[2])
+            _set_bit(img, BLOCK_OFF + (addr - LIVE_BLOCK), bit, on, BLOCK_MIRROR)
     rec = starting_models.get(start_key) or starting_models.get("model_zx")
     # Model X unless revoked, plus the starting model's ownership bits
     _set_bit(img, BLOCK_OFF + (MODEL_X_ADDR - LIVE_BLOCK), MODEL_X_BIT, not rec.get("revoke_x", False), BLOCK_MIRROR)

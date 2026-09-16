@@ -77,8 +77,6 @@ for _v in LOCATIONS.values():
 _near = [a for a in _detect_addrs if abs(a - LIVE_BLOCK) < DETECT_WINDOW_RADIUS]
 DETECT_WINDOW = (min(_near), max(_near) + 1)             # [lo, hi)
 DETECT_FAR = sorted({a for a in _detect_addrs if abs(a - LIVE_BLOCK) >= DETECT_WINDOW_RADIUS})
-TRANSPORT_ACCESS = 0x02104627   # Transport bitfield, first byte
-TRANSPORT_ACCESS_A = 0x10       # its bit 4: destination A-2
 PLAYER_POS = 0x0214FB64      # two u32: x << 8, y << 8
 POS_KEY = "mmzx_pos_%d"     # data storage: [subarea, x, y] for UT
 POS_INTERVAL = 1.0

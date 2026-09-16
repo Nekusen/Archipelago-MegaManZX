@@ -13,10 +13,11 @@ will be 0.1.0.
 - Disk E-47, the one hanging from a balloon in H-1, is a location too, and its pickup is drawn as the item it holds like any other.
 - Optional locations for the 133 refill pickups of the levels (1-Ups, energy, weapon energy, E-Crystals); the first pickup sends the check and the object keeps respawning.
 - 45 items: Model X, ZX and OX, progressive Model HX, FX, LX and PX (two halves each), the five Card Keys, Transerver Access for 13 areas, four Life Ups, four Sub Tanks and the eight ITEM B chips; E-Crystals and 1-Ups as filler.
-- Tutorial skip: New Game starts in the Guardian hub with the model and character of the YAML, on Normal difficulty.
+- Tutorial skip: New Game starts on a Transerver floor of the hub with the model and character of the YAML, on Normal difficulty.
+- `starting_transerver`: start next to Area A (default) or in the Guardian base (Area X). Only the starting floor's Transerver Access is yours from the start; every other one, Area A's included, is an item.
 - Missions accepted automatically on entering their area, so they can be done in any order.
 - Hybrid Transerver network: every area can be reached on foot; a warp from the hub needs the area's Transerver Access item.
-- Options: `starting_model` (Model ZX by default), `character`, `hu_in_pool`, `boss_logic`, `skip_boss_rush`, the four `pickup_checks_*` toggles, `notify_received`, `notify_sent`, `notify_style`, `death_link`.
+- Options: `starting_model` (Model ZX by default), `starting_transerver`, `character`, `hu_in_pool`, `boss_logic`, `skip_boss_rush`, the four `pickup_checks_*` toggles, `notify_received`, `notify_sent`, `notify_style`, `death_link`.
 - Per-boss logic requirements written in the YAML (`boss_logic`), with generation failing early on a requirement the pool cannot meet.
 - Boss rush skip (`skip_boss_rush`): the D-4 tower marks each Pseudoroid pair as beaten as the elevator reaches it.
 - Every pickup in the world is drawn as the item it holds, with the game's own icons for Life Ups, Sub Tanks, chips, biometals and Card Keys and the Archipelago logo for the rest; `/mmzx_icons` toggles it.

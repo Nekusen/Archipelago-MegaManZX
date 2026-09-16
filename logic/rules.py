@@ -4,8 +4,7 @@ import re
 
 from .. import data as _data
 from . import document as F
-from ..data import (HUB_ROOM, ROOM_SUBAREA, STARTING_TRANSERVERS,
-                   TRANSERVER_ACCESS, TRANSERVER_ALWAYS)
+from ..data import HUB_ROOM, STARTING_TRANSERVERS, TRANSERVER_ACCESS, TRANSERVER_ALWAYS
 
 # Logic level the world ships. The document also carries expert alternatives (tricks,
 # tight jumps); they are not offered as an option yet.
@@ -67,14 +66,15 @@ def label_rule(label: str, player: int):
     return rule
 
 
-def starting_room(world) -> str:
-    """Room of the starting_transerver option, looked up by subarea."""
+def starting_point(world) -> dict:
+    """Record of the starting_transerver option: spawn, room and pre-granted access item."""
     key = world.options.starting_transerver.current_key
-    sub = STARTING_TRANSERVERS.get(key, STARTING_TRANSERVERS["guardian_hub"])[0]
-    for room, s in ROOM_SUBAREA.items():
-        if s == sub:
-            return room
-    return HUB_ROOM
+    return STARTING_TRANSERVERS.get(key) or next(iter(STARTING_TRANSERVERS.values()))
+
+
+def starting_room(world) -> str:
+    """Room the logic starts in."""
+    return starting_point(world)["room"]
 
 
 def and_rules(*rules):

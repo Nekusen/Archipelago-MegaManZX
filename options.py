@@ -48,11 +48,16 @@ class HuInPool(Toggle):
 
 
 class StartingTranserver(Choice):
-    """Transerver where you start. Only one for now: the Guardian base, on the
-    floor of the Area A Transerver (A-2), whose Transerver Access you have from
-    the start."""
+    """Transerver floor of the hub where a new game starts. Only that floor's
+    Transerver Access is yours from the start; every other destination, the
+    Area A one included, is an item like the rest. area_a: the floor of the
+    Area A Transerver, next to A-2. guardian_base: the floor of the Guardian
+    base (Area X), so at first only Area X is in logic."""
     display_name = "Starting Transerver"
-    option_guardian_hub = 0
+    option_area_a = 0
+    option_guardian_base = 1
+    alias_guardian_hub = 0
+    alias_area_x = 1
     default = 0
 
 

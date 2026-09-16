@@ -12,6 +12,7 @@ from ..data import ITEMS, STARTING_MODEL_ITEM
 OPTION_SETS = {
     "default": {},
     "no_starting_model": {"starting_model": "none"},
+    "guardian_base": {"starting_transerver": "guardian_base"},
     "hu_in_pool": {"hu_in_pool": True},
     "skip_boss_rush": {"skip_boss_rush": True},
     "all_pickups": {"pickup_checks_1up": True, "pickup_checks_energy": True,

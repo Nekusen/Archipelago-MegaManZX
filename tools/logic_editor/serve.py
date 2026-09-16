@@ -105,8 +105,9 @@ class WorldCache:
             rooms[r] = {"label": world["room_label"][r], "area": r[:1],
                         "size": png_size(p) if p.exists() else None,
                         "sub": D.ROOM_SUBAREA.get(r), "render": p.exists()}
-        sub = D.STARTING_TRANSERVERS.get("guardian_hub", (70,))[0]
-        start_room = next((r for r, s in D.ROOM_SUBAREA.items() if s == sub), D.HUB_ROOM)
+        # the first starting point is the option's default: the room the editor opens on
+        start_rooms = [rec["room"] for rec in D.STARTING_TRANSERVERS.values()]
+        start_room = start_rooms[0] if start_rooms else D.HUB_ROOM
         gate_edges = {}
         for e in world["edges"]:
             if e.get("gate") is not None:
@@ -125,6 +126,7 @@ class WorldCache:
             "tiers": F.TIERS,
             "hub": world["hub"],
             "start_room": start_room,
+            "start_rooms": sorted(set(start_rooms)),
             "hub_floor_y": world["hub_floor_y"],
             "transerver_access": world["transerver_access"],
             "event_gates_open": world["event_gates_open"],
@@ -144,12 +146,12 @@ SAVE_LOCK = threading.Lock()
 def save_document(doc):
     D, world, payload = CACHE.get()
     doc = F.normalize_logic(doc, world)
-    report = F.validate(world, doc, payload["start_room"], payload["unavailable_atoms"])
+    report = F.validate(world, doc, payload["start_rooms"], payload["unavailable_atoms"])
     with SAVE_LOCK:
         LOGIC_DIR.mkdir(parents=True, exist_ok=True)
         F.save_logic(LOGIC_JSON, doc)
         if not report["errors"]:
-            LOGIC_TXT.write_text(F.export_txt(world, doc, payload["start_room"]), encoding="utf-8", newline="\n")
+            LOGIC_TXT.write_text(F.export_txt(world, doc, payload["start_rooms"]), encoding="utf-8", newline="\n")
     report["saved"] = True
     report["txt"] = not report["errors"]
     return report
@@ -226,7 +228,7 @@ class Handler(BaseHTTPRequestHandler):
             if path == "/api/validate":
                 _, world, payload = CACHE.get()
                 doc = F.normalize_logic(doc, world)
-                return self._send(200, F.validate(world, doc, payload["start_room"], payload["unavailable_atoms"]))
+                return self._send(200, F.validate(world, doc, payload["start_rooms"], payload["unavailable_atoms"]))
             if path == "/api/reload":
                 CACHE.payload = None
                 return self._send(200, {"ok": True})

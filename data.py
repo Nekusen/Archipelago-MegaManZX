@@ -444,9 +444,13 @@ STARTING_MODEL_ITEM = {
     'model_lx': 'Progressive Model LX', 'model_px': 'Progressive Model PX',
     'model_ox': 'Model OX',
 }
-# Starting Transervers: key -> (subarea, x_px, y_px).
+# Starting points of the starting_transerver option: key -> the spawn the save
+# image writes (subarea, x, y), the room the logic starts in and the Transerver
+# Access item granted at the start, whose destination bit the image sets. The
+# first entry is the option's default.
 STARTING_TRANSERVERS = {
-    'guardian_hub': (70, 384, 335),
+    'area_a': {'sub': 70, 'x': 384, 'y': 335, 'room': 'z01', 'access': 'Transerver Access - Area A'},
+    'guardian_base': {'sub': 70, 'x': 384, 'y': 5711, 'room': 'z01', 'access': 'Transerver Access - Area X'},
 }
 
 # Room graph: directed edges between rooms. kind is 'door' (physical door),
@@ -634,7 +638,6 @@ EVENT_GATES = {
 }
 EVENT_GATES_OPEN = [205, 221, 379, 381, 382, 395]
 EVENT_GATES_ALL6 = [225, 378]
-START_TRANSERVER_AREA = 'A'
 # Warp menu destinations (map badges) and save-only pads (DATA rooms).
 WARP_DESTINATIONS = ['a02', 'b02', 'c02', 'd02', 'e07', 'f05', 'g05', 'i03', 'k04', 'l04', 'm03', 'o02']
 DOORS = [

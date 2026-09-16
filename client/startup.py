@@ -6,19 +6,29 @@ import logging
 from typing import TYPE_CHECKING
 import worlds._bizhawk as bizhawk
 
-from ..data import ACTIVE_MODEL_ADDR, MODEL_X_POSSESSION, STARTING_MODELS, STARTING_TRANSERVERS
+from ..data import ACTIVE_MODEL_ADDR, ITEMS, MODEL_X_POSSESSION, STARTING_MODELS, STARTING_TRANSERVERS
 from .golden import GOLDEN_IMAGE_ADDR, build_image
 from .addresses import (
-    DOM, GAME_STATE, HUB_SUBAREA, ITEM_ID_TO_NAME, START_CONFIRM_TICKS, START_MAX_RETRIES,
-    STATE_GAME_OVER_LOW, STATE_INGAME, TITLE_CAROUSEL_STEP, TITLE_STEPS_SEEDABLE,
-    TRANSPORT_ACCESS, TRANSPORT_ACCESS_A)
+    DOM, GAME_STATE, ITEM_ID_TO_NAME, START_CONFIRM_TICKS, START_MAX_RETRIES,
+    STATE_GAME_OVER_LOW, STATE_INGAME, TITLE_CAROUSEL_STEP, TITLE_STEPS_SEEDABLE)
 from .ram import Tick, bits_by_byte, copies_writes, read_copies
-from .warps import teleport
 
 if TYPE_CHECKING:
     from . import MMZXClient
 
 logger = logging.getLogger("Client")
+
+
+def starting_point(ctx) -> dict:
+    """Record of the slot's starting_transerver; the first one when the key is unknown."""
+    key = str(ctx.slot_data.get("starting_transerver", ""))
+    return STARTING_TRANSERVERS.get(key) or next(iter(STARTING_TRANSERVERS.values()))
+
+
+def starting_access_bit(start: dict) -> tuple[int, int] | None:
+    """(address, bit) of the Transport destination the start point grants, if any."""
+    grant = ITEMS.get(start.get("access") or "", {}).get("grant")
+    return (grant[1], grant[2]) if grant else None
 
 
 async def resolve_start_state(client: "MMZXClient", ctx) -> None:
@@ -56,7 +66,8 @@ async def seed_golden_image(client: "MMZXClient", ctx) -> None:
     if not (gs == STATE_INGAME or (gs & 0xFF) == STATE_GAME_OVER_LOW):
         return
     img = build_image(str(ctx.slot_data.get("starting_model", "model_zx")),
-                      int(ctx.slot_data.get("character", 0) or 0), STARTING_MODELS)
+                      int(ctx.slot_data.get("character", 0) or 0), STARTING_MODELS,
+                      starting_point(ctx))
     await bizhawk.guarded_write(
         ctx.bizhawk_ctx,
         [(GOLDEN_IMAGE_ADDR, bytes(img), DOM)],
@@ -64,14 +75,15 @@ async def seed_golden_image(client: "MMZXClient", ctx) -> None:
 
 
 async def apply_start_state(client: "MMZXClient", ctx, tick: Tick) -> None:
-    """Apply the starting state once the player is in the hub (start_state 2).
+    """Apply the starting state once the player is in the starting room (start_state 2).
 
     Re-asserts the active model until it holds, since the LOAD may force
     Model X once, then marks the datastore key. A save that shows the raw
     golden signature under an applied slot (Model X owned without its item
     while the start is another model) is a new save: the state is re-armed.
     """
-    if client.start_state == 3 and tick.subarea == HUB_SUBAREA:
+    start = starting_point(ctx)
+    if client.start_state == 3 and tick.subarea == start["sub"]:
         rec = STARTING_MODELS.get(str(ctx.slot_data.get("starting_model", "model_zx")))
         got_x = any(ITEM_ID_TO_NAME.get(net.item) == "Model X" for net in ctx.items_received)
         if rec and rec.get("revoke_x") and not got_x:
@@ -81,11 +93,14 @@ async def apply_start_state(client: "MMZXClient", ctx, tick: Tick) -> None:
                 client.start_state = 2
                 client.start_confirm = 0
                 client.start_retries = 0
-    if client.start_state != 2 or tick.subarea != HUB_SUBAREA:
+    if client.start_state != 2 or tick.subarea != start["sub"]:
         return
-    access = (await bizhawk.read(ctx.bizhawk_ctx, [(TRANSPORT_ACCESS, 1, DOM)]))[0][0]
-    if not access & TRANSPORT_ACCESS_A:
-        return
+    # the floor's script sets its own destination bit once the scene has settled
+    access = starting_access_bit(start)
+    if access:
+        v = (await bizhawk.read(ctx.bizhawk_ctx, [(access[0], 1, DOM)]))[0][0]
+        if not v & (1 << access[1]):
+            return
     guard = tick.guard
     desired_active = await write_start_state(client, ctx, guard)
     if desired_active is None:
@@ -105,10 +120,11 @@ async def apply_start_state(client: "MMZXClient", ctx, tick: Tick) -> None:
 
 
 async def write_start_state(client: "MMZXClient", ctx, guard) -> int | None:
-    """Write the starting model's possession and active value; teleport if needed.
+    """Write the starting model's possession and active value.
 
     Returns the desired active model, -1 for an unknown one, or None if the
-    guard rejected the writes.
+    guard rejected the writes. The position needs no write: the image spawns
+    the player at the start point.
     """
     key = str(ctx.slot_data.get("starting_model", "model_zx"))
     rec = STARTING_MODELS.get(key)
@@ -126,10 +142,7 @@ async def write_start_state(client: "MMZXClient", ctx, guard) -> int | None:
     writes.append((ACTIVE_MODEL_ADDR, bytes([rec["active"]]), DOM))
     if not await bizhawk.guarded_write(ctx.bizhawk_ctx, writes, [guard]):
         return None
-    ts_key = str(ctx.slot_data.get("starting_transerver", "guardian_hub"))
-    dest = STARTING_TRANSERVERS.get(ts_key)
-    if dest and dest[0] != HUB_SUBAREA:
-        await teleport(ctx, dest[0], dest[1], dest[2], guard)
     if client.start_confirm == 0 and client.start_retries == 0:
-        logger.info("[mmzx] starting state applied: model=%s, transerver=%s" % (key, ts_key))
+        logger.info("[mmzx] starting state applied: model=%s, transerver=%s"
+                    % (key, ctx.slot_data.get("starting_transerver")))
     return rec["active"]

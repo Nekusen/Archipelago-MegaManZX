@@ -413,6 +413,17 @@
    },
    "unsure": false
   },
+  "C-2: Disk E-30": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
   "C-2: Disk O-17": {
    "note": "",
    "req": {
@@ -1562,6 +1573,19 @@
      ],
      [
       "HX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "c02 door (5056,1088)": {
+   "dst_pos": null,
+   "note": "",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "MODEL"
      ]
     ]
    },

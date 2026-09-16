@@ -442,8 +442,10 @@ room C-2 [c02]
     internal -> Main
   region Below Fountain
     warp -> Hub
+      normal: MODEL
     <- Hub
     check C-2: Disk E-30
+      normal: MODEL
   region Middle Building Bottom
     conn -> Main
       normal: HU

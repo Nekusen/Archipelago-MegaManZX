@@ -776,6 +776,7 @@ room E-4 [e04]
       normal: MODEL   # "any transformation"
     conn -> Upper Area
       normal: HX
+      expert: LX
   region Upper Area
     door -> E-3
     <- E-3
@@ -1023,6 +1024,7 @@ room G-1 [g01]
   region Main
     check G-1: Disk E-38
       normal: HX
+      expert: LX
     check G-1: Energy Capsule L
       normal: HX
       normal: FIGHT_THE_MAVERICKS
@@ -1357,6 +1359,7 @@ room H-4 [h04]
       normal: MODEL
     conn -> Upper Right Area
       normal: HX
+      expert: LX
   region Upper Right Area
     check H-4: Disk B-7
     check H-4: E-Crystal L
@@ -1377,7 +1380,6 @@ room I-1 [i01]
       expert: MODEL
     conn -> Dark Room 2
       normal: PX
-      normal: LX
       expert: MODEL
   region Dark Room 2
     internal -> Dark Room 1
@@ -1385,11 +1387,9 @@ room I-1 [i01]
       normal: MODEL
     conn -> Dark Room 1
       normal: PX
-      normal: LX
       expert: MODEL
     conn -> I-3 Entrance
       normal: PX
-      normal: LX
   region Hub Entrance
     warp -> Hub
     path -> E-7/E-8 Entrance
@@ -1413,7 +1413,6 @@ room I-1 [i01]
       normal: MODEL
     conn -> Dark Room 2
       normal: PX
-      normal: LX
       expert: MODEL
   region Left Area
     conn -> Hub Entrance
@@ -1445,11 +1444,9 @@ room I-2 [i02]
       normal: MODEL
     conn -> Upper Area
       normal: PX
-      normal: LX
       expert: MODEL
     conn -> I-4 Entrance
       normal: PX
-      normal: LX
       expert: MODEL
   region I-1 Entrance
     door -> I-1/I-2 Entrance
@@ -1462,7 +1459,6 @@ room I-2 [i02]
     <- I-4
     conn -> Dark Area
       normal: PX
-      normal: LX
       expert: MODEL
   region I-5 Entrance
     door -> I-5/I-2 Entrance   # Steephinx (miniboss) right after entering I-5
@@ -1477,7 +1473,6 @@ room I-2 [i02]
       normal: free
     conn -> Dark Area
       normal: PX
-      normal: LX
       expert: free
     conn -> Spikes
       normal: HX
@@ -1525,6 +1520,8 @@ room I-3 [i03]
       normal: free
     conn -> Before Boss Room
       normal: free
+    conn -> I-4 Entrance
+      expert: HX
 
 room I-4 [i04]
   region I-2 Entrance
@@ -1779,6 +1776,7 @@ room K-1 [k01]
       normal: MODEL   # K-1: tall structure on the right (y=38)
     check K-1: Energy Capsule L
     check K-1: Energy Capsule L (2)
+      normal: MODEL
     conn -> C-3 Entrance
       normal: MODEL
     conn -> K-2 Entrance

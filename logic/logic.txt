@@ -2157,7 +2157,7 @@ room N-1 [n01]
       normal: HX
       expert: MODEL
 
-room O-1 [o01]   entry: normal: HX   # ? Discord: "you need Hx for Area O"
+room O-1 [o01]
   region Main
     check O-1: Disk E-42
     check O-1: Disk M-3
@@ -2180,7 +2180,7 @@ room O-1 [o01]   entry: normal: HX   # ? Discord: "you need Hx for Area O"
       normal: MODEL
       expert: free
 
-room O-2 [o02]   entry: normal: HX   # ? 
+room O-2 [o02]
   region Boss Room   [ARENA: Prometheus & Pandora]
     check Mission - Repel The Army
       normal: MODEL

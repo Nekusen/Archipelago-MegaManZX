@@ -94,10 +94,15 @@ class TranserverTests:
 
 class BiometalTests:
     def test_model_hx(self) -> None:
-        """Model HX (the air dash) gates the high ledges of A, B, I and O."""
-        self.assertAccessDependency(["A-1: Disk E-31", "A-2: Sub Tank", "O-2: Disk B-14",
-                                     "Mission - Repel The Army"],
+        """Model HX (the air dash) gates the high ledges of A, B and I."""
+        self.assertAccessDependency(["A-1: Disk E-31", "A-2: Sub Tank"],
                                     [["Progressive Model HX"]], only_check_listed=True)
+
+    def test_area_o_ladder_or_transerver(self) -> None:
+        """Area O opens by climbing the D-3 ladder with Model HX or LX, or by its Transerver."""
+        self.assertAccessDependency(["O-2: Disk B-14", "Mission - Repel The Army"],
+                                    [["Progressive Model HX"], ["Progressive Model LX"],
+                                     ["Transerver Access - Area O"]], only_check_listed=True)
 
     def test_model_hx_full_charge(self) -> None:
         """I-5's Life Up needs both halves of Model HX (the level-2 charge)."""

@@ -15271,7 +15271,7 @@
     }
    ],
    "members": {},
-   "note": "? Discord: \"you need Hx for Area O\"",
+   "note": "",
    "regions": {
     "d-3-entrance": {
      "color": "#f28b82",
@@ -15326,13 +15326,7 @@
      ]
     }
    },
-   "req": {
-    "normal": [
-     [
-      "HX"
-     ]
-    ]
-   }
+   "req": null
   },
   "o02": {
    "conns": [
@@ -15412,7 +15406,7 @@
     }
    ],
    "members": {},
-   "note": "? ",
+   "note": "",
    "regions": {
     "boss-room": {
      "boss": "prometheus_pandora",
@@ -15518,13 +15512,7 @@
      ]
     }
    },
-   "req": {
-    "normal": [
-     [
-      "HX"
-     ]
-    ]
-   }
+   "req": null
   },
   "x01": {
    "conns": [],

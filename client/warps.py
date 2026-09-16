@@ -3,7 +3,7 @@
 from typing import TYPE_CHECKING
 import worlds._bizhawk as bizhawk
 
-from ..data import HUB_FLOOR_Y, SCENE_WORDS
+from ..data import HUB_FLOOR_Y, HUB_PAD_X, SCENE_WORDS
 from .addresses import (
     DESC_FACING_OFF, DESC_SPAWN_X_OFF, DESC_SPAWN_Y_OFF, DESC_SUBAREA_OFF, DOM, GAME_STATE,
     HUB_PAD_DY, HUB_SUBAREA, HUB_X, SCENE_DESC, STATE_LOAD, STATE_TARGET_AREA, STATION_ROOMS,
@@ -12,6 +12,11 @@ from .ram import Tick
 
 if TYPE_CHECKING:
     from . import MMZXClient
+
+
+def hub_pad(letter: str) -> tuple[int, int, int]:
+    """Subarea and spawn on the Transerver console pad of a hub floor."""
+    return HUB_SUBAREA, HUB_PAD_X.get(letter, HUB_X), HUB_FLOOR_Y[letter] - HUB_PAD_DY
 
 
 async def handle_warps(client: "MMZXClient", ctx, tick: Tick) -> None:
@@ -37,9 +42,8 @@ async def serve_warp_request(client: "MMZXClient", ctx, guard) -> None:
         if 0 <= sel < len(STATION_ROOMS):
             room = STATION_ROOMS[sel]
             letter = room[0].upper()
-            y = HUB_FLOOR_Y.get(letter)
-            if y is not None:
-                client.pending_teleport = (HUB_SUBAREA, HUB_X, y - HUB_PAD_DY)
+            if letter in HUB_FLOOR_Y:
+                client.pending_teleport = hub_pad(letter)
                 client._debug("[mmzx] Go to Transerver -> Area %s (hub floor %s)"
                               % (letter + "-" + room[1:].lstrip("0"), letter))
         else:

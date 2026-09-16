@@ -418,6 +418,9 @@ MISSION_ACCEPT = {
 HUB_FLOOR_BOSS = {1888: 26, 2272: 32, 2656: 37, 3424: 44, 4192: 55, 4576: 60, 4960: 63, 5344: 66}
 HUB_FLOOR_DOOR_X = 368
 HUB_FLOOR_Y = {'A': 352, 'B': 736, 'C': 1120, 'D': 1504, 'E': 1888, 'F': 2272, 'G': 2656, 'H': 3040, 'I': 3424, 'J': 3808, 'K': 4192, 'L': 4576, 'M': 4960, 'N': 4960, 'O': 5344, 'X': 5728}
+# x of the Transerver console on each floor; floor C's sits in its own chamber,
+# away from the shared x where that floor's DATA room is.
+HUB_PAD_X = {'A': 384, 'B': 384, 'C': 896, 'D': 384, 'E': 384, 'F': 384, 'G': 384, 'I': 384, 'K': 384, 'L': 384, 'M': 384, 'N': 384, 'O': 384, 'X': 384}
 
 # Starting model. The golden save starts with Model X; other starts revoke it
 # and set the chosen possession flags and active model.

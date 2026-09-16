@@ -4,7 +4,8 @@ import logging
 from typing import TYPE_CHECKING
 
 from ..data import HUB_FLOOR_Y
-from .addresses import GAME, HUB_PAD_DY, HUB_SUBAREA, HUB_X, HUB_Y, NOTIFY_LEVELS, NOTIFY_STYLES
+from .addresses import GAME, HUB_SUBAREA, HUB_X, HUB_Y, NOTIFY_LEVELS, NOTIFY_STYLES
+from .warps import hub_pad
 
 if TYPE_CHECKING:
     from . import MMZXClient
@@ -26,9 +27,9 @@ def _cmd_teleport(self, *args) -> None:
     if len(args) >= 1 and str(args[0]).strip().upper() in HUB_FLOOR_Y:
         letter = str(args[0]).strip().upper()
         # on the floor's console pad; any lower and the player falls through the floor
-        y = HUB_FLOOR_Y[letter] - HUB_PAD_DY
-        handler.pending_teleport = (HUB_SUBAREA, HUB_X, y)
-        logger.info(f"Teleport queued -> hub, floor {letter} ({HUB_X},{y}).")
+        sub, x, y = hub_pad(letter)
+        handler.pending_teleport = (sub, x, y)
+        logger.info(f"Teleport queued -> hub, floor {letter} ({x},{y}).")
         return
     try:
         sub = int(args[0]) if len(args) >= 1 else HUB_SUBAREA

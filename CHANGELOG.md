@@ -63,3 +63,4 @@ will be 0.1.0.
 - With `hu_in_pool`, walking from I-5 into I-2 no longer hands out the human form before its item arrives.
 - Talking to the townspeople of C-1 and C-2 in human form, or to the Guardian test NPC of C-1, no longer hands out halves of Model HX, FX, LX or PX; the models are owned through bits the game never touches, and the DATA SELECT icons follow them.
 - Troop Reinforcement stays completed after reporting Search The Plant, Find The Survivors, Fight The Mavericks or Secure The Biometal; the client no longer offers it again on entering D-2.
+- Go to Transerver and `/mmzx_teleport C` arrive at the Area C Transerver, the one whose door opens below the C-2 fountain, instead of the DATA room on the same floor of the hub.

@@ -30,7 +30,7 @@ class StartingModel(Choice):
     option_model_lx = 5
     option_model_px = 6
     option_model_ox = 7
-    default = 1
+    default = option_model_zx
 
 
 class HuInPool(Toggle):

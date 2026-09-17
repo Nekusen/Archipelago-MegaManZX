@@ -29,9 +29,21 @@ of the game's levels, which are not in this repository; without them it works on
 
 See [CREDITS.md](CREDITS.md).
 
-## AI usage disclosure
+## AI Usage Disclosure
 
-_To be written by the maintainer before the first release._
+- AI has been used for the following things in this project:
+  - Developing and writing almost all the codebase
+  - Understanding the NDS architecture and patching process
+  - Reverse engineering the game "Megaman ZX" using Ghidra
+  - Test game patching live and read memory addresses using pydesmune
+  - Assist in analyzing best AP practices and standards from other projects
+  - Assist in setting up the project and write the documentation
+  - Developing a "logic editor" tool to speed-up logic definition
+- This project does **not** contain AI art
+- While AI has made a major part of this project, each change is always supervised by me, as they are not merged into the main branch without my aproval. The code has already been refactored many times, and I've done several small changes here and there when I've noticed things I didn't like.
+- Every design decision on **how** things should work functionality wise has been done by me
+- All the logic for the randomizer is designed and decided by me, using a visual GUI created by the AI. Image renders were extracted from the game or from external sources, and edited manually by me and are not shipped in this APWorld.
+- Each new feature has been throughly playtested by me.
 
 ## License
 

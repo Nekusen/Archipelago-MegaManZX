@@ -2,12 +2,11 @@
 
 `boss_logic` lets you tell the logic what you want to be carrying before it considers a story boss beatable. It only
 restricts the logic: in the game you can fight with whatever you have. What it guarantees is that the seed never forces
-you through a boss you are not equipped for by your own standard: not crossing its arena, not collecting what lies
-inside, not completing its mission, not obtaining its biometal.
+you through a boss you are not equipped for by your own standard.
 
-The eight Pseudoroids are fought twice, in their own area and in the boss rush of the D-4 tower, and the requirement
-applies to both encounters. Reaching Serpent therefore means being able to handle all eight, unless `skip_boss_rush`
-is on. Bosses you leave out ask for nothing.
+The eight Pseudoroids are fought twice, in their own area and in the boss rush at the end of the game, and the requirements
+defined applies to both encounters. This means you will not be considered in "Go Mode" until you have the requirmements for each
+individual boss, as well as what you've set up for the final boss, even if you have the 6 required models.
 
 ## Bosses
 
@@ -28,10 +27,12 @@ Use the boss name or its room code as the key.
 | Prometheus | X-3 | |
 | Pandora | M-3 | |
 | Prometheus & Pandora | O-2 | |
-| Serpent | D-5 | |
-| Omega Zero | N-1 | |
+| Serpent | D-5 | Implicit "ALL6" since you need those models to enter the final area |
+| Omega Zero | N-1 | Not used at the moment as there's no checks behind Omega Zero |
 
-Giga Aspis, the tutorial boss, is not listed: the randomizer skips the tutorial.
+Giga Aspis, the boss for the first mission, is not listed because the randomizer skips it.
+
+"Any Model" is an implicit requirement already for every boss, so you're never expected to walk through a boss room without them
 
 ## Writing a requirement
 
@@ -41,16 +42,12 @@ A requirement is a text with these building blocks, combined with `&` (and), `|`
 |---|---|
 | `X`, `ZX`, `HX`, `FX`, `LX`, `PX`, `OX` | you can use that model (for HX, FX, LX and PX: at least the first half) |
 | `HX2`, or `Model HX (full)` | both halves of the progressive biometal, that is, its level 2 charge (same for `FX2`, `LX2`, `PX2`) |
-| `MODEL` | any model other than the human form |
-| `ALL6` | the six biometals (X, ZX, HX, FX, LX and PX, both halves) |
+| `ALL6` | the six main biometals (X, ZX, HX, FX, LX and PX) |
 | `Life Up x2`, or `LIFEUP>=2` | at least that many Life Ups (1 to 4) |
 | `Sub Tank x1`, or `SUBTANK>=1` | at least that many Sub Tanks (1 to 4) |
 | `Absorber Chip`, and the other ITEM B chips by name | you have that chip |
-| `Yellow Card Key`, or `YELLOW` | you have that Card Key (Yellow, Green, Red, Blue, Purple) |
 
-A chip named in a requirement is promoted from useful to progression automatically, so the logic can place it where
-you can reach it. A requirement the pool cannot meet, or a boss name the world does not know, stops generation with a
-message that says which entry is wrong.
+A chip named in a requirement is promoted from useful to progression automatically, so the logic can place it where you can reach it. 
 
 ## Example
 

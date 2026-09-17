@@ -6086,14 +6086,9 @@
      "from": "lower-area",
      "note": "",
      "req": {
-      "expert": [
-       [
-        "LX"
-       ]
-      ],
       "normal": [
        [
-        "HX"
+        "MODEL"
        ]
       ]
      },

@@ -1,7 +1,7 @@
-# Pushing a tag such as v0.1.0 builds mmzx.apworld and attaches it to the
-# GitHub release of that tag. The tag must match world_version in
-# archipelago.json, so a release never ships a package that calls itself
-# something else.
+# Pushing a tag such as v0.1.0 builds mmzx.apworld and attaches it to a draft
+# GitHub release of that tag, which is published by hand after a review. The
+# tag must match world_version in archipelago.json, so a release never ships
+# a package that calls itself something else.
 name: Release
 on:
   push:
@@ -35,6 +35,7 @@ jobs:
       - uses: ncipollo/release-action@v1
         with:
           artifacts: build/mmzx.apworld
+          draft: true
           allowUpdates: true
           omitBodyDuringUpdate: true
           omitNameDuringUpdate: true

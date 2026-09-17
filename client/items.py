@@ -4,12 +4,13 @@ from typing import TYPE_CHECKING
 import worlds._bizhawk as bizhawk
 
 from ..data import (
-    ACTIVE_MODEL_ADDR, EVENT_GATES, EVENT_GATES_ALL6, EVENT_GATES_OPEN, ITEMS, STARTING_MODELS)
+    ACTIVE_MODEL_ADDR, EVENT_GATES, EVENT_GATES_ALL6, EVENT_GATES_OPEN, ITEMS, MODEL_BOSS_LEVEL_IDX,
+    STARTING_MODELS)
 from .addresses import (
     BOSS_LEVELS, CANON_OFF, CAPACITY_NIBBLE, CARDKEY_MASKS, COLLECTED_NIBBLE, CONS_KEY,
     CUTSCENE_FLAG, DOM, ECRYSTALS, ECRYSTALS_CAP, ECRYSTALS_HIGH_MASK, ECRYSTALS_MASK,
     ECRYSTALS_PER_ITEM, HPMAX, HP_BASE, HP_CAP, HP_PER_LIFEUP, HU_POSSESSION, ITEM_BY_ID, LIFEUP_BYTE,
-    LIFEUP_SLOTS, LIVES, LIVES_CAP, MODEL_LEVEL_IDX, MODEL_POSSESSION, MODEL_SECOND_HALF,
+    LIFEUP_SLOTS, LIVES, LIVES_CAP, MODEL_POSSESSION, MODEL_SECOND_HALF,
     PLAYTIME, SIX_MODELS, SUBTANK_BYTE, SUBTANK_SLOTS, WE_BASE, WE_FULL)
 from .ram import Tick, bits_by_byte, copies_writes, read_copies
 
@@ -61,13 +62,13 @@ async def weapon_energy_writes(ctx, counts: dict[str, int]) -> list[tuple[int, b
     bar is filled to 16; with both halves both levels become 4 and the bar 32.
     """
     owned = [m for m, (item, _a, _b) in MODEL_POSSESSION.items()
-             if m in MODEL_LEVEL_IDX and counts.get(item, 0)]
+             if m in MODEL_BOSS_LEVEL_IDX and counts.get(item, 0)]
     if not owned:
         return []
     lv = (await bizhawk.read(ctx.bizhawk_ctx, [(BOSS_LEVELS, 8, DOM)]))[0]
     writes: list[tuple[int, bytes, str]] = []
     for m in owned:
-        i0, i1 = MODEL_LEVEL_IDX[m]
+        i0, i1 = MODEL_BOSS_LEVEL_IDX[m]
         full = counts.get(MODEL_POSSESSION[m][0], 0) >= 2
         if full and lv[i0] + lv[i1] < 8:
             for i in (i0, i1):

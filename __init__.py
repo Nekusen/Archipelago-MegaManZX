@@ -15,6 +15,7 @@ from .locations import (location_name_to_id, locations_for_options, LOCATION_GRO
                         pickup_flags_from_options)
 from .options import MMZXOptions
 from .logic import load_document
+from .logic.document import room_label
 from .logic.rules import TIER, starting_point
 from .regions import boss_requirements, create_regions, progression_overrides
 from .rom import MMZXPatch, write_patch_tokens, MMZX_US_MD5
@@ -158,7 +159,9 @@ class MMZXWorld(World):
             pool.append(self.create_item(name))
 
         remaining = n_locations - len(pool)
-        assert remaining >= 0, "%d fixed items for %d locations" % (len(pool), n_locations)
+        if remaining < 0:
+            raise OptionError("[%s] %d fixed items for %d locations: turn on a pickup_checks_* "
+                              "option or drop an item" % (self.player_name, len(pool), n_locations))
         for _ in range(remaining):
             pool.append(self.create_item(self.get_filler_item_name()))
 
@@ -196,6 +199,18 @@ class MMZXWorld(World):
                            image, hu_in_pool=bool(self.options.hu_in_pool.value))
         out_name = self.multiworld.get_out_file_name_base(self.player)
         patch.write(os.path.join(output_directory, out_name + patch.patch_file_ending))
+
+    def write_spoiler_header(self, spoiler_handle) -> None:
+        """The start point and the boss requirements as the generator understood them."""
+        start = starting_point(self)
+        pre = [name for name in (STARTING_MODEL_ITEM.get(self.options.starting_model.current_key),
+                                 start.get("access")) if name]
+        spoiler_handle.write("Start: %s (%s), pre-granted: %s\n" % (
+            self.options.starting_transerver.current_key, room_label(start["room"]),
+            ", ".join(pre) or "nothing"))
+        reqs = bosses.describe(boss_requirements(self))
+        spoiler_handle.write("Boss logic: %s\n" % (
+            "; ".join("%s: %s" % kv for kv in reqs.items()) if reqs else "none"))
 
     def fill_slot_data(self) -> dict:
         """Options the client needs, plus the boss requirements as text."""

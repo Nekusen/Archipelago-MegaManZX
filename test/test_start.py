@@ -1,4 +1,5 @@
 """Where a new game starts: the starting_transerver option and its data."""
+import io
 import unittest
 
 from .bases import MMZXTestBase
@@ -81,3 +82,15 @@ class TestGuardianBaseStart(RegionsReachable, MMZXTestBase):
         self.collect_by_name("Transerver Access - Area A")
         self.assertTrue(self.can_reach_entrance("z01 transerver to a02"))
         self.assertTrue(self.can_reach_location("A-2: Disk B-3"))
+
+
+class TestSpoilerHeader(MMZXTestBase):
+    options = {"starting_transerver": "guardian_base", "boss_logic": {"Hivolt": "HX"}}
+
+    def test_header_names_the_start_and_the_boss_logic(self) -> None:
+        buf = io.StringIO()
+        self.world.write_spoiler_header(buf)
+        text = buf.getvalue()
+        self.assertIn("Start: guardian_base (", text)
+        self.assertIn("Transerver Access - Area X", text)
+        self.assertIn("Hivolt: HX", text)

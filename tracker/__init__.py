@@ -1,11 +1,10 @@
 """Universal Tracker callbacks: map tab and player icon from the position the client publishes."""
 
-from ..data import HUB_FLOOR_Y, HUB_ROOM, ROOM_SUBAREA
+from ..data import HUB_FLOOR_Y, HUB_PAD_DY, HUB_ROOM, ROOM_SUBAREA
 from .meta import ROOMS, SUB_TO_ROOM, OVERALL_MAP, OVERALL_POINTS, OVERALL_ROOM_POINTS
 
 PLAYER_ICON = "images/player.png"
 HUB_SUB = ROOM_SUBAREA[HUB_ROOM]
-HUB_PAD_DY = 17                  # console pad height above the floor
 HUB_FLOOR_REACH = 96             # y distance within which a floor claims the player
 
 

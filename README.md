@@ -8,7 +8,6 @@ boss fights and missions are checks.
 
 - Setup guide: [docs/setup_en.md](docs/setup_en.md).
 - What the randomizer does and how the options work: [docs/en_Mega Man ZX.md](docs/en_Mega%20Man%20ZX.md).
-- What changes in the game: [docs/rom_changes.md](docs/rom_changes.md).
 
 You need Archipelago 0.6.7 or later, BizHawk 2.10 or later with its NDS core, and your own Mega Man ZX (USA) ROM (game code
 `ARZE`). Everything the randomizer needs is read from that ROM at patch time; this repository ships no ROM, game code

@@ -47,19 +47,6 @@ The client must stay connected while you play. It grants every item, accepts the
 handles teleports. If the connection drops, reconnect: your checks and items are restored from the game and the
 server.
 
-## Client commands
-
-Type these in the BizHawk Client's text field.
-
-- `/mmzx_teleport`: warp to the hub. `/mmzx_teleport K` warps to the hub floor of area K. Use it if you get stuck.
-- `/mmzx_accept`: accept the mission of the current area or hub floor by force.
-- `/mmzx_where`: write your position and state to the log, for bug reports.
-- `/mmzx_start`: apply the starting state of your options again.
-- `/mmzx_notify <off|progression|useful|all>`: which item classes the in-game popup announces.
-  `/mmzx_notify received all` or `/mmzx_notify sent off` sets one side; `/mmzx_notify short|full` picks the style.
-- `/mmzx_icons on|off`: draw each pickup in the world as the item it holds (default on).
-- `/mmzx_debug on|off`: show the client's diagnostic messages. Turn it on before reproducing a problem you report.
-
 ## Troubleshooting
 
 - "No handler was found for this game": update BizHawk to 2.10 or later, or check that the loaded `.nds` is the

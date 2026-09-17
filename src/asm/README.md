@@ -4,8 +4,8 @@ Commented Thumb (ARMv5TE, little endian) sources of every code patch that the
 `rom/` package applies to the ARM9 of Mega Man ZX (USA): the caves (small
 routines placed in zero-filled stretches of the binary) and the hooks (one to
 three instructions rewritten in place, usually a `bl` into a cave). What each
-patch does and why is in the header of each file, in the `rom/` modules and in
-[dev/rom_patches.md](../../dev/rom_patches.md); this folder is the readable form.
+patch does and why is in the header of each file and in the `rom/` modules; this
+folder is the readable form.
 
 ## What ships, and how these sources are checked
 

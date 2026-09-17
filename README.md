@@ -43,12 +43,10 @@ UT loads from a zip you download once (`ut_pack_path` in `host.yaml`).
     assets/                     the three Archipelago logos; read() loads them
     apnds/                      vendored apnds (MIT)
     docs/                       player documentation
-    dev/                        developer reference: memory map, ROM patches, client protocol, logic
-                                format, glossary
     src/asm/                    commented assembly sources of every cave and hook
     tools/, test/               maintainer tools (logic editor, checkers, packager); tests
 
-`tools/`, `test/`, `src/`, `dev/` and the git files are left out of the `.apworld` (see `.apignore`).
+`tools/`, `test/`, `src/` and the git files are left out of the `.apworld` (see `.apignore`).
 
 ## Generated files
 
@@ -65,12 +63,11 @@ tools. Open an issue for data corrections.
 
 - [tools/logic_editor/README.md](tools/logic_editor/README.md): the visual logic editor, how to run it and
   how its modules are laid out.
-- [dev/](dev/README.md): the developer reference, kept in step with the code: the memory map, the ROM patches,
-  the client protocol, the logic format and the glossary.
 - [src/asm/](src/asm/README.md): the commented assembly of every cave and hook. `tools/check_caves.py` assembles
   it and checks it byte for byte against the constants the `rom/` modules ship; the Caves workflow runs it on
   every push.
-- The module docstrings and the glossary below cover the rest.
+- The module docstrings and the glossary below cover the rest; the maintainers keep the detailed reference of the
+  memory map, the ROM patches and the client protocol with their toolkit and share it on request.
 
 ## Running from source
 

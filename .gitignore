@@ -2,7 +2,6 @@ __pycache__/
 *.pyc
 build/
 
-# Derived from the game: NEVER in the repository. Generated locally (see
-# README, "Local assets").
+# Derived from the game: never in the repository; the maintainers generate them locally.
 tracker/images/
 tools/logic_editor/local/

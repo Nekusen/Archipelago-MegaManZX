@@ -55,7 +55,7 @@ async function init() {
   } catch (err) {
     const b = $('#boot'); b.className = 'boot error';
     b.textContent = 'Could not load the world: ' + err.message +
-      '\n\nStart the server: .venv/Scripts/python.exe tools/logic_editor/serve.py --no-browser --port 8765';
+      '\n\nStart the server: python tools/logic_editor/serve.py --no-browser --port 8765';
     return;
   }
   $('#boot').remove();

@@ -147,7 +147,7 @@ room A-3 [a03]
       normal: OX
   region H-4 Entrance
     door -> H-4/A-3 Entrance  key Purple Card Key
-      ? normal: FX   # Fire thorns (118,55) in the corridor to the Purple door (131,55): burn them. a04->m01: the "seal of the 6 biometals" of M-1 was a myth: a Stop The Dig cutscene opens it (agent exp350-359) and the client sets its flag (395); the ovl104 layers are cosmetic. No ALL6 here (the goal requires it at D-2 -> D-4).
+      ? normal: FX   # Fire thorns (118,55) in the corridor to the Purple door (131,55): burn them. a04->m01: the "seal of the 6 biometals" of M-1 was a myth: a Stop The Dig cutscene opens it and the client sets its flag (395); the ovl104 layers are cosmetic. No ALL6 here (the goal requires it at D-2 -> D-4).
     <- H-4
     check A-3: Weapon Energy L
     conn -> Main
@@ -598,13 +598,13 @@ room D-3 [d03]
       normal: LX
     conn -> G-1 Entrance
       normal: YELLOW & MODEL
-      expert: YELLOW   # internal YELLOW door (2296,728): splits D-3 in two halves and the door table does not see it (entity kind5 subkind18 role 0x40; exp501)
+      expert: YELLOW   # internal YELLOW door (2296,728): splits D-3 in two halves and the door table does not see it (entity kind5 subkind18 role 0x40)
   region G-1 Entrance
     door -> G-1/D-3 Entrance
     <- G-1
     check D-3: Disk E-6
     conn -> Main
-      normal: MODEL & YELLOW   # same yellow door: it also blocks the way back (exp504)
+      normal: MODEL & YELLOW   # same yellow door: it also blocks the way back
   region Upper Area
     door -> O-1/D-3 Entrance
     <- O-1
@@ -935,7 +935,7 @@ room F-3 [f03]
       normal: free
   region F-4 Entrance
     door -> F-4/F-3 Entrance  gate 381
-      ? normal: MODEL   # ice cubes next to the event GATE (flag 381, the client opens it; NOT a Blue door: exp341d)
+      ? normal: MODEL   # ice cubes next to the event GATE (flag 381, the client opens it; NOT a Blue door)
     <- F-4
     conn -> Lower Area
       normal: free

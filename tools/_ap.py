@@ -19,15 +19,16 @@ GAME = "Mega Man ZX"
 
 
 def default_ap_src() -> str:
-    """Archipelago source checkout: $AP_SRC, else an ArchipelagoDW checkout beside the parent repository."""
+    """Archipelago source checkout: $AP_SRC, else a checkout beside the parent repository."""
     if os.environ.get("AP_SRC"):
         return os.environ["AP_SRC"]
     try:
-        cand = Path(__file__).resolve().parents[4] / "ArchipelagoDW"
-        if cand.exists():
+        siblings = sorted(Path(__file__).resolve().parents[4].iterdir())
+    except (IndexError, OSError):
+        return ""
+    for cand in siblings:
+        if cand.is_dir() and (cand / "BaseClasses.py").is_file():
             return str(cand)
-    except IndexError:
-        pass
     return ""
 
 

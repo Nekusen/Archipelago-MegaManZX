@@ -4,7 +4,7 @@
 Inside an Archipelago tree the tests run like any other world's
 (python -m unittest discover -s worlds/mmzx/test -t .). This runner does the
 same from the apworld folder: it loads the checkout given by --ap or $AP_SRC
-(default: an ArchipelagoDW checkout beside the parent repository), registers
+(default: an Archipelago checkout beside the parent repository), registers
 this package as worlds.mmzx and runs every test/test_*.py.
 
 Usage (from the apworld root): python tools/run_tests.py [--ap PATH] [-v] [-k PATTERN]

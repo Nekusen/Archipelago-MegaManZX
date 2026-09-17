@@ -23,8 +23,8 @@ the PATH.
 ## Inputs
 
 - **Room renders**: `local/renders/<room>.png` (or `--renders DIR`). They are game graphics and are not
-  in the repository; produce them from your own ROM (the root README says how). Without them the editor
-  works on a blank canvas of the right size.
+  in the repository (the maintainers render them from the game with their toolkit). Without them the
+  editor works on a blank canvas of the right size.
 - **Gimmicks**: `data/gimmicks.json` (or `--gimmicks FILE`): names and positions of the enemies and
   gimmicks of every room, drawn as an informational layer. The editor works without it.
 - **World data**: `data.py` and `logic/document.py` of the apworld, served as `/api/world` (rooms,

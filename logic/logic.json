@@ -1540,7 +1540,7 @@
   },
   "a03 door (2096,880)": {
    "dst_pos": null,
-   "note": "Fire thorns (118,55) in the corridor to the Purple door (131,55): burn them. a04->m01: the \"seal of the 6 biometals\" of M-1 was a myth: a Stop The Dig cutscene opens it (agent exp350-359) and the client sets its flag (395); the ovl104 layers are cosmetic. No ALL6 here (the goal requires it at D-2 -> D-4).",
+   "note": "Fire thorns (118,55) in the corridor to the Purple door (131,55): burn them. a04->m01: the \"seal of the 6 biometals\" of M-1 was a myth: a Stop The Dig cutscene opens it and the client sets its flag (395); the ovl104 layers are cosmetic. No ALL6 here (the goal requires it at D-2 -> D-4).",
    "pos": null,
    "req": {
     "normal": [
@@ -1850,7 +1850,7 @@
   },
   "f03 door (384,1600)": {
    "dst_pos": null,
-   "note": "ice cubes next to the event GATE (flag 381, the client opens it; NOT a Blue door: exp341d)",
+   "note": "ice cubes next to the event GATE (flag 381, the client opens it; NOT a Blue door)",
    "pos": null,
    "req": {
     "normal": [
@@ -5215,7 +5215,7 @@
     },
     {
      "from": "g-1-entrance",
-     "note": "same yellow door: it also blocks the way back (exp504)",
+     "note": "same yellow door: it also blocks the way back",
      "req": {
       "normal": [
        [
@@ -5229,7 +5229,7 @@
     },
     {
      "from": "main",
-     "note": "internal YELLOW door (2296,728): splits D-3 in two halves and the door table does not see it (entity kind5 subkind18 role 0x40; exp501)",
+     "note": "internal YELLOW door (2296,728): splits D-3 in two halves and the door table does not see it (entity kind5 subkind18 role 0x40)",
      "req": {
       "expert": [
        [

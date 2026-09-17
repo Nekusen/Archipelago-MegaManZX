@@ -16,11 +16,7 @@
 Once you have installed BizHawk, open `EmuHawk.exe` and change the following settings:
 
 - Go to `Config > Customize`. On the Advanced tab, turn `AutoSaveRAM` off.
-  With it on, BizHawk may not save NDS games correctly.
-- Under `Config > Customize`, check "Run in background". Otherwise the client disconnects while you are tabbed out.
-- Open any `.nds` file and go to `Config > Controllers...` to set up your inputs.
-  Mega Man ZX needs no touch screen.
-- Consider clearing the hotkeys you will not use in `Config > Hotkeys...`.
+- Under `Config > Customize`, check "Run in background".
 
 ## Generating and Patching a Game
 
@@ -47,10 +43,6 @@ Opening the patch file normally does steps 1 to 5 for you. Keep them in mind in 
 6. The client window should say it connected and recognised Mega Man ZX. The slot name is read from the ROM.
 7. Enter your room's address and port (for example `archipelago.gg:38281`) in the top field and click Connect.
 
-Connect before you start playing. Then, on the title screen, choose New Game. The tutorial is skipped: you appear on
-your starting Transerver floor with your starting model. Your character and the Normal difficulty come from your
-options, whatever you pick in the New Game menu. Continue resumes a saved game as usual.
-
 The client must stay connected while you play. It grants every item, accepts the mission of each area you enter and
 handles teleports. If the connection drops, reconnect: your checks and items are restored from the game and the
 server.
@@ -68,18 +60,15 @@ Type these in the BizHawk Client's text field.
 - `/mmzx_icons on|off`: draw each pickup in the world as the item it holds (default on).
 - `/mmzx_debug on|off`: show the client's diagnostic messages. Turn it on before reproducing a problem you report.
 
-In the game itself, the MISSION tab of the pause menu offers "Y Button: Go to Transerver". It opens the game's own
-Target Area list with every destination you have unlocked.
-
 ## Troubleshooting
 
 - "No handler was found for this game": update BizHawk to 2.10 or later, or check that the loaded `.nds` is the
   patched one. A vanilla ROM is rejected; open the `.apmmzx` first.
-- New Game played the intro instead of starting at your Transerver: the loaded `.nds` is not the one made from
-  your `.apmmzx` (the starting save is part of the patched ROM). Open the patch again and load the ROM it creates.
+- New Game played the intro instead of starting at your Transerver: check the game you opened is the one generated
+  with `.apmmzx`, and make sure you're connected to the client.
 - The game does not save or loads an old save: turn `AutoSaveRAM` off (see above) and restart EmuHawk.
 - You cannot get out of a room or a shutter stays closed: use "Go to Transerver" from the pause menu or
-  `/mmzx_teleport`.
+  `/mmzx_teleport`. If it still doesn't work, try to hit on "Abort Mission" in any Transerver"
 - The tracker's map tab is empty: give Universal Tracker the `mmzx_tracker.zip` pack, still zipped.
 - Items you received do not show up: they are applied only in gameplay, not in menus or cutscenes.
   If the client is disconnected, reconnect.

@@ -1,0 +1,25 @@
+# The assembly sources in src/asm/ must assemble to the exact bytes the rom/
+# modules ship, so a cave edited on one side without the other fails here.
+name: Caves
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  caves:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install the assembler and the disassembler
+        run: pip install keystone-engine capstone
+
+      - name: Assemble the sources and compare them with rom/
+        run: python tools/check_caves.py

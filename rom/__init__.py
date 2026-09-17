@@ -10,14 +10,15 @@ from settings import get_settings
 from worlds.Files import (APProcedurePatch, APTokenMixin, APTokenTypes,
                           APPatchExtension)
 
-from . import nds, pickups, sprites, ui
+from . import golden, nds, pickups, sprites, ui
 from .arm9 import Arm9, replace_arm9
 
 MMZX_US_MD5 = "88b684b1b3eea885a07625da89f1e5b3"
 
 # AP marker, written by the token step into the zero padding after the header,
 # and the option blob (mmzx_cfg.bin inside the .apmmzx) that patch_arm9 reads
-# along with the slot's golden image (golden_image.bin).
+# along with the slot's golden image (golden_image.bin), which it completes
+# with the two tables the game copies from its ROM.
 AP_MAGIC_OFFSET = 0x1000
 AP_MAGIC = b"MZXAP\x00"
 AP_MARKER_LEN = 0x80
@@ -37,11 +38,10 @@ class MMZXPatchExtension(APPatchExtension):
         """Apply the code patches to the ARM9 and the ROM-level edits; returns the new image."""
         cfg = caller.get_file(cfg_file)
         hu_in_pool = bool(cfg[0] & CFG_HU_IN_POOL) if cfg else False
-        image = caller.get_file(image_file)
-
         d = bytearray(rom)
         arm9_off, _entry, arm9_ram, arm9_len = struct.unpack_from("<4I", d, nds.NDS_HDR_ARM9)
         arm9 = Arm9(bytes(d[arm9_off:arm9_off + arm9_len]), arm9_ram)
+        image = golden.add_rom_tables(caller.get_file(image_file), arm9)
 
         ui.patch_tutorial_skip(arm9, image)
         sprites.patch_oam_loop_guards(arm9)

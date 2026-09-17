@@ -62,6 +62,13 @@ class Arm9:
                 return
         raise ValueError("MMZX: 0x%08X is outside the ARM9 sections" % ram)
 
+    def read(self, ram: int, size: int) -> bytes:
+        """The `size` bytes at RAM address `ram`."""
+        for base, buf in self.sections:
+            if base <= ram < base + len(buf):
+                return bytes(buf[ram - base:ram - base + size])
+        raise ValueError("MMZX: 0x%08X is outside the ARM9 sections" % ram)
+
     def add_section(self, ram: int, data: bytes) -> None:
         """Add an autoload section the boot code copies to `ram`, before the section table."""
         if len(data) % 4:

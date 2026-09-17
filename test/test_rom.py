@@ -22,6 +22,9 @@ ARM9_RAM = (0x02000000, 0x02400000)
 # Zero stretches of the vanilla ARM9 that take the caves.
 FREE_STRETCHES = [(0x020CB434, 0x020CB9D4), (0x020C8150, sprites.GFX_CAVES_END)]
 ROM_PATH = os.environ.get("MMZX_ROM") or str(Path(__file__).resolve().parents[3] / "roms" / "mmzx_us.nds")
+# The post-briefing save the golden image reproduces: with the two ROM tables blank, and complete.
+GOLDEN_BASELINE_SHA256 = "6826c4e9e4a77b5531ec5a8e945b34164b0fda862321cd31add7b711b824ef90"
+GOLDEN_COMPLETE_SHA256 = "1eaed883e7a443eaf0ccb900a6ffcabbfb6d6863713892b58bf4c00c9393ee11"
 
 
 def as_bytes(value) -> bytes:
@@ -271,6 +274,17 @@ class TestPatchTables(unittest.TestCase):
                          ["patch_arm9", "apply_tokens"])
         self.assertIn("golden_image.bin", rom.MMZXPatch.procedure[0][1])
 
+    def test_golden_baseline_is_the_recorded_save(self) -> None:
+        """The image built from its fields is the save a clean post-briefing game recorded."""
+        image = golden.baseline_image()
+        self.assertEqual(len(image), golden.GOLDEN_IMAGE_SIZE)
+        self.assertEqual(hashlib.sha256(image).hexdigest(), GOLDEN_BASELINE_SHA256)
+        self.assertEqual(golden.build_image("model_x", 0, STARTING_MODELS, STARTING_TRANSERVERS["area_a"]),
+                         bytes(image))
+        for off, length in ((golden.BLOCK_OFF, golden.BLOCK_LEN), (golden.DESC_OFF, golden.DESC_LEN),
+                            (golden.QUEUE_OFF, golden.QUEUE_LEN)):
+            self.assertEqual(image[off:off + length], image[off + length:off + 2 * length])
+
     def test_golden_image_section(self) -> None:
         """The image lands in the overlay gap after the icon table, and the copy cave knows where."""
         self.assertGreaterEqual(ui.GOLDEN_IMAGE_RAM, ICON_TABLE_ADDR + ICON_TABLE_SIZE)
@@ -319,6 +333,11 @@ class TestVanillaBytes(unittest.TestCase):
                 self.assertEqual(self.read(lst_a, 4), orig1.to_bytes(4, "little"))
                 self.assertEqual(self.read(lst_a + 4, 4), orig2.to_bytes(4, "little"))
                 self.assertEqual(self.read(cnt_a, 1), bytes([pickups.BIOMETAL_CAT_COUNT]))
+
+    def test_golden_image_completed_from_the_rom(self) -> None:
+        """With the weapon and controls tables of the ROM the image is the recorded save, byte for byte."""
+        image = golden.add_rom_tables(golden.baseline_image(), self.code)
+        self.assertEqual(hashlib.sha256(image).hexdigest(), GOLDEN_COMPLETE_SHA256)
 
     def test_caves_land_on_zeros(self) -> None:
         for lo, hi in FREE_STRETCHES:

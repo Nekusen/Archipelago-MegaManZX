@@ -32,6 +32,7 @@ multiworld framework, the `BizHawkClient` base and `worlds/_bizhawk`, the
 | [Pokemon Platinum apworld](https://github.com/ljtpetersen/platinum_archipelago) | James Petersen | MIT | The template for a DS BizHawk client and for shipping an NDS library inside an apworld. |
 | [py-desmume](https://github.com/SkyTemple/py-desmume) / DeSmuME, [Ghidra](https://github.com/NationalSecurityAgency/ghidra), [BizHawk](https://github.com/TASEmulators/BizHawk), [melonDS](https://melonds.kuribo64.net) | their authors | GPL / Apache-2.0 / MIT / GPL | Reverse-engineering bench and emulators. |
 | [GBATek](https://problemkaputt.de/gbatek.htm) | Martin Korth | - | DS hardware and ROM format reference (linked, not reproduced). |
+| [keystone](https://www.keystone-engine.org/), [capstone](https://www.capstone-engine.org/) | their authors | GPL-2.0 (engine) with a BSD binding; BSD-3 | Assembler and disassembler behind `tools/check_caves.py`, which proves the shipped cave bytes match `src/asm/`. Installed by contributors and the CI; not part of the world. |
 | RetroAchievements (game 9818), GameFAQs guides by Yeblos and snkupo, MMKB | their authors | - | Consulted for cross-checking; nothing reproduced. |
 
 ## Trademarks

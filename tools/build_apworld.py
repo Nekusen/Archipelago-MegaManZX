@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Pack this package into mmzx.apworld, a zip with the package under mmzx/.
 
-Everything goes in except what .apignore also leaves out: tools/, test/, build/,
-tracker/images/, README, CHANGELOG and the git metadata. Other files ignored by
+Everything goes in except what .apignore also leaves out: tools/, test/, src/, dev/,
+build/, tracker/images/, README, CHANGELOG and the git metadata. Other files ignored by
 git, such as local renders, are packed when they are on disk.
 
 Usage: python tools/build_apworld.py [--out build/mmzx.apworld]
@@ -13,7 +13,7 @@ import zipfile
 from pathlib import Path
 
 PKG = Path(__file__).resolve().parents[1]
-EXCLUDE_DIRS = {"tools", "test", "build", ".git", ".github", "__pycache__", "tracker/images"}
+EXCLUDE_DIRS = {"tools", "test", "src", "dev", "build", ".git", ".github", "__pycache__", "tracker/images"}
 EXCLUDE_FILES = {"README.md", "CHANGELOG.md", ".gitignore", ".apignore", ".gitmodules", ".git"}
 
 

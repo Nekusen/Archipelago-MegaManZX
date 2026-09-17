@@ -1,4 +1,4 @@
-"""Files shipped with the world: the three Archipelago logos and the starting save image."""
+"""Files shipped with the world: the three Archipelago logos."""
 
 import os
 import pkgutil

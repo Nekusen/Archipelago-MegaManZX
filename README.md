@@ -40,21 +40,24 @@ UT loads from a zip you download once (`ut_pack_path` in `host.yaml`).
                                 and the boss rush skip (bossrush.py)
     tracker/                    Universal Tracker: map layout (maps.json, locations.json), the callbacks in
                                 __init__.py and the generated meta.py
-    assets/                     the starting save image and the three Archipelago logos; read() loads them
+    assets/                     the three Archipelago logos; read() loads them
     apnds/                      vendored apnds (MIT)
-    docs/, tools/, test/        player documentation; maintainer tools; tests
+    docs/                       player documentation
+    dev/                        developer reference: memory map, ROM patches, client protocol, logic
+                                format, glossary
+    src/asm/                    commented assembly sources of every cave and hook
+    tools/, test/               maintainer tools (logic editor, checkers, packager); tests
 
-`tools/`, `test/` and the git files are left out of the `.apworld` (see `.apignore`).
+`tools/`, `test/`, `src/`, `dev/` and the git files are left out of the `.apworld` (see `.apignore`).
 
 ## Generated files
 
 `data.py` (locations with their detection recipe, items with their grant recipe, the room graph and the RAM structures
 shared with the patched ROM), `tracker/meta.py` (map indices and transforms for the tracker),
-`tools/logic_editor/data/gimmicks.json` (enemy and switch positions shown in the editor) and `assets/golden_image.bin`
-(the starting save image) are generated. The generators belong to the maintainers' reverse-engineering toolkit, which
-needs the game, an emulator harness and a Ghidra project, and are not in this repository; so is the technical
-reference of the memory map, the ROM patches and the client protocol. `logic/logic.txt` is regenerated from
-`logic.json` by the logic tools. Open an issue for data corrections.
+`tools/logic_editor/data/gimmicks.json` (enemy and switch positions shown in the editor) are generated. The
+generators belong to the maintainers' reverse-engineering toolkit, which needs the game, an emulator harness and a
+Ghidra project, and are not in this repository. `logic/logic.txt` is regenerated from `logic.json` by the logic
+tools. Open an issue for data corrections.
 
 ## Documentation for contributors
 
@@ -62,9 +65,12 @@ reference of the memory map, the ROM patches and the client protocol. `logic/log
 
 - [tools/logic_editor/README.md](tools/logic_editor/README.md): the visual logic editor, how to run it and
   how its modules are laid out.
-- The module docstrings and the glossary below cover the rest; the maintainers keep the detailed reference of the
-  memory map, the ROM patches (with the commented assembly of every cave) and the client protocol with their
-  toolkit and share it on request.
+- [dev/](dev/README.md): the developer reference, kept in step with the code: the memory map, the ROM patches,
+  the client protocol, the logic format and the glossary.
+- [src/asm/](src/asm/README.md): the commented assembly of every cave and hook. `tools/check_caves.py` assembles
+  it and checks it byte for byte against the constants the `rom/` modules ship; the Caves workflow runs it on
+  every push.
+- The module docstrings and the glossary below cover the rest.
 
 ## Running from source
 
@@ -112,5 +118,7 @@ _To be written by the maintainer before the first release._
 ## License
 
 MIT, see [LICENSE](LICENSE). Mega Man ZX is a trademark of Capcom Co., Ltd.; this is a fan project, not affiliated
-with Capcom or Inti Creates. No game art, code or data is in this repository or in the `.apworld`: the in-game icons
-and the tracker maps are produced from the player's own copy of the game.
+with Capcom or Inti Creates. No game art or data is in this repository or in the `.apworld`: the in-game icons, the
+tracker maps and the starting save are produced from the player's own copy of the game. The only bytes of the game's
+code in the source are the few instructions each hook replaces, kept so the patcher can check it is looking at the
+right ROM.

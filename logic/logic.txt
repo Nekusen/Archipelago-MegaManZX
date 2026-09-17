@@ -775,8 +775,7 @@ room E-4 [e04]
     check E-4: Sub Tank
       normal: MODEL   # "any transformation"
     conn -> Upper Area
-      normal: HX
-      expert: LX
+      normal: MODEL
   region Upper Area
     door -> E-3
     <- E-3

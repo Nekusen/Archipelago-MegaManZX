@@ -22,7 +22,7 @@ class Goal(Choice):
 class StartingModel(Choice):
     """The model you start with"""
     display_name = "Starting Model"
-    option_none = 0  
+    option_none = 0
     option_model_x = 1
     option_model_zx = 2
     option_model_hx = 3
@@ -51,8 +51,8 @@ class StartingTranserver(Choice):
     default = 0
 
 class SkipBossRush(Toggle):
-    """ Skips the boss rush of the Slither Inc. tower  you do not have to beat the 8 Pseudoroids again before Serpent. As you
-    climb the tower, the rooms of each pair of bosses appear as already cleared."""
+    """Skips the boss rush of the Slither Inc. tower: you do not have to beat the 8 Pseudoroids again before Serpent.
+    As you climb the tower, the rooms of each pair of bosses appear as already cleared."""
     display_name = "Skip Boss Rush"
     default = 0
 
@@ -107,8 +107,8 @@ class BossLogic(OptionDict):
     except for Serpent, which requires the 6 main models to access the final area.
 
     Requirements: models (X ZX HX FX LX PX OX; "HX2" or "Model HX (full)" =
-    both halves of the progressive item, i.e. the level-2 charge), ALL6 (the six main biometals), 
-    "Life Up x2" (or LIFEUP>=2), "Sub Tank x1" (or SUBTANK>=1) and ITEM B chips by name ("Absorber Chip"), 
+    both halves of the progressive item, i.e. the level-2 charge), ALL6 (the six main biometals),
+    "Life Up x2" (or LIFEUP>=2), "Sub Tank x1" (or SUBTANK>=1) and ITEM B chips by name ("Absorber Chip"),
     combined with & (and), | (or) and parentheses. A required chip is promoted from useful to progression automatically.
 
     Example:

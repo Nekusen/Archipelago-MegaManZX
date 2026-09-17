@@ -1,57 +1,46 @@
-# What changes in the game
+# All (player relevant) base modifications to the ROM (as of 0.1.0)
 
-The levels, the rooms and the objects in them are the original ones; nothing is moved. What changes is how the game
-starts, what you find and receive, how you get around and a few conveniences.
+## Starting point
 
-## Starting out
+- Starting point: New Game skips the whole introduction. You start on the Transerver floor chosen in your options
+  with the model and the character from your options, on Normal difficulty.
 
-- New Game skips the whole tutorial. You start on the Transerver floor chosen in your options (next to Area A by
-  default, or in the Guardian base) with the model and the character from your options, on Normal difficulty. Only
-  that floor is a known Transport destination at the start. The starting save is part of the patched ROM, so this
-  works with the client disconnected too. Continue works as usual.
-- You do not type a slot name: the client logs in on its own.
+## Items
 
-## What you find and receive
-
-- Biometals, Card Keys, Life Ups, Sub Tanks and ITEM B chips are multiworld items. Beating a Pseudoroid is still a
-  check, but its biometal comes to you as an item.
-- Model HX, FX, LX and PX come in two halves. The first half lets you use the form; the second completes it, with the
-  level 2 charged attack and the full Weapon Energy bar.
 - Pickups in the world show the item they hold: the game's own icon for a Life Up, Sub Tank, chip, biometal or Card
   Key, and the Archipelago logo for anything else (an arrow for progression, a cross for useful, grey for filler).
-  Picking one up plays the disk chime and gives you what the multiworld sends, not the pickup's usual effect.
-- The Secret Disk sprite shows the Archipelago logo.
-- With the `pickup_checks_*` options the energy capsules, weapon energy, E-Crystals and 1-Ups of the levels are checks
-  too. The first pickup counts; afterwards the object respawns and refills as usual.
 - Items you receive and items you send are announced in the game's own popup without stopping play. The `notify_*`
   options and the `/mmzx_notify` command choose which items are announced and how much text is shown.
 
-## Getting around
+## The "Open World" state
 
-- The mission of an area is accepted automatically when you enter it, so you can play the
-  areas in any order without going back to the hub.
-- The MISSION tab of the pause menu gains "Y Button: Go to Transerver". It opens the game's Target Area list wherever
-  you are, with the destinations you have unlocked.
-- Every area can be reached on foot. Warping from the hub to an area needs that area's Transerver Access item.
-- Completing Locate Giro and Pass The Test no longer unlocks the Transport to Area X-1 by itself; like any other
-  destination it comes from its Transerver Access item or from reaching the X-1 Transerver floor.
-- Some story gates are open from the start: the F-3 door, the G-2 door to G-4, the M-1 seal, the D-1 bridge, the
-  sand fall that hides the pit from K-1 to K-2, and the D-3 ladder up to the walkway that leads to Area O (the game
-  only lowers it while Repel The Army is in progress or done). The gate from D-2 into the Slither Inc. tower opens
-  once you hold the six biometals.
-- Troop Reinforcement can be started from D-1, D-2 or D-3 without the base cutscene. Protect HQ starts by itself, as in
-  the original game, when you have completed four area missions.
+- The mission of an area is accepted automatically when you enter it (no need to select it from a transerver), so you can play the
+  areas in any order without going back to the hub. You DO have to report missions on a transerver.
+  - Because of this, do not use the in-game mission select or the "Abort Mission" option.
+- All bosses are spawned from the beggining, and you can start the fight with them from both sides.
+  - The exception for this rule are Rayfly (B-2) and Giro (D-2).
+    - Rayfly requires you to get the nearest "Computer Chip" to the boss area to spawn the boss.
+    - Giro requires beating both mini-bosses in the area to spawn
+- The MISSION tab of the pause menu gains a fast travel function by pressing "Y". It lets you travel to Transerver locations you've unlocked.
+- About Area X:
+  - The only way in logic considered to reach Area X is to have it as your starting point or receive the Transerver Access from the multiworld
+  - Some story points where the teleport to Area X is granted have been patched
+  - The missions "Troop Reinforcement" and "Repel the Army" teleport you to Area X on completion. This teleports are NOT considered in logic.
+- Some story gates are open from the start:
+  - The F-3 door
+    - This means you don't need to beat the mini-boss in this area 
+  - The G-2 door to G-4
+    - These changes mean you don't have to rescue anyone in area G 
+  - The M-1 seal (which normally requires all models)
+  - The D-1 bridge
+  - The sand fall that hides the pit from K-1 to K-2
+  - The D-3 ladder up to the walkway that leads to Area O.
+- Troop Reinforcement can be started from D-1, D-2 or D-3 without the base cutscene.
+- "Protect HQ" becomes available, when you have completed and reported 4 of the "main" missions (the ones with Pseudoroids in them)
+  - To start the mission, teleport to Area X and speak with Prairie (you should have seen the previous cutscene on any transerver when reporting a mission
+- The gate from D-2 into the Slither Inc. tower opens once you hold the six main biometals (X, Z, F, H, P, L).
 - With `skip_boss_rush` the Pseudoroid refights of the D-4 tower are skipped and the elevator climbs straight to D-5.
 
 ## Cutscenes and menus
 
-- Every story cutscene can be skipped with START, also the first time you see it.
-- The DATA SELECT screen shows the biometals you actually own.
-
-## Other
-
-- A form the story would hand you but you do not own yet goes away on the next tick; you keep what your items give you.
-- With `hu_in_pool` the human form is an item too, and you cannot switch back to it until you have it.
-- With `death_link` your deaths are shared with the other players, and a received death kills you as soon as you have
-  control.
-- The randomizer plays on Normal difficulty.
+- Every story cutscene can be skipped with START, even if its the first time you see it.

@@ -35,7 +35,7 @@ See [CREDITS.md](CREDITS.md).
   - Developing and writing almost all the codebase
   - Understanding the NDS architecture and patching process
   - Reverse engineering the game using Ghidra
-  - Test game patching live and read memory addresses using py-desmune
+  - Test game patching live and read memory addresses using py-desmume
   - Assist in analyzing best AP practices and standards from other projects
   - Assist in setting up the project and write the documentation
   - Developing a "logic editor" tool to speed-up logic definition

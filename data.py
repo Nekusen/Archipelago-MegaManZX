@@ -421,11 +421,15 @@ HUB_FLOOR_Y = {'A': 352, 'B': 736, 'C': 1120, 'D': 1504, 'E': 1888, 'F': 2272, '
 # x of the Transerver console on each floor; floor C's sits in its own chamber,
 # away from the shared x where that floor's DATA room is.
 HUB_PAD_X = {'A': 384, 'B': 384, 'C': 896, 'D': 384, 'E': 384, 'F': 384, 'G': 384, 'I': 384, 'K': 384, 'L': 384, 'M': 384, 'N': 384, 'O': 384, 'X': 384}
+HUB_PAD_DY = 17   # px from the console pad up to the floor's y
 
 # Starting model. The golden save starts with Model X; other starts revoke it
 # and set the chosen possession flags and active model.
 MODEL_X_POSSESSION = [0x021045CF, 7]
 ACTIVE_MODEL_ADDR = 0x0214FC74
+# model id -> victory-level slots of its two bosses (0x02104634 + slot); a model
+# granted by item needs the first one set for its Weapon Energy cap.
+MODEL_BOSS_LEVEL_IDX = {3: (0, 4), 4: (2, 6), 5: (1, 5), 6: (3, 7)}   # HX, FX, LX, PX
 # starting_model key -> {grant:[[addr,bit]..], revoke_x, active}
 STARTING_MODELS = {
     'model_x':  {'grant': [[0x021045CF, 7]], 'revoke_x': False, 'active': 1},

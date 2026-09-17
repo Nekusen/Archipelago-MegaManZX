@@ -7,7 +7,8 @@ the player's copy at patch time. build_image applies the slot's options on top.
 
 import struct
 
-from ..data import ITEMS, LIVE_BLOCK, MODEL_X_POSSESSION, SCENE_WORDS, STARTING_TRANSERVERS
+from ..data import (ITEMS, LIVE_BLOCK, MODEL_BOSS_LEVEL_IDX, MODEL_X_POSSESSION, SCENE_WORDS,
+                    STARTING_TRANSERVERS)
 
 GOLDEN_IMAGE_ADDR = 0x021602A8
 GOLDEN_IMAGE_SIZE = 0x4F4
@@ -74,7 +75,6 @@ OFF_BOSS_LEVELS = BLOCK_OFF + BLK_BOSS_LEVELS
 MODEL_X_ADDR = MODEL_X_POSSESSION[0]
 MODEL_X_BIT = MODEL_X_POSSESSION[1]
 MODEL_HX = 3                # model ids 3..6 are HX, FX, LX, PX
-MODEL_LEVEL_IDX = {3: 0, 4: 2, 5: 1, 6: 3}   # first boss of the pair: HX, FX, LX, PX
 VICTORY_LEVEL_MAX = 4       # a level 4 win over the first boss caps the WE at WE_FULL
 WE_FULL = 16
 DIFFICULTY_NORMAL = 1
@@ -173,8 +173,9 @@ def build_image(start_key: str, character: int, starting_models: dict, start: di
     _set_byte(img, OFF_DIFFICULTY, DIFFICULTY_NORMAL, BLOCK_MIRROR)
     _set_byte(img, OFF_LIVES, LIVES_BY_DIFFICULTY[DIFFICULTY_NORMAL], PLAYER_MIRROR)
     # Weapon Energy of the starting model: 1st boss level = 4 (cap 16) and a full bar
-    if active in MODEL_LEVEL_IDX:
-        _set_byte(img, OFF_BOSS_LEVELS + MODEL_LEVEL_IDX[active], VICTORY_LEVEL_MAX, BLOCK_MIRROR)
+    if active in MODEL_BOSS_LEVEL_IDX:
+        first_boss = MODEL_BOSS_LEVEL_IDX[active][0]
+        _set_byte(img, OFF_BOSS_LEVELS + first_boss, VICTORY_LEVEL_MAX, BLOCK_MIRROR)
         _set_byte(img, OFF_WE + (active - MODEL_HX), WE_FULL, PLAYER_MIRROR)
     return bytes(img)
 

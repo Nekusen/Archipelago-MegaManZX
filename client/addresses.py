@@ -84,10 +84,9 @@ POS_MIN_DELTA = 48
 PLAYTIME = 0x021602A8        # frames; the game clock for consumables
 CONS_KEY = "mmzx_consumables_%s_%s"  # data storage: [[applied, playtime], ...]
 
-# Weapon Energy: a model's cap comes from the victory levels of its two bosses,
-# which only a real victory writes, so a model granted by item needs them set.
+# Weapon Energy: a model's cap comes from the victory levels of its two bosses
+# (data.MODEL_BOSS_LEVEL_IDX), which only a real victory writes.
 BOSS_LEVELS = 0x02104634
-MODEL_LEVEL_IDX = {3: (0, 4), 4: (2, 6), 5: (1, 5), 6: (3, 7)}   # HX, FX, LX, PX
 WE_BASE = 0x0214FC92          # + active model = current WE
 WE_FULL = 16
 MSG_BANK = 0x02104588         # 0xFFFFFFFF until boot has finished
@@ -219,7 +218,6 @@ ROM_SLOT_NAME_LEN = 64
 # Hub and warps
 # Default teleport: the console pad of floor A, so UP opens the console.
 HUB_SUBAREA, HUB_X, HUB_Y = 70, 384, 335
-HUB_PAD_DY = 17                # px from the console pad up to the floor's y
 HUB_FLOOR_NEAR = 64            # px around a pad's y that still count as that floor
 START_CONFIRM_TICKS = 4        # ticks the starting model must hold
 START_MAX_RETRIES = 600

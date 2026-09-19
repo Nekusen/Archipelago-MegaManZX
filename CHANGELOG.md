@@ -17,6 +17,10 @@ All notable changes to this project are documented in this file. The format is b
 - The STATUS tab of the pause menu shows the progress towards the goal requirements.
 - `/mmzx_goal` prints the goal requirements and your progress in the client.
 - The `Goal` group on the options page.
+- `progressive_models`: off makes each of the biometals H, F, L and P a single item that gives both
+  halves at once, instead of two Progressive Model items.
+- `require_full_models`: for the Biometals goal requirement, a progressive model counts only with
+  both halves.
 
 ### Changed
 

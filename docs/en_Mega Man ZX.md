@@ -18,7 +18,8 @@ Defeat Serpent at the top of Slither Inc. (D-5). The gate from D-2 into the towe
 `goal_requirements` of your options; every requirement you list is needed:
 
 - `Biometals`: own the models listed in `required_models` (the six main ones by default; Model OX can be added),
-  or any `required_models_count` of them ("any four of the six").
+  or any `required_models_count` of them ("any four of the six"). With `require_full_models` a progressive model
+  counts only once you hold both halves.
 - `Secret Disks`: collect `required_secret_disks` Secret Disks (20 by default) out of the `total_secret_disks`
   (30) shuffled into the multiworld. The disks in the world are ordinary checks; the Secret Disks you receive light up
   entries of Fleuve's database in an order picked by the seed.
@@ -33,7 +34,7 @@ Items:
 
 - Biometals: Model X, Model ZX, Model OX, and the progressive Model HX, FX, LX and PX. The first copy of a progressive
   model gives you the form; the second is the biometal's other half, which unlocks the level 2 charged attack and the
-  full Weapon Energy bar.
+  full Weapon Energy bar. With `progressive_models` off each of the four is a single item that gives both at once.
 - The Yellow, Green, Red, Blue and Purple Card Keys.
 - Transerver Access for each of the 13 areas with a Transerver (A, B, C, D, E, F, G, I, K, L, M, O and X).
 - Four Life Ups, four Sub Tanks and the eight ITEM B chips.

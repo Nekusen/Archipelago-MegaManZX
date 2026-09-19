@@ -55,6 +55,13 @@ class RequiredModelsCount(NamedRange):
     special_range_names = {"all": 7}
 
 
+class RequireFullModels(Toggle):
+    """For the Biometals goal requirement, a progressive model counts only with both halves
+    (its level 2 charge). Off: the first half is enough. Ignored without progressive_models."""
+    display_name = "Require Full Models"
+    default = 0
+
+
 class RequiredSecretDisks(Range):
     """How many Secret Disks you need for the Secret Disks goal requirement.
     Only used with Secret Disks in goal_requirements."""
@@ -86,6 +93,14 @@ class StartingModel(Choice):
     option_model_px = 6
     option_model_ox = 7
     default = option_model_zx
+
+
+class ProgressiveModels(Toggle):
+    """Biometals H, F, L and P come as two Progressive Model items each: the first half makes
+    the form usable, the second unlocks its level 2 charged attack. Off: each is a single Model
+    item that gives the whole biometal at once."""
+    display_name = "Progressive Models"
+    default = 1
 
 
 class HuInPool(Toggle):
@@ -215,7 +230,7 @@ class NotifyStyle(Choice):
 
 
 OPTION_GROUPS = [
-    OptionGroup("Goal", [Goal, GoalRequirements, RequiredModels, RequiredModelsCount,
+    OptionGroup("Goal", [Goal, GoalRequirements, RequiredModels, RequiredModelsCount, RequireFullModels,
                          RequiredSecretDisks, TotalSecretDisks]),
 ]
 
@@ -227,9 +242,11 @@ class MMZXOptions(PerGameCommonOptions):
     goal_requirements: GoalRequirements
     required_models: RequiredModels
     required_models_count: RequiredModelsCount
+    require_full_models: RequireFullModels
     required_secret_disks: RequiredSecretDisks
     total_secret_disks: TotalSecretDisks
     starting_model: StartingModel
+    progressive_models: ProgressiveModels
     hu_in_pool: HuInPool
     starting_transerver: StartingTranserver
     boss_logic: BossLogic

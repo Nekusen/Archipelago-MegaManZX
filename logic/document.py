@@ -25,6 +25,9 @@ ALL6 = ["X", "ZX", "HX", "FX", "LX", "PX"]
 # Both halves of the biometal, which unlock the level 2 charge; plain HX is one half.
 FULL_MODEL_ATOMS = {"HX2": "Progressive Model HX", "FX2": "Progressive Model FX",
                     "LX2": "Progressive Model LX", "PX2": "Progressive Model PX"}
+# Without progressive models each biometal is one item holding both halves.
+FULL_MODEL_ITEMS = {"Progressive Model HX": "Model HX", "Progressive Model FX": "Model FX",
+                    "Progressive Model LX": "Model LX", "Progressive Model PX": "Model PX"}
 
 MISSION_EVENT = {
     "LOCATE_GIRO": "Cleared: Locate Giro",
@@ -415,10 +418,11 @@ def count_items_used(doc):
 
 # Compilation to Archipelago rules
 
-def compile_req(req, tier, player, hu_in_pool=False, extra_atoms=None):
+def compile_req(req, tier, player, hu_in_pool=False, extra_atoms=None, full_models=False):
     """Compiles a requirement at tier into a rule callable; None means no rule.
 
     extra_atoms maps atom names to callables for the atoms the host resolves, such as BOSS_*.
+    full_models: the biometals are single items instead of progressive halves.
     """
     alts = req_alternatives(req, tier)
     if any(len(a) == 0 for a in alts):
@@ -427,7 +431,7 @@ def compile_req(req, tier, player, hu_in_pool=False, extra_atoms=None):
         return lambda state: False
     compiled = []
     for alt in alts:
-        preds = [p for p in (atom_predicate(a, player, hu_in_pool, extra_atoms) for a in alt)
+        preds = [p for p in (atom_predicate(a, player, hu_in_pool, extra_atoms, full_models) for a in alt)
                  if p is not None]
         compiled.append(preds)
     if any(len(p) == 0 for p in compiled):
@@ -446,29 +450,35 @@ def compile_req(req, tier, player, hu_in_pool=False, extra_atoms=None):
     return rule
 
 
-def atom_predicate(atom, player, hu_in_pool=False, extra_atoms=None):
+def atom_predicate(atom, player, hu_in_pool=False, extra_atoms=None, full_models=False):
     """Callable for one atom, or None when the atom resolves to nothing."""
     if extra_atoms and atom in extra_atoms:
         return extra_atoms[atom]
+
+    def item_of(name):
+        return FULL_MODEL_ITEMS.get(name, name) if full_models else name
+
     if atom == "HU":
         if not hu_in_pool:
             return None
         return lambda state: state.has("Model Hu", player)
     if atom == "MODEL":
-        items = [ATOM_ITEM[m] for m in MODELS_NONHU]
+        items = [item_of(ATOM_ITEM[m]) for m in MODELS_NONHU]
         return lambda state: state.has_any(items, player)
     if atom in ("ALL6", "GOAL"):
-        items = [ATOM_ITEM[m] for m in ALL6]
+        items = [item_of(ATOM_ITEM[m]) for m in ALL6]
         return lambda state: state.has_all(items, player)
     if atom in BOSS_ATOMS:
         # no YAML requirement: the boss asks for nothing
         return None
     if atom in ATOM_ITEM:
-        name = ATOM_ITEM[atom]
+        name = item_of(ATOM_ITEM[atom])
         return lambda state: state.has(name, player)
     if atom in FULL_MODEL_ATOMS:
-        name = FULL_MODEL_ATOMS[atom]
-        return lambda state: state.has(name, player, 2)
+        # the single full item is both halves at once
+        name = item_of(FULL_MODEL_ATOMS[atom])
+        copies = 1 if full_models else 2
+        return lambda state: state.has(name, player, copies)
     if atom in MISSION_EVENT:
         name = MISSION_EVENT[atom]
         return lambda state: state.has(name, player)

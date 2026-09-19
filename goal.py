@@ -47,11 +47,17 @@ def resolve(options, room: int, reserve: int, player_name: str) -> GoalRequireme
     filler (the player's excluded locations take filler only).
     """
     reqs = set(options.goal_requirements.value)
+    if not reqs:
+        raise OptionError("[%s] goal_requirements is empty: list at least one of %s, %s"
+                          % (player_name, REQ_BIOMETALS, REQ_DISKS))
     models: tuple = ()
     count = 0
     if REQ_BIOMETALS in reqs:
         chosen = set(options.required_models.value)
         models = tuple(MODEL_ITEM_BY_KEY[k] for k in MODEL_ITEM_BY_KEY if k in chosen)
+        if not models:
+            raise OptionError("[%s] required_models is empty while goal_requirements asks for %s: "
+                              "list at least one model" % (player_name, REQ_BIOMETALS))
         count = min(int(options.required_models_count.value), len(models))
     required = total = 0
     if REQ_DISKS in reqs:

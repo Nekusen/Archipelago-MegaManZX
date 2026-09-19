@@ -11,7 +11,7 @@ All notable changes to this project are documented in this file. The format is b
 - Configurable goal requirements. `goal_requirements` lists what opens the gate to Slither Inc.: `Biometals`
   (the models of `required_models`, all of them or any `required_models_count`) and/or `Secret Disks`, a hunt for
   `required_secret_disks` of the `total_secret_disks` shuffled into the multiworld. The default is the six main
-  models, as before. An empty list opens the gate from the start.
+  models, as before; the list cannot be empty.
 - Secret Disk goal items. Each one received lights up an entry of Fleuve's database, in an order picked by the seed;
   the popup announces them with their count, and a notice tells you when the gate opens.
 - The STATUS tab of the pause menu shows the progress towards the goal requirements.

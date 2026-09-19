@@ -24,7 +24,7 @@ class Goal(Choice):
 
 class GoalRequirements(OptionSet):
     """What you need before the gate to Slither Inc., the final area, opens.
-    Every requirement you list must be met; with an empty list the gate is open from the start.
+    Every requirement you list must be met; the list cannot be empty.
 
     Biometals: own the models chosen in required_models.
     Secret Disks: collect Secret Disks, goal items added to the pool

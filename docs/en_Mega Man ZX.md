@@ -24,8 +24,8 @@ Defeat Serpent at the top of Slither Inc. (D-5). The gate from D-2 into the towe
   entries of Fleuve's database in an order picked by the seed.
 
 The STATUS tab of the pause menu shows your progress, the popup announces each Secret Disk with its count and the
-moment the gate opens, and `/mmzx_goal` in the client prints the details. With an empty `goal_requirements` the gate
-is open from the start.
+moment the gate opens, and `/mmzx_goal` in the client prints the details. `goal_requirements` must list at least one
+requirement.
 
 ## What items and locations get randomized?
 
@@ -91,7 +91,8 @@ Locations:
 - Troop Reinforcement can be started from D-1, D-2 or D-3 without the base cutscene.
 - "Protect HQ" becomes available, when you have completed and reported 4 of the "main" missions (the ones with Pseudoroids in them)
   - To start the mission, teleport to Area X and speak with Prairie (you should have seen the previous cutscene on any transerver when reporting a mission
-- The gate from D-2 into the Slither Inc. tower opens once you hold the six main biometals (X, Z, F, H, P, L).
+- The gate from D-2 into the Slither Inc. tower opens once you meet your `goal_requirements` (the six main biometals
+  by default).
 - With `skip_boss_rush` the Pseudoroid refights of the D-4 tower are skipped and the elevator climbs straight to D-5.
 
 ### Cutscenes and menus

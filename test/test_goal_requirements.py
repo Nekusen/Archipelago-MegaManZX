@@ -3,6 +3,7 @@ import unittest
 from collections import Counter
 
 from BaseClasses import ItemClassification
+from Options import OptionError
 from test.general import setup_multiworld
 
 from .bases import MMZXTestBase
@@ -102,16 +103,18 @@ class TestOmegaInList(MMZXTestBase):
         self.assertBeatable(True)
 
 
-class TestNoRequirement(MMZXTestBase):
-    options = {"goal_requirements": []}
+class TestEmptyRequirements(unittest.TestCase):
+    def test_empty_list_fails(self) -> None:
+        with self.assertRaises(OptionError):
+            setup_multiworld(MMZXWorld, options={"goal_requirements": []})
 
-    def test_gate_open_from_the_start(self) -> None:
-        """With nothing required, a missing model no longer closes the goal."""
-        collect_pool_but(self, ["Model X"])
-        self.assertBeatable(True)
+    def test_biometals_without_models_fails(self) -> None:
+        with self.assertRaises(OptionError):
+            setup_multiworld(MMZXWorld, options={"required_models": []})
 
-    def test_no_disks(self) -> None:
-        self.assertEqual(Counter(item.name for item in self.multiworld.itempool)[DISK_ITEM], 0)
+    def test_no_disks_without_the_hunt(self) -> None:
+        multiworld = setup_multiworld(MMZXWorld)
+        self.assertEqual(Counter(item.name for item in multiworld.itempool)[DISK_ITEM], 0)
 
 
 class TestClamps(unittest.TestCase):
@@ -139,7 +142,7 @@ class TestClamps(unittest.TestCase):
         self.assertEqual(multiworld.worlds[1].goal.models_count, 2)
 
     def test_pool_still_fits(self) -> None:
-        for options in (DISKS_ONLY, BOTH, {"goal_requirements": []}):
+        for options in (DISKS_ONLY, BOTH):
             with self.subTest(options=options):
                 multiworld = setup_multiworld(MMZXWorld, options=options)
                 real = sum(1 for loc in multiworld.get_locations(1) if loc.address is not None)

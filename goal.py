@@ -17,17 +17,28 @@ MODEL_ITEM_BY_KEY = {
     "Model OX": "Model OX",
 }
 SIX_MODEL_KEYS = tuple(list(MODEL_ITEM_BY_KEY)[:6])
+# Without progressive_models the two halves are one item each.
+FULL_MODEL_OF = {"Progressive Model HX": "Model HX", "Progressive Model FX": "Model FX",
+                 "Progressive Model LX": "Model LX", "Progressive Model PX": "Model PX"}
+FULL_MODEL_COPIES = 2
 # Up to this many disks in the pool, finding one on a priority location is welcome.
 FEW_DISKS = 6
 DISK_ENTRIES = len(SECRET_DISK_ENTRIES)
 
 
-class GoalRequirement:
-    """The resolved requirement: which model items count and how many, and the disks."""
+def model_item(name: str, progressive: bool) -> str:
+    """The pool's item for a model: the progressive one or its single full item."""
+    return name if progressive else FULL_MODEL_OF.get(name, name)
 
-    def __init__(self, models: tuple, models_count: int, disks_required: int, disks_total: int):
+
+class GoalRequirement:
+    """The resolved requirement: which model items count, with how many copies each, and the disks."""
+
+    def __init__(self, models: tuple, models_count: int, disks_required: int, disks_total: int,
+                 copies: dict | None = None):
         self.models = models                 # item names; empty = no model requirement
         self.models_count = models_count
+        self.copies = copies or {}           # item name -> copies that make it count (1 unless full)
         self.disks_required = disks_required  # 0 = no disk hunt
         self.disks_total = disks_total
 
@@ -50,15 +61,20 @@ def resolve(options, room: int, reserve: int, player_name: str) -> GoalRequireme
     if not reqs:
         raise OptionError("[%s] goal_requirements is empty: list at least one of %s, %s"
                           % (player_name, REQ_BIOMETALS, REQ_DISKS))
+    progressive = bool(options.progressive_models.value)
     models: tuple = ()
     count = 0
+    copies: dict = {}
     if REQ_BIOMETALS in reqs:
         chosen = set(options.required_models.value)
-        models = tuple(MODEL_ITEM_BY_KEY[k] for k in MODEL_ITEM_BY_KEY if k in chosen)
+        models = tuple(model_item(MODEL_ITEM_BY_KEY[k], progressive)
+                       for k in MODEL_ITEM_BY_KEY if k in chosen)
         if not models:
             raise OptionError("[%s] required_models is empty while goal_requirements asks for %s: "
                               "list at least one model" % (player_name, REQ_BIOMETALS))
         count = min(int(options.required_models_count.value), len(models))
+        full = progressive and bool(options.require_full_models.value)
+        copies = {m: FULL_MODEL_COPIES if full and m in FULL_MODEL_OF else 1 for m in models}
     required = total = 0
     if REQ_DISKS in reqs:
         required = int(options.required_secret_disks.value)
@@ -77,15 +93,16 @@ def resolve(options, room: int, reserve: int, player_name: str) -> GoalRequireme
             logging.warning("[%s] total_secret_disks %d does not fit in the pool: lowered to %d"
                             % (player_name, total, fit))
             total = fit
-    return GoalRequirement(models, count, required, total)
+    return GoalRequirement(models, count, required, total, copies)
 
 
 def rule(goal: GoalRequirement, player: int):
     """The requirement as a state rule, or None when nothing is required."""
     parts = []
     if goal.wants_models:
-        parts.append(lambda state, _names=list(goal.models), _n=goal.models_count:
-                     state.has_from_list_unique(_names, player, _n))
+        needs = [(m, goal.copies.get(m, 1)) for m in goal.models]
+        parts.append(lambda state, _needs=needs, _n=goal.models_count:
+                     sum(1 for m, c in _needs if state.has(m, player, c)) >= _n)
     if goal.wants_disks:
         parts.append(lambda state, _n=goal.disks_required: state.has(DISK_ITEM, player, _n))
     if not parts:
@@ -99,7 +116,8 @@ def describe(goal: GoalRequirement) -> str:
     """One line for the spoiler."""
     parts = []
     if goal.wants_models:
-        parts.append("%d of %s" % (goal.models_count, ", ".join(goal.models)))
+        names = [m + (" (full)" if goal.copies.get(m, 1) > 1 else "") for m in goal.models]
+        parts.append("%d of %s" % (goal.models_count, ", ".join(names)))
     if goal.wants_disks:
         parts.append("%d Secret Disks (%d in the pool)" % (goal.disks_required, goal.disks_total))
     return "; ".join(parts) or "none"
@@ -109,6 +127,7 @@ def slot_data(goal: GoalRequirement, disk_order: list) -> dict:
     """What the client needs: the resolved requirement and the order the disks light entries in."""
     return {
         "models": list(goal.models),
+        "models_copies": [goal.copies.get(m, 1) for m in goal.models],
         "models_count": goal.models_count,
         "secret_disks": goal.disks_required,
         "secret_disks_total": goal.disks_total,

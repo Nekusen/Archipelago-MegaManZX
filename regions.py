@@ -33,6 +33,7 @@ def create_regions(world) -> None:
     """
     player, mw = world.player, world.multiworld
     hu_in_pool = bool(world.options.hu_in_pool.value)
+    full_models = not world.options.progressive_models.value
     tier = TIER
     doc = load_document()
     members = F.resolve_members(WORLD, doc)
@@ -40,13 +41,13 @@ def create_regions(world) -> None:
     # Boss rules are injected as BOSS_* atoms and added to every edge landing in the boss's arena;
     # the goal requirements of the YAML are the GOAL atom.
     boss_reqs = boss_requirements(world)
-    host_atoms = B.compile_rules(boss_reqs, tier, player, hu_in_pool)
+    host_atoms = B.compile_rules(boss_reqs, tier, player, hu_in_pool, full_models)
     boss_of = F.boss_regions(doc)
     goal_rule = G.rule(world.goal, player)
     host_atoms["GOAL"] = goal_rule or (lambda state: True)
 
     def rule(req):
-        return F.compile_req(req, tier, player, hu_in_pool, host_atoms)
+        return F.compile_req(req, tier, player, hu_in_pool, host_atoms, full_models)
 
     def arena_rule(room, rid):
         """Rule of the boss whose arena is this region, or None."""

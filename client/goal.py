@@ -21,6 +21,8 @@ class GoalRequirement:
         if g is None:      # a seed from before the option: the six models
             g = {"models": list(SIX_MODELS), "models_count": len(SIX_MODELS)}
         self.models = tuple(str(m) for m in g.get("models", ()))
+        copies = [int(c) for c in g.get("models_copies", ())]
+        self.copies = {m: copies[i] if i < len(copies) else 1 for i, m in enumerate(self.models)}
         self.models_count = min(int(g.get("models_count", len(self.models))), len(self.models))
         self.disks_required = int(g.get("secret_disks", 0))
         self.disks_total = int(g.get("secret_disks_total", 0))
@@ -37,7 +39,7 @@ class GoalRequirement:
         return self.disks_required > 0
 
     def models_owned(self, counts: dict[str, int]) -> int:
-        return sum(1 for m in self.models if counts.get(m, 0))
+        return sum(1 for m in self.models if counts.get(m, 0) >= self.copies.get(m, 1))
 
     def disks_owned(self, counts: dict[str, int]) -> int:
         return counts.get(DISK_ITEM, 0)
@@ -74,8 +76,10 @@ class GoalRequirement:
             out.append("Secret Disks: %d of %d received (%d in the multiworld)"
                        % (self.disks_owned(counts), self.disks_required, self.disks_total))
         if self.wants_models:
-            have = [m for m in self.models if counts.get(m, 0)]
-            miss = [m for m in self.models if not counts.get(m, 0)]
+            def label(m):
+                return m + (" (full)" if self.copies.get(m, 1) > 1 else "")
+            have = [label(m) for m in self.models if counts.get(m, 0) >= self.copies.get(m, 1)]
+            miss = [label(m) for m in self.models if counts.get(m, 0) < self.copies.get(m, 1)]
             out.append("Models: %d of %d owned (have: %s; missing: %s)" % (
                 len(have), self.models_count, ", ".join(have) or "none", ", ".join(miss) or "none"))
         if not out:

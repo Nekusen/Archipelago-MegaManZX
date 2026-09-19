@@ -27,6 +27,8 @@ for _m, _item in MODEL_ITEMS.items():
         MODEL_SECOND_HALF[_m] = (int(_g[1][1][0]), int(_g[1][1][1]))
     else:
         MODEL_POSSESSION[_m] = (_item, int(_g[1]), int(_g[2]))
+# Without progressive_models the pool holds one full item per progressive model instead.
+FULL_MODEL_ITEMS = {3: "Model HX", 4: "Model FX", 5: "Model LX", 6: "Model PX"}
 # With hu_in_pool the human form is owned through this bit of the progress block.
 HU_POSSESSION = (int(ITEMS["Model Hu"]["grant"][1]), int(ITEMS["Model Hu"]["grant"][2]))
 # The vanilla seal of the final area, for a seed without goal requirements in its slot data

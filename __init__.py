@@ -152,14 +152,19 @@ class MMZXWorld(World):
         starting floor's Transerver Access are pre-granted instead. 'none' leaves
         Model X findable, and without hu_in_pool Hu is not an item.
         """
+        progressive = bool(self.options.progressive_models.value)
         fixed: list[str] = []
         for n, v in ITEMS.items():
             if v["classification"] != "filler" and v.get("pooled", True):
-                fixed += [n] * int(v.get("count", 1))
+                if not progressive and n in G.FULL_MODEL_OF:
+                    fixed.append(G.FULL_MODEL_OF[n])   # one full item instead of two halves
+                else:
+                    fixed += [n] * int(v.get("count", 1))
         if self.options.hu_in_pool.value:
             fixed.append("Model Hu")
         granted: list[str] = []
         start_item = STARTING_MODEL_ITEM.get(self.options.starting_model.current_key)
+        start_item = G.model_item(start_item, progressive) if start_item else None
         if start_item and start_item in fixed:
             fixed.remove(start_item)   # one copy: the first half of a progressive item
             granted.append(start_item)
@@ -202,7 +207,8 @@ class MMZXWorld(World):
         state = self.multiworld.get_all_state()
         if self.multiworld.completion_condition[self.player](state):
             return
-        rules = bosses.compile_rules(reqs, TIER, self.player, bool(self.options.hu_in_pool.value))
+        rules = bosses.compile_rules(reqs, TIER, self.player, bool(self.options.hu_in_pool.value),
+                                     not self.options.progressive_models.value)
         from .logic import document as F
         blocked = [F.BOSSES[b]["name"] for b in sorted(reqs)
                    if not rules.get(F.boss_atom(b), lambda s: True)(state)]
@@ -216,7 +222,8 @@ class MMZXWorld(World):
         """Writes the .apmmzx patch of this player, with the starting save built from the options."""
         patch = MMZXPatch(player=self.player, player_name=self.player_name)
         image = build_image(self.options.starting_model.current_key, self.options.character.value,
-                            STARTING_MODELS, starting_point(self))
+                            STARTING_MODELS, starting_point(self),
+                            full_models=not self.options.progressive_models.value)
         write_patch_tokens(patch, self.player_name, self.multiworld.seed_name, self.world_version,
                            image, hu_in_pool=bool(self.options.hu_in_pool.value))
         out_name = self.multiworld.get_out_file_name_base(self.player)
@@ -247,6 +254,7 @@ class MMZXWorld(World):
             "death_link": bool(self.options.death_link.value),
             "starting_model": self.options.starting_model.current_key,
             "starting_transerver": self.options.starting_transerver.current_key,
+            "progressive_models": bool(self.options.progressive_models.value),
             "hu_in_pool": bool(self.options.hu_in_pool.value),
             "boss_logic": bosses.describe(boss_requirements(self)),
             # the client marks the rush pairs as beaten; the logic stops requiring them

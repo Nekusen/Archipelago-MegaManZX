@@ -8,7 +8,7 @@ the player's copy at patch time. build_image applies the slot's options on top.
 import struct
 
 from ..data import (ITEMS, LIVE_BLOCK, MODEL_BOSS_LEVEL_IDX, MODEL_X_POSSESSION, SCENE_WORDS,
-                    STARTING_TRANSERVERS)
+                    STARTING_MODEL_ITEM, STARTING_TRANSERVERS)
 
 GOLDEN_IMAGE_ADDR = 0x021602A8
 GOLDEN_IMAGE_SIZE = 0x4F4
@@ -148,12 +148,22 @@ def baseline_image() -> bytearray:
     return img
 
 
-def build_image(start_key: str, character: int, starting_models: dict, start: dict | None = None) -> bytes:
+def second_half_bit(start_key: str) -> tuple[int, int] | None:
+    """The second-half flag of a progressive starting model, or None for the others."""
+    grant = ITEMS.get(STARTING_MODEL_ITEM.get(start_key, ""), {}).get("grant")
+    if grant and grant[0] == "progressive":
+        return int(grant[1][1][0]), int(grant[1][1][1])
+    return None
+
+
+def build_image(start_key: str, character: int, starting_models: dict, start: dict | None = None,
+                full_models: bool = False) -> bytes:
     """Golden image for a slot: starting model key, character (0 Vent, 1 Aile) and start point.
 
     Pure and idempotent; no Archipelago objects involved. The start point
     (a STARTING_TRANSERVERS record) sets the spawn, the scene word and the one
-    Transport destination known from the start.
+    Transport destination known from the start. With full_models a progressive
+    starting model owns both halves.
     """
     img = baseline_image()
     if start:
@@ -161,7 +171,10 @@ def build_image(start_key: str, character: int, starting_models: dict, start: di
     rec = starting_models.get(start_key) or starting_models.get("model_zx")
     # Model X unless revoked, plus the starting model's ownership bits
     _set_bit(img, BLOCK_OFF + (MODEL_X_ADDR - LIVE_BLOCK), MODEL_X_BIT, not rec.get("revoke_x", False), BLOCK_MIRROR)
-    for addr, bit in rec.get("grant", []):
+    grants = list(rec.get("grant", []))
+    if full_models and second_half_bit(start_key):
+        grants.append(second_half_bit(start_key))
+    for addr, bit in grants:
         if LIVE_BLOCK <= addr < LIVE_BLOCK + BLOCK_LEN:
             _set_bit(img, BLOCK_OFF + (addr - LIVE_BLOCK), bit, True, BLOCK_MIRROR)
     active = int(rec.get("active", 1))

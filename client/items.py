@@ -8,8 +8,8 @@ from ..data import (
 from .addresses import (
     BOSS_LEVELS, CANON_OFF, CAPACITY_NIBBLE, CARDKEY_MASKS, COLLECTED_NIBBLE, CONS_KEY,
     CUTSCENE_FLAG, DOM, ECRYSTALS, ECRYSTALS_CAP, ECRYSTALS_HIGH_MASK, ECRYSTALS_MASK,
-    ECRYSTALS_PER_ITEM, HPMAX, HP_BASE, HP_CAP, HP_PER_LIFEUP, HU_POSSESSION, ITEM_BY_ID, LIFEUP_BYTE,
-    LIFEUP_SLOTS, LIVES, LIVES_CAP, MODEL_POSSESSION, MODEL_SECOND_HALF,
+    ECRYSTALS_PER_ITEM, FULL_MODEL_ITEMS, HPMAX, HP_BASE, HP_CAP, HP_PER_LIFEUP, HU_POSSESSION,
+    ITEM_BY_ID, LIFEUP_BYTE, LIFEUP_SLOTS, LIVES, LIVES_CAP, MODEL_POSSESSION, MODEL_SECOND_HALF,
     PLAYTIME, SUBTANK_BYTE, SUBTANK_SLOTS, WE_BASE, WE_FULL)
 from .notices import notify_bytes
 from .ram import Tick, bits_by_byte, copies_writes, read_copies
@@ -31,6 +31,11 @@ def received_counts(ctx) -> dict[str, int]:
     return counts
 
 
+def model_halves(counts: dict[str, int], model: int) -> int:
+    """Halves of a model held: one per progressive copy, both with the full item."""
+    return counts.get(MODEL_POSSESSION[model][0], 0) + 2 * counts.get(FULL_MODEL_ITEMS.get(model, ""), 0)
+
+
 def wanted_progress_bits(counts: dict[str, int], goal: "GoalRequirement"
                          ) -> tuple[set[tuple[int, int]], set[tuple[int, int]]]:
     """(idempotent bits, Card Key bits) the received items call for.
@@ -49,6 +54,8 @@ def wanted_progress_bits(counts: dict[str, int], goal: "GoalRequirement"
             for k, (addr, bit) in enumerate(grant[1]):
                 if n > k:
                     bits.add((addr, bit))
+        elif kind == "bits":
+            bits.update((addr, bit) for addr, bit in grant[1])
         elif kind == "transerver":
             bits.add((grant[1], grant[2]))
     for fl in EVENT_GATES_OPEN:
@@ -64,15 +71,14 @@ async def weapon_energy_writes(ctx, counts: dict[str, int]) -> list[tuple[int, b
     With one half the first boss level is raised so the pair sums 4 and the
     bar is filled to 16; with both halves both levels become 4 and the bar 32.
     """
-    owned = [m for m, (item, _a, _b) in MODEL_POSSESSION.items()
-             if m in MODEL_BOSS_LEVEL_IDX and counts.get(item, 0)]
+    owned = [m for m in MODEL_POSSESSION if m in MODEL_BOSS_LEVEL_IDX and model_halves(counts, m)]
     if not owned:
         return []
     lv = (await bizhawk.read(ctx.bizhawk_ctx, [(BOSS_LEVELS, 8, DOM)]))[0]
     writes: list[tuple[int, bytes, str]] = []
     for m in owned:
         i0, i1 = MODEL_BOSS_LEVEL_IDX[m]
-        full = counts.get(MODEL_POSSESSION[m][0], 0) >= 2
+        full = model_halves(counts, m) >= 2
         if full and lv[i0] + lv[i1] < 8:
             for i in (i0, i1):
                 writes.append((BOSS_LEVELS + i, b"\x04", DOM))
@@ -256,8 +262,8 @@ async def revert_unowned_models(client: "MMZXClient", ctx, tick: Tick) -> None:
     if r[1][0] & 1:
         return   # cutscene running: leave the model alone
     active = r[0][0]
-    owned = {m: counts.get(item, 0) >= 1 for m, (item, _a, _b) in MODEL_POSSESSION.items()}
-    full = {m: counts.get(MODEL_POSSESSION[m][0], 0) >= 2 for m in MODEL_SECOND_HALF}
+    owned = {m: model_halves(counts, m) >= 1 for m in MODEL_POSSESSION}
+    full = {m: model_halves(counts, m) >= 2 for m in MODEL_SECOND_HALF}
     # With hu_in_pool Hu is just another form. The game refuses to transform
     # with a single owned category, so a scene that ends in Hu (the M-1 seal
     # one does) would leave the player stuck in Hu for good.

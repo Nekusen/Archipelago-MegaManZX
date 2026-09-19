@@ -35,6 +35,21 @@ BIOMETAL_CAT_PATCH = {
 }
 BIOMETAL_CAT_COUNT = 2   # vanilla value; checked, not changed
 
+# Secret Disks are items of the pool: the world's disks record their pickup in the
+# game's "read" series, so the "collected" series that Fleuve's database lists is
+# the client's alone; the viewer then shows every disk received as read.
+SECRET_DISK_PATCH = [
+    # (RAM, vanilla, patched)
+    (0x020A3AA0, bytes.fromhex("65f766fc"), bytes.fromhex("65f728fc")),   # placed disk pickup: set read
+    (0x020A401A, bytes.fromhex("65f7a9f9"), bytes.fromhex("65f76bf9")),   # carried disk pickup: set read
+    (0x020A3B76, bytes.fromhex("65f7d9fb"), bytes.fromhex("65f79bfb")),   # placed disk init: taken = read
+    (0x020A414E, bytes.fromhex("65f7edf8"), bytes.fromhex("65f7aff8")),   # carrier init: taken = read
+    (0x0202AEE2, bytes.fromhex("def707fa"), bytes.fromhex("c046c046")),   # viewer: no "mark read"
+    (0x0202B5D2, bytes.fromhex("ddf76dfe"), bytes.fromhex("0120c046")),   # viewer cursor text: read
+    (0x0202BE66, bytes.fromhex("ddf723fa"), bytes.fromhex("0120c046")),   # viewer icons: read
+    (0x0202BF6E, bytes.fromhex("ddf79ff9"), bytes.fromhex("0120c046")),   # viewer icons: read
+]
+
 # Life Up / Sub Tank: the capacity byte doubled as the "slot collected" record.
 # The pickup now sets the high nibble (bit 4 + slot): spawn gate and detection.
 PICKUP_FLAG_PATCH = [
@@ -119,6 +134,12 @@ def patch_biometal_ownership(arm9: Arm9) -> None:
         arm9.write(list_ram, flag1.to_bytes(4, "little"), orig1.to_bytes(4, "little"))
         arm9.write(list_ram + 4, flag2.to_bytes(4, "little"), orig2.to_bytes(4, "little"))
         arm9.write(count_ram, bytes([BIOMETAL_CAT_COUNT]), bytes([BIOMETAL_CAT_COUNT]))
+
+
+def patch_secret_disks(arm9: Arm9) -> None:
+    """The world's disks mark the read series; the collected series belongs to the client."""
+    for ram, orig, new in SECRET_DISK_PATCH:
+        arm9.write(ram, new, orig)
 
 
 def patch_life_up_sub_tank(arm9: Arm9) -> None:

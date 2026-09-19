@@ -6,6 +6,24 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+### Added
+
+- Configurable goal requirements. `goal_requirements` lists what opens the gate to Slither Inc.: `Biometals`
+  (the models of `required_models`, all of them or any `required_models_count`) and/or `Secret Disks`, a hunt for
+  `required_secret_disks` of the `total_secret_disks` shuffled into the multiworld. The default is the six main
+  models, as before. An empty list opens the gate from the start.
+- Secret Disk goal items. Each one received lights up an entry of Fleuve's database, in an order picked by the seed;
+  the popup announces them with their count, and a notice tells you when the gate opens.
+- The STATUS tab of the pause menu shows the progress towards the goal requirements.
+- `/mmzx_goal` prints the goal requirements and your progress in the client.
+- The `Goal` group on the options page.
+
+### Changed
+
+- The disks found in the world no longer count as Secret Disks in Fleuve's database: they are checks like any other.
+  A disk collected by the server (`!collect`) now disappears from the world.
+- The ROM must be created again from the `.apmmzx` with this version.
+
 ## [0.1.0] - 2026-09-17
 
 The first release of this project: Mega Man ZX (USA).

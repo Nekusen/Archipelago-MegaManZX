@@ -2,10 +2,12 @@
 cutscenes, the warp on the pause menu and the notice popup."""
 
 import hashlib
+import struct
 
-from ..data import ICON_TABLE_ADDR, ICON_TABLE_SIZE, NOTIFY_ADDR
+from ..data import GOAL_LINE_ADDR, GOAL_LINE_GLYPHS, ICON_TABLE_ADDR, ICON_TABLE_SIZE, NOTIFY_ADDR
 from .arm9 import Arm9
 from .golden import GOLDEN_IMAGE_SIZE
+from .nds import file_bytes, relocate_file
 
 # Tutorial skip: New Game enters the scene through the LOAD handler, from the
 # slot's golden image. The handler also serves the attract demo, so the cave
@@ -60,6 +62,23 @@ NOTIFY_CAVE = bytes.fromhex(
     "61ff0c4846f7bafd0a4846f7f1fc0649087b002801d0012000e00220886146f7"
     "d5fe10bd00b70c02c4027e0202f5140206f51402cc027e02")
 
+# Goal progress line: the STATUS tab help texts get a second line the client
+# fills. The message pointer routine jumps into the cave, which copies the
+# buffer over that line for those messages of the pause menu file only.
+GOAL_LINE_ENTRY_RAM = 0x02007F40
+GOAL_LINE_ENTRY_ORIG = bytes.fromhex("8200044883580448")
+GOAL_LINE_ENTRY_NEW = bytes.fromhex("004b184789b50c02")   # ldr r3, =cave+1; bx r3
+GOAL_LINE_CAVE_RAM = 0x020CB588
+GOAL_LINE_CAVE = bytes.fromhex(
+    "820013488358134882584800105a18180a291cd230b4104c2468a24216d11c68"
+    "0e4dac4212d1041c2578fe2d0ed00134fc2df9d11e25655dfe2d07d1084a1e23"
+    "1578257001320134013bf9d130bc7047944510028c4510029045100223484f4f"
+    "a0b60c02")
+GOAL_LINE_MESSAGES = 10            # messages 0-9 of m_sub_en.bin: the BIOMETAL row of STATUS
+PAUSE_TEXT_FILE_ID = 222           # m_sub_en.bin
+PAUSE_TEXT_LINE_BREAK = 0xFC
+PAUSE_TEXT_END = 0xFE
+
 # Cutscene skip: START skips a story cutscene only on a replay. The "event seen"
 # test becomes a no-op and the cave marks the event seen, as watching it would.
 CUTSCENE_SKIP_PATCH = [
@@ -107,6 +126,45 @@ def patch_cutscene_skip(arm9: Arm9) -> None:
     arm9.write(CUTSCENE_SKIP_CAVE_RAM, CUTSCENE_SKIP_CAVE)
     for ram, orig, new in CUTSCENE_SKIP_PATCH:
         arm9.write(ram, new, orig)
+
+
+def patch_goal_line(arm9: Arm9) -> None:
+    """Route the message pointer routine through the cave that fills the goal line."""
+    assert GOAL_LINE_CAVE_RAM + len(GOAL_LINE_CAVE) <= NOTIFY_CAVE_RAM
+    assert NOTIFY_CAVE_RAM + len(NOTIFY_CAVE) <= GOAL_LINE_ADDR
+    assert GOAL_LINE_ADDR + GOAL_LINE_GLYPHS + 1 <= NOTIFY_ADDR
+    arm9.write(GOAL_LINE_CAVE_RAM, GOAL_LINE_CAVE)
+    arm9.write(GOAL_LINE_ENTRY_RAM, GOAL_LINE_ENTRY_NEW, GOAL_LINE_ENTRY_ORIG)
+
+
+def pause_texts_with_goal_line(data: bytes) -> bytes:
+    """m_sub_en.bin with a blank second line reserved in its first GOAL_LINE_MESSAGES messages."""
+    total, tsize = struct.unpack_from("<HH", data, 0)
+    n = tsize // 2
+    base = 4 + tsize
+    offs = list(struct.unpack_from("<%dH" % n, data, 4))
+    texts = []
+    for k, o in enumerate(offs):
+        end = data.index(bytes([PAUSE_TEXT_END]), base + o)
+        text = data[base + o:end]
+        if k < GOAL_LINE_MESSAGES:
+            if PAUSE_TEXT_LINE_BREAK in text:
+                raise ValueError("MMZX: pause menu text %d already has two lines" % k)
+            text += bytes([PAUSE_TEXT_LINE_BREAK]) + bytes(GOAL_LINE_GLYPHS)
+        texts.append(text + bytes([PAUSE_TEXT_END]))
+    body = b"".join(texts)
+    new_offs = []
+    pos = 0
+    for t in texts:
+        new_offs.append(pos)
+        pos += len(t)
+    out = struct.pack("<HH", 4 + tsize + len(body), tsize) + struct.pack("<%dH" % n, *new_offs) + body
+    return out + data[base + offs[-1] + len(texts[-1]):]  # whatever trails the last message
+
+
+def install_pause_texts(rom: bytearray) -> None:
+    """Rebuild m_sub_en.bin with the goal line and relocate it to the end padding."""
+    relocate_file(rom, PAUSE_TEXT_FILE_ID, pause_texts_with_goal_line(file_bytes(rom, PAUSE_TEXT_FILE_ID)))
 
 
 def patch_menu_warp_text(rom: bytearray) -> None:

@@ -14,8 +14,18 @@ Missions are accepted automatically when you enter their area, and they can be d
 
 ## What is the goal?
 
-Defeat Serpent at the top of Slither Inc. (D-5). The gate from D-2 into the tower opens once you hold the six main
-biometals (X, Z, H, F, L and P).
+Defeat Serpent at the top of Slither Inc. (D-5). The gate from D-2 into the tower opens once you meet the
+`goal_requirements` of your options; every requirement you list is needed:
+
+- `Biometals`: own the models listed in `required_models` (the six main ones by default; Model OX can be added),
+  or any `required_models_count` of them ("any four of the six").
+- `Secret Disks`: collect `required_secret_disks` Secret Disks (20 by default) out of the `total_secret_disks`
+  (30) shuffled into the multiworld. The disks in the world are ordinary checks; the Secret Disks you receive light up
+  entries of Fleuve's database in an order picked by the seed.
+
+The STATUS tab of the pause menu shows your progress, the popup announces each Secret Disk with its count and the
+moment the gate opens, and `/mmzx_goal` in the client prints the details. With an empty `goal_requirements` the gate
+is open from the start.
 
 ## What items and locations get randomized?
 

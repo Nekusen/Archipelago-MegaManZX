@@ -5,13 +5,14 @@
 #   of both tiers apply). '?' = not confirmed in-game.
 # Atoms: HU X ZX HX FX LX PX OX MODEL ALL6 ; YELLOW GREEN RED BLUE WHITE PURPLE ;
 #   LIFEUP>=n SUBTANK>=n ; <MISSION> (cleared) ; ACCESS_<area> ; CHIP_<chip> ;
-#   BOSS_<BOSS> (requirement set by the player in their YAML; free if unset).
+#   BOSS_<BOSS> (requirement set by the player in their YAML; free if unset) ;
+#   GOAL (the goal requirements of the YAML; the six biometals by default).
 # Doors: one line each, no positions; (xN) = N alike. Not listed: a plain door back
 #   into its own region, and a region with nothing in it.
 
 gates:  # event gates (flag): requirement or 'free' (the client opens it)
   191: normal: FIGHT_THE_MAVERICKS
-  225: normal: ALL6
+  225: normal: GOAL
   381: free
   382: free
   395: free

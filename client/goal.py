@@ -1,0 +1,95 @@
+"""The goal requirements in game: the gate to the final area, the disks' database entries,
+the progress line of the pause menu and the /mmzx_goal report."""
+
+from typing import TYPE_CHECKING
+import worlds._bizhawk as bizhawk
+
+from ..data import EVENT_GATES, EVENT_GATES_GOAL, GOAL_LINE_ADDR, GOAL_LINE_GLYPHS, SECRET_DISK_ENTRIES
+from .addresses import DISK_ITEM, DOM, SIX_MODELS
+from .notices import encode_text
+from .ram import Tick
+
+if TYPE_CHECKING:
+    from . import MMZXClient
+
+
+class GoalRequirement:
+    """The requirement resolved by the generator, read from slot_data."""
+
+    def __init__(self, slot_data: dict) -> None:
+        g = slot_data.get("goal_requirements")
+        if g is None:      # a seed from before the option: the six models
+            g = {"models": list(SIX_MODELS), "models_count": len(SIX_MODELS)}
+        self.models = tuple(str(m) for m in g.get("models", ()))
+        self.models_count = min(int(g.get("models_count", len(self.models))), len(self.models))
+        self.disks_required = int(g.get("secret_disks", 0))
+        self.disks_total = int(g.get("secret_disks_total", 0))
+        order = [int(i) for i in g.get("secret_disk_order", ())]
+        n = len(SECRET_DISK_ENTRIES)
+        self.disk_order = order if sorted(order) == list(range(n)) else list(range(n))
+
+    @property
+    def wants_models(self) -> bool:
+        return bool(self.models)
+
+    @property
+    def wants_disks(self) -> bool:
+        return self.disks_required > 0
+
+    def models_owned(self, counts: dict[str, int]) -> int:
+        return sum(1 for m in self.models if counts.get(m, 0))
+
+    def disks_owned(self, counts: dict[str, int]) -> int:
+        return counts.get(DISK_ITEM, 0)
+
+    def met(self, counts: dict[str, int]) -> bool:
+        return ((not self.wants_models or self.models_owned(counts) >= self.models_count)
+                and (not self.wants_disks or self.disks_owned(counts) >= self.disks_required))
+
+    def gate_bits(self) -> set[tuple[int, int]]:
+        """The two flags of the Slither gate, D-2 to D-4."""
+        return {tuple(EVENT_GATES[fl]) for fl in EVENT_GATES_GOAL}
+
+    def disk_bits(self, counts: dict[str, int]) -> tuple[set[tuple[int, int]], set[tuple[int, int]]]:
+        """(entries to light, every entry): the first disks received, in the seed's order."""
+        n = min(self.disks_owned(counts), len(SECRET_DISK_ENTRIES))
+        wanted = {tuple(SECRET_DISK_ENTRIES[i]) for i in self.disk_order[:n]}
+        return wanted, {tuple(e) for e in SECRET_DISK_ENTRIES}
+
+    def progress_line(self, counts: dict[str, int]) -> str:
+        """The pause menu line, at most GOAL_LINE_GLYPHS glyphs."""
+        parts = []
+        if self.wants_disks:
+            width = len(str(self.disks_required))
+            label = "Disks" if self.wants_models else "Secret Disks"
+            parts.append("%s %0*d/%d" % (label, width, self.disks_owned(counts), self.disks_required))
+        if self.wants_models:
+            parts.append("Models %d/%d" % (self.models_owned(counts), self.models_count))
+        return "  ".join(parts)[:GOAL_LINE_GLYPHS]
+
+    def report(self, counts: dict[str, int]) -> list[str]:
+        """Lines for the console."""
+        out = []
+        if self.wants_disks:
+            out.append("Secret Disks: %d of %d received (%d in the multiworld)"
+                       % (self.disks_owned(counts), self.disks_required, self.disks_total))
+        if self.wants_models:
+            have = [m for m in self.models if counts.get(m, 0)]
+            miss = [m for m in self.models if not counts.get(m, 0)]
+            out.append("Models: %d of %d owned (have: %s; missing: %s)" % (
+                len(have), self.models_count, ", ".join(have) or "none", ", ".join(miss) or "none"))
+        if not out:
+            out.append("No goal requirement: the gate to the final area is open")
+        else:
+            out.append("Gate to the final area: %s" % ("open" if self.met(counts) else "closed"))
+        return out
+
+
+async def sync_goal_line(client: "MMZXClient", ctx, tick: Tick, counts: dict[str, int]) -> None:
+    """Keep the pause menu line equal to the progress; written only when it changes."""
+    text = encode_text(client.goal.progress_line(counts), terminate=False)
+    data = text[:GOAL_LINE_GLYPHS] + bytes(GOAL_LINE_GLYPHS - len(text[:GOAL_LINE_GLYPHS]))
+    if data == client.goal_line_written:
+        return
+    if await bizhawk.guarded_write(ctx.bizhawk_ctx, [(GOAL_LINE_ADDR, data, DOM)], [tick.guard]):
+        client.goal_line_written = data

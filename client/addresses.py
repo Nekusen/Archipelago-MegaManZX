@@ -5,6 +5,7 @@ Everything the client reads or writes is named here.
 
 from ..data import (
     CANON_BLOCK, GOAL_BITS, GOAL_BITS_SERPENT, ITEMS, LIVE_BLOCK, LOCATIONS, WARP_DESTINATIONS)
+from ..goal import DISK_ITEM
 
 
 GAME = "Mega Man ZX"
@@ -28,8 +29,13 @@ for _m, _item in MODEL_ITEMS.items():
         MODEL_POSSESSION[_m] = (_item, int(_g[1]), int(_g[2]))
 # With hu_in_pool the human form is owned through this bit of the progress block.
 HU_POSSESSION = (int(ITEMS["Model Hu"]["grant"][1]), int(ITEMS["Model Hu"]["grant"][2]))
+# The vanilla seal of the final area, for a seed without goal requirements in its slot data
 SIX_MODELS = ("Model X", "Model ZX", "Progressive Model HX", "Progressive Model FX",
               "Progressive Model LX", "Progressive Model PX")
+DISK_ITEM_ID = ITEMS[DISK_ITEM]["id"]
+# Disk locations to their "taken" bit, which the client also sets for disks collected elsewhere
+DISK_TAKEN_BITS = {v["id"]: (int(v["detect"][1]), int(v["detect"][2]))
+                   for v in LOCATIONS.values() if v["category"] == "disk" and v.get("detect")}
 # Items with their own sprite in the AP graphics set (ICON_CODES); anything else
 # is drawn as the Archipelago logo of its classification.
 ICON_BY_ITEM: dict[str, str] = {}
@@ -37,6 +43,8 @@ for _n in ITEMS:
     _w = _n.split()
     if _n in ("Life Up", "Sub Tank"):
         ICON_BY_ITEM[_n] = _n.replace(" ", "").lower()
+    elif _n == DISK_ITEM:
+        ICON_BY_ITEM[_n] = "secret_disk"
     elif _w[-1] == "Chip":
         ICON_BY_ITEM[_n] = "chip_" + "".join(_w[:-1])
     elif _w[-2:] == ["Card", "Key"]:

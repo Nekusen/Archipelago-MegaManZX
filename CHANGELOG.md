@@ -6,6 +6,18 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+### Added
+
+- Added "configurable goal requirements".
+  - Goal Requirement "Biometals": Collect a specific ammount of models from the pool
+  - Secret Disk: A macguffin style goal that requires collecting a specific ammount of secret disks from the pool.
+- The STATUS tab of the pause menu shows the progress towards the goal requirements.
+  - A `/mmzx_goal` has been added that prints the goal requirements and your progress in the client as well.
+
+### Changed
+
+- The disks found in the world no longer count as Secret Disks in Fleuve's database. Fleuve's database now uses the Secret Disks obtained from the multiworld.
+
 ## [0.1.0] - 2026-09-17
 
 The first release of this project: Mega Man ZX (USA).

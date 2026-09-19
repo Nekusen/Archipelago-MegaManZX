@@ -2,6 +2,7 @@
 
 from BaseClasses import Region
 
+from . import goal as G
 from .logic import bosses as B
 from .logic import document as F
 from .logic import load_document
@@ -36,18 +37,21 @@ def create_regions(world) -> None:
     doc = load_document()
     members = F.resolve_members(WORLD, doc)
 
-    # Boss rules are injected as BOSS_* atoms and added to every edge landing in the boss's arena.
+    # Boss rules are injected as BOSS_* atoms and added to every edge landing in the boss's arena;
+    # the goal requirements of the YAML are the GOAL atom.
     boss_reqs = boss_requirements(world)
-    boss_rules = B.compile_rules(boss_reqs, tier, player, hu_in_pool)
+    host_atoms = B.compile_rules(boss_reqs, tier, player, hu_in_pool)
     boss_of = F.boss_regions(doc)
+    goal_rule = G.rule(world.goal, player)
+    host_atoms["GOAL"] = goal_rule or (lambda state: True)
 
     def rule(req):
-        return F.compile_req(req, tier, player, hu_in_pool, boss_rules)
+        return F.compile_req(req, tier, player, hu_in_pool, host_atoms)
 
     def arena_rule(room, rid):
         """Rule of the boss whose arena is this region, or None."""
         bid = boss_of.get((room, rid))
-        return boss_rules.get(F.boss_atom(bid)) if bid else None
+        return host_atoms.get(F.boss_atom(bid)) if bid else None
 
     start = starting_room(world)
     # skip_boss_rush drops the eight rush teleporters and the extra cost of the exit to D-5;
@@ -165,11 +169,10 @@ def create_regions(world) -> None:
     victory = MMZXLocation(player, "Defeat Serpent", None, field)
     victory.place_locked_item(world.create_event("Victory"))
     parent, base = place(final, LOCATIONS.get(final, {"room": "D-4D-5"}))
-    # Nothing in the game gates Serpent beyond the Green Card Key door into D-4; ALL6 is a
-    # design requirement standing in for the vanilla six-biometal seal.
+    # Nothing in the game gates Serpent beyond the Green Card Key door into D-4; the goal
+    # requirements stand in for the vanilla six-biometal seal, here and on the gate.
     if base is None:
         pname = parent.name
         base = lambda state, _p=pname: state.can_reach_region(_p, player)  # noqa: E731
-    goal_rule = and_rules(base, rule(checks.get(final, {}).get("req")), rule({"normal": [["ALL6"]]}))
-    victory.access_rule = goal_rule
+    victory.access_rule = and_rules(base, rule(checks.get(final, {}).get("req")), goal_rule)
     field.locations.append(victory)

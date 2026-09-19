@@ -21,8 +21,9 @@ from .ram import ProgressWindow, Tick
 from .notices import push_notices, sync_icon_table
 from .startup import apply_start_state, resolve_start_state
 from ..rom.ui import SKIP_COPY_CAVE, SKIP_COPY_CAVE_RAM
-from .checks import detect_checks
-from .items import grant_items, revert_unowned_models
+from .checks import detect_checks, sync_taken_disks
+from .goal import GoalRequirement, sync_goal_line
+from .items import grant_items, received_counts, revert_unowned_models
 from .missions import auto_accept_mission, handle_ending, repair_missions, skip_boss_rush
 from .tracker import log_where, receive_death_link, report_death, send_position
 from .warps import handle_warps
@@ -43,6 +44,7 @@ class MMZXClient(BizHawkClient):
         super().__init__()
         # slot options, read once per connection (_setup)
         self.death_link_enabled = False
+        self.goal: GoalRequirement | None = None   # what opens the gate to the final area
         self.skip_boss_rush = False        # QoL: skip the D-4 boss rush
         self.mailbox_enabled = False       # some pickup category is a check
         # settings the player changes from the console; they outlive a reconnect
@@ -94,6 +96,7 @@ class MMZXClient(BizHawkClient):
         self.notified_items: int | None = None    # None = skip the backlog on connect
         self.scout_requested: set[int] = set()
         self.icon_written: tuple[int, bytes] | None = None
+        self.goal_line_written: bytes | None = None
         self.ending_ticks = 0             # ticks with the stuck-ending signature
 
     async def validate_rom(self, ctx: "BizHawkClientContext") -> bool:
@@ -159,6 +162,9 @@ class MMZXClient(BizHawkClient):
         self.death_link_enabled = bool(opts.get("death_link", False))
         if self.death_link_enabled:
             await ctx.update_death_link(True)
+        self.goal = GoalRequirement(opts)
+        for line in self.goal.report(received_counts(ctx)):
+            logger.info("[mmzx] " + line)
         self.skip_boss_rush = bool(opts.get("skip_boss_rush", False))
         if self.skip_boss_rush:
             logger.info("[mmzx] skip_boss_rush: the D-4 boss rush is skipped (each pair of "
@@ -227,10 +233,12 @@ class MMZXClient(BizHawkClient):
             await self._stage("position", send_position(self, ctx, tick))
             window = await ProgressWindow.read(ctx)
             await self._stage("checks", detect_checks(self, ctx, window))
+            await self._stage("taken disks", sync_taken_disks(self, ctx, window, tick))
             await self._stage("item icons", sync_icon_table(self, ctx, tick))
             await self._stage("missions repair", repair_missions(self, ctx, tick))
             await self._stage("starting state", apply_start_state(self, ctx, tick))
             await self._stage("items", grant_items(self, ctx, tick))
+            await self._stage("goal line", sync_goal_line(self, ctx, tick, received_counts(ctx)))
             await self._stage("notifications", push_notices(self, ctx))
             await self._stage("models", revert_unowned_models(self, ctx, tick))
             await self._stage("auto-accept", auto_accept_mission(self, ctx, tick))

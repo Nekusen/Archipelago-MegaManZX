@@ -1,7 +1,9 @@
 from dataclasses import dataclass
 
-from Options import (Choice, DeathLink, OptionDict, PerGameCommonOptions,
-                     StartInventoryPool, Toggle)
+from Options import (Choice, DeathLink, NamedRange, OptionDict, OptionGroup, OptionSet,
+                     PerGameCommonOptions, Range, StartInventoryPool, Toggle)
+
+from .goal import MODEL_ITEM_BY_KEY, REQ_BIOMETALS, REQ_DISKS, SIX_MODEL_KEYS
 
 
 class Character(Choice):
@@ -13,10 +15,57 @@ class Character(Choice):
 
 
 class Goal(Choice):
-    """Goal of the seed. Right now the only available goal is 'Defeat Serpent'."""
+    """Goal of the seed."""
     display_name = "Goal"
     option_defeat_serpent = 0
     default = 0
+
+
+class GoalRequirements(OptionSet):
+    """What you need before the gate to Slither Inc., the final area, opens.
+
+    Biometals: own the models chosen in required_models.
+    Secret Disks: collect an ammount of Secret Disks."""
+    display_name = "Goal Requirements"
+    valid_keys = frozenset({REQ_BIOMETALS, REQ_DISKS})
+    default = frozenset({REQ_BIOMETALS})
+
+
+class RequiredModels(OptionSet):
+    """Models that count for the Biometals goal requirement: 
+    Model X, Model ZX, Model HX, Model FX, Model LX, Model PX, Model OX.
+    Only used with Biometals in goal_requirements."""
+    display_name = "Required Models"
+    valid_keys = frozenset(MODEL_ITEM_BY_KEY)
+    default = frozenset(SIX_MODEL_KEYS)
+
+
+class RequiredModelsCount(NamedRange):
+    """How many of the models in required_models you need: all of them, or any lower number.
+    A number above the size of the list means all of them."""
+    display_name = "Required Models Count"
+    range_start = 1
+    range_end = 7
+    default = 7
+    special_range_names = {"all": 7}
+
+
+class RequiredSecretDisks(Range):
+    """How many Secret Disks you need for the Secret Disks goal requirement.
+    Only used with Secret Disks in goal_requirements. Depending on your configuration, generation may fail if the number of required disks is too high"""
+    display_name = "Required Secret Disks"
+    range_start = 1
+    range_end = 95
+    default = 20
+
+
+class TotalSecretDisks(Range):
+    """How many Secret Disks go into the pool.
+    A total below required_secret_disks is raised to match it, and one that does not fit in the pool is lowered."""
+    display_name = "Total Secret Disks"
+    range_start = 1
+    range_end = 95
+    default = 30
 
 
 class StartingModel(Choice):
@@ -103,8 +152,8 @@ class BossLogic(OptionDict):
     Fistleo (G-5), Purprill (H-4), Hurricaune (I-3), Leganchor (J-5),
     Flammole (K-4), Protectos (L-4), Prometheus (X-3), Pandora (M-3),
     Prometheus & Pandora (O-2), Serpent (D-5), Omega Zero (N-1). The room
-    code works as a key too ("E-7"). Bosses you leave out ask just for any model,
-    except for Serpent, which requires the 6 main models to access the final area.
+    code works as a key too ("E-7"). Bosses you leave out ask just for any model;
+    the gate to Serpent's area follows goal_requirements.
 
     Requirements: models (X ZX HX FX LX PX OX; "HX2" or "Model HX (full)" =
     both halves of the progressive item, i.e. the level-2 charge), ALL6 (the six main biometals),
@@ -159,10 +208,21 @@ class NotifyStyle(Choice):
     default = 1
 
 
+OPTION_GROUPS = [
+    OptionGroup("Goal", [Goal, GoalRequirements, RequiredModels, RequiredModelsCount,
+                         RequiredSecretDisks, TotalSecretDisks]),
+]
+
+
 @dataclass
 class MMZXOptions(PerGameCommonOptions):
     character: Character
     goal: Goal
+    goal_requirements: GoalRequirements
+    required_models: RequiredModels
+    required_models_count: RequiredModelsCount
+    required_secret_disks: RequiredSecretDisks
+    total_secret_disks: TotalSecretDisks
     starting_model: StartingModel
     hu_in_pool: HuInPool
     starting_transerver: StartingTranserver

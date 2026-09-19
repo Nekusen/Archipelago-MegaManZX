@@ -14,8 +14,18 @@ Missions are accepted automatically when you enter their area, and they can be d
 
 ## What is the goal?
 
-Defeat Serpent at the top of Slither Inc. (D-5). The gate from D-2 into the tower opens once you hold the six main
-biometals (X, Z, H, F, L and P).
+Defeat Serpent at the top of Slither Inc. (D-5). The gate from D-2 into the tower opens once you meet the
+`goal_requirements` of your options; every requirement you list is needed:
+
+- `Biometals`: own the models listed in `required_models` (the six main ones by default; Model OX can be added),
+  or any `required_models_count` of them ("any four of the six").
+- `Secret Disks`: collect `required_secret_disks` Secret Disks (20 by default) out of the `total_secret_disks`
+  (30) shuffled into the multiworld. The disks in the world are ordinary checks; the Secret Disks you receive light up
+  entries of Fleuve's database in an order picked by the seed.
+
+The STATUS tab of the pause menu shows your progress, the popup announces each Secret Disk with its count and the
+moment the gate opens, and `/mmzx_goal` in the client prints the details. `goal_requirements` must list at least one
+requirement.
 
 ## What items and locations get randomized?
 
@@ -81,7 +91,8 @@ Locations:
 - Troop Reinforcement can be started from D-1, D-2 or D-3 without the base cutscene.
 - "Protect HQ" becomes available, when you have completed and reported 4 of the "main" missions (the ones with Pseudoroids in them)
   - To start the mission, teleport to Area X and speak with Prairie (you should have seen the previous cutscene on any transerver when reporting a mission
-- The gate from D-2 into the Slither Inc. tower opens once you hold the six main biometals (X, Z, F, H, P, L).
+- The gate from D-2 into the Slither Inc. tower opens once you meet your `goal_requirements` (the six main biometals
+  by default).
 - With `skip_boss_rush` the Pseudoroid refights of the D-4 tower are skipped and the elevator climbs straight to D-5.
 
 ### Cutscenes and menus

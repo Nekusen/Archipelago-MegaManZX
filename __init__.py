@@ -8,12 +8,13 @@ from BaseClasses import ItemClassification, Tutorial
 from Options import OptionError
 from worlds.AutoWorld import WebWorld, World
 
+from . import goal as G
 from .logic import bosses
 from .data import LOCATIONS, ITEMS, STARTING_MODEL_ITEM, STARTING_MODELS
 from .items import MMZXItem, item_name_to_id, get_classification, ITEM_GROUPS
 from .locations import (location_name_to_id, locations_for_options, LOCATION_GROUPS,
                         pickup_flags_from_options)
-from .options import MMZXOptions
+from .options import MMZXOptions, OPTION_GROUPS
 from .logic import load_document
 from .logic.document import room_label
 from .logic.rules import TIER, starting_point
@@ -46,6 +47,7 @@ class MMZXSettings(settings.Group):
 
 class MMZXWebWorld(WebWorld):
     theme = "ice"
+    option_groups = OPTION_GROUPS
     tutorials = [Tutorial(
         "Multiworld Setup Guide",
         "A guide to setting up and playing Mega Man ZX with Archipelago.",
@@ -75,6 +77,10 @@ class MMZXWorld(World):
 
     origin_region_name = "Menu"
 
+    # resolved in generate_early; the defaults serve a world used without it
+    goal = G.GoalRequirement((), 0, 0, 0)
+    disk_order: list[int] = list(range(G.DISK_ENTRIES))
+
     # Universal Tracker runs in hybrid mode: the map layout ships here in tracker/, while the
     # images come from the external pack the player points ut_pack_path at, so no game graphics
     # enter the repository. UT evaluates this very world for the logic and ignores the attribute
@@ -97,6 +103,12 @@ class MMZXWorld(World):
         # rather than rejected, so a random starting_model may land on none
         if self.options.starting_model.current_key == "none":
             self.options.hu_in_pool.value = 0
+        active = locations_for_options(pickups=pickup_flags_from_options(self.options))
+        room = len(active) - len(self.fixed_items()[0])
+        reserve = len(set(self.options.exclude_locations.value) & set(active))
+        self.goal = G.resolve(self.options, room, reserve, self.player_name)
+        # the order the disks received light the database entries in
+        self.disk_order = self.random.sample(range(G.DISK_ENTRIES), G.DISK_ENTRIES)
         try:
             reqs = boss_requirements(self)
         except ValueError as e:
@@ -118,6 +130,12 @@ class MMZXWorld(World):
         # the AP state only counts progression items
         if name in progression_overrides(self):
             cls = ItemClassification.progression
+        elif name == G.DISK_ITEM:
+            # goal items: any copy counts, so balancing leaves them alone; a big hunt keeps
+            # them off priority locations
+            cls = ItemClassification.progression_skip_balancing
+            if self.goal.disks_total > G.FEW_DISKS:
+                cls |= ItemClassification.deprioritized
         return MMZXItem(name, cls, self.item_name_to_id[name], self.player)
 
     def create_event(self, name: str) -> MMZXItem:
@@ -127,36 +145,40 @@ class MMZXWorld(World):
         """E-Crystals, the only filler."""
         return "E-Crystals"
 
-    def create_items(self) -> None:
-        """Fills the pool: every fixed item minus the pre-granted start items, then filler."""
-        active_locs = locations_for_options(pickups=pickup_flags_from_options(self.options))
-        n_locations = len(active_locs)  # not counting the Victory event
+    def fixed_items(self) -> tuple[list[str], list[str]]:
+        """(pool items, pre-granted items) before the goal items and the filler.
 
-        # every pooled non-filler item, count copies each; progressive biometals are two
-        pool: list[MMZXItem] = []
+        Every pooled non-filler item, count copies each; the starting model and the
+        starting floor's Transerver Access are pre-granted instead. 'none' leaves
+        Model X findable, and without hu_in_pool Hu is not an item.
+        """
         fixed: list[str] = []
         for n, v in ITEMS.items():
             if v["classification"] != "filler" and v.get("pooled", True):
                 fixed += [n] * int(v.get("count", 1))
-
-        # without hu_in_pool the Hu-gate patch is off and Hu is not an item
         if self.options.hu_in_pool.value:
             fixed.append("Model Hu")
-
-        # the starting model is pre-granted and leaves the pool; 'none' leaves Model X findable
+        granted: list[str] = []
         start_item = STARTING_MODEL_ITEM.get(self.options.starting_model.current_key)
         if start_item and start_item in fixed:
             fixed.remove(start_item)   # one copy: the first half of a progressive item
-            self.multiworld.push_precollected(self.create_item(start_item))
-
-        # the starting floor's Transerver Access is pre-granted; the rest go to the pool
+            granted.append(start_item)
         start_ts = starting_point(self).get("access")
         if start_ts in fixed:
             fixed.remove(start_ts)
-            self.multiworld.push_precollected(self.create_item(start_ts))
+            granted.append(start_ts)
+        return fixed, granted
 
-        for name in fixed:
-            pool.append(self.create_item(name))
+    def create_items(self) -> None:
+        """Fills the pool: the fixed items, the Secret Disks of the goal, then filler."""
+        active_locs = locations_for_options(pickups=pickup_flags_from_options(self.options))
+        n_locations = len(active_locs)  # not counting the Victory event
+
+        fixed, granted = self.fixed_items()
+        for name in granted:
+            self.multiworld.push_precollected(self.create_item(name))
+        pool: list[MMZXItem] = [self.create_item(name) for name in fixed]
+        pool += [self.create_item(G.DISK_ITEM) for _ in range(self.goal.disks_total)]
 
         remaining = n_locations - len(pool)
         if remaining < 0:
@@ -208,6 +230,8 @@ class MMZXWorld(World):
         spoiler_handle.write("Start: %s (%s), pre-granted: %s\n" % (
             self.options.starting_transerver.current_key, room_label(start["room"]),
             ", ".join(pre) or "nothing"))
+        spoiler_handle.write("Goal: %s; requirements: %s\n" % (
+            self.options.goal.current_key, G.describe(self.goal)))
         reqs = bosses.describe(boss_requirements(self))
         spoiler_handle.write("Boss logic: %s\n" % (
             "; ".join("%s: %s" % kv for kv in reqs.items()) if reqs else "none"))
@@ -217,6 +241,9 @@ class MMZXWorld(World):
         return {
             "character": self.options.character.value,
             "goal": self.options.goal.value,
+            # the client opens the gate to the final area on these, and lights the
+            # database entries of the disks received in this order
+            "goal_requirements": G.slot_data(self.goal, self.disk_order),
             "death_link": bool(self.options.death_link.value),
             "starting_model": self.options.starting_model.current_key,
             "starting_transerver": self.options.starting_transerver.current_key,

@@ -51,7 +51,8 @@ AREA_MISSION_EVENTS = ["Cleared: Search The Plant", "Cleared: Find The Survivors
                        "Cleared: Save The People", "Cleared: Recover The Disk",
                        "Cleared: Attack The Excavators", "Cleared: Protect The Lab"]
 LIST_COUNT_ATOMS = {"MISSIONS": (AREA_MISSION_EVENTS, 8)}
-MACRO_ATOMS = ("MODEL", "ALL6")
+# GOAL is the player's goal requirements (the world resolves it); alone, it means ALL6.
+MACRO_ATOMS = ("MODEL", "ALL6", "GOAL")
 CONST_TRUE = ("TRUE", "ANY", "FREE")
 CONST_FALSE = ("FALSE", "NEVER", "IMPOSSIBLE")
 
@@ -163,6 +164,7 @@ def atom_catalog(exclude=()):
                     "label": "Model %s full (2 halves: level 2 charge)" % m[:2]})
     out.append({"id": "MODEL", "group": "model", "label": "MODEL (any non-Hu model)"})
     out.append({"id": "ALL6", "group": "model", "label": "ALL6 (the six biometals)"})
+    out.append({"id": "GOAL", "group": "model", "label": "GOAL (the goal requirements of the YAML)"})
     for k in ["YELLOW", "GREEN", "RED", "BLUE", "WHITE", "PURPLE"]:
         out.append({"id": k, "group": "key", "label": ATOM_ITEM[k]})
     for n in range(1, 5):
@@ -455,7 +457,7 @@ def atom_predicate(atom, player, hu_in_pool=False, extra_atoms=None):
     if atom == "MODEL":
         items = [ATOM_ITEM[m] for m in MODELS_NONHU]
         return lambda state: state.has_any(items, player)
-    if atom == "ALL6":
+    if atom in ("ALL6", "GOAL"):
         items = [ATOM_ITEM[m] for m in ALL6]
         return lambda state: state.has_all(items, player)
     if atom in BOSS_ATOMS:
@@ -1002,7 +1004,8 @@ def export_txt(world, doc, start_room=None):
     L.append("#   of both tiers apply). '?' = not confirmed in-game.")
     L.append("# Atoms: HU X ZX HX FX LX PX OX MODEL ALL6 ; YELLOW GREEN RED BLUE WHITE PURPLE ;")
     L.append("#   LIFEUP>=n SUBTANK>=n ; <MISSION> (cleared) ; ACCESS_<area> ; CHIP_<chip> ;")
-    L.append("#   BOSS_<BOSS> (requirement set by the player in their YAML; free if unset).")
+    L.append("#   BOSS_<BOSS> (requirement set by the player in their YAML; free if unset) ;")
+    L.append("#   GOAL (the goal requirements of the YAML; the six biometals by default).")
     L.append("# Doors: one line each, no positions; (xN) = N alike. Not listed: a plain door back")
     L.append("#   into its own region, and a region with nothing in it.")
     L.append("")

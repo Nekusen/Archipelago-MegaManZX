@@ -6,8 +6,8 @@ from NetUtils import ClientStatus
 
 from ..data import (
     GOAL_BITS, GOAL_BITS_SERPENT, LOCATIONS, PICKUP_MAILBOX_ADDR, PICKUP_MAILBOX_SLOTS)
-from .addresses import DOM, MAILBOX_LOCATIONS
-from .ram import ProgressWindow
+from .addresses import DISK_TAKEN_BITS, DOM, MAILBOX_LOCATIONS
+from .ram import ProgressWindow, Tick, bits_by_byte, copies_writes, read_copies
 from .notices import queue_sent_notices
 
 if TYPE_CHECKING:
@@ -45,6 +45,23 @@ async def detect_checks(client: "MMZXClient", ctx, window: ProgressWindow) -> No
         await ctx.check_locations(list(checked))
         queue_sent_notices(client, ctx, newly)
     client.local_checked = checked
+
+
+async def sync_taken_disks(client: "MMZXClient", ctx, window: ProgressWindow, tick: Tick) -> None:
+    """Mark as taken the disks the server already has checked, so they leave the world.
+
+    Covers a collect from the server and a save from before the disks became items.
+    """
+    bits = [DISK_TAKEN_BITS[loc] for loc in ctx.checked_locations
+            if loc in DISK_TAKEN_BITS and not window.bit(*DISK_TAKEN_BITS[loc])]
+    if not bits:
+        return
+    masks = bits_by_byte(bits)
+    addrs = sorted(masks)
+    live, canon = await read_copies(ctx, addrs)
+    writes = copies_writes(addrs, live, canon, set_masks=masks)
+    if writes:
+        await bizhawk.guarded_write(ctx.bizhawk_ctx, writes, [tick.guard])
 
 
 async def poll_pickup_mailbox(client: "MMZXClient", ctx) -> None:

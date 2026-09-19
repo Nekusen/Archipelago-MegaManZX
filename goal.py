@@ -58,6 +58,9 @@ def resolve(options, room: int, reserve: int, player_name: str) -> GoalRequireme
     filler (the player's excluded locations take filler only).
     """
     reqs = set(options.goal_requirements.value)
+    if not reqs:
+        raise OptionError("[%s] goal_requirements is empty: list at least one of %s, %s"
+                          % (player_name, REQ_BIOMETALS, REQ_DISKS))
     progressive = bool(options.progressive_models.value)
     models: tuple = ()
     count = 0
@@ -66,6 +69,9 @@ def resolve(options, room: int, reserve: int, player_name: str) -> GoalRequireme
         chosen = set(options.required_models.value)
         models = tuple(model_item(MODEL_ITEM_BY_KEY[k], progressive)
                        for k in MODEL_ITEM_BY_KEY if k in chosen)
+        if not models:
+            raise OptionError("[%s] required_models is empty while goal_requirements asks for %s: "
+                              "list at least one model" % (player_name, REQ_BIOMETALS))
         count = min(int(options.required_models_count.value), len(models))
         full = progressive and bool(options.require_full_models.value)
         copies = {m: FULL_MODEL_COPIES if full and m in FULL_MODEL_OF else 1 for m in models}

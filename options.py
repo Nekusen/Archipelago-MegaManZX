@@ -15,8 +15,7 @@ class Character(Choice):
 
 
 class Goal(Choice):
-    """Goal of the seed. Defeat Serpent: beat Serpent at the top of Slither Inc.
-    What you need before the gate to its area opens is set by goal_requirements."""
+    """Goal of the seed."""
     display_name = "Goal"
     option_defeat_serpent = 0
     default = 0
@@ -24,20 +23,17 @@ class Goal(Choice):
 
 class GoalRequirements(OptionSet):
     """What you need before the gate to Slither Inc., the final area, opens.
-    Every requirement you list must be met; the list cannot be empty.
 
     Biometals: own the models chosen in required_models.
-    Secret Disks: collect Secret Disks, goal items added to the pool
-    (required_secret_disks, total_secret_disks)."""
+    Secret Disks: collect an ammount of Secret Disks."""
     display_name = "Goal Requirements"
     valid_keys = frozenset({REQ_BIOMETALS, REQ_DISKS})
     default = frozenset({REQ_BIOMETALS})
 
 
 class RequiredModels(OptionSet):
-    """Models that count for the Biometals goal requirement: Model X, Model ZX, Model HX,
-    Model FX, Model LX, Model PX, Model OX. A progressive model counts with its first half,
-    and your starting model counts if it is listed.
+    """Models that count for the Biometals goal requirement: 
+    Model X, Model ZX, Model HX, Model FX, Model LX, Model PX, Model OX.
     Only used with Biometals in goal_requirements."""
     display_name = "Required Models"
     valid_keys = frozenset(MODEL_ITEM_BY_KEY)
@@ -45,9 +41,8 @@ class RequiredModels(OptionSet):
 
 
 class RequiredModelsCount(NamedRange):
-    """How many of the models in required_models you need: all of them, or any lower number
-    (with 4, the first four you find open the gate). A number above the size of the list
-    means all of them."""
+    """How many of the models in required_models you need: all of them, or any lower number.
+    A number above the size of the list means all of them."""
     display_name = "Required Models Count"
     range_start = 1
     range_end = 7
@@ -57,7 +52,7 @@ class RequiredModelsCount(NamedRange):
 
 class RequiredSecretDisks(Range):
     """How many Secret Disks you need for the Secret Disks goal requirement.
-    Only used with Secret Disks in goal_requirements."""
+    Only used with Secret Disks in goal_requirements. Depending on your configuration, generation may fail if the number of required disks is too high"""
     display_name = "Required Secret Disks"
     range_start = 1
     range_end = 95
@@ -65,9 +60,8 @@ class RequiredSecretDisks(Range):
 
 
 class TotalSecretDisks(Range):
-    """How many Secret Disks go into the pool, so the last ones you need are never the only
-    ones left. They replace E-Crystals. A total below required_secret_disks is raised to
-    match it, and one that does not fit in the pool is lowered; both with a warning."""
+    """How many Secret Disks go into the pool.
+    A total below required_secret_disks is raised to match it, and one that does not fit in the pool is lowered."""
     display_name = "Total Secret Disks"
     range_start = 1
     range_end = 95

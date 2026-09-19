@@ -8,25 +8,17 @@ All notable changes to this project are documented in this file. The format is b
 
 ### Added
 
-- Configurable goal requirements. `goal_requirements` lists what opens the gate to Slither Inc.: `Biometals`
-  (the models of `required_models`, all of them or any `required_models_count`) and/or `Secret Disks`, a hunt for
-  `required_secret_disks` of the `total_secret_disks` shuffled into the multiworld. The default is the six main
-  models, as before; the list cannot be empty.
-- Secret Disk goal items. Each one received lights up an entry of Fleuve's database, in an order picked by the seed;
-  the popup announces them with their count, and a notice tells you when the gate opens.
+- Added "configurable goal requirements".
+  - Goal Requirement "Biometals": Collect a specific ammount of models from the pool
+  - Secret Disk: A macguffin style goal that requires collecting a specific ammount of secret disks from the pool.
 - The STATUS tab of the pause menu shows the progress towards the goal requirements.
-- `/mmzx_goal` prints the goal requirements and your progress in the client.
-- The `Goal` group on the options page.
-- `progressive_models`: off makes each of the biometals H, F, L and P a single item that gives both
-  halves at once, instead of two Progressive Model items.
-- `require_full_models`: for the Biometals goal requirement, a progressive model counts only with
-  both halves.
+  - A `/mmzx_goal` has been added that prints the goal requirements and your progress in the client as well.
+- Added `progressive_models`: each of the biometals H, F, L and P comes either as two halves (as before) or as one item that gives the whole model at once.
+- Added `require_full_models`: the Biometals goal requirement can ask for both halves of a progressive model.
 
 ### Changed
 
-- The disks found in the world no longer count as Secret Disks in Fleuve's database: they are checks like any other.
-  A disk collected by the server (`!collect`) now disappears from the world.
-- The ROM must be created again from the `.apmmzx` with this version.
+- The disks found in the world no longer count as Secret Disks in Fleuve's database. Fleuve's database now uses the Secret Disks obtained from the multiworld.
 
 ## [0.1.0] - 2026-09-17
 

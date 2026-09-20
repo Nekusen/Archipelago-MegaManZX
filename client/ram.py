@@ -4,7 +4,7 @@ and the live-plus-canonical writes of progress bits.
 
 import worlds._bizhawk as bizhawk
 
-from ..data import LOCATIONS
+from ..data import AREA_MISSION_BITS, LOCATIONS
 from .addresses import (
     CANON_OFF, CUTSCENE_NONE, DEATH_STATE, DEATH_SUBSTATE, DETECT_FAR, DETECT_WINDOW, DOM,
     GAME_STATE, HP, MSG_BANK, PLAYER_OBJ, PLAYER_STATE_OFF, SCRIPT_CUTSCENE_OFF,
@@ -144,6 +144,12 @@ async def mission_completed(ctx, name: str) -> bool:
         return False
     vals = await bizhawk.read(ctx.bizhawk_ctx, [(a, 1, DOM) for a, _ in done])
     return all(vals[i][0] & (1 << b) for i, (_, b) in enumerate(done))
+
+
+async def area_missions_done(ctx) -> int:
+    """How many of the eight area missions are completed, counted as the game does."""
+    vals = await bizhawk.read(ctx.bizhawk_ctx, [(a, 1, DOM) for a, _ in AREA_MISSION_BITS])
+    return sum(bool(vals[i][0] & (1 << b)) for i, (_, b) in enumerate(AREA_MISSION_BITS))
 
 
 def story_handler_writes(mission_id: int, state: int) -> list[tuple[int, bytes, str]]:

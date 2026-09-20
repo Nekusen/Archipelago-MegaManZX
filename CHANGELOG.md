@@ -20,6 +20,10 @@ All notable changes to this project are documented in this file. The format is b
 
 - The disks found in the world no longer count as Secret Disks in Fleuve's database. Fleuve's database now uses the Secret Disks obtained from the multiworld.
 
+### Fixed
+
+- Protect HQ was lost when another area's mission was taken after the game launched it, and the consoles kept refusing "Abort the mission?". Entering Area X now resumes Protect HQ once four area missions are completed.
+
 ## [0.1.0] - 2026-09-17
 
 The first release of this project: Mega Man ZX (USA).

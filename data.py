@@ -461,8 +461,12 @@ GOAL_LINE_ADDR = 0x020CB6A0
 GOAL_LINE_GLYPHS = 30
 PICKUP_CATEGORIES = ['pickup_1up', 'pickup_crystal', 'pickup_energy', 'pickup_weapon']
 
+# The eight bits the game counts as completed area missions (ids 5 to 12).
+AREA_MISSION_BITS = [[34620897, 4], [34620897, 7], [34620899, 7], [34620900, 3], [34620900, 7], [34620901, 2], [34620901, 6], [34620902, 1]]
 # Missions the client force-accepts when the player enters their target
-# subarea: subarea -> {id, state, flag:[addr,bit], name[, extra:[[addr,bit]..]]}.
+# subarea: subarea -> {id, state, flag:[addr,bit], name[, extra:[[addr,bit]..],
+# hstate, after_missions]}; after_missions = area missions that must be
+# completed first (Protect HQ, which the game launches at four).
 MISSION_STATE_ADDR = 0x021046AC
 MISSION_ACTIVE_FLAG = 0x02160FA8
 MISSION_ACCEPT = {
@@ -521,6 +525,9 @@ MISSION_ACCEPT = {
     63: {'id': 14, 'state': 218, 'flag': [34620903, 2], 'name': 'Stop The Dig'},
     65: {'id': 15, 'state': 221, 'flag': [34620903, 5], 'name': 'Repel The Army'},
     66: {'id': 15, 'state': 221, 'flag': [34620903, 5], 'name': 'Repel The Army'},
+    67: {'id': 13, 'state': 211, 'flag': [34620902, 3], 'name': 'Protect Hq', 'extra': [[34620902, 4]], 'after_missions': 4},
+    68: {'id': 13, 'state': 211, 'flag': [34620902, 3], 'name': 'Protect Hq', 'extra': [[34620902, 4]], 'after_missions': 4},
+    69: {'id': 13, 'state': 211, 'flag': [34620902, 3], 'name': 'Protect Hq', 'extra': [[34620902, 4]], 'after_missions': 4},
 }
 # Hub floors whose left door leads to a boss room (floor y -> subarea); the
 # client accepts that area's mission when the player walks up to the door.

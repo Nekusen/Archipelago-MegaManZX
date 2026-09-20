@@ -121,6 +121,17 @@ class SkipBossRush(Toggle):
     default = 0
 
 
+class SkipMinibosses(Choice):
+    """QoL change so that you don't have to fight the mini bosses in each area every time.
+    - after_first_defeat: Only have to fight them once. Next time you leave and come back to the area, the boss stays defeated.
+    - always: all of them count as beaten from the start, so their fights never start."""
+    display_name = "Skip Mini-Bosses"
+    option_off = 0
+    option_after_first_defeat = 1
+    option_always = 2
+    default = 0
+
+
 class PickupChecks1Up(Toggle):
     """The 1-Ups placed in the world (7) count as checks: the first time you
     pick each one up it sends its location; afterwards it keeps respawning
@@ -245,6 +256,7 @@ class MMZXOptions(PerGameCommonOptions):
     starting_transerver: StartingTranserver
     boss_logic: BossLogic
     skip_boss_rush: SkipBossRush
+    skip_minibosses: SkipMinibosses
     pickup_checks_1up: PickupChecks1Up
     pickup_checks_energy: PickupChecksEnergy
     pickup_checks_weapon: PickupChecksWeapon

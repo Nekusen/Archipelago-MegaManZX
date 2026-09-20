@@ -529,6 +529,19 @@ MISSION_ACCEPT = {
     68: {'id': 13, 'state': 211, 'flag': [34620902, 3], 'name': 'Protect Hq', 'extra': [[34620902, 4]], 'after_missions': 4},
     69: {'id': 13, 'state': 211, 'flag': [34620902, 3], 'name': 'Protect Hq', 'extra': [[34620902, 4]], 'after_missions': 4},
 }
+# Mini-bosses skip_minibosses treats as beaten: area letter -> [[addr, bit], ...],
+# the flag each room script sets when the mini-boss dies.
+MINIBOSS_FLAGS = {
+    'D': [[34620877, 5], [34620877, 6]],
+    'E': [[34620878, 3]],
+    'F': [[34620878, 4]],
+    'H': [[34620878, 2]],
+    'I': [[34620878, 5], [34620878, 6]],
+    'J': [[34620878, 0]],
+    'K': [[34620877, 7]],
+    'M': [[34620878, 7]],
+    'O': [[34620878, 1], [34620903, 6]],
+}
 # Hub floors whose left door leads to a boss room (floor y -> subarea); the
 # client accepts that area's mission when the player walks up to the door.
 HUB_FLOOR_BOSS = {1888: 26, 2272: 32, 2656: 37, 3424: 44, 4192: 55, 4576: 60, 4960: 63, 5344: 66}

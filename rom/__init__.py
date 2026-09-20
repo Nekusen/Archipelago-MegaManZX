@@ -10,7 +10,7 @@ from settings import get_settings
 from worlds.Files import (APProcedurePatch, APTokenMixin, APTokenTypes,
                           APPatchExtension)
 
-from . import golden, nds, pickups, sprites, ui
+from . import golden, nds, pickups, sprites, table, ui
 from .arm9 import Arm9, replace_arm9
 
 MMZX_US_MD5 = "88b684b1b3eea885a07625da89f1e5b3"
@@ -18,7 +18,8 @@ MMZX_US_MD5 = "88b684b1b3eea885a07625da89f1e5b3"
 # AP marker, written by the token step into the zero padding after the header,
 # and the option blob (mmzx_cfg.bin inside the .apmmzx) that patch_arm9 reads
 # along with the slot's golden image (golden_image.bin), which it completes
-# with the two tables the game copies from its ROM.
+# with the two tables the game copies from its ROM, and the slot's pickup
+# table (pickup_table.bin).
 AP_MAGIC_OFFSET = 0x1000
 AP_MAGIC = b"MZXAP\x00"
 AP_MARKER_LEN = 0x80
@@ -34,7 +35,8 @@ class MMZXPatchExtension(APPatchExtension):
     game = "Mega Man ZX"
 
     @staticmethod
-    def patch_arm9(caller: APProcedurePatch, rom: bytes, cfg_file: str, image_file: str) -> bytes:
+    def patch_arm9(caller: APProcedurePatch, rom: bytes, cfg_file: str, image_file: str,
+                   table_file: str) -> bytes:
         """Apply the code patches to the ARM9 and the ROM-level edits; returns the new image."""
         cfg = caller.get_file(cfg_file)
         hu_in_pool = bool(cfg[0] & CFG_HU_IN_POOL) if cfg else False
@@ -64,6 +66,7 @@ class MMZXPatchExtension(APPatchExtension):
         pickups.patch_hu_gate(arm9, hu_in_pool)
         pickups.patch_secret_disks(arm9)
         ui.patch_goal_line(arm9)
+        table.patch_pickup_table(arm9, caller.get_file(table_file))
 
         # Recompress into the original slot; a rebuilt ROM shifts the layout (melonDS: bad_alloc)
         replace_arm9(d, arm9_off, arm9_len, arm9.pack())
@@ -83,7 +86,7 @@ class MMZXPatch(APProcedurePatch, APTokenMixin):
     result_file_ending = ".nds"
 
     procedure = [
-        ("patch_arm9", ["mmzx_cfg.bin", "golden_image.bin"]),
+        ("patch_arm9", ["mmzx_cfg.bin", "golden_image.bin", "pickup_table.bin"]),
         ("apply_tokens", ["token_data.bin"]),
     ]
 
@@ -105,14 +108,16 @@ def unpack_version(word: int) -> tuple[int, int, int]:
 
 def write_patch_tokens(patch: MMZXPatch, slot_name: str, seed_name: str,
                        world_version: tuple[int, int, int], golden_image: bytes,
-                       hu_in_pool: bool = False) -> None:
-    """Write the AP marker (magic, version, slot, seed), the option blob and the golden image.
+                       pickup_table: bytes, hu_in_pool: bool = False) -> None:
+    """Write the AP marker (magic, version, slot, seed), the option blob, the golden image and the pickup table.
 
     `world_version` is the world's (major, minor, build), as the core reads it
-    from archipelago.json; `golden_image` is the slot's starting save, which
-    patch_arm9 bakes into the ARM9.
+    from archipelago.json; `golden_image` is the slot's starting save and
+    `pickup_table` the slot's table of pickup icons, both baked into the ARM9
+    by patch_arm9.
     """
     patch.write_file("golden_image.bin", bytes(golden_image))
+    patch.write_file("pickup_table.bin", bytes(pickup_table))
     blob = bytearray(AP_MARKER_LEN)
     blob[0:len(AP_MAGIC)] = AP_MAGIC
     version = pack_version(world_version)

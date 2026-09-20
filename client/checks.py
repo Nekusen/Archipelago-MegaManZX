@@ -1,12 +1,14 @@
-"""Check detection: progress-block flags, the pickup mailbox and the goal."""
+"""Check detection: progress-block flags, the refills the game recorded and the goal."""
 
+from time import monotonic
 from typing import TYPE_CHECKING
 import worlds._bizhawk as bizhawk
 from NetUtils import ClientStatus
 
-from ..data import (
-    GOAL_BITS, GOAL_BITS_SERPENT, LOCATIONS, PICKUP_MAILBOX_ADDR, PICKUP_MAILBOX_SLOTS)
-from .addresses import DISK_TAKEN_BITS, DOM, MAILBOX_LOCATIONS
+from ..data import GOAL_BITS, GOAL_BITS_SERPENT, LOCATIONS
+from ..rom.table import BITMAP_LEN
+from .addresses import (
+    DISK_TAKEN_BITS, DOM, PICKUP_COLLECTED_ADDR, REFILL_SLOTS, RESEND_SECONDS, SLOT_LOCATIONS)
 from .ram import ProgressWindow, Tick, bits_by_byte, copies_writes, read_copies
 from .notices import queue_sent_notices
 
@@ -15,12 +17,13 @@ if TYPE_CHECKING:
 
 
 async def detect_checks(client: "MMZXClient", ctx, window: ProgressWindow) -> None:
-    """Send the locations whose detect recipe holds, plus the pickups of the mailbox.
+    """Send the locations whose detect recipe holds, plus the refills the game recorded.
 
-    The checked set only grows and is re-sent whole when it does; the flags are
-    the source of truth, so a reload produces the same set again.
+    The flags and the game's bitmap are the source of truth, so a reload or a
+    reconnect produces the same set. Whatever the server has not confirmed yet
+    is sent again every few seconds: a send can be lost while the connection drops.
     """
-    checked = set()
+    detected = set()
     for v in LOCATIONS.values():
         det = v.get("detect")
         if not det:
@@ -34,17 +37,21 @@ async def detect_checks(client: "MMZXClient", ctx, window: ProgressWindow) -> No
         else:
             continue
         if ok and v["id"] in ctx.server_locations:
-            checked.add(v["id"])
+            detected.add(v["id"])
     if client.mailbox_enabled:
-        await poll_pickup_mailbox(client, ctx)
-    checked |= client.mailbox_checked
-    if checked == client.local_checked:
+        detected |= await collected_refills(client, ctx)
+    pending = detected - ctx.checked_locations
+    if not pending:
         return
-    newly = checked - client.local_checked
-    if newly:
-        await ctx.check_locations(list(checked))
-        queue_sent_notices(client, ctx, newly)
-    client.local_checked = checked
+    now = monotonic()
+    if pending == client.pending_sent and now - client.pending_sent_at < RESEND_SECONDS:
+        return
+    await ctx.check_locations(list(detected))
+    client.pending_sent, client.pending_sent_at = pending, now
+    new = pending - client.announced
+    if new:
+        queue_sent_notices(client, ctx, new)
+        client.announced |= new
 
 
 async def sync_taken_disks(client: "MMZXClient", ctx, window: ProgressWindow, tick: Tick) -> None:
@@ -64,36 +71,26 @@ async def sync_taken_disks(client: "MMZXClient", ctx, window: ProgressWindow, ti
         await bizhawk.guarded_write(ctx.bizhawk_ctx, writes, [tick.guard])
 
 
-async def poll_pickup_mailbox(client: "MMZXClient", ctx) -> None:
-    """Turn new pickup mailbox entries into checks; repeats do nothing.
+async def collected_refills(client: "MMZXClient", ctx) -> set[int]:
+    """Locations of the refills the game marked in its `collected` bitmap.
 
-    The mailbox lives in RAM: when the counter went backwards (emulator
-    reset) or on the first read, only the last ring of entries is processed.
+    The bitmap lives in RAM and only grows until a reset zeroes it; a refill
+    taken again after that is simply seen again.
     """
-    raw = (await bizhawk.read(ctx.bizhawk_ctx, [
-        (PICKUP_MAILBOX_ADDR, 4 + 4 * PICKUP_MAILBOX_SLOTS, DOM)]))[0]
-    count = int.from_bytes(raw[:4], "little")
-    if client.mailbox_count is None or count < client.mailbox_count:
-        start = max(0, count - PICKUP_MAILBOX_SLOTS)      # re-sync
-    else:
-        start = max(client.mailbox_count, count - PICKUP_MAILBOX_SLOTS)
-    new_ids = []
-    for k in range(start, count):
-        off = 4 + 4 * (k % PICKUP_MAILBOX_SLOTS)
-        loc_id = MAILBOX_LOCATIONS.get((raw[off], raw[off + 1]))
-        if loc_id is None or loc_id not in ctx.server_locations or loc_id in client.mailbox_checked:
-            continue
-        client.mailbox_checked.add(loc_id)
-        new_ids.append(loc_id)
-    client.mailbox_count = count
-    if new_ids:
+    raw = (await bizhawk.read(ctx.bizhawk_ctx, [(PICKUP_COLLECTED_ADDR, BITMAP_LEN, DOM)]))[0]
+    found = {SLOT_LOCATIONS[slot] for slot in REFILL_SLOTS if raw[slot >> 3] & (1 << (slot & 7))}
+    found &= ctx.server_locations
+    new = found - client.collected_seen
+    if new:
+        client.collected_seen |= new
         names = []
-        for i in new_ids:
+        for i in sorted(new):
             try:
                 names.append(ctx.location_names.lookup_in_game(i))
             except Exception:
                 names.append(str(i))
         client._debug("[mmzx] pickup collected: %s" % ", ".join(names))
+    return found
 
 
 async def report_goal(ctx, window: ProgressWindow) -> None:

@@ -13,9 +13,9 @@ from pathlib import Path
 
 from .. import rom
 from ..apnds import lz
-from ..data import (ICON_TABLE_ADDR, ICON_TABLE_SIZE, NOTIFY_ADDR, NOTIFY_BUF_MAX, PICKUP_MAILBOX_ADDR,
-                    PICKUP_MAILBOX_SLOTS, STARTING_MODELS, STARTING_TRANSERVERS)
-from ..rom import arm9, blz, golden, nds, pickups, sprites, ui
+from ..data import (ICON_CODES, LOCATIONS, NOTIFY_ADDR, NOTIFY_BUF_MAX, PICKUP_TABLE_ADDR, STARTING_MODELS,
+                    STARTING_TRANSERVERS)
+from ..rom import arm9, blz, golden, nds, pickups, sprites, table, ui
 
 PATCH_MODULES = (pickups, sprites, ui)     # the modules that hold patch tables and caves
 ARM9_RAM = (0x02000000, 0x02400000)
@@ -215,7 +215,6 @@ class TestPatchTables(unittest.TestCase):
         blocks = {name: (ram, len(body)) for name, (ram, body) in caves().items()}
         blocks["HUGATE_ARRAY"] = (pickups.HUGATE_ARRAY_RAM, 4)
         blocks["MENU_WARP_FLAGS"] = (ui.MENU_WARP_FLAGS_RAM, 2)
-        blocks["PICKUP_MAILBOX"] = (PICKUP_MAILBOX_ADDR, 4 + 4 * PICKUP_MAILBOX_SLOTS)
         blocks["NOTIFY"] = (NOTIFY_ADDR, NOTIFY_BUF_MAX + 4)
         self.assertGreaterEqual(len(blocks), 16)
         for name, (start, size) in blocks.items():
@@ -239,6 +238,75 @@ class TestPatchTables(unittest.TestCase):
             self.assertEqual(entry % 2, 0)
         self.assertEqual(len(sprites.ICON_CARRIED_HOOKS), 3)
 
+    def test_pickup_table_layout(self) -> None:
+        """The section's pieces follow each other on word boundaries, and every location has a slot."""
+        self.assertEqual(PICKUP_TABLE_ADDR % 4, 0)
+        self.assertLessEqual(len(table.PICKUP_TABLE_CODE), table.CODE_MAX)
+        self.assertLessEqual(table.CODE_MAX, table.FLAGS_OFF)
+        self.assertLess(table.FLAGS_OFF, table.CHECKED_OFF)
+        self.assertLessEqual(table.CHECKED_OFF + table.BITMAP_LEN, table.COLLECTED_OFF)
+        self.assertLessEqual(table.COLLECTED_OFF + table.BITMAP_LEN, table.INDEX_OFF)
+        self.assertLessEqual(table.INDEX_OFF + 2 * (table.INDEX_SUBAREAS + 1), table.ENTRIES_OFF)
+        for off in (table.FLAGS_OFF, table.CHECKED_OFF, table.COLLECTED_OFF, table.INDEX_OFF, table.ENTRIES_OFF):
+            self.assertEqual(off % 4, 0, hex(off))
+        self.assertLessEqual(len(table.PICKUP_SLOTS), table.MAX_SLOTS)
+        self.assertEqual(sorted(table.PICKUP_SLOTS.values()), list(range(len(table.PICKUP_SLOTS))))
+        for name in table.PICKUP_SLOTS:
+            self.assertLess(int(LOCATIONS[name]["icon"][0]), table.INDEX_SUBAREAS)
+        full = table.build_section(table.build_table({n: 1 for n in table.PICKUP_SLOTS}))
+        self.assertEqual(len(full) % 4, 0)
+        self.assertLessEqual(PICKUP_TABLE_ADDR + len(full), ui.ROOM_OVERLAY_SLOT_RAM)
+        self.assertGreaterEqual(PICKUP_TABLE_ADDR, ui.GOLDEN_IMAGE_RAM + golden.GOLDEN_IMAGE_SIZE)
+
+    def test_pickup_table_routines_know_the_layout(self) -> None:
+        """The routines' literal pools name the switch, the bitmaps, the index and the entries."""
+        code = table.PICKUP_TABLE_CODE
+        words = {int.from_bytes(code[i:i + 4], "little") for i in range(0, len(code), 4)}
+        for off in (table.FLAGS_OFF, table.CHECKED_OFF, table.COLLECTED_OFF, table.INDEX_OFF, table.ENTRIES_OFF):
+            self.assertIn(PICKUP_TABLE_ADDR + off, words, hex(off))
+        for name, off in table.PICKUP_TABLE_ENTRIES.items():
+            with self.subTest(entry=name):
+                self.assertEqual(off % 2, 0)
+                self.assertLess(off, len(code))
+
+    def test_caves_jump_into_the_pickup_table(self) -> None:
+        """LOOKUP, the AP gate and the mailbox cave hold the Thumb address of their routine."""
+        entries = {name: PICKUP_TABLE_ADDR + off + 1 for name, off in table.PICKUP_TABLE_ENTRIES.items()}
+        self.assertEqual(int.from_bytes(sprites.ICON_CAVES[4:8], "little"), entries["lookup"])
+        self.assertEqual(int.from_bytes(pickups.PICKUP_AP_CAVE[4:8], "little"), entries["gate"])
+        self.assertEqual(int.from_bytes(pickups.PICKUP_MAILBOX_CAVE[-4:], "little"), entries["collect"])
+        # the retry cave still re-hooks the mailbox cave's first call
+        self.assertEqual(pickups.PICKUP_MAILBOX_CAVE[2:6], as_bytes(sprites.ICON_RETRY_HOOKS[0][1]))
+
+    def test_build_table_round_trips(self) -> None:
+        """Entries come back by name with their slot, code and respawn flag, sorted by room."""
+        codes = {"A-2: Disk B-3": ICON_CODES["secret_disk"], "A-1: Disk E-1": ICON_CODES["logo_filler"],
+                 "D-1: Life Up": ICON_CODES["chip_Frog"]}
+        codes.update({n: ICON_CODES["logo_useful"] for n, v in LOCATIONS.items()
+                      if (v.get("detect") or [None])[0] == "mailbox" and v["room"] == "a01"})
+        built = table.build_table(codes)
+        self.assertEqual(len(built), table.ENTRIES_OFF - table.INDEX_OFF + table.ENTRY_LEN * len(codes))
+        starts = struct.unpack_from("<%dH" % (table.INDEX_SUBAREAS + 1), built, 0)
+        self.assertEqual(list(starts), sorted(starts))
+        self.assertEqual(starts[-1], len(codes))
+        entries = table.table_entries(built)
+        self.assertEqual({n: c for n, (_slot, c, _flags) in entries.items()}, codes)
+        for name, (slot, _code, flags) in entries.items():
+            self.assertEqual(slot, table.PICKUP_SLOTS[name])
+            self.assertEqual(bool(flags & table.ENTRY_RESPAWNS), LOCATIONS[name]["detect"][0] == "mailbox")
+        with self.assertRaises(ValueError):
+            table.build_table({"A-2: Disk B-3": 300})
+
+    def test_icon_code(self) -> None:
+        """Our items with a sprite get it; everything else the logo of its classification."""
+        self.assertEqual(table.icon_code("Life Up", True, False, True), ICON_CODES["lifeup"])
+        self.assertEqual(table.icon_code("Progressive Model HX", True, True, False), ICON_CODES["model_HX"])
+        self.assertEqual(table.icon_code("Red Card Key", True, True, False), ICON_CODES["card_Red"])
+        self.assertEqual(table.icon_code("E-Crystals", True, False, False), ICON_CODES["logo_filler"])
+        self.assertEqual(table.icon_code("Life Up", False, False, True), ICON_CODES["logo_useful"])
+        self.assertEqual(table.icon_code("Something", False, True, True), ICON_CODES["logo_progression"])
+        self.assertEqual(table.icon_code("Something", False, False, False), ICON_CODES["logo_filler"])
+
     def test_marker_layout(self) -> None:
         """Magic, version, slot name and seed fit the marker, which sits in the ROM header padding."""
         self.assertLessEqual(len(rom.AP_MAGIC), rom.AP_MARKER_VERSION_OFF)
@@ -257,22 +325,25 @@ class TestPatchTables(unittest.TestCase):
             self.assertEqual(rom.unpack_version(rom.pack_version(version)), version)
 
     def test_patch_tokens(self) -> None:
-        """write_patch_tokens stores the marker with the slot name, the option blob and the golden image."""
+        """write_patch_tokens stores the marker with the slot name, the option blob, the golden image and the pickup table."""
         image = golden.build_image("model_zx", 0, STARTING_MODELS, STARTING_TRANSERVERS["area_a"])
+        pickup_table = table.build_table({"A-2: Disk B-3": ICON_CODES["secret_disk"]})
         patch = rom.MMZXPatch(player=1, player_name="Tester")
-        rom.write_patch_tokens(patch, "Tester", "seed-1", (0, 1, 0), image, hu_in_pool=True)
+        rom.write_patch_tokens(patch, "Tester", "seed-1", (0, 1, 0), image, pickup_table, hu_in_pool=True)
         tokens = patch.get_file("token_data.bin")
         self.assertIn(rom.AP_MAGIC, tokens)
         self.assertIn(b"Tester", tokens)
         self.assertIn(b"seed-1", tokens)
         self.assertEqual(patch.get_file("mmzx_cfg.bin")[0] & rom.CFG_HU_IN_POOL, rom.CFG_HU_IN_POOL)
         self.assertEqual(patch.get_file("golden_image.bin"), image)
+        self.assertEqual(patch.get_file("pickup_table.bin"), pickup_table)
         patch = rom.MMZXPatch(player=1, player_name="Tester")
-        rom.write_patch_tokens(patch, "Tester", "seed-1", (0, 1, 0), image)
+        rom.write_patch_tokens(patch, "Tester", "seed-1", (0, 1, 0), image, pickup_table)
         self.assertEqual(patch.get_file("mmzx_cfg.bin")[0] & rom.CFG_HU_IN_POOL, 0)
         self.assertEqual([name for name, _files in rom.MMZXPatch.procedure],
                          ["patch_arm9", "apply_tokens"])
         self.assertIn("golden_image.bin", rom.MMZXPatch.procedure[0][1])
+        self.assertIn("pickup_table.bin", rom.MMZXPatch.procedure[0][1])
 
     def test_golden_baseline_is_the_recorded_save(self) -> None:
         """The image built from its fields is the save a clean post-briefing game recorded."""
@@ -286,8 +357,8 @@ class TestPatchTables(unittest.TestCase):
             self.assertEqual(image[off:off + length], image[off + length:off + 2 * length])
 
     def test_golden_image_section(self) -> None:
-        """The image lands in the overlay gap after the icon table, and the copy cave knows where."""
-        self.assertGreaterEqual(ui.GOLDEN_IMAGE_RAM, ICON_TABLE_ADDR + ICON_TABLE_SIZE)
+        """The image lands in the overlay gap before the pickup table, and the copy cave knows where."""
+        self.assertLessEqual(ui.GOLDEN_IMAGE_RAM + golden.GOLDEN_IMAGE_SIZE, PICKUP_TABLE_ADDR)
         self.assertLessEqual(ui.GOLDEN_IMAGE_RAM + golden.GOLDEN_IMAGE_SIZE, ui.ROOM_OVERLAY_SLOT_RAM)
         self.assertEqual(ui.GOLDEN_IMAGE_RAM % 4, 0)
         self.assertEqual(golden.GOLDEN_IMAGE_SIZE % 4, 0)

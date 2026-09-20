@@ -4,7 +4,7 @@ cutscenes, the warp on the pause menu and the notice popup."""
 import hashlib
 import struct
 
-from ..data import GOAL_LINE_ADDR, GOAL_LINE_GLYPHS, ICON_TABLE_ADDR, ICON_TABLE_SIZE, NOTIFY_ADDR
+from ..data import GOAL_LINE_ADDR, GOAL_LINE_GLYPHS, NOTIFY_ADDR
 from .arm9 import Arm9
 from .golden import GOLDEN_IMAGE_SIZE
 from .nds import file_bytes, relocate_file
@@ -24,8 +24,8 @@ SKIP_COPY_CAVE_RAM = 0x020CB560
 SKIP_COPY_CAVE = bytes.fromhex(
     "10b40549054a064b10c910c29942fbd110bc044b1847c04600161902a8021602f41a19022d250202")
 # The golden image travels as an autoload section the boot code places in the
-# free gap between the model overlays (which end at the icon table) and the
-# room overlays; the copy cave reads it from there.
+# free gap between the model overlays and the room overlays; the copy cave
+# reads it from there. The pickup table (rom/table.py) follows it in the gap.
 GOLDEN_IMAGE_RAM = 0x02191600
 ROOM_OVERLAY_SLOT_RAM = 0x02194000
 
@@ -93,7 +93,6 @@ CUTSCENE_SKIP_CAVE = bytes.fromhex("10b5034ce0783df76df80248417f10bd00f51402b0f6
 def patch_tutorial_skip(arm9: Arm9, image: bytes) -> None:
     """Send New Game through the LOAD handler with the slot's golden image in the load buffer."""
     assert len(image) == GOLDEN_IMAGE_SIZE
-    assert GOLDEN_IMAGE_RAM >= ICON_TABLE_ADDR + ICON_TABLE_SIZE
     assert GOLDEN_IMAGE_RAM + len(image) <= ROOM_OVERLAY_SLOT_RAM
     assert CUTSCENE_SKIP_CAVE_RAM + len(CUTSCENE_SKIP_CAVE) <= SKIP_COPY_CAVE_RAM
     assert SKIP_COPY_CAVE_RAM + len(SKIP_COPY_CAVE) <= NOTIFY_CAVE_RAM

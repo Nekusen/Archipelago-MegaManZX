@@ -63,6 +63,7 @@ Locations:
 
 - Pickups in the world show the item they hold: the game's own icon for a Life Up, Sub Tank, chip, biometal or Card
   Key, and the Archipelago logo for anything else (an arrow for progression, a cross for useful, grey for filler).
+  The icons are part of the patched ROM, so they show even while the client is disconnected.
 - Items you receive and items you send are announced in the game's own popup without stopping play. The `notify_*`
   options and the `/mmzx_notify` command choose which items are announced and how much text is shown.
 

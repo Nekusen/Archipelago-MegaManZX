@@ -22,7 +22,7 @@ OAM_LOOP_B_BR_NEW = bytes.fromhex("01d9")
 # AP icon set: pickups are drawn as the item placed there. icons.py builds the set
 # (data.ICON_SET) from the player's ROM; it goes into obj_fnt/obj_dat and is made
 # resident like set 58. The graphics caves share the zero stretch that ends at
-# GFX_CAVES_END; the client's icon table is data.ICON_TABLE_ADDR.
+# GFX_CAVES_END; which item a pickup shows comes from the pickup table (table.py).
 ICON_FNT_FILE_ID, ICON_DAT_FILE_ID = 235, 234     # NitroFS ids of obj_fnt.bin, obj_dat.bin
 GFX_CAVES_END = 0x020C8394
 ICON_RESIDENT_LIST_PATCH = [
@@ -37,10 +37,16 @@ ICON_BOOT_HOOK_ORIG = bytes.fromhex("faf7dcf9")
 ICON_BOOT_CAVE_RAM = 0x020C8150
 ICON_BOOT_CAVE = bytes.fromhex("10b584b000240094019401240294002403940f483a21002200230e4ca04701240094c0460c480d4909680d4a03230d4ca047002400940194012402940024039409480a4900220023094ca04700f074f840571002656100024057100234390f0205010000896a0002405710020501000065610002")
 
-# Icon caves: LOOKUP finds the entity's code in the client's table; ATTACH and
-# ANIM replace the graphics calls of the three pickup inits.
+# Icon caves: LOOKUP jumps to the pickup table's lookup; ATTACH and ANIM replace
+# the graphics calls of the three pickup inits.
 ICON_CAVES_RAM = 0x020C81C4
-ICON_CAVES = bytes.fromhex("30b5264c2178264a127891421cd16178c90719d023490968002915d04a68824201d00968f8e70a89802a0dd2d3088433e35c07251540eb40db0705d1231d985c002801d0013830bd0020c04330bd30b504000d00fff7d4ff002808dbe17a08229143e172217b0122914321730e4d200029000e4a904730bd30b504000d00428c0b4b9a4204d1fff7bbff002800db050020002900074a904730bd00bf6014190228821002f481100205010000250601020501000065fe0002")
+ICON_CAVES = bytes.fromhex(
+    "004b1847011b1902000000000000000000000000000000000000000000000000"
+    "0000000000000000000000000000000000000000000000000000000000000000"
+    "000000000000000000000000000030b504000d00fff7d4ff002808dbe17a0822"
+    "9143e172217b0122914321730e4d200029000e4a904730bd30b504000d00428c"
+    "0b4b9a4204d1fff7bbff002800db050020002900074a904730bd00bf00000000"
+    "000000000000000005010000250601020501000065fe0002")
 ICON_ATTACH_CAVE_RAM = 0x020C8212
 ICON_ANIM_CAVE_RAM = 0x020C823C
 # (RAM, vanilla bl); the patched bl is computed from the addresses
@@ -54,9 +60,9 @@ ICON_ANIM_HOOKS = [(0x020A3BCC, bytes.fromhex("6cf74af9")), (0x020A3EF6, bytes.f
 PALSHARE_CAVE_RAM = 0x020C8288
 PALSHARE_CAVE = bytes.fromhex("03483a21415c0348017004b010bdc046e45e1002e95f1002")
 
-# RETRY: a pickup born during the room load, before the client's table or the
-# scouts arrive, keeps its vanilla look; re-attach every frame once a code resolves.
-# The refill site belongs to the mailbox cave, so RETRY chains on that cave's call.
+# RETRY: a pickup born while the icons were switched off keeps its vanilla look;
+# re-attach every frame once a code resolves. The refill site belongs to the
+# mailbox cave, so RETRY chains on that cave's call.
 ICON_RETRY_CAVE_RAM = 0x020C82A0
 ICON_RETRY_CAVE = bytes.fromhex("30b50400628c0e4b9a4214d0fff78aff002810db0500e17a08229143e172217b0122914321732000064948f7abf92000290047f7c7fd200047f798fc30bd00bf0501000005010000")
 ICON_RETRY_HOOKS = [(0x020CB4A2, bytes.fromhex("44f7b3fb")), (0x020A3A7E, bytes.fromhex("6cf7c5f8")),

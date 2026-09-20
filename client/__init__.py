@@ -8,17 +8,18 @@ The watcher and its stage order live here; each stage is a function
 
 import collections
 import logging
+from time import monotonic
 from typing import TYPE_CHECKING
 import worlds._bizhawk as bizhawk
 from worlds._bizhawk.client import BizHawkClient
 
 from ..rom import pack_version, unpack_version
 from .addresses import (
-    BOOT_FILL, DOM, GAME, NOTIFY_LEVELS, NOTIFY_STYLES, PICKUP_OPTION_KEYS, ROM_AP_MAGIC,
-    ROM_AP_MAGIC_LEN, ROM_AP_MAGIC_OFF, ROM_AP_VERSION_OFF, ROM_GAME_CODE, ROM_GAME_CODE_OFF,
-    ROM_SLOT_NAME_LEN, ROM_SLOT_NAME_OFF, STARTUP_TICKS)
+    BOOT_FILL, DOM, GAME, INVENTORY_WAIT_SECONDS, NOTIFY_LEVELS, NOTIFY_STYLES, PICKUP_OPTION_KEYS,
+    ROM_AP_MAGIC, ROM_AP_MAGIC_LEN, ROM_AP_MAGIC_OFF, ROM_AP_VERSION_OFF, ROM_GAME_CODE,
+    ROM_GAME_CODE_OFF, ROM_SLOT_NAME_LEN, ROM_SLOT_NAME_OFF, STARTUP_TICKS)
 from .ram import ProgressWindow, Tick
-from .notices import push_notices, sync_icon_table
+from .notices import push_notices, sync_pickup_state
 from .startup import apply_start_state, resolve_start_state
 from ..rom.ui import SKIP_COPY_CAVE, SKIP_COPY_CAVE_RAM
 from .checks import detect_checks, sync_taken_disks
@@ -34,6 +35,12 @@ if TYPE_CHECKING:
     from worlds._bizhawk.context import BizHawkClientContext
 
 logger = logging.getLogger("Client")
+
+
+def logged_in(ctx) -> bool:
+    """The session is authenticated; before that the server ignores every packet."""
+    status = getattr(ctx, "auth_status", None)
+    return status is None or status.name == "AUTHENTICATED"
 
 
 class MMZXClient(BizHawkClient):
@@ -83,10 +90,15 @@ class MMZXClient(BizHawkClient):
         """Reset everything tied to one game; a newly validated ROM starts clean."""
         self.setup_done = False
         self.ingame_ticks = 0
-        # checks
-        self.local_checked: set[int] = set()
-        self.mailbox_count: int | None = None
-        self.mailbox_checked: set[int] = set()
+        # checks: the last send the server has not confirmed, the "Sent" notices
+        # already shown and the refills seen in the game's bitmap
+        self.pending_sent: set[int] = set()
+        self.pending_sent_at = 0.0
+        self.announced: set[int] = set()
+        self.collected_seen: set[int] = set()
+        # the connection's inventory: ReceivedItems arrived, or the wait after Connected ran out
+        self.connected_at = 0.0
+        self.items_synced = False
         # consumables log: [[cumulative n, playtime]]; None until the datastore answers
         self.cons_log: list[list[int]] | None = None
         self.cons_key: str | None = None
@@ -101,7 +113,6 @@ class MMZXClient(BizHawkClient):
         self.notify_queue: collections.deque = collections.deque()
         self.notified_items: int | None = None    # None = skip the backlog on connect
         self.scout_requested: set[int] = set()
-        self.icon_written: tuple[int, bytes] | None = None
         self.goal_line_written: bytes | None = None
         self.ending_ticks = 0             # ticks with the stuck-ending signature
 
@@ -156,6 +167,19 @@ class MMZXClient(BizHawkClient):
         """Log in with the slot name read from the ROM header."""
         if self.slot_name:
             ctx.auth = self.slot_name
+
+    def on_package(self, ctx: "BizHawkClientContext", cmd: str, args: dict) -> None:
+        """Start every connection afresh: what the server lacks is sent again, items wait for the list."""
+        if cmd == "Connected":
+            self.pending_sent = set()
+            self.connected_at = monotonic()
+            self.items_synced = False
+        elif cmd == "ReceivedItems":
+            self.items_synced = True
+
+    def inventory_known(self) -> bool:
+        """The connection's items arrived, or enough time passed to take the list as empty."""
+        return self.items_synced or monotonic() - self.connected_at >= INVENTORY_WAIT_SECONDS
 
     def _debug(self, msg: str) -> None:
         """Log at INFO after /mmzx_debug on, else at DEBUG (hidden by the client)."""
@@ -229,7 +253,7 @@ class MMZXClient(BizHawkClient):
 
     async def game_watcher(self, ctx: "BizHawkClientContext") -> None:
         """One tick: detect checks, grant items and repair the game."""
-        if ctx.server is None or ctx.slot_data is None:
+        if ctx.server is None or ctx.slot_data is None or not logged_in(ctx):
             return
         if not self.setup_done:
             await self._setup(ctx)
@@ -247,13 +271,15 @@ class MMZXClient(BizHawkClient):
             window = await ProgressWindow.read(ctx)
             await self._stage("checks", detect_checks(self, ctx, window))
             await self._stage("taken disks", sync_taken_disks(self, ctx, window, tick))
-            await self._stage("item icons", sync_icon_table(self, ctx, tick))
+            await self._stage("pickup state", sync_pickup_state(self, ctx))
             await self._stage("missions repair", repair_missions(self, ctx, tick))
-            await self._stage("starting state", apply_start_state(self, ctx, tick))
-            await self._stage("items", grant_items(self, ctx, tick))
-            await self._stage("goal line", sync_goal_line(self, ctx, tick, received_counts(ctx)))
-            await self._stage("notifications", push_notices(self, ctx))
-            await self._stage("models", revert_unowned_models(self, ctx, tick))
+            # everything that follows from the items waits for the connection's list
+            if self.inventory_known():
+                await self._stage("starting state", apply_start_state(self, ctx, tick))
+                await self._stage("items", grant_items(self, ctx, tick))
+                await self._stage("goal line", sync_goal_line(self, ctx, tick, received_counts(ctx)))
+                await self._stage("notifications", push_notices(self, ctx))
+                await self._stage("models", revert_unowned_models(self, ctx, tick))
             await self._stage("auto-accept", auto_accept_mission(self, ctx, tick))
             if self.skip_boss_rush:
                 await self._stage("boss rush", skip_boss_rush(self, ctx, tick))

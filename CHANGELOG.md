@@ -30,6 +30,7 @@ All notable changes to this project are documented in this file. The format is b
 - Checks collected while the client was reconnecting to the server were not sent until the next check. Every check the server lacks is now sent again after reconnecting, and again every few seconds until confirmed.
 - Reconnecting to the server no longer removes the Card Keys, the Life Up and Sub Tank capacity and the max HP for a moment.
 - Refills collected while the client was away are no longer lost, however many.
+- A pickup that holds a multiworld item can no longer be sliced into small pieces with a weapon, which lost its check. Once the check is sent and the refill is back to normal, it breaks as usual.
 
 ## [0.1.0] - 2026-09-17
 

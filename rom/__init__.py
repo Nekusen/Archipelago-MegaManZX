@@ -63,6 +63,7 @@ class MMZXPatchExtension(APPatchExtension):
         sprites.patch_carried_disk_icon(arm9)
         sprites.patch_sprite_guard(arm9)
         pickups.patch_pickup_ap(arm9)
+        pickups.patch_refill_cut(arm9)
         pickups.patch_hu_gate(arm9, hu_in_pool)
         pickups.patch_secret_disks(arm9)
         ui.patch_goal_line(arm9)

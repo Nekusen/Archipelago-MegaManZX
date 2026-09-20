@@ -73,6 +73,18 @@ PICKUP_MAILBOX_CAVE = bytes.fromhex(
     "10b544f7b3fb94202858c00806d3c0202858002802d028000149884710bdc046"
     "591b1902")
 
+# Refill cut guard: a weapon hit breaks a large refill into pieces and releases it,
+# which would lose the location it stands for. The cut block's first call goes
+# through the cave, which forgets the hit while the location is pending.
+REFILL_CUT_HOOK_RAM = 0x020A3236
+REFILL_CUT_HOOK_ORIG = bytes.fromhex("62f751fb")   # bl play sound (the break sound)
+REFILL_CUT_CAVE_RAM = 0x020CB4D0
+REFILL_CUT_CAVE = bytes.fromhex(
+    "00b5280008498847002803d121200749884700bd002094216850982168509c21"
+    "685401bc02480047311b1902dd58000237330a02")
+REFILL_CUT_RESUME_RAM = 0x020A3336                 # the think's path when the refill was not hit
+SFX_ROUTINE_RAM = 0x020058DC
+
 # DATA SELECT icons: the save-slot screen tests raw victory bits for H/F/L/P, so
 # it ignored the free flags. Read the first-half flag; hide X when not owned.
 DATASELECT_ICON_PATCH = [
@@ -176,6 +188,14 @@ def patch_pickup_ap(arm9: Arm9) -> None:
         new = pre + thumb_bl(ram + len(pre), PICKUP_AP_CAVE_RAM + PICKUP_AP_ENTRIES[entry]) + post
         assert len(new) == len(orig)
         arm9.write(ram, new, orig)
+
+
+def patch_refill_cut(arm9: Arm9) -> None:
+    """Keep a refill that stands for a pending location in one piece when a weapon hits it."""
+    assert REFILL_CUT_CAVE_RAM >= PICKUP_MAILBOX_CAVE_RAM + len(PICKUP_MAILBOX_CAVE)
+    assert REFILL_CUT_CAVE_RAM + len(REFILL_CUT_CAVE) <= CUTSCENE_SKIP_CAVE_RAM
+    arm9.write(REFILL_CUT_CAVE_RAM, REFILL_CUT_CAVE)
+    arm9.write(REFILL_CUT_HOOK_RAM, thumb_bl(REFILL_CUT_HOOK_RAM, REFILL_CUT_CAVE_RAM), REFILL_CUT_HOOK_ORIG)
 
 
 def patch_hu_gate(arm9: Arm9, hu_in_pool: bool) -> None:

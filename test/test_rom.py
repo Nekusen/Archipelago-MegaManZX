@@ -277,6 +277,12 @@ class TestPatchTables(unittest.TestCase):
         self.assertEqual(int.from_bytes(pickups.PICKUP_MAILBOX_CAVE[-4:], "little"), entries["collect"])
         # the retry cave still re-hooks the mailbox cave's first call
         self.assertEqual(pickups.PICKUP_MAILBOX_CAVE[2:6], as_bytes(sprites.ICON_RETRY_HOOKS[0][1]))
+        # the cut guard asks the gate, plays the sound it displaced and resumes the think's no-hit path
+        pool = pickups.REFILL_CUT_CAVE[-12:]
+        self.assertEqual([int.from_bytes(pool[i:i + 4], "little") for i in range(0, 12, 4)],
+                         [entries["gate"], pickups.SFX_ROUTINE_RAM + 1, pickups.REFILL_CUT_RESUME_RAM + 1])
+        self.assertEqual(decode_bl(pickups.REFILL_CUT_HOOK_RAM, pickups.REFILL_CUT_HOOK_ORIG),
+                         pickups.SFX_ROUTINE_RAM)
 
     def test_build_table_round_trips(self) -> None:
         """Entries come back by name with their slot, code and respawn flag, sorted by room."""

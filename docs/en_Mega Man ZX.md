@@ -92,6 +92,7 @@ Locations:
 - Troop Reinforcement can be started from D-1, D-2 or D-3 without the base cutscene.
 - "Protect HQ" becomes available, when you have completed and reported 4 of the "main" missions (the ones with Pseudoroids in them)
   - To start the mission, teleport to Area X and speak with Prairie (you should have seen the previous cutscene on any transerver when reporting a mission
+  - If you take another area's mission in between, Protect HQ resumes as soon as you enter Area X again. Until you report it, the Transerver consoles do not offer "Abort the mission?" (the game treats it as a story mission).
 - The gate from D-2 into the Slither Inc. tower opens once you meet your `goal_requirements` (the six main biometals
   by default).
 - With `skip_boss_rush` the Pseudoroid refights of the D-4 tower are skipped and the elevator climbs straight to D-5.

@@ -25,7 +25,7 @@ All notable changes to this project are documented in this file. The format is b
 
 ### Fixed
 
-- Protect HQ was lost when another area's mission was taken after the game launched it, and the consoles kept refusing "Abort the mission?". Entering Area X now resumes Protect HQ once four area missions are completed.
+- The trigger for "Protect HQ" was lost when another area's mission was started, and there was no way to re-trigger it. Entering Area X now resumes Protect HQ once four area missions are completed.
 
 ## [0.1.0] - 2026-09-17
 

@@ -180,6 +180,11 @@ SCRIPT_STATE_OFF = 0xB
 CUTSCENE_NONE = 0xFF
 STORY_HANDLER_STATE = STORY_HANDLER_OBJ + SCRIPT_STATE_OFF
 ROOM_SCRIPT_STATE = ROOM_SCRIPT_OBJ + SCRIPT_STATE_OFF
+# O-2's room script reads its mini-boss flag only when the room loads: it waits
+# for the fight in one state and skips ahead with the flag set, so a flag set
+# after the load (an arrival from another area) needs the state moved as well.
+O02_SCRIPT_MINIBOSS_WAIT = 1
+O02_SCRIPT_MINIBOSS_BEATEN = 4
 # Troop Reinforcement: the Giro scene at the end of D-2 only arms with the
 # start flag set and the megamerge flag clear. Dying after the megamerge
 # without the Report would leave D-2 empty for good, so the client repairs

@@ -121,6 +121,14 @@ class SkipBossRush(Toggle):
     default = 0
 
 
+class SkipMinibosses(Toggle):
+    """Skips the mini-bosses that guard a stretch of an area (the King Flyers of D-2, the Lava Demon of K-2 and the like):
+    they count as already beaten every time you enter their area, so their fights never start.
+    Pseudoroids, story bosses and the refights of Area N are not affected."""
+    display_name = "Skip Mini-Bosses"
+    default = 0
+
+
 class PickupChecks1Up(Toggle):
     """The 1-Ups placed in the world (7) count as checks: the first time you
     pick each one up it sends its location; afterwards it keeps respawning
@@ -245,6 +253,7 @@ class MMZXOptions(PerGameCommonOptions):
     starting_transerver: StartingTranserver
     boss_logic: BossLogic
     skip_boss_rush: SkipBossRush
+    skip_minibosses: SkipMinibosses
     pickup_checks_1up: PickupChecks1Up
     pickup_checks_energy: PickupChecksEnergy
     pickup_checks_weapon: PickupChecksWeapon

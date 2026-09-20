@@ -259,6 +259,8 @@ class MMZXWorld(World):
             "boss_logic": bosses.describe(boss_requirements(self)),
             # the client marks the rush pairs as beaten; the logic stops requiring them
             "skip_boss_rush": bool(self.options.skip_boss_rush.value),
+            # the client keeps the mini-boss flags of the current area set
+            "skip_minibosses": bool(self.options.skip_minibosses.value),
             # the client polls the pickup mailbox only if a category is on
             "pickup_checks_1up": bool(self.options.pickup_checks_1up.value),
             "pickup_checks_energy": bool(self.options.pickup_checks_energy.value),

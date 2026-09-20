@@ -24,7 +24,7 @@ from ..rom.ui import SKIP_COPY_CAVE, SKIP_COPY_CAVE_RAM
 from .checks import detect_checks, sync_taken_disks
 from .goal import GoalRequirement, sync_goal_line
 from .items import grant_items, received_counts, revert_unowned_models
-from .minibosses import skip_minibosses
+from .minibosses import MODE_OFF, parse_mode, skip_minibosses
 from .missions import auto_accept_mission, handle_ending, repair_missions, skip_boss_rush
 from .tracker import log_where, receive_death_link, report_death, send_position
 from .warps import handle_warps
@@ -47,7 +47,11 @@ class MMZXClient(BizHawkClient):
         self.death_link_enabled = False
         self.goal: GoalRequirement | None = None   # what opens the gate to the final area
         self.skip_boss_rush = False        # QoL: skip the D-4 boss rush
-        self.skip_minibosses = False       # QoL: the areas' mini-bosses count as beaten
+        self.skip_minibosses = MODE_OFF    # QoL: which mini-bosses count as beaten
+        # mini-bosses beaten once (after_first_defeat); None until the datastore answers
+        self.minibosses_key: str | None = None
+        self.minibosses_requested = False
+        self.minibosses_beaten: set[tuple[int, int]] | None = None
         self.mailbox_enabled = False       # some pickup category is a check
         # settings the player changes from the console; they outlive a reconnect
         self.notify_cfg = {"received": 2, "sent": 2}      # indices into NOTIFY_LEVELS
@@ -171,10 +175,13 @@ class MMZXClient(BizHawkClient):
         if self.skip_boss_rush:
             logger.info("[mmzx] skip_boss_rush: the D-4 boss rush is skipped (each pair of "
                         "Pseudoroids is marked as beaten when the elevator reaches its stop)")
-        self.skip_minibosses = bool(opts.get("skip_minibosses", False))
-        if self.skip_minibosses:
-            logger.info("[mmzx] skip_minibosses: the mini-bosses of each area count as beaten; "
-                        "their fights do not start")
+        self.skip_minibosses = parse_mode(opts.get("skip_minibosses", MODE_OFF))
+        if self.skip_minibosses != MODE_OFF:
+            logger.info("[mmzx] skip_minibosses = %s: %s" % (
+                self.skip_minibosses,
+                "the mini-bosses of each area count as beaten; their fights do not start"
+                if self.skip_minibosses == "always" else
+                "a mini-boss stays beaten once you have beaten it"))
         self.mailbox_enabled = any(bool(opts.get(k, False)) for k in PICKUP_OPTION_KEYS)
         # notice thresholds from the YAML, unless /mmzx_notify already set them
         for key in ("received", "sent"):
@@ -250,7 +257,7 @@ class MMZXClient(BizHawkClient):
             await self._stage("auto-accept", auto_accept_mission(self, ctx, tick))
             if self.skip_boss_rush:
                 await self._stage("boss rush", skip_boss_rush(self, ctx, tick))
-            if self.skip_minibosses:
+            if self.skip_minibosses != MODE_OFF:
                 await self._stage("mini-bosses", skip_minibosses(self, ctx, tick))
             if self.death_link_enabled:
                 await self._stage("deathlink receive", receive_death_link(self, ctx, tick))

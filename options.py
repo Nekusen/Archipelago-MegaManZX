@@ -121,11 +121,16 @@ class SkipBossRush(Toggle):
     default = 0
 
 
-class SkipMinibosses(Toggle):
-    """Skips the mini-bosses that guard a stretch of an area (the King Flyers of D-2, the Lava Demon of K-2 and the like):
-    they count as already beaten every time you enter their area, so their fights never start.
+class SkipMinibosses(Choice):
+    """The mini-bosses that guard a stretch of an area (the King Flyers of D-2, the Lava Demon of K-2 and the like)
+    come back every time you re-enter their area.
+    - after_first_defeat: each one stays beaten once you have beaten it.
+    - always: all of them count as beaten from the start, so their fights never start.
     Pseudoroids, story bosses and the refights of Area N are not affected."""
     display_name = "Skip Mini-Bosses"
+    option_off = 0
+    option_after_first_defeat = 1
+    option_always = 2
     default = 0
 
 

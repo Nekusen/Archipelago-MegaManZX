@@ -96,7 +96,7 @@ Locations:
 - The gate from D-2 into the Slither Inc. tower opens once you meet your `goal_requirements` (the six main biometals
   by default).
 - With `skip_boss_rush` the Pseudoroid refights of the D-4 tower are skipped and the elevator climbs straight to D-5.
-- With `skip_minibosses` the mini-bosses that guard a stretch of an area (the King Flyers of D-2, the Lava Demon of K-2 and the others) count as already beaten every time you enter their area, so their fights never start. Pseudoroids and story bosses are not affected.
+- The mini-bosses that guard a stretch of an area (the King Flyers of D-2, the Lava Demon of K-2 and the others) come back every time you re-enter their area. With `skip_minibosses: after_first_defeat` each one stays beaten once you have beaten it; with `always` they all count as beaten from the start. Pseudoroids and story bosses are not affected.
 
 ### Cutscenes and menus
 

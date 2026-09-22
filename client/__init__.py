@@ -23,7 +23,7 @@ from .notices import push_notices, sync_pickup_state
 from .startup import apply_start_state, resolve_start_state
 from ..rom.ui import SKIP_COPY_CAVE, SKIP_COPY_CAVE_RAM
 from .checks import detect_checks, sync_taken_disks
-from .goal import GoalRequirement, sync_goal_line
+from .goal import GoalRequirement, missions_completed, sync_goal_line
 from .items import grant_items, received_counts, revert_unowned_models
 from .minibosses import MODE_OFF, parse_mode, skip_minibosses
 from .missions import auto_accept_mission, handle_ending, repair_missions, skip_boss_rush
@@ -114,6 +114,7 @@ class MMZXClient(BizHawkClient):
         self.notified_items: int | None = None    # None = skip the backlog on connect
         self.scout_requested: set[int] = set()
         self.goal_line_written: bytes | None = None
+        self.missions_cleared: set[str] | None = None   # counted missions completed, from the game's flags
         self.ending_ticks = 0             # ticks with the stuck-ending signature
 
     async def validate_rom(self, ctx: "BizHawkClientContext") -> bool:
@@ -193,7 +194,7 @@ class MMZXClient(BizHawkClient):
         if self.death_link_enabled:
             await ctx.update_death_link(True)
         self.goal = GoalRequirement(opts)
-        for line in self.goal.report(received_counts(ctx)):
+        for line in self.goal.report(received_counts(ctx), self.missions_cleared):
             logger.info("[mmzx] " + line)
         self.skip_boss_rush = bool(opts.get("skip_boss_rush", False))
         if self.skip_boss_rush:
@@ -269,6 +270,7 @@ class MMZXClient(BizHawkClient):
                 await self._stage("where", log_where(self, ctx))
             await self._stage("position", send_position(self, ctx, tick))
             window = await ProgressWindow.read(ctx)
+            self.missions_cleared = missions_completed(window)
             await self._stage("checks", detect_checks(self, ctx, window))
             await self._stage("taken disks", sync_taken_disks(self, ctx, window, tick))
             await self._stage("pickup state", sync_pickup_state(self, ctx))

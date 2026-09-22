@@ -1,4 +1,4 @@
-"""The goal requirements: which models, how many, and the Secret Disk hunt."""
+"""The goal requirements: which models, how many, the Secret Disk hunt and the mission count."""
 import unittest
 from collections import Counter
 
@@ -9,10 +9,14 @@ from test.general import setup_multiworld
 from .bases import MMZXTestBase
 from .test_goal import collect_pool_but
 from .. import MMZXWorld
-from ..goal import DISK_ITEM
+from ..client.goal import GoalRequirement as ClientGoal
+from ..goal import DISK_ITEM, MISSION_COUNT, describe
 
 DISKS_ONLY = {"goal_requirements": ["Secret Disks"]}
 BOTH = {"goal_requirements": ["Biometals", "Secret Disks"], "required_secret_disks": 4, "total_secret_disks": 6}
+MISSIONS_ONLY = {"goal_requirements": ["Missions"], "required_missions": 13}
+ALL_THREE = {"goal_requirements": ["Biometals", "Secret Disks", "Missions"],
+             "required_secret_disks": 4, "total_secret_disks": 6, "required_missions": 3}
 
 
 class TestDisksOnly(MMZXTestBase):
@@ -147,3 +151,84 @@ class TestClamps(unittest.TestCase):
                 multiworld = setup_multiworld(MMZXWorld, options=options)
                 real = sum(1 for loc in multiworld.get_locations(1) if loc.address is not None)
                 self.assertEqual(len(multiworld.itempool), real)
+
+
+class TestMissionsOnly(MMZXTestBase):
+    options = MISSIONS_ONLY
+
+    def test_slot_data(self) -> None:
+        g = self.world.fill_slot_data()["goal_requirements"]
+        self.assertEqual((g["models"], g["secret_disks"], g["missions"]), ([], 0, 13))
+
+    def test_models_do_not_matter(self) -> None:
+        collect_pool_but(self, ["Model X", "Progressive Model HX"])
+        self.assertBeatable(True)
+
+    def test_thirteen_reachable_missions_are_enough(self) -> None:
+        """Without the Blue Card Key one mission is out of reach: the 13 left are the count."""
+        collect_pool_but(self, ["Blue Card Key"])
+        self.assertBeatable(True)
+
+    def test_twelve_are_not(self) -> None:
+        """Area X's access gates Protect HQ too: two missions out of reach close the goal."""
+        collect_pool_but(self, ["Blue Card Key", "Transerver Access - Area X"])
+        self.assertBeatable(False)
+        self.collect_by_name("Blue Card Key")
+        self.assertBeatable(True)
+
+
+class TestEveryMission(MMZXTestBase):
+    options = {"goal_requirements": ["Missions"]}
+
+    def test_default_is_every_counted_mission(self) -> None:
+        self.assertEqual(MISSION_COUNT, 14)
+        self.assertEqual(self.world.goal.missions_required, MISSION_COUNT)
+        collect_pool_but(self, ["Blue Card Key"])
+        self.assertBeatable(False)
+        self.collect_by_name("Blue Card Key")
+        self.assertBeatable(True)
+
+
+class TestAllThree(MMZXTestBase):
+    options = ALL_THREE
+
+    def test_each_requirement_is_needed(self) -> None:
+        collect_pool_but(self, [DISK_ITEM, "Model X"])
+        self.assertBeatable(False)
+        self.collect(self.get_items_by_name(DISK_ITEM)[:4])
+        self.assertBeatable(False)
+        self.collect_by_name("Model X")
+        self.assertBeatable(True)
+
+    def test_spoiler_line(self) -> None:
+        self.assertEqual(describe(self.world.goal),
+                         "6 of Model X, Model ZX, Progressive Model HX, Progressive Model FX, "
+                         "Progressive Model LX, Progressive Model PX; 4 Secret Disks (6 in the pool); "
+                         "3 of the 14 story missions")
+
+
+class TestProgressLines(unittest.TestCase):
+    """The pause menu lines the client writes: what fits shares the reserved line, three take both."""
+
+    @staticmethod
+    def lines(slot, counts, missions):
+        return ClientGoal({"goal_requirements": slot}).progress_lines(counts, missions)
+
+    def test_two_share_the_reserved_line(self) -> None:
+        slot = {"models": ["Model X"], "models_count": 1, "secret_disks": 20, "secret_disks_total": 30}
+        self.assertEqual(self.lines(slot, {"Model X": 1, DISK_ITEM: 7}, 0), ("", "Disks 07/20  Models 1/1"))
+
+    def test_three_take_both_lines(self) -> None:
+        slot = {"models": ["Model X"], "models_count": 1, "secret_disks": 20, "secret_disks_total": 30,
+                "missions": 14}
+        first, second = self.lines(slot, {"Model X": 1, DISK_ITEM: 7}, 8)
+        self.assertEqual((first, second), ("Disks 07/20  Models 1/1", "Missions 08/14"))
+
+    def test_missions_alone(self) -> None:
+        self.assertEqual(self.lines({"missions": 8}, {}, 3), ("", "Missions 3/8"))
+
+    def test_the_widest_texts_fit(self) -> None:
+        slot = {"models": list(ClientGoal({}).models) + ["Model OX"], "models_count": 7,
+                "secret_disks": 95, "secret_disks_total": 95, "missions": 14}
+        for line in self.lines(slot, {DISK_ITEM: 95}, 14):
+            self.assertLessEqual(len(line), 30)

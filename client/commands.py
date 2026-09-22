@@ -116,7 +116,7 @@ def _cmd_goal(self, *args) -> None:
     handler = _handler(self)
     if handler is None or handler.goal is None:
         return
-    for line in handler.goal.report(received_counts(self.ctx)):
+    for line in handler.goal.report(received_counts(self.ctx), handler.missions_cleared):
         logger.info("[mmzx] " + line)
 
 

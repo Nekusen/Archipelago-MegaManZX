@@ -11,7 +11,8 @@ All notable changes to this project are documented in this file. The format is b
 - Added "configurable goal requirements".
   - Goal Requirement "Biometals": Collect a specific ammount of models from the pool
   - Secret Disk: A macguffin style goal that requires collecting a specific ammount of secret disks from the pool.
-- The STATUS tab of the pause menu shows the progress towards the goal requirements.
+  - Missions: Complete a chosen number of the 14 story missions.
+- The STATUS tab of the pause menu shows the progress towards the goal requirements (both lines of its help text when the three requirements are on).
   - A `/mmzx_goal` has been added that prints the goal requirements and your progress in the client as well.
 - Added `progressive_models`: each of the biometals H, F, L and P comes either as two halves (as before) or as one item that gives the whole model at once.
 - Added `require_full_models`: the Biometals goal requirement can ask for both halves of a progressive model.

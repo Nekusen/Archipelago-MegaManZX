@@ -1,8 +1,8 @@
 """Patches around picking things up: biometal ownership, Life Up and Sub Tank slots,
 the pickup mailbox, pickups that stand for a multiworld item, and Model Hu as an item."""
 
-from ..data import PICKUP_MAILBOX_ADDR
 from .arm9 import Arm9, thumb_bl
+from .ui import CUTSCENE_SKIP_CAVE_RAM
 
 # Yellow Card Key dialogue: the Operator re-grants the key while Troop is
 # reported and the key unowned. The key comes from the pool, so both console
@@ -63,16 +63,27 @@ PICKUP_FLAG_PATCH = [
 ]
 
 # Pickup mailbox: layout refills respawn and keep no flag, so the cave hooked into
-# the refill think reports (subarea, coords index, role) to a ring the client polls.
-# The mailbox itself is data.PICKUP_MAILBOX_ADDR, right after the cave.
+# the refill think records each one collected in the pickup table's `collected`
+# bitmap (table.py), which the client polls.
 PICKUP_MAILBOX_HOOK_RAM = 0x020A30A2
 PICKUP_MAILBOX_HOOK_ORIG = bytes.fromhex("6cf7b3fd")   # bl animation advance
 PICKUP_MAILBOX_HOOK_NEW = bytes.fromhex("28f0fdf9")    # bl PICKUP_MAILBOX_CAVE_RAM
 PICKUP_MAILBOX_CAVE_RAM = 0x020CB4A0
 PICKUP_MAILBOX_CAVE = bytes.fromhex(
-    "10b544f7b3fb94202858c0081dd3c0202858002819d00d490968002915d04a68"
-    "aa4201d00968f8e70a891202084800780243287d00040243064b186807240440"
-    "a400e41862600130186010bdf48110022882100200b50c02")
+    "10b544f7b3fb94202858c00806d3c0202858002802d028000149884710bdc046"
+    "591b1902")
+
+# Refill cut guard: a weapon hit breaks a large refill into pieces and releases it,
+# which would lose the location it stands for. The cut block's first call goes
+# through the cave, which forgets the hit while the location is pending.
+REFILL_CUT_HOOK_RAM = 0x020A3236
+REFILL_CUT_HOOK_ORIG = bytes.fromhex("62f751fb")   # bl play sound (the break sound)
+REFILL_CUT_CAVE_RAM = 0x020CB4D0
+REFILL_CUT_CAVE = bytes.fromhex(
+    "00b5280008498847002803d121200749884700bd002094216850982168509c21"
+    "685401bc02480047311b1902dd58000237330a02")
+REFILL_CUT_RESUME_RAM = 0x020A3336                 # the think's path when the refill was not hit
+SFX_ROUTINE_RAM = 0x020058DC
 
 # DATA SELECT icons: the save-slot screen tests raw victory bits for H/F/L/P, so
 # it ignored the free flags. Read the first-half flag; hide X when not owned.
@@ -88,13 +99,20 @@ DATASELECT_CAVE_RAM = 0x020CB980
 DATASELECT_CAVE = bytes.fromhex(
     "30b5201c022144f76dfae878000603d4a17afe200140a17230bd")
 
-# PICKUP_AP: a pickup standing for a multiworld location (the `present` bitmap
-# of the icon table) skips its vanilla effect, popup and label; it only chimes.
-# The disk held by the H-1 balloon has no spawn record and asks about its carrier.
+# PICKUP_AP: a pickup standing for a pending multiworld location (the pickup table's
+# gate, table.py) skips its vanilla effect, popup and label; it only chimes. The disk
+# held by the H-1 balloon has no spawn record and asks about its carrier.
 PICKUP_AP_CAVE_RAM = 0x020CB800
 PICKUP_AP_CAVE = bytes.fromhex(
-    "10b5104c2178104a1278914217d16178c90714d00d490968002910d04a68824201d00968f8e70a89802a08d2d308a433e35c07211140cb400120184010bd002010bd00bf6014190228821002f48110021a203af743f810bd00b52800fff7d0ff002805d01a203af739f801bc0248004702bc287d00280847ad310a0210b50400fff7beff002803d12000d8f7d5f810bd04202061607a810003484158206980000858a061d4e700bfb0b80e0210b50400fff7a6ff0028cbd124203af70ff802485a2146f707fd10bd2904000010b50400fff796ff0028bbd1182039f7ffff02485a2146f7f7fc10bd2a040000"
-    "10b50400206bfff785ff0028cad12000d8f760fb10bd")
+    "004b1847311b1902000000000000000000000000000000000000000000000000"
+    "0000000000000000000000000000000000000000000000000000000000000000"
+    "000000000000000000000000000000001a203af743f810bd00b52800fff7d0ff"
+    "002805d01a203af739f801bc0248004702bc287d00280847ad310a0210b50400"
+    "fff7beff002803d12000d8f7d5f810bd04202061607a81000348415820698000"
+    "0858a061d4e700bfb0b80e0210b50400fff7a6ff0028cbd124203af70ff80248"
+    "5a2146f707fd10bd2904000010b50400fff796ff0028bbd1182039f7ffff0248"
+    "5a2146f7f7fc10bd2a04000010b50400206bfff785ff0028cad12000d8f760fb"
+    "10bd")
 PICKUP_AP_ENTRIES = {'apgate': 0, 'ap_tail': 80, 'refill': 88, 'disk': 124, 'lifeup': 172, 'subtank': 204,
                      'carried': 236}
 # (RAM, vanilla code, cave entry, code kept before the bl, code after it)
@@ -149,8 +167,8 @@ def patch_life_up_sub_tank(arm9: Arm9) -> None:
 
 
 def patch_pickup_mailbox(arm9: Arm9) -> None:
-    """Report each collected layout refill (subarea, coords index, role) to the ring the client polls."""
-    assert len(PICKUP_MAILBOX_CAVE) <= PICKUP_MAILBOX_ADDR - PICKUP_MAILBOX_CAVE_RAM
+    """Record each collected layout refill in the pickup table's `collected` bitmap."""
+    assert PICKUP_MAILBOX_CAVE_RAM + len(PICKUP_MAILBOX_CAVE) <= CUTSCENE_SKIP_CAVE_RAM
     arm9.write(PICKUP_MAILBOX_CAVE_RAM, PICKUP_MAILBOX_CAVE)
     arm9.write(PICKUP_MAILBOX_HOOK_RAM, PICKUP_MAILBOX_HOOK_NEW, PICKUP_MAILBOX_HOOK_ORIG)
 
@@ -163,13 +181,21 @@ def patch_data_select_icons(arm9: Arm9) -> None:
 
 
 def patch_pickup_ap(arm9: Arm9) -> None:
-    """Make a pickup that stands for a multiworld location skip its vanilla effect; it only chimes."""
+    """Make a pickup that stands for a pending multiworld location skip its vanilla effect; it only chimes."""
     assert PICKUP_AP_CAVE_RAM + len(PICKUP_AP_CAVE) <= DATASELECT_CAVE_RAM
     arm9.write(PICKUP_AP_CAVE_RAM, PICKUP_AP_CAVE)
     for ram, orig, entry, pre, post in PICKUP_AP_HOOKS:
         new = pre + thumb_bl(ram + len(pre), PICKUP_AP_CAVE_RAM + PICKUP_AP_ENTRIES[entry]) + post
         assert len(new) == len(orig)
         arm9.write(ram, new, orig)
+
+
+def patch_refill_cut(arm9: Arm9) -> None:
+    """Keep a refill that stands for a pending location in one piece when a weapon hits it."""
+    assert REFILL_CUT_CAVE_RAM >= PICKUP_MAILBOX_CAVE_RAM + len(PICKUP_MAILBOX_CAVE)
+    assert REFILL_CUT_CAVE_RAM + len(REFILL_CUT_CAVE) <= CUTSCENE_SKIP_CAVE_RAM
+    arm9.write(REFILL_CUT_CAVE_RAM, REFILL_CUT_CAVE)
+    arm9.write(REFILL_CUT_HOOK_RAM, thumb_bl(REFILL_CUT_HOOK_RAM, REFILL_CUT_CAVE_RAM), REFILL_CUT_HOOK_ORIG)
 
 
 def patch_hu_gate(arm9: Arm9, hu_in_pool: bool) -> None:

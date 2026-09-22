@@ -441,15 +441,9 @@ SECRET_DISK_ENTRIES = [
     [0x0210460F, 7],   # O-20
 ]
 
-# Mailbox of respawnable pickups, installed by the ROM patch: a counter and a
-# ring of (subarea, coords index, role) entries.
-PICKUP_MAILBOX_ADDR = 0x020CB500
-PICKUP_MAILBOX_SLOTS = 8
-# In-world item icon table that the client fills per subarea; every physical
-# location carries 'icon': [subarea, coords index].
-ICON_TABLE_ADDR = 0x02191460
-ICON_TABLE_SIZE = 0xC4
-ICON_TABLE_PRESENT_OFF = 0xA4
+# The pickup table the patch bakes into the ROM (layout in rom/table.py); every physical
+# location carries 'icon': [subarea, coords index], its place in the table.
+PICKUP_TABLE_ADDR = 0x02191B00
 ICON_SET = 261
 ICON_CODES = {'logo_useful': 1, 'logo_progression': 2, 'logo_filler': 3, 'lifeup': 4, 'subtank': 5, 'chip_Absorber': 6, 'chip_Eraser': 7, 'chip_Featherweight': 8, 'chip_Extender': 9, 'chip_QuickCharger': 10, 'chip_IceBoots': 11, 'chip_WindBoots': 12, 'chip_Frog': 13, 'model_Hu': 14, 'model_X': 15, 'model_ZX': 16, 'model_HX': 17, 'model_FX': 18, 'model_LX': 19, 'model_PX': 20, 'model_OX': 21, 'card_Red': 22, 'card_Blue': 23, 'card_Purple': 24, 'card_Green': 25, 'card_Yellow': 26, 'card_White': 27, 'secret_disk': 28}
 # On-screen notice buffer (request flag, state, duration, text).

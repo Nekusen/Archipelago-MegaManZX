@@ -21,6 +21,7 @@ from .logic.rules import TIER, starting_point
 from .regions import boss_requirements, create_regions, progression_overrides
 from .rom import MMZXPatch, write_patch_tokens, MMZX_US_MD5
 from .rom.golden import build_image
+from .rom.table import PICKUP_SLOTS, build_table, icon_code
 from . import client  # registers the BizHawkClient  # noqa: F401
 from . import tracker  # auto-tab / position icon for Universal Tracker
 
@@ -218,14 +219,22 @@ class MMZXWorld(World):
             "Life Ups / Sub Tanks than exist (4 of each) or for an item outside the pool."
             % (self.player_name, ", ".join(blocked) or "none (check the rest of the logic)"))
 
+    def pickup_icons(self) -> dict[str, int]:
+        """Icon code of every pickup location of this world, from the item placed there."""
+        return {loc.name: icon_code(loc.item.name, loc.item.player == self.player,
+                                    loc.item.advancement, loc.item.useful)
+                for loc in self.multiworld.get_locations(self.player)
+                if loc.name in PICKUP_SLOTS and loc.item is not None}
+
     def generate_output(self, output_directory: str) -> None:
-        """Writes the .apmmzx patch of this player, with the starting save built from the options."""
+        """Writes the .apmmzx patch of this player: the starting save and the pickup icons from the options and the fill."""
         patch = MMZXPatch(player=self.player, player_name=self.player_name)
         image = build_image(self.options.starting_model.current_key, self.options.character.value,
                             STARTING_MODELS, starting_point(self),
                             full_models=not self.options.progressive_models.value)
         write_patch_tokens(patch, self.player_name, self.multiworld.seed_name, self.world_version,
-                           image, hu_in_pool=bool(self.options.hu_in_pool.value))
+                           image, build_table(self.pickup_icons()),
+                           hu_in_pool=bool(self.options.hu_in_pool.value))
         out_name = self.multiworld.get_out_file_name_base(self.player)
         patch.write(os.path.join(output_directory, out_name + patch.patch_file_ending))
 

@@ -105,7 +105,6 @@ def _cmd_icons(self, *args) -> None:
         return
     if args and str(args[0]).lower() in ("on", "off"):
         handler.icons_enabled = str(args[0]).lower() == "on"
-        handler.icon_written = None
     elif args:
         logger.error("usage: /mmzx_icons [on|off]")
         return

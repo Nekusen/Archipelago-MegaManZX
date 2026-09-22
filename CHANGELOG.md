@@ -22,16 +22,14 @@ All notable changes to this project are documented in this file. The format is b
 
 ### Changed
 
-- The disks found in the world no longer count as Secret Disks in Fleuve's database. Fleuve's database now uses the Secret Disks obtained from the multiworld.
 - The item icons of the pickups are now part of the patched ROM, so they show correctly even while the client is disconnected or not running.
 
 ### Fixed
 
 - The trigger for "Protect HQ" was lost when another area's mission was started, and there was no way to re-trigger it. Entering Area X now resumes Protect HQ once four area missions are completed.
-- Checks collected while the client was reconnecting to the server were not sent until the next check. Every check the server lacks is now sent again after reconnecting, and again every few seconds until confirmed.
+- Checks collected while the client was reconnecting to the server were not sent until collecting the next check. Now they send right after reconnecting.
 - Reconnecting to the server no longer removes the Card Keys, the Life Up and Sub Tank capacity and the max HP for a moment.
-- Refills collected while the client was away are no longer lost, however many.
-- A pickup that holds a multiworld item can no longer be sliced into small pieces with a weapon, which lost its check. Once the check is sent and the refill is back to normal, it breaks as usual.
+- A pickup that holds a multiworld item can no longer be sliced into small pieces with a weapon.
 
 ## [0.1.0] - 2026-09-17
 

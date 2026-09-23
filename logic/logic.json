@@ -3625,6 +3625,11 @@
      "from": "b-1-entrance",
      "note": "",
      "req": {
+      "expert": [
+       [
+        "PX"
+       ]
+      ],
       "normal": [
        [
         "ZX"
@@ -10406,6 +10411,11 @@
      "from": "upper-area",
      "note": "",
      "req": {
+      "expert": [
+       [
+        "MODEL"
+       ]
+      ],
       "normal": [
        [
         "HX"
@@ -10419,6 +10429,11 @@
      "from": "spikes",
      "note": "",
      "req": {
+      "expert": [
+       [
+        "MODEL"
+       ]
+      ],
       "normal": [
        [
         "HX"
@@ -14463,7 +14478,9 @@
      "note": "",
      "req": {
       "normal": [
-       []
+       [
+        "MODEL"
+       ]
       ]
      },
      "to": "stairs",
@@ -14474,7 +14491,9 @@
      "note": "",
      "req": {
       "normal": [
-       []
+       [
+        "MODEL"
+       ]
       ]
      },
      "to": "m-1-entrance",
@@ -14484,6 +14503,11 @@
      "from": "lower-area",
      "note": "",
      "req": {
+      "expert": [
+       [
+        "LX"
+       ]
+      ],
       "normal": [
        [
         "HX"
@@ -14498,7 +14522,9 @@
      "note": "",
      "req": {
       "normal": [
-       []
+       [
+        "MODEL"
+       ]
       ]
      },
      "to": "lower-area",
@@ -14521,6 +14547,11 @@
      "from": "lower-area",
      "note": "",
      "req": {
+      "expert": [
+       [
+        "HX"
+       ]
+      ],
       "normal": [
        [
         "LX"
@@ -14534,6 +14565,11 @@
      "from": "water-segment",
      "note": "",
      "req": {
+      "expert": [
+       [
+        "HX"
+       ]
+      ],
       "normal": [
        [
         "LX"
@@ -14547,6 +14583,11 @@
      "from": "m-3-entrance",
      "note": "",
      "req": {
+      "expert": [
+       [
+        "HX"
+       ]
+      ],
       "normal": [
        [
         "LX"
@@ -14560,6 +14601,11 @@
      "from": "water-segment",
      "note": "",
      "req": {
+      "expert": [
+       [
+        "HX"
+       ]
+      ],
       "normal": [
        [
         "LX"

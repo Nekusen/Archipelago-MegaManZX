@@ -247,9 +247,11 @@ class NotifyStyle(Choice):
     default = 1
 
 
-# Every option sits in a named group so the template and the web page start with the goal;
-# the core would otherwise open with a "Game Options" group of whatever is left out.
+# Every option sits in a named group, in the order the template and the web page show them:
+# the two common ones first, then the goal; the core would otherwise open with a "Game
+# Options" group of whatever is left out, and would drop what is left out once it is defined.
 OPTION_GROUPS = [
+    OptionGroup("Game Options", [ProgressionBalancing, Accessibility]),
     OptionGroup("Goal", [Goal, GoalRequirements, RequiredModels, RequiredModelsCount, RequireFullModels,
                          RequiredSecretDisks, TotalSecretDisks, RequiredMissions]),
     OptionGroup("Start", [Character, StartingModel, StartingTranserver]),
@@ -257,7 +259,7 @@ OPTION_GROUPS = [
     OptionGroup("Pickup Checks", [PickupChecks1Up, PickupChecksEnergy, PickupChecksWeapon, PickupChecksCrystals]),
     OptionGroup("Quality of Life", [SkipBossRush, SkipMinibosses]),
     OptionGroup("Notifications", [NotifyReceived, NotifySent, NotifyStyle]),
-    OptionGroup("Game Options", [ProgressionBalancing, Accessibility, DeathLink]),
+    OptionGroup("Death Link", [DeathLink]),
 ]
 
 

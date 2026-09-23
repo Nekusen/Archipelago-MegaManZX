@@ -14,21 +14,18 @@ Missions are accepted automatically when you enter their area, and they can be d
 
 ## What is the goal?
 
-Defeat Serpent at the top of Slither Inc. (D-5). The gate from D-2 into the tower opens once you meet the
-`goal_requirements` of your options; every requirement you list is needed:
+Defeat Serpent at the top of Slither Inc. (D-5). The gate from D-2 into the tower opens once you meet all your chosen
+`goal_requirements`. You can pick any number of goal requirements from this list:
 
-- `Biometals`: own the models listed in `required_models` (the six main ones by default; Model OX can be added),
-  or any `required_models_count` of them ("any four of the six"). With `require_full_models` a progressive model
+- `Biometals`: own `required_models_count` models from the models listed in `required_models`. With `require_full_models` a progressive model
   counts only once you hold both halves.
-- `Secret Disks`: collect `required_secret_disks` Secret Disks (20 by default) out of the `total_secret_disks`
-  (30) shuffled into the multiworld. The disks in the world are ordinary checks; the Secret Disks you receive light up
-  entries of Fleuve's database in an order picked by the seed.
-- `Missions`: complete `required_missions` of the 14 story missions (all of them by default), in any order. Every
-  mission that is a check counts; the skipped intro and the final mission do not.
+- `Secret Disks`: collect `required_secret_disks` Secret Disks out of the `total_secret_disks`
+  (30) shuffled into the multiworld. 
+- `Missions`: complete a number `required_missions` out of the 14 story missions available, in any
+  order. The skipped intro mission and the final mission do not count.
 
-The STATUS tab of the pause menu shows your progress (with all three requirements it takes both lines of the help
-text), the popup announces each Secret Disk with its count and the moment the gate opens, and `/mmzx_goal` in the
-client prints the details. `goal_requirements` must list at least one requirement.
+The STATUS tab of the pause menu shows your progress, and a popup announces the moment the gate opens (you can also check your goal progress using the command `/mmzx_goal` in the
+client). `goal_requirements` must list at least one requirement.
 
 ## What items and locations get randomized?
 
@@ -98,10 +95,10 @@ Locations:
 - "Protect HQ" becomes available, when you have completed and reported 4 of the "main" missions (the ones with Pseudoroids in them)
   - To start the mission, teleport to Area X and speak with Prairie (you should have seen the previous cutscene on any transerver when reporting a mission
   - If you take another area's mission in between, Protect HQ resumes as soon as you enter Area X again. Until you report it, the Transerver consoles do not offer "Abort the mission?" (the game treats it as a story mission).
-- The gate from D-2 into the Slither Inc. tower opens once you meet your `goal_requirements` (the six main biometals
-  by default).
+- The gate from D-2 into the Slither Inc. tower opens once you meet your `goal_requirements`.
 - With `skip_boss_rush` the Pseudoroid refights of the D-4 tower are skipped and the elevator climbs straight to D-5.
-- The mini-bosses that guard a stretch of an area (the King Flyers of D-2, the Lava Demon of K-2 and the others) come back every time you re-enter their area. With `skip_minibosses: after_first_defeat` each one stays beaten once you have beaten it; with `always` they all count as beaten from the start. Pseudoroids and story bosses are not affected.
+- The mini-bosses that guard a stretch of an area (the King Flyers of D-2, the Lava Demon of K-2 and the others) come back every time you re-enter their area. With `skip_minibosses: after_first_defeat` each one stays beaten once you have beaten it; with `always` they all count as beaten from the start.
+  - With `always` the Giro cutscene and boss fight at D-2 triggers right as you walk into it, since that fight required beating both mini bosses and this options marks them as defeated from the start.
 
 ### Cutscenes and menus
 

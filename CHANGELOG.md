@@ -12,17 +12,17 @@ All notable changes to this project are documented in this file. The format is b
   - Goal Requirement "Biometals": Collect a specific ammount of models from the pool
   - Secret Disk: A macguffin style goal that requires collecting a specific ammount of secret disks from the pool.
   - Missions: Complete a chosen number of the 14 story missions.
-- The STATUS tab of the pause menu shows the progress towards the goal requirements (both lines of its help text when the three requirements are on).
-  - A `/mmzx_goal` has been added that prints the goal requirements and your progress in the client as well.
-- Added `progressive_models`: each of the biometals H, F, L and P comes either as two halves (as before) or as one item that gives the whole model at once.
-- Added `require_full_models`: the Biometals goal requirement can ask for both halves of a progressive model.
-- Added `skip_minibosses`: the mini-bosses of the areas no longer come back on every visit.
-  - `after_first_defeat`: each one stays beaten once you have beaten it.
+- The STATUS tab of the pause menu shows the progress towards the goal requirements.
+  - A `/mmzx_goal` has been added to the client as well, that prints the goal requirements and your progress.
+- Added `progressive_models` as an option: each of the biometals H, F, L and P comes either as two halves (as before) or as one item that gives the whole model at once.
+- Added `require_full_models`: the Biometals goal requirement can ask for both halves of a progressive model or just one of them.
+- Added `skip_minibosses`: a QoL change so mini bosses can be skipped.
+  - `after_first_defeat`: you have to beat them once. But reloading the area will not respawn them.
   - `always`: all of them count as beaten from the start, so their fights never start.
 
 ### Changed
 
-- The item icons of the pickups are now part of the patched ROM, so they show correctly even while the client is disconnected or not running.
+- The item icons of the pickups are now part of the patched ROM instead of swapped by the client, so they show correctly even while the client is disconnected or not running.
 
 ### Fixed
 

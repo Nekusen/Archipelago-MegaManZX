@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from Options import (Choice, DeathLink, NamedRange, OptionDict, OptionGroup, OptionSet,
-                     PerGameCommonOptions, Range, StartInventoryPool, Toggle)
+from Options import (Accessibility, Choice, DeathLink, NamedRange, OptionDict, OptionGroup, OptionSet,
+                     PerGameCommonOptions, ProgressionBalancing, Range, StartInventoryPool, Toggle)
 
 from .goal import (MISSION_COUNT, MODEL_ITEM_BY_KEY, REQ_BIOMETALS, REQ_DISKS, REQ_MISSIONS,
                    SIX_MODEL_KEYS)
@@ -43,12 +43,13 @@ class RequiredModels(OptionSet):
 
 
 class RequiredModelsCount(NamedRange):
-    """How many of the models in required_models you need: all of them, or any lower number.
+    """How many of the models in required_models you need: 6 by default (the six main biometals),
+    any other number, or all for every model in the list.
     A number above the size of the list means all of them."""
     display_name = "Required Models Count"
     range_start = 1
     range_end = 7
-    default = 7
+    default = 6
     special_range_names = {"all": 7}
 
 
@@ -78,13 +79,13 @@ class TotalSecretDisks(Range):
 
 
 class RequiredMissions(NamedRange):
-    """How many story missions you need to complete for the Missions goal requirement: all of them,
-    or any lower number. Every mission counts except the skipped intro and the final one (14).
+    """How many story missions you need to complete for the Missions goal requirement: 8 by default,
+    any other number, or all. Every mission counts except the skipped intro and the final one (14).
     Only used with Missions in goal_requirements."""
     display_name = "Required Missions"
     range_start = 1
     range_end = MISSION_COUNT
-    default = MISSION_COUNT
+    default = 8
     special_range_names = {"all": MISSION_COUNT}
 
 
@@ -247,9 +248,19 @@ class NotifyStyle(Choice):
     default = 1
 
 
+# Every option sits in a named group, in the order the template and the web page show them:
+# the two common ones first, then the goal; the core would otherwise open with a "Game
+# Options" group of whatever is left out, and would drop what is left out once it is defined.
 OPTION_GROUPS = [
+    OptionGroup("Game Options", [ProgressionBalancing, Accessibility]),
     OptionGroup("Goal", [Goal, GoalRequirements, RequiredModels, RequiredModelsCount, RequireFullModels,
                          RequiredSecretDisks, TotalSecretDisks, RequiredMissions]),
+    OptionGroup("Start", [Character, StartingModel, StartingTranserver]),
+    OptionGroup("Items and Logic", [ProgressiveModels, HuInPool, BossLogic]),
+    OptionGroup("Pickup Checks", [PickupChecks1Up, PickupChecksEnergy, PickupChecksWeapon, PickupChecksCrystals]),
+    OptionGroup("Quality of Life", [SkipBossRush, SkipMinibosses]),
+    OptionGroup("Notifications", [NotifyReceived, NotifySent, NotifyStyle]),
+    OptionGroup("Death Link", [DeathLink]),
 ]
 
 

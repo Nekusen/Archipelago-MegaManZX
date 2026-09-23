@@ -178,15 +178,23 @@ class TestMissionsOnly(MMZXTestBase):
 
 
 class TestEveryMission(MMZXTestBase):
-    options = {"goal_requirements": ["Missions"]}
+    options = {"goal_requirements": ["Missions"], "required_missions": "all"}
 
-    def test_default_is_every_counted_mission(self) -> None:
+    def test_all_means_every_counted_mission(self) -> None:
         self.assertEqual(MISSION_COUNT, 14)
         self.assertEqual(self.world.goal.missions_required, MISSION_COUNT)
         collect_pool_but(self, ["Blue Card Key"])
         self.assertBeatable(False)
         self.collect_by_name("Blue Card Key")
         self.assertBeatable(True)
+
+
+class TestMissionsDefault(MMZXTestBase):
+    options = {"goal_requirements": ["Missions"]}
+
+    def test_eight_by_default(self) -> None:
+        self.assertEqual(self.world.goal.missions_required, 8)
+        self.assertEqual(self.world.fill_slot_data()["goal_requirements"]["missions"], 8)
 
 
 class TestAllThree(MMZXTestBase):

@@ -43,12 +43,13 @@ class RequiredModels(OptionSet):
 
 
 class RequiredModelsCount(NamedRange):
-    """How many of the models in required_models you need: all of them, or any lower number.
+    """How many of the models in required_models you need: 6 by default (the six main biometals),
+    any other number, or all for every model in the list.
     A number above the size of the list means all of them."""
     display_name = "Required Models Count"
     range_start = 1
     range_end = 7
-    default = 7
+    default = 6
     special_range_names = {"all": 7}
 
 
@@ -78,13 +79,13 @@ class TotalSecretDisks(Range):
 
 
 class RequiredMissions(NamedRange):
-    """How many story missions you need to complete for the Missions goal requirement: all of them,
-    or any lower number. Every mission counts except the skipped intro and the final one (14).
+    """How many story missions you need to complete for the Missions goal requirement: 8 by default,
+    any other number, or all. Every mission counts except the skipped intro and the final one (14).
     Only used with Missions in goal_requirements."""
     display_name = "Required Missions"
     range_start = 1
     range_end = MISSION_COUNT
-    default = MISSION_COUNT
+    default = 8
     special_range_names = {"all": MISSION_COUNT}
 
 

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from Options import (Choice, DeathLink, NamedRange, OptionDict, OptionGroup, OptionSet,
-                     PerGameCommonOptions, Range, StartInventoryPool, Toggle)
+from Options import (Accessibility, Choice, DeathLink, NamedRange, OptionDict, OptionGroup, OptionSet,
+                     PerGameCommonOptions, ProgressionBalancing, Range, StartInventoryPool, Toggle)
 
 from .goal import (MISSION_COUNT, MODEL_ITEM_BY_KEY, REQ_BIOMETALS, REQ_DISKS, REQ_MISSIONS,
                    SIX_MODEL_KEYS)
@@ -247,9 +247,17 @@ class NotifyStyle(Choice):
     default = 1
 
 
+# Every option sits in a named group so the template and the web page start with the goal;
+# the core would otherwise open with a "Game Options" group of whatever is left out.
 OPTION_GROUPS = [
     OptionGroup("Goal", [Goal, GoalRequirements, RequiredModels, RequiredModelsCount, RequireFullModels,
                          RequiredSecretDisks, TotalSecretDisks, RequiredMissions]),
+    OptionGroup("Start", [Character, StartingModel, StartingTranserver]),
+    OptionGroup("Items and Logic", [ProgressiveModels, HuInPool, BossLogic]),
+    OptionGroup("Pickup Checks", [PickupChecks1Up, PickupChecksEnergy, PickupChecksWeapon, PickupChecksCrystals]),
+    OptionGroup("Quality of Life", [SkipBossRush, SkipMinibosses]),
+    OptionGroup("Notifications", [NotifyReceived, NotifySent, NotifyStyle]),
+    OptionGroup("Game Options", [ProgressionBalancing, Accessibility, DeathLink]),
 ]
 
 

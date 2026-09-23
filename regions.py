@@ -59,7 +59,7 @@ def create_regions(world) -> None:
     # the client marks the pairs as beaten while the player climbs the tower.
     skip_rush = bool(world.options.skip_boss_rush.value)
     active = locations_for_options(pickups=pickup_flags_from_options(world.options))
-    final = "Mission - Destroy Model W"
+    final = G.FINAL_MISSION
 
     def door_edges():
         """Doors that join two different regions, as (source region, destination region, door, destination region id)."""
@@ -157,7 +157,7 @@ def create_regions(world) -> None:
     for name, v in LOCATIONS.items():
         if v.get("category") != "mission":
             continue
-        ev_name = "Cleared: " + name[len("Mission - "):]
+        ev_name = G.cleared_event(name)
         parent, base = place(name, v)
         ev = MMZXLocation(player, ev_name, None, parent)
         ev.place_locked_item(world.create_event(ev_name))

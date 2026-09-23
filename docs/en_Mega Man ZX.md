@@ -23,10 +23,12 @@ Defeat Serpent at the top of Slither Inc. (D-5). The gate from D-2 into the towe
 - `Secret Disks`: collect `required_secret_disks` Secret Disks (20 by default) out of the `total_secret_disks`
   (30) shuffled into the multiworld. The disks in the world are ordinary checks; the Secret Disks you receive light up
   entries of Fleuve's database in an order picked by the seed.
+- `Missions`: complete `required_missions` of the 14 story missions (all of them by default), in any order. Every
+  mission that is a check counts; the skipped intro and the final mission do not.
 
-The STATUS tab of the pause menu shows your progress, the popup announces each Secret Disk with its count and the
-moment the gate opens, and `/mmzx_goal` in the client prints the details. `goal_requirements` must list at least one
-requirement.
+The STATUS tab of the pause menu shows your progress (with all three requirements it takes both lines of the help
+text), the popup announces each Secret Disk with its count and the moment the gate opens, and `/mmzx_goal` in the
+client prints the details. `goal_requirements` must list at least one requirement.
 
 ## What items and locations get randomized?
 

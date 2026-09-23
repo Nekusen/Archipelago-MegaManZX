@@ -62,19 +62,28 @@ NOTIFY_CAVE = bytes.fromhex(
     "61ff0c4846f7bafd0a4846f7f1fc0649087b002801d0012000e00220886146f7"
     "d5fe10bd00b70c02c4027e0202f5140206f51402cc027e02")
 
-# Goal progress line: the STATUS tab help texts get a second line the client
-# fills. The message pointer routine jumps into the cave, which copies the
-# buffer over that line for those messages of the pause menu file only.
+# Goal progress lines: the STATUS tab help texts become two lines of
+# GOAL_LINE_GLYPHS, the vanilla text padded and a blank line, and the client
+# keeps a buffer in the same layout. The message pointer routine jumps into
+# the cave, which copies the second line over the blank one for those messages
+# of the pause menu file only, and the first line too when the buffer carries
+# the line break: with three requirements the vanilla help gives way. The file
+# is recognised by a message the cave never writes, since the bank stays loaded
+# between pauses.
 GOAL_LINE_ENTRY_RAM = 0x02007F40
 GOAL_LINE_ENTRY_ORIG = bytes.fromhex("8200044883580448")
 GOAL_LINE_ENTRY_NEW = bytes.fromhex("004b184789b50c02")   # ldr r3, =cave+1; bx r3
 GOAL_LINE_CAVE_RAM = 0x020CB588
 GOAL_LINE_CAVE = bytes.fromhex(
-    "820013488358134882584800105a18180a291cd230b4104c2468a24216d11c68"
-    "0e4dac4212d1041c2578fe2d0ed00134fc2df9d11e25655dfe2d07d1084a1e23"
-    "1578257001320134013bf9d130bc7047944510028c4510029045100223484f4f"
-    "a0b60c02")
+    "820016488358164882584800105a18180a2922d230b4134c2468a2421cd11424"
+    "145b1c59104dac4216d11e23c45cfc2c12d13d23c45cfe2c0ed10c4a041c1e25"
+    "555dfc2d02d01f321f341e231578257001320134013bf9d130bc704794451002"
+    "8c4510029045100233574954a0b60c02")
 GOAL_LINE_MESSAGES = 10            # messages 0-9 of m_sub_en.bin: the BIOMETAL row of STATUS
+PAUSE_SIGNATURE_INDEX = 10         # "Switch main weapon and": the cave's signature of the file
+PAUSE_SIGNATURE = bytes.fromhex("33574954")   # "Swit", read as one word
+GOAL_LINE_LINES = 2
+GOAL_LINE_BUF_LEN = GOAL_LINE_LINES * GOAL_LINE_GLYPHS + GOAL_LINE_LINES - 1
 PAUSE_TEXT_FILE_ID = 222           # m_sub_en.bin
 PAUSE_TEXT_LINE_BREAK = 0xFC
 PAUSE_TEXT_END = 0xFE
@@ -131,13 +140,13 @@ def patch_goal_line(arm9: Arm9) -> None:
     """Route the message pointer routine through the cave that fills the goal line."""
     assert GOAL_LINE_CAVE_RAM + len(GOAL_LINE_CAVE) <= NOTIFY_CAVE_RAM
     assert NOTIFY_CAVE_RAM + len(NOTIFY_CAVE) <= GOAL_LINE_ADDR
-    assert GOAL_LINE_ADDR + GOAL_LINE_GLYPHS + 1 <= NOTIFY_ADDR
+    assert GOAL_LINE_ADDR + GOAL_LINE_BUF_LEN <= NOTIFY_ADDR
     arm9.write(GOAL_LINE_CAVE_RAM, GOAL_LINE_CAVE)
     arm9.write(GOAL_LINE_ENTRY_RAM, GOAL_LINE_ENTRY_NEW, GOAL_LINE_ENTRY_ORIG)
 
 
 def pause_texts_with_goal_line(data: bytes) -> bytes:
-    """m_sub_en.bin with a blank second line reserved in its first GOAL_LINE_MESSAGES messages."""
+    """m_sub_en.bin with its first GOAL_LINE_MESSAGES messages laid out as two lines of GOAL_LINE_GLYPHS."""
     total, tsize = struct.unpack_from("<HH", data, 0)
     n = tsize // 2
     base = 4 + tsize
@@ -149,7 +158,9 @@ def pause_texts_with_goal_line(data: bytes) -> bytes:
         if k < GOAL_LINE_MESSAGES:
             if PAUSE_TEXT_LINE_BREAK in text:
                 raise ValueError("MMZX: pause menu text %d already has two lines" % k)
-            text += bytes([PAUSE_TEXT_LINE_BREAK]) + bytes(GOAL_LINE_GLYPHS)
+            if len(text) > GOAL_LINE_GLYPHS:
+                raise ValueError("MMZX: pause menu text %d is longer than a goal line" % k)
+            text = text.ljust(GOAL_LINE_GLYPHS, b"\x00") + bytes([PAUSE_TEXT_LINE_BREAK]) + bytes(GOAL_LINE_GLYPHS)
         texts.append(text + bytes([PAUSE_TEXT_END]))
     body = b"".join(texts)
     new_offs = []
@@ -157,6 +168,10 @@ def pause_texts_with_goal_line(data: bytes) -> bytes:
     for t in texts:
         new_offs.append(pos)
         pos += len(t)
+    if not texts[PAUSE_SIGNATURE_INDEX].startswith(PAUSE_SIGNATURE):
+        raise ValueError("MMZX: pause menu text %d is not the expected signature" % PAUSE_SIGNATURE_INDEX)
+    if (base + new_offs[PAUSE_SIGNATURE_INDEX]) % 4:
+        raise ValueError("MMZX: the pause menu signature would not be word aligned")
     out = struct.pack("<HH", 4 + tsize + len(body), tsize) + struct.pack("<%dH" % n, *new_offs) + body
     return out + data[base + offs[-1] + len(texts[-1]):]  # whatever trails the last message
 

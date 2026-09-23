@@ -3,7 +3,8 @@ from dataclasses import dataclass
 from Options import (Choice, DeathLink, NamedRange, OptionDict, OptionGroup, OptionSet,
                      PerGameCommonOptions, Range, StartInventoryPool, Toggle)
 
-from .goal import MODEL_ITEM_BY_KEY, REQ_BIOMETALS, REQ_DISKS, SIX_MODEL_KEYS
+from .goal import (MISSION_COUNT, MODEL_ITEM_BY_KEY, REQ_BIOMETALS, REQ_DISKS, REQ_MISSIONS,
+                   SIX_MODEL_KEYS)
 
 
 class Character(Choice):
@@ -25,9 +26,10 @@ class GoalRequirements(OptionSet):
     """What you need before the gate to Slither Inc., the final area, opens.
 
     Biometals: own the models chosen in required_models.
-    Secret Disks: collect an ammount of Secret Disks."""
+    Secret Disks: collect an ammount of Secret Disks.
+    Missions: complete a number of story missions."""
     display_name = "Goal Requirements"
-    valid_keys = frozenset({REQ_BIOMETALS, REQ_DISKS})
+    valid_keys = frozenset({REQ_BIOMETALS, REQ_DISKS, REQ_MISSIONS})
     default = frozenset({REQ_BIOMETALS})
 
 
@@ -73,6 +75,17 @@ class TotalSecretDisks(Range):
     range_start = 1
     range_end = 95
     default = 30
+
+
+class RequiredMissions(NamedRange):
+    """How many story missions you need to complete for the Missions goal requirement: all of them,
+    or any lower number. Every mission counts except the skipped intro and the final one (14).
+    Only used with Missions in goal_requirements."""
+    display_name = "Required Missions"
+    range_start = 1
+    range_end = MISSION_COUNT
+    default = MISSION_COUNT
+    special_range_names = {"all": MISSION_COUNT}
 
 
 class StartingModel(Choice):
@@ -236,7 +249,7 @@ class NotifyStyle(Choice):
 
 OPTION_GROUPS = [
     OptionGroup("Goal", [Goal, GoalRequirements, RequiredModels, RequiredModelsCount, RequireFullModels,
-                         RequiredSecretDisks, TotalSecretDisks]),
+                         RequiredSecretDisks, TotalSecretDisks, RequiredMissions]),
 ]
 
 
@@ -250,6 +263,7 @@ class MMZXOptions(PerGameCommonOptions):
     require_full_models: RequireFullModels
     required_secret_disks: RequiredSecretDisks
     total_secret_disks: TotalSecretDisks
+    required_missions: RequiredMissions
     starting_model: StartingModel
     progressive_models: ProgressiveModels
     hu_in_pool: HuInPool

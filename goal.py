@@ -4,11 +4,19 @@ import logging
 
 from Options import OptionError
 
-from .data import SECRET_DISK_ENTRIES
+from .data import LOCATIONS, SECRET_DISK_ENTRIES
 
 REQ_BIOMETALS = "Biometals"
 REQ_DISKS = "Secret Disks"
+REQ_MISSIONS = "Missions"
 DISK_ITEM = "Secret Disk"
+MISSION_PREFIX = "Mission - "
+FINAL_MISSION = "Mission - Destroy Model W"
+# The story missions that count: every check of the category, so neither the skipped
+# intro nor the final mission, which is the goal itself.
+COUNTED_MISSIONS = tuple(n for n, v in LOCATIONS.items()
+                         if v["category"] == "mission" and n != FINAL_MISSION)
+MISSION_COUNT = len(COUNTED_MISSIONS)
 # Option keys to item names, in the order the counter and the spoiler list them.
 MODEL_ITEM_BY_KEY = {
     "Model X": "Model X", "Model ZX": "Model ZX",
@@ -31,16 +39,23 @@ def model_item(name: str, progressive: bool) -> str:
     return name if progressive else FULL_MODEL_OF.get(name, name)
 
 
+def cleared_event(mission: str) -> str:
+    """The event item of a mission location: its Cleared atom in the logic and the count test."""
+    return "Cleared: " + mission[len(MISSION_PREFIX):]
+
+
 class GoalRequirement:
-    """The resolved requirement: which model items count, with how many copies each, and the disks."""
+    """The resolved requirement: which model items count, with how many copies each, the disks
+    and the missions."""
 
     def __init__(self, models: tuple, models_count: int, disks_required: int, disks_total: int,
-                 copies: dict | None = None):
+                 copies: dict | None = None, missions_required: int = 0):
         self.models = models                 # item names; empty = no model requirement
         self.models_count = models_count
         self.copies = copies or {}           # item name -> copies that make it count (1 unless full)
         self.disks_required = disks_required  # 0 = no disk hunt
         self.disks_total = disks_total
+        self.missions_required = missions_required   # 0 = no mission count
 
     @property
     def wants_models(self) -> bool:
@@ -49,6 +64,10 @@ class GoalRequirement:
     @property
     def wants_disks(self) -> bool:
         return self.disks_required > 0
+
+    @property
+    def wants_missions(self) -> bool:
+        return self.missions_required > 0
 
 
 def resolve(options, room: int, reserve: int, player_name: str) -> GoalRequirement:
@@ -59,8 +78,8 @@ def resolve(options, room: int, reserve: int, player_name: str) -> GoalRequireme
     """
     reqs = set(options.goal_requirements.value)
     if not reqs:
-        raise OptionError("[%s] goal_requirements is empty: list at least one of %s, %s"
-                          % (player_name, REQ_BIOMETALS, REQ_DISKS))
+        raise OptionError("[%s] goal_requirements is empty: list at least one of %s, %s, %s"
+                          % (player_name, REQ_BIOMETALS, REQ_DISKS, REQ_MISSIONS))
     progressive = bool(options.progressive_models.value)
     models: tuple = ()
     count = 0
@@ -93,7 +112,10 @@ def resolve(options, room: int, reserve: int, player_name: str) -> GoalRequireme
             logging.warning("[%s] total_secret_disks %d does not fit in the pool: lowered to %d"
                             % (player_name, total, fit))
             total = fit
-    return GoalRequirement(models, count, required, total, copies)
+    missions = 0
+    if REQ_MISSIONS in reqs:
+        missions = min(int(options.required_missions.value), MISSION_COUNT)
+    return GoalRequirement(models, count, required, total, copies, missions)
 
 
 def rule(goal: GoalRequirement, player: int):
@@ -105,6 +127,10 @@ def rule(goal: GoalRequirement, player: int):
                      sum(1 for m, c in _needs if state.has(m, player, c)) >= _n)
     if goal.wants_disks:
         parts.append(lambda state, _n=goal.disks_required: state.has(DISK_ITEM, player, _n))
+    if goal.wants_missions:
+        events = [cleared_event(m) for m in COUNTED_MISSIONS]
+        parts.append(lambda state, _ev=events, _n=goal.missions_required:
+                     state.has_from_list_unique(_ev, player, _n))
     if not parts:
         return None
     if len(parts) == 1:
@@ -120,6 +146,8 @@ def describe(goal: GoalRequirement) -> str:
         parts.append("%d of %s" % (goal.models_count, ", ".join(names)))
     if goal.wants_disks:
         parts.append("%d Secret Disks (%d in the pool)" % (goal.disks_required, goal.disks_total))
+    if goal.wants_missions:
+        parts.append("%d of the %d story missions" % (goal.missions_required, MISSION_COUNT))
     return "; ".join(parts) or "none"
 
 
@@ -132,4 +160,5 @@ def slot_data(goal: GoalRequirement, disk_order: list) -> dict:
         "secret_disks": goal.disks_required,
         "secret_disks_total": goal.disks_total,
         "secret_disk_order": list(disk_order),
+        "missions": goal.missions_required,
     }

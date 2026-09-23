@@ -36,9 +36,9 @@ def model_halves(counts: dict[str, int], model: int) -> int:
     return counts.get(MODEL_POSSESSION[model][0], 0) + 2 * counts.get(FULL_MODEL_ITEMS.get(model, ""), 0)
 
 
-def wanted_progress_bits(counts: dict[str, int], goal: "GoalRequirement"
+def wanted_progress_bits(counts: dict[str, int], goal: "GoalRequirement", missions: int
                          ) -> tuple[set[tuple[int, int]], set[tuple[int, int]]]:
-    """(idempotent bits, Card Key bits) the received items call for.
+    """(idempotent bits, Card Key bits) the received items and the missions completed call for.
 
     Progressive items set one bit per copy. Some story gates open for everyone;
     the Slither gate (D-2 to D-4) once the goal requirements are met.
@@ -60,7 +60,7 @@ def wanted_progress_bits(counts: dict[str, int], goal: "GoalRequirement"
             bits.add((grant[1], grant[2]))
     for fl in EVENT_GATES_OPEN:
         bits.add(tuple(EVENT_GATES[fl]))
-    if goal.met(counts):
+    if goal.met(counts, missions):
         bits |= goal.gate_bits()
     return bits, cardkeys
 
@@ -189,7 +189,8 @@ async def grant_items(client: "MMZXClient", ctx, tick: Tick) -> None:
     consumables = [ITEM_BY_ID[net.item][1][0] for net in ctx.items_received
                    if net.item in ITEM_BY_ID and ITEM_BY_ID[net.item][1][0] in ("ecrystals", "oneup")]
     goal = client.goal
-    bits, cardkeys = wanted_progress_bits(counts, goal)
+    missions = len(client.missions_cleared or ())
+    bits, cardkeys = wanted_progress_bits(counts, goal, missions)
 
     writes = await weapon_energy_writes(ctx, counts)
     # idempotent bits go to live (effect now) and canonical (persistence)
@@ -200,7 +201,7 @@ async def grant_items(client: "MMZXClient", ctx, tick: Tick) -> None:
         live, canon = await read_copies(ctx, addrs)
         writes += copies_writes(addrs, live, canon, set_masks=masks)
         # the gate flags were down until now: the requirement was just met
-        gate_opening = goal.met(counts) and any(not live[a] & (1 << b) for a, b in goal.gate_bits())
+        gate_opening = goal.met(counts, missions) and any(not live[a] & (1 << b) for a, b in goal.gate_bits())
     # Card Keys: exactly the received set, since the game also hands them out
     # as mission rewards; the neighbouring bits are unrelated flags
     want = bits_by_byte(cardkeys)

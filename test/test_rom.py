@@ -13,8 +13,8 @@ from pathlib import Path
 
 from .. import rom
 from ..apnds import lz
-from ..data import (ICON_CODES, LOCATIONS, NOTIFY_ADDR, NOTIFY_BUF_MAX, PICKUP_TABLE_ADDR, STARTING_MODELS,
-                    STARTING_TRANSERVERS)
+from ..data import (GOAL_LINE_ADDR, ICON_CODES, LOCATIONS, NOTIFY_ADDR, NOTIFY_BUF_MAX, PICKUP_TABLE_ADDR,
+                    STARTING_MODELS, STARTING_TRANSERVERS)
 from ..rom import arm9, blz, golden, nds, pickups, sprites, table, ui
 
 PATCH_MODULES = (pickups, sprites, ui)     # the modules that hold patch tables and caves
@@ -421,6 +421,17 @@ class TestVanillaBytes(unittest.TestCase):
             with self.subTest(stretch=hex(lo)):
                 self.assertEqual(self.read(lo, hi - lo), bytes(hi - lo))
 
+    def test_pause_texts_of_the_rom(self) -> None:
+        """The pause menu file rebuilds: one-line BIOMETAL texts and the signature message where the cave reads it."""
+        data = nds.file_bytes(bytearray(self.rom), ui.PAUSE_TEXT_FILE_ID)
+        out = ui.pause_texts_with_goal_line(data)
+        _total, tsize = struct.unpack_from("<HH", out, 0)
+        offs = struct.unpack_from("<%dH" % (tsize // 2), out, 4)
+        sig = 4 + tsize + offs[ui.PAUSE_SIGNATURE_INDEX]
+        self.assertEqual(out[sig:sig + len(ui.PAUSE_SIGNATURE)], ui.PAUSE_SIGNATURE)
+        self.assertEqual(sig % 4, 0)
+        self.assertEqual(sig, 4 + tsize + ui.GOAL_LINE_MESSAGES * (ui.GOAL_LINE_BUF_LEN + 1))
+
     def test_rom_level_edits(self) -> None:
         """The help texts and the disk tile have the digests the ROM steps check."""
         for off in ui.MENU_WARP_TEXT_OFFS:
@@ -432,3 +443,60 @@ class TestVanillaBytes(unittest.TestCase):
         tile = self.rom[fnt_start + sprites.DISK_LOGO_FNT_OFF:
                         fnt_start + sprites.DISK_LOGO_FNT_OFF + len(sprites.DISK_LOGO_NEW)]
         self.assertEqual(hashlib.sha256(tile).hexdigest(), sprites.DISK_LOGO_SHA256)
+
+
+class TestPauseTexts(unittest.TestCase):
+    """The STATUS help texts take the two-line layout the goal line cave checks before writing."""
+
+    @staticmethod
+    def bank(texts) -> bytes:
+        body = b"".join(t + bytes([ui.PAUSE_TEXT_END]) for t in texts)
+        offs, pos = [], 0
+        for t in texts:
+            offs.append(pos)
+            pos += len(t) + 1
+        tsize = 2 * len(texts)
+        return (struct.pack("<HH", 4 + tsize + len(body), tsize)
+                + struct.pack("<%dH" % len(texts), *offs) + body)
+
+    def test_layout(self) -> None:
+        first = b"\x23\x48\x4f\x4f" + bytes([0x53]) * 12
+        two_lines = ui.PAUSE_SIGNATURE + bytes([0x41]) * 18 + bytes([ui.PAUSE_TEXT_LINE_BREAK]) + bytes([0x41]) * 10
+        last = bytes([0x42]) * 5
+        texts = [first] + [bytes([0x41 + k]) * 20 for k in range(9)] + [two_lines, last]
+        out = ui.pause_texts_with_goal_line(self.bank(texts))
+        total, tsize = struct.unpack_from("<HH", out, 0)
+        base = 4 + tsize
+        offs = struct.unpack_from("<%dH" % (tsize // 2), out, 4)
+        for k in range(ui.GOAL_LINE_MESSAGES):
+            text = out[base + offs[k]:base + offs[k] + ui.GOAL_LINE_BUF_LEN + 1]
+            self.assertEqual(text[:len(texts[k])], texts[k])
+            self.assertEqual(set(text[len(texts[k]):ui.GOAL_LINE_GLYPHS]), {0})
+            self.assertEqual(text[ui.GOAL_LINE_GLYPHS], ui.PAUSE_TEXT_LINE_BREAK)
+            self.assertEqual(set(text[ui.GOAL_LINE_GLYPHS + 1:ui.GOAL_LINE_BUF_LEN]), {0})
+            self.assertEqual(text[ui.GOAL_LINE_BUF_LEN], ui.PAUSE_TEXT_END)
+        self.assertEqual(out[base + offs[10]:], two_lines + bytes([ui.PAUSE_TEXT_END]) + last + bytes([ui.PAUSE_TEXT_END]))
+        self.assertEqual(total, len(out))
+
+    def test_texts_the_layout_cannot_hold_are_refused(self) -> None:
+        tail = [b"\x41"] * 9 + [ui.PAUSE_SIGNATURE, b"\x42"]
+        with self.assertRaises(ValueError):
+            ui.pause_texts_with_goal_line(self.bank([bytes([0x41]) * (ui.GOAL_LINE_GLYPHS + 1)] + tail))
+        with self.assertRaises(ValueError):
+            ui.pause_texts_with_goal_line(self.bank([b"\x41\xfc\x41"] + tail))
+        with self.assertRaises(ValueError):
+            ui.pause_texts_with_goal_line(self.bank([b"\x41"] * 12))    # no signature at message 10
+        with self.assertRaises(ValueError):
+            ui.pause_texts_with_goal_line(self.bank([b"\x41"] + tail[:-1]))  # 11 messages: signature off by two
+
+    def test_cave_knows_the_layout(self) -> None:
+        """The cave tests the break and the end at the layout's offsets and reads the client's buffer."""
+        cave = ui.GOAL_LINE_CAVE
+        halfwords = {int.from_bytes(cave[i:i + 2], "little") for i in range(0, len(cave), 2)}
+        self.assertIn(0x2300 | ui.GOAL_LINE_GLYPHS, halfwords)     # movs r3, #glyphs
+        self.assertIn(0x2300 | ui.GOAL_LINE_BUF_LEN, halfwords)    # movs r3, #both lines
+        words = {int.from_bytes(cave[i:i + 4], "little") for i in range(0, len(cave), 4)}
+        self.assertIn(GOAL_LINE_ADDR, words)
+        self.assertIn(int.from_bytes(ui.PAUSE_SIGNATURE, "little"), words)
+        self.assertIn(0x2400 | 2 * ui.PAUSE_SIGNATURE_INDEX, halfwords)   # movs r4, #index * 2
+        self.assertLessEqual(GOAL_LINE_ADDR + ui.GOAL_LINE_BUF_LEN, NOTIFY_ADDR)

@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 from ..data import HUB_FLOOR_Y
 from .addresses import GAME, HUB_SUBAREA, HUB_X, HUB_Y, NOTIFY_LEVELS, NOTIFY_STYLES
+from .items import received_counts
 from .warps import hub_pad
 
 if TYPE_CHECKING:
@@ -104,11 +105,19 @@ def _cmd_icons(self, *args) -> None:
         return
     if args and str(args[0]).lower() in ("on", "off"):
         handler.icons_enabled = str(args[0]).lower() == "on"
-        handler.icon_written = None
     elif args:
         logger.error("usage: /mmzx_icons [on|off]")
         return
     logger.info("[mmzx] in-game item icons: %s" % ("on" if handler.icons_enabled else "off"))
+
+
+def _cmd_goal(self, *args) -> None:
+    """Progress towards the goal requirements: /mmzx_goal."""
+    handler = _handler(self)
+    if handler is None or handler.goal is None:
+        return
+    for line in handler.goal.report(received_counts(self.ctx), handler.missions_cleared):
+        logger.info("[mmzx] " + line)
 
 
 def _cmd_debug(self, *args) -> None:
@@ -127,5 +136,5 @@ def _cmd_debug(self, *args) -> None:
 COMMANDS = {
     "mmzx_teleport": _cmd_teleport, "mmzx_where": _cmd_where, "mmzx_accept": _cmd_accept,
     "mmzx_start": _cmd_start, "mmzx_notify": _cmd_notify, "mmzx_icons": _cmd_icons,
-    "mmzx_debug": _cmd_debug,
+    "mmzx_goal": _cmd_goal, "mmzx_debug": _cmd_debug,
 }

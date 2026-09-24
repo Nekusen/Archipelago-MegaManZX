@@ -4,7 +4,10 @@ Everything the client reads or writes is named here.
 """
 
 from ..data import (
-    CANON_BLOCK, GOAL_BITS, GOAL_BITS_SERPENT, ITEMS, LIVE_BLOCK, LOCATIONS, WARP_DESTINATIONS)
+    CANON_BLOCK, GOAL_BITS, GOAL_BITS_SERPENT, ITEMS, LIVE_BLOCK, LOCATIONS, PICKUP_TABLE_ADDR,
+    WARP_DESTINATIONS)
+from ..goal import DISK_ITEM
+from ..rom.table import BITMAP_LEN, CHECKED_OFF, COLLECTED_OFF, FLAGS_OFF, PICKUP_SLOTS
 
 
 GAME = "Mega Man ZX"
@@ -26,40 +29,28 @@ for _m, _item in MODEL_ITEMS.items():
         MODEL_SECOND_HALF[_m] = (int(_g[1][1][0]), int(_g[1][1][1]))
     else:
         MODEL_POSSESSION[_m] = (_item, int(_g[1]), int(_g[2]))
+# Without progressive_models the pool holds one full item per progressive model instead.
+FULL_MODEL_ITEMS = {3: "Model HX", 4: "Model FX", 5: "Model LX", 6: "Model PX"}
 # With hu_in_pool the human form is owned through this bit of the progress block.
 HU_POSSESSION = (int(ITEMS["Model Hu"]["grant"][1]), int(ITEMS["Model Hu"]["grant"][2]))
+# The vanilla seal of the final area, for a seed without goal requirements in its slot data
 SIX_MODELS = ("Model X", "Model ZX", "Progressive Model HX", "Progressive Model FX",
               "Progressive Model LX", "Progressive Model PX")
-# Items with their own sprite in the AP graphics set (ICON_CODES); anything else
-# is drawn as the Archipelago logo of its classification.
-ICON_BY_ITEM: dict[str, str] = {}
-for _n in ITEMS:
-    _w = _n.split()
-    if _n in ("Life Up", "Sub Tank"):
-        ICON_BY_ITEM[_n] = _n.replace(" ", "").lower()
-    elif _w[-1] == "Chip":
-        ICON_BY_ITEM[_n] = "chip_" + "".join(_w[:-1])
-    elif _w[-2:] == ["Card", "Key"]:
-        ICON_BY_ITEM[_n] = "card_" + _w[0]
-    elif len(_w) >= 2 and _w[-2] == "Model":
-        ICON_BY_ITEM[_n] = "model_" + _w[-1]
+DISK_ITEM_ID = ITEMS[DISK_ITEM]["id"]
+# Disk locations to their "taken" bit, which the client also sets for disks collected elsewhere
+DISK_TAKEN_BITS = {v["id"]: (int(v["detect"][1]), int(v["detect"][2]))
+                   for v in LOCATIONS.values() if v["category"] == "disk" and v.get("detect")}
 # The game hands out Card Keys as mission rewards, so the received set is
 # written as-is over these bits every tick.
 CARDKEY_MASKS: dict[int, int] = {}
 for _kn, _kv in ITEMS.items():
     if _kn.endswith("Card Key") and _kv["grant"][0] == "live_bit":
         CARDKEY_MASKS[_kv["grant"][1]] = CARDKEY_MASKS.get(_kv["grant"][1], 0) | (1 << _kv["grant"][2])
-# Locations by detect recipe: respawnable pickups by (subarea, coords index), and
-# the icon table entries per subarea as (location id, coords index, respawns)
-MAILBOX_LOCATIONS = {(int(v["detect"][1]), int(v["detect"][2])): v["id"]
-                     for v in LOCATIONS.values() if (v.get("detect") or [None])[0] == "mailbox"}
-ICON_TABLE_CODES = 128
-ICONS_BY_SUBAREA: dict[int, list[tuple[int, int, bool]]] = {}
-for _v in LOCATIONS.values():
-    _ic = _v.get("icon")
-    if _ic and int(_ic[1]) < ICON_TABLE_CODES:
-        _det = _v.get("detect") or [None]
-        ICONS_BY_SUBAREA.setdefault(int(_ic[0]), []).append((_v["id"], int(_ic[1]), _det[0] == "mailbox"))
+# Slots of the pickup table (rom/table.py): the bit of each physical location in
+# the `checked` and `collected` bitmaps; refills are the ones the game records
+SLOT_LOCATIONS = {slot: LOCATIONS[n]["id"] for n, slot in PICKUP_SLOTS.items()}
+LOCATION_SLOTS = {loc: slot for slot, loc in SLOT_LOCATIONS.items()}
+REFILL_SLOTS = frozenset(slot for n, slot in PICKUP_SLOTS.items() if LOCATIONS[n]["detect"][0] == "mailbox")
 
 # Progress block (LIVE_BLOCK and its canonical copy CANON_BLOCK come from data.py)
 CANON_OFF = CANON_BLOCK - LIVE_BLOCK
@@ -170,6 +161,13 @@ SCRIPT_STATE_OFF = 0xB
 CUTSCENE_NONE = 0xFF
 STORY_HANDLER_STATE = STORY_HANDLER_OBJ + SCRIPT_STATE_OFF
 ROOM_SCRIPT_STATE = ROOM_SCRIPT_OBJ + SCRIPT_STATE_OFF
+# O-2's room script reads its mini-boss flag only when the room loads: it waits
+# for the fight in one state and skips ahead with the flag set, so a flag set
+# after the load (an arrival from another area) needs the state moved as well.
+O02_SCRIPT_MINIBOSS_WAIT = 1
+O02_SCRIPT_MINIBOSS_BEATEN = 4
+O02_MINIBOSS_FLAG = (0x021045CE, 1)
+MINIBOSSES_KEY = "mmzx_minibosses_%s_%s"  # data storage: [[addr, bit], ...] beaten once
 # Troop Reinforcement: the Giro scene at the end of D-2 only arms with the
 # start flag set and the megamerge flag clear. Dying after the megamerge
 # without the Report would leave D-2 empty for good, so the client repairs
@@ -230,12 +228,20 @@ TRANSPORT_SEL_NONE = 0xFFFFFFFF
 STATE_TARGET_AREA = 0x00050700 # opens the Target Area list
 STATION_ROOMS = list(WARP_DESTINATIONS) + ["x01"]   # room per station index
 
-# Pickup mailbox, polled only if the slot enables a pickup category
+# The game's `collected` bitmap is polled only if the slot enables a pickup category
 PICKUP_OPTION_KEYS = ("pickup_checks_1up", "pickup_checks_energy",
                       "pickup_checks_weapon", "pickup_checks_crystals")
-# Icon table: header, one code per coords index, then the two bitmaps
-ICON_TABLE_CODE_OFF = 4
-ICON_TABLE_CHECKED_OFF = 0x84   # refills already sent keep the vanilla look
+# Pickup state the client keeps in the pickup table section: the icons switch,
+# then the `checked` bitmap (rom/table.py); the game's `collected` bitmap follows
+PICKUP_STATE_ADDR = PICKUP_TABLE_ADDR + FLAGS_OFF
+PICKUP_STATE_LEN = CHECKED_OFF - FLAGS_OFF + BITMAP_LEN
+PICKUP_CHECKED_REL = CHECKED_OFF - FLAGS_OFF
+PICKUP_ICONS_OFF = 1            # value of the switch that turns the icons off
+PICKUP_COLLECTED_ADDR = PICKUP_TABLE_ADDR + COLLECTED_OFF
+# A check the server has not confirmed yet is sent again after this many seconds
+RESEND_SECONDS = 2.0
+# Items are granted once the connection's ReceivedItems arrived, or after this wait
+INVENTORY_WAIT_SECONDS = 1.0
 
 # On-screen notices: text left in the NOTIFY mailbox, shown by the ROM in the
 # game's small popup

@@ -4,18 +4,21 @@ from typing import TYPE_CHECKING
 import worlds._bizhawk as bizhawk
 
 from ..data import (
-    ACTIVE_MODEL_ADDR, EVENT_GATES, EVENT_GATES_ALL6, EVENT_GATES_OPEN, ITEMS, MODEL_BOSS_LEVEL_IDX,
-    STARTING_MODELS)
+    ACTIVE_MODEL_ADDR, EVENT_GATES, EVENT_GATES_OPEN, ITEMS, MODEL_BOSS_LEVEL_IDX, STARTING_MODELS)
 from .addresses import (
     BOSS_LEVELS, CANON_OFF, CAPACITY_NIBBLE, CARDKEY_MASKS, COLLECTED_NIBBLE, CONS_KEY,
     CUTSCENE_FLAG, DOM, ECRYSTALS, ECRYSTALS_CAP, ECRYSTALS_HIGH_MASK, ECRYSTALS_MASK,
-    ECRYSTALS_PER_ITEM, HPMAX, HP_BASE, HP_CAP, HP_PER_LIFEUP, HU_POSSESSION, ITEM_BY_ID, LIFEUP_BYTE,
-    LIFEUP_SLOTS, LIVES, LIVES_CAP, MODEL_POSSESSION, MODEL_SECOND_HALF,
-    PLAYTIME, SIX_MODELS, SUBTANK_BYTE, SUBTANK_SLOTS, WE_BASE, WE_FULL)
+    ECRYSTALS_PER_ITEM, FULL_MODEL_ITEMS, HPMAX, HP_BASE, HP_CAP, HP_PER_LIFEUP, HU_POSSESSION,
+    ITEM_BY_ID, LIFEUP_BYTE, LIFEUP_SLOTS, LIVES, LIVES_CAP, MODEL_POSSESSION, MODEL_SECOND_HALF,
+    PLAYTIME, SUBTANK_BYTE, SUBTANK_SLOTS, WE_BASE, WE_FULL)
+from .notices import notify_bytes
 from .ram import Tick, bits_by_byte, copies_writes, read_copies
 
 if TYPE_CHECKING:
     from . import MMZXClient
+    from .goal import GoalRequirement
+
+GATE_OPEN_NOTICE = ("Goal: ", "final area open", "")
 
 
 def received_counts(ctx) -> dict[str, int]:
@@ -28,11 +31,17 @@ def received_counts(ctx) -> dict[str, int]:
     return counts
 
 
-def wanted_progress_bits(counts: dict[str, int]) -> tuple[set[tuple[int, int]], set[tuple[int, int]]]:
-    """(idempotent bits, Card Key bits) the received items call for.
+def model_halves(counts: dict[str, int], model: int) -> int:
+    """Halves of a model held: one per progressive copy, both with the full item."""
+    return counts.get(MODEL_POSSESSION[model][0], 0) + 2 * counts.get(FULL_MODEL_ITEMS.get(model, ""), 0)
+
+
+def wanted_progress_bits(counts: dict[str, int], goal: "GoalRequirement", missions: int
+                         ) -> tuple[set[tuple[int, int]], set[tuple[int, int]]]:
+    """(idempotent bits, Card Key bits) the received items and the missions completed call for.
 
     Progressive items set one bit per copy. Some story gates open for everyone;
-    the Slither gate (D-2 to D-4) once the six model items are held.
+    the Slither gate (D-2 to D-4) once the goal requirements are met.
     """
     bits: set[tuple[int, int]] = set()
     cardkeys: set[tuple[int, int]] = set()
@@ -45,13 +54,14 @@ def wanted_progress_bits(counts: dict[str, int]) -> tuple[set[tuple[int, int]], 
             for k, (addr, bit) in enumerate(grant[1]):
                 if n > k:
                     bits.add((addr, bit))
+        elif kind == "bits":
+            bits.update((addr, bit) for addr, bit in grant[1])
         elif kind == "transerver":
             bits.add((grant[1], grant[2]))
     for fl in EVENT_GATES_OPEN:
         bits.add(tuple(EVENT_GATES[fl]))
-    if all(counts.get(n, 0) for n in SIX_MODELS):
-        for fl in EVENT_GATES_ALL6:
-            bits.add(tuple(EVENT_GATES[fl]))
+    if goal.met(counts, missions):
+        bits |= goal.gate_bits()
     return bits, cardkeys
 
 
@@ -61,15 +71,14 @@ async def weapon_energy_writes(ctx, counts: dict[str, int]) -> list[tuple[int, b
     With one half the first boss level is raised so the pair sums 4 and the
     bar is filled to 16; with both halves both levels become 4 and the bar 32.
     """
-    owned = [m for m, (item, _a, _b) in MODEL_POSSESSION.items()
-             if m in MODEL_BOSS_LEVEL_IDX and counts.get(item, 0)]
+    owned = [m for m in MODEL_POSSESSION if m in MODEL_BOSS_LEVEL_IDX and model_halves(counts, m)]
     if not owned:
         return []
     lv = (await bizhawk.read(ctx.bizhawk_ctx, [(BOSS_LEVELS, 8, DOM)]))[0]
     writes: list[tuple[int, bytes, str]] = []
     for m in owned:
         i0, i1 = MODEL_BOSS_LEVEL_IDX[m]
-        full = counts.get(MODEL_POSSESSION[m][0], 0) >= 2
+        full = model_halves(counts, m) >= 2
         if full and lv[i0] + lv[i1] < 8:
             for i in (i0, i1):
                 writes.append((BOSS_LEVELS + i, b"\x04", DOM))
@@ -179,15 +188,20 @@ async def grant_items(client: "MMZXClient", ctx, tick: Tick) -> None:
     counts = received_counts(ctx)
     consumables = [ITEM_BY_ID[net.item][1][0] for net in ctx.items_received
                    if net.item in ITEM_BY_ID and ITEM_BY_ID[net.item][1][0] in ("ecrystals", "oneup")]
-    bits, cardkeys = wanted_progress_bits(counts)
+    goal = client.goal
+    missions = len(client.missions_cleared or ())
+    bits, cardkeys = wanted_progress_bits(counts, goal, missions)
 
     writes = await weapon_energy_writes(ctx, counts)
     # idempotent bits go to live (effect now) and canonical (persistence)
+    gate_opening = False
     if bits:
         masks = bits_by_byte(bits)
         addrs = sorted(masks)
         live, canon = await read_copies(ctx, addrs)
         writes += copies_writes(addrs, live, canon, set_masks=masks)
+        # the gate flags were down until now: the requirement was just met
+        gate_opening = goal.met(counts, missions) and any(not live[a] & (1 << b) for a, b in goal.gate_bits())
     # Card Keys: exactly the received set, since the game also hands them out
     # as mission rewards; the neighbouring bits are unrelated flags
     want = bits_by_byte(cardkeys)
@@ -196,12 +210,22 @@ async def grant_items(client: "MMZXClient", ctx, tick: Tick) -> None:
     writes += copies_writes(kaddrs, live, canon,
                             set_masks={a: want.get(a, 0) & CARDKEY_MASKS[a] for a in kaddrs},
                             clear_masks={a: CARDKEY_MASKS[a] & ~want.get(a, 0) for a in kaddrs})
+    # database entries: exactly the disks received, since the game never writes them now
+    lit, every = goal.disk_bits(counts)
+    dwant, dall = bits_by_byte(lit), bits_by_byte(every)
+    daddrs = sorted(dall)
+    live, canon = await read_copies(ctx, daddrs)
+    writes += copies_writes(daddrs, live, canon,
+                            set_masks={a: dwant.get(a, 0) for a in daddrs},
+                            clear_masks={a: dall[a] & ~dwant.get(a, 0) for a in daddrs})
     writes += await capacity_writes(ctx, counts)
     new_consumables, pt, cons_writes = await consumable_writes(client, ctx, consumables)
     writes += cons_writes
     if not writes:
         return
     ok = await bizhawk.guarded_write(ctx.bizhawk_ctx, writes, [tick.guard])
+    if ok and gate_opening:
+        client.notify_queue.append(notify_bytes(*GATE_OPEN_NOTICE, client.notify_style))
     # consumables count as applied only if the write went through
     if ok and new_consumables:
         client.cons_log = [e for e in client.cons_log if e[1] <= pt] + [[len(consumables), pt]]
@@ -239,8 +263,8 @@ async def revert_unowned_models(client: "MMZXClient", ctx, tick: Tick) -> None:
     if r[1][0] & 1:
         return   # cutscene running: leave the model alone
     active = r[0][0]
-    owned = {m: counts.get(item, 0) >= 1 for m, (item, _a, _b) in MODEL_POSSESSION.items()}
-    full = {m: counts.get(MODEL_POSSESSION[m][0], 0) >= 2 for m in MODEL_SECOND_HALF}
+    owned = {m: model_halves(counts, m) >= 1 for m in MODEL_POSSESSION}
+    full = {m: model_halves(counts, m) >= 2 for m in MODEL_SECOND_HALF}
     # With hu_in_pool Hu is just another form. The game refuses to transform
     # with a single owned category, so a scene that ends in Hu (the M-1 seal
     # one does) would leave the player stuck in Hu for good.

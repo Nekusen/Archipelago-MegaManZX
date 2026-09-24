@@ -1,18 +1,15 @@
 @ PICKUP_AP: pickups replaced by AP items.
 @ The gate routine says whether an entity stands for a pending multiworld
-@ location (the `present` bitmap of the client's icon table); five hooks make
-@ such a pickup only chime, skipping its vanilla effect, popup or disk label.
-@ The disk the H-1 balloon holds has no spawn record, so it asks the gate
-@ about its carrier.
+@ location; the answer comes from the pickup table section (pickup_table.s),
+@ so the gate only jumps there. Five hooks make such a pickup only chime,
+@ skipping its vanilla effect, popup or disk label. The disk the H-1 balloon
+@ holds has no spawn record, so it asks the gate about its carrier.
 @ Cave at 0x020CB800 (rom/pickups.py PICKUP_AP_CAVE; entry offsets in PICKUP_AP_ENTRIES),
 @ hooks in PICKUP_AP_HOOKS.
 
         .thumb
 
-.equ ICON_TABLE,            0x02191460  @ client table (data.py ICON_TABLE_ADDR): +0 u8 subarea, +1 u8 flags (bit 0 valid), +0xA4 u8 present[32]
-.equ PRESENT_OFF,           0xA4        @ data.py ICON_TABLE_PRESENT_OFF
-.equ SUBAREA,               0x02108228  @ u8 current subarea id
-.equ SPAWN_LIST_HEAD,       0x021081F4  @ ptr: active spawn records [+0 next, +4 entity, +8 u16 coords index]
+.equ pickup_gate,           0x02191B30  @ pickup_table.s gate(ent) -> 1 if pending (PICKUP_TABLE_ADDR + PICKUP_TABLE_ENTRIES["gate"])
 .equ KIND_HANDLER_TABLES,   0x020EB8B0  @ u32[kind] -> u32[state] handler table
 .equ play_sfx,              0x020058DC  @ FUN_020058dc(id)
 .equ show_pickup_msg,       0x020122D4  @ FUN_020122d4(id, duration)
@@ -35,46 +32,27 @@
 @ Seven routines, each with its own literal pool when it needs one; the offsets are PICKUP_AP_ENTRIES.
 
 gate:                                   @ +0x00 apgate(ent) -> r0 = 1 if a pending AP location
-        push    {r4, lr}
-        ldr     r4, lit_gate_table
-        ldrb    r1, [r4]                @ table subarea
-        ldr     r2, lit_gate_subarea
-        ldrb    r2, [r2]
-        cmp     r1, r2
-        bne     gate_no                 @ table is for another room
-        ldrb    r1, [r4, #1]
-        lsls    r1, r1, #31
-        beq     gate_no                 @ table not valid
-        ldr     r1, lit_gate_spawn_list
-        ldr     r1, [r1]
-gate_loop:
-        cmp     r1, #0
-        beq     gate_no                 @ entity has no spawn record
-        ldr     r2, [r1, #4]
-        cmp     r2, r0
-        beq     gate_found
-        ldr     r1, [r1]
-        b       gate_loop
-gate_found:
-        ldrh    r2, [r1, #8]            @ coords index
-        cmp     r2, #0x80
-        bhs     gate_no                 @ outside the 128-entry bitmap
-        lsrs    r3, r2, #3
-        adds    r3, #PRESENT_OFF
-        ldrb    r3, [r4, r3]            @ present[index >> 3]
-        movs    r1, #7
-        ands    r1, r2
-        lsrs    r3, r1
-        movs    r0, #1
-        ands    r0, r3                  @ bit (index & 7)
-        pop     {r4, pc}
-gate_no:
-        movs    r0, #0
-        pop     {r4, pc}
-        nop                             @ pad to a word
-lit_gate_table:      .word ICON_TABLE
-lit_gate_subarea:    .word SUBAREA
-lit_gate_spawn_list: .word SPAWN_LIST_HEAD
+        ldr     r3, lit_gate
+        bx      r3                      @ the pickup table's gate returns to our caller
+lit_gate:       .word pickup_gate + 1
+        .word   0                       @ the per-room bitmap test that lived here (18 words)
+        .word   0
+        .word   0
+        .word   0
+        .word   0
+        .word   0
+        .word   0
+        .word   0
+        .word   0
+        .word   0
+        .word   0
+        .word   0
+        .word   0
+        .word   0
+        .word   0
+        .word   0
+        .word   0
+        .word   0
 
 tail:                                   @ +0x50 shared ending: chime and return
         movs    r0, #SFX_DISK_CHIME

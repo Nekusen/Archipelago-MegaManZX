@@ -1,19 +1,16 @@
-"""On-screen notices (the NOTIFY mailbox and the game's font) and the per-room icon table.
+"""On-screen notices (the NOTIFY mailbox and the game's font) and the pickup state the game reads.
 
-Scout requests live here too: both features need to know what each location holds.
+Scout requests live here too: the "Sent" notices need to know what each location holds.
 """
 
 from typing import TYPE_CHECKING
 import worlds._bizhawk as bizhawk
 
-from ..data import (
-    ICON_CODES, ICON_TABLE_ADDR, ICON_TABLE_PRESENT_OFF, ICON_TABLE_SIZE, NOTIFY_ADDR,
-    NOTIFY_BUF_MAX, NOTIFY_POPUP_GLYPHS)
+from ..data import NOTIFY_ADDR, NOTIFY_BUF_MAX, NOTIFY_POPUP_GLYPHS
 from .addresses import (
-    DOM, ICONS_BY_SUBAREA, ICON_BY_ITEM, ICON_TABLE_CHECKED_OFF, ICON_TABLE_CODE_OFF,
-    ITEM_ID_TO_NAME, NOTIFY_BUF_OFF, NOTIFY_DUR, NOTIFY_DUR_OFF, NOTIFY_GREEN, NOTIFY_PAGE,
-    NOTIFY_PUNCT, NOTIFY_QUEUE_MAX, NOTIFY_WHITE)
-from .ram import Tick
+    DISK_ITEM_ID, DOM, LOCATION_SLOTS, NOTIFY_BUF_OFF, NOTIFY_DUR, NOTIFY_DUR_OFF, NOTIFY_GREEN,
+    NOTIFY_PAGE, NOTIFY_PUNCT, NOTIFY_QUEUE_MAX, NOTIFY_WHITE, PICKUP_CHECKED_REL, PICKUP_ICONS_OFF,
+    PICKUP_STATE_ADDR, PICKUP_STATE_LEN)
 
 if TYPE_CHECKING:
     from . import MMZXClient
@@ -116,56 +113,22 @@ def item_level(flags: int) -> int:
     return 3
 
 
-def icon_code(ctx, loc_id: int) -> int:
-    """Icon code of the item scouted at a location, or 0 while unknown.
+async def sync_pickup_state(client: "MMZXClient", ctx) -> None:
+    """Keep the icons switch and the `checked` bitmap of the pickup table equal to the server's view.
 
-    Own items with a sprite get it; anything else the logo of its classification.
+    Read back every tick and rewritten when they differ, since a reset zeroes
+    them. A refill already sent looks and heals as vanilla again; disks, Life
+    Ups and Sub Tanks never respawn, so the game keeps treating them as AP pickups.
     """
-    info = (ctx.locations_info or {}).get(loc_id)
-    if info is None:
-        return 0
-    if info.player == ctx.slot:
-        icon = ICON_BY_ITEM.get(ITEM_ID_TO_NAME.get(int(info.item)))
-        if icon:
-            return ICON_CODES[icon]
-    flags = int(info.flags or 0)
-    if flags & 0b001:
-        return ICON_CODES["logo_progression"]
-    if flags & 0b010:
-        return ICON_CODES["logo_useful"]
-    return ICON_CODES["logo_filler"]
-
-
-async def sync_icon_table(client: "MMZXClient", ctx, tick: Tick) -> None:
-    """Write the icon table of the current subarea: codes and both bitmaps.
-
-    Rewritten when the subarea, the scouts or the checked set change and
-    when the ROM lost the header. Refills already sent look vanilla again;
-    disks, Life Ups and Sub Tanks stay `present` since they never respawn.
-    """
-    sub = tick.subarea
-    head = (await bizhawk.read(ctx.bizhawk_ctx, [(ICON_TABLE_ADDR, 2, DOM)]))[0]
-    msgs = scout_requests(client, ctx)
-    if msgs:
-        await ctx.send_msgs(msgs)
-    done = set(ctx.checked_locations) | client.mailbox_checked
-    in_seed = ctx.server_locations or set()
-    table = bytearray(ICON_TABLE_SIZE)
-    table[0], table[1] = sub, 1
-    for loc_id, idx, respawns in ICONS_BY_SUBAREA.get(sub, ()):
-        if loc_id in in_seed and not (respawns and loc_id in done):
-            table[ICON_TABLE_PRESENT_OFF + (idx >> 3)] |= 1 << (idx & 7)
-        if loc_id in done:
-            if respawns:
-                table[ICON_TABLE_CHECKED_OFF + (idx >> 3)] |= 1 << (idx & 7)
-            continue
-        if client.icons_enabled:
-            table[ICON_TABLE_CODE_OFF + idx] = icon_code(ctx, loc_id)
-    want = (sub, bytes(table))
-    if want == client.icon_written and head[0] == sub and head[1] == 1:
-        return
-    await bizhawk.write(ctx.bizhawk_ctx, [(ICON_TABLE_ADDR, bytes(table), DOM)])
-    client.icon_written = want
+    want = bytearray(PICKUP_STATE_LEN)
+    want[0] = 0 if client.icons_enabled else PICKUP_ICONS_OFF
+    for loc in ctx.checked_locations:
+        slot = LOCATION_SLOTS.get(loc)
+        if slot is not None:
+            want[PICKUP_CHECKED_REL + (slot >> 3)] |= 1 << (slot & 7)
+    cur = (await bizhawk.read(ctx.bizhawk_ctx, [(PICKUP_STATE_ADDR, PICKUP_STATE_LEN, DOM)]))[0]
+    if cur != bytes(want):
+        await bizhawk.write(ctx.bizhawk_ctx, [(PICKUP_STATE_ADDR, bytes(want), DOM)])
 
 
 def scout_requests(client: "MMZXClient", ctx) -> list:
@@ -224,8 +187,11 @@ async def push_notices(client: "MMZXClient", ctx) -> None:
         except Exception:
             item = str(net.item)
         tail = ""
+        if net.item == DISK_ITEM_ID and client.goal.wants_disks:
+            got = sum(1 for it in ctx.items_received[:client.notified_items] if it.item == DISK_ITEM_ID)
+            tail = " (%d/%d)" % (got, client.goal.disks_required)
         if net.player != ctx.slot:
-            tail = " from " + ctx.player_names.get(net.player, str(net.player))
+            tail += " from " + ctx.player_names.get(net.player, str(net.player))
         client.notify_queue.append(notify_bytes("Got ", item, tail, client.notify_style))
     if not client.notify_queue:
         return

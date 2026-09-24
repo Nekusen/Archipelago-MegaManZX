@@ -5,13 +5,14 @@
 #   of both tiers apply). '?' = not confirmed in-game.
 # Atoms: HU X ZX HX FX LX PX OX MODEL ALL6 ; YELLOW GREEN RED BLUE WHITE PURPLE ;
 #   LIFEUP>=n SUBTANK>=n ; <MISSION> (cleared) ; ACCESS_<area> ; CHIP_<chip> ;
-#   BOSS_<BOSS> (requirement set by the player in their YAML; free if unset).
+#   BOSS_<BOSS> (requirement set by the player in their YAML; free if unset) ;
+#   GOAL (the goal requirements of the YAML; the six biometals by default).
 # Doors: one line each, no positions; (xN) = N alike. Not listed: a plain door back
 #   into its own region, and a region with nothing in it.
 
 gates:  # event gates (flag): requirement or 'free' (the client opens it)
   191: normal: FIGHT_THE_MAVERICKS
-  225: normal: ALL6
+  225: normal: GOAL
   381: free
   382: free
   395: free
@@ -290,6 +291,7 @@ room B-3 [b03]
       normal: FX
       normal: LX
       normal: OX
+      expert: PX
   region Bottom Area
     conn -> Middle Area
       normal: MODEL
@@ -1467,6 +1469,7 @@ room I-2 [i02]
       normal: HX   # I-2: "Use Model Hx hover ability to get across the spikes and get the disk"
     conn -> I-5 Entrance
       normal: HX
+      expert: MODEL
   region Upper Area
     conn -> I-1 Entrance
       normal: free
@@ -1475,6 +1478,7 @@ room I-2 [i02]
       expert: free
     conn -> Spikes
       normal: HX
+      expert: MODEL
 
 room I-3 [i03]
   region Above I-1 Entrance
@@ -2044,8 +2048,10 @@ room M-2 [m02]
   region Lower Area
     conn -> Stairs
       normal: HX
+      expert: LX
     conn -> Water Segment
       normal: LX
+      expert: HX
     conn -> Surface of Water Segment
       normal: HX
   region M-1 Entrance
@@ -2054,17 +2060,18 @@ room M-2 [m02]
     conn -> Top Path
       normal: FX
     conn -> Stairs
-      normal: free
+      normal: MODEL
   region M-3 Entrance
     door -> M-3/M-2 Entrance
     <- M-3
     conn -> Water Segment
       normal: LX
+      expert: HX
   region Stairs
     conn -> M-1 Entrance
-      normal: free
+      normal: MODEL
     conn -> Lower Area
-      normal: free
+      normal: MODEL
   region Surface of Water Segment
     check M-2: 1-Up
     check M-2: E-Crystal L (3)
@@ -2082,8 +2089,10 @@ room M-2 [m02]
   region Water Segment
     conn -> Lower Area
       normal: LX
+      expert: HX
     conn -> M-3 Entrance
       normal: LX
+      expert: HX
     conn -> Surface of Water Segment
       normal: LX
 

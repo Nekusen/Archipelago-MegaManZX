@@ -8,21 +8,24 @@ The watcher and its stage order live here; each stage is a function
 
 import collections
 import logging
+from time import monotonic
 from typing import TYPE_CHECKING
 import worlds._bizhawk as bizhawk
 from worlds._bizhawk.client import BizHawkClient
 
 from ..rom import pack_version, unpack_version
 from .addresses import (
-    BOOT_FILL, DOM, GAME, NOTIFY_LEVELS, NOTIFY_STYLES, PICKUP_OPTION_KEYS, ROM_AP_MAGIC,
-    ROM_AP_MAGIC_LEN, ROM_AP_MAGIC_OFF, ROM_AP_VERSION_OFF, ROM_GAME_CODE, ROM_GAME_CODE_OFF,
-    ROM_SLOT_NAME_LEN, ROM_SLOT_NAME_OFF, STARTUP_TICKS)
+    BOOT_FILL, DOM, GAME, INVENTORY_WAIT_SECONDS, NOTIFY_LEVELS, NOTIFY_STYLES, PICKUP_OPTION_KEYS,
+    ROM_AP_MAGIC, ROM_AP_MAGIC_LEN, ROM_AP_MAGIC_OFF, ROM_AP_VERSION_OFF, ROM_GAME_CODE,
+    ROM_GAME_CODE_OFF, ROM_SLOT_NAME_LEN, ROM_SLOT_NAME_OFF, STARTUP_TICKS)
 from .ram import ProgressWindow, Tick
-from .notices import push_notices, sync_icon_table
+from .notices import push_notices, sync_pickup_state
 from .startup import apply_start_state, resolve_start_state
 from ..rom.ui import SKIP_COPY_CAVE, SKIP_COPY_CAVE_RAM
-from .checks import detect_checks
-from .items import grant_items, revert_unowned_models
+from .checks import detect_checks, sync_taken_disks
+from .goal import GoalRequirement, missions_completed, sync_goal_line
+from .items import grant_items, received_counts, revert_unowned_models
+from .minibosses import MODE_OFF, parse_mode, skip_minibosses
 from .missions import auto_accept_mission, handle_ending, repair_missions, skip_boss_rush
 from .tracker import log_where, receive_death_link, report_death, send_position
 from .warps import handle_warps
@@ -34,6 +37,12 @@ if TYPE_CHECKING:
 logger = logging.getLogger("Client")
 
 
+def logged_in(ctx) -> bool:
+    """The session is authenticated; before that the server ignores every packet."""
+    status = getattr(ctx, "auth_status", None)
+    return status is None or status.name == "AUTHENTICATED"
+
+
 class MMZXClient(BizHawkClient):
     game = GAME
     system = "NDS"
@@ -43,7 +52,13 @@ class MMZXClient(BizHawkClient):
         super().__init__()
         # slot options, read once per connection (_setup)
         self.death_link_enabled = False
+        self.goal: GoalRequirement | None = None   # what opens the gate to the final area
         self.skip_boss_rush = False        # QoL: skip the D-4 boss rush
+        self.skip_minibosses = MODE_OFF    # QoL: which mini-bosses count as beaten
+        # mini-bosses beaten once (after_first_defeat); None until the datastore answers
+        self.minibosses_key: str | None = None
+        self.minibosses_requested = False
+        self.minibosses_beaten: set[tuple[int, int]] | None = None
         self.mailbox_enabled = False       # some pickup category is a check
         # settings the player changes from the console; they outlive a reconnect
         self.notify_cfg = {"received": 2, "sent": 2}      # indices into NOTIFY_LEVELS
@@ -75,10 +90,15 @@ class MMZXClient(BizHawkClient):
         """Reset everything tied to one game; a newly validated ROM starts clean."""
         self.setup_done = False
         self.ingame_ticks = 0
-        # checks
-        self.local_checked: set[int] = set()
-        self.mailbox_count: int | None = None
-        self.mailbox_checked: set[int] = set()
+        # checks: the last send the server has not confirmed, the "Sent" notices
+        # already shown and the refills seen in the game's bitmap
+        self.pending_sent: set[int] = set()
+        self.pending_sent_at = 0.0
+        self.announced: set[int] = set()
+        self.collected_seen: set[int] = set()
+        # the connection's inventory: ReceivedItems arrived, or the wait after Connected ran out
+        self.connected_at = 0.0
+        self.items_synced = False
         # consumables log: [[cumulative n, playtime]]; None until the datastore answers
         self.cons_log: list[list[int]] | None = None
         self.cons_key: str | None = None
@@ -93,7 +113,8 @@ class MMZXClient(BizHawkClient):
         self.notify_queue: collections.deque = collections.deque()
         self.notified_items: int | None = None    # None = skip the backlog on connect
         self.scout_requested: set[int] = set()
-        self.icon_written: tuple[int, bytes] | None = None
+        self.goal_line_written: bytes | None = None
+        self.missions_cleared: set[str] | None = None   # counted missions completed, from the game's flags
         self.ending_ticks = 0             # ticks with the stuck-ending signature
 
     async def validate_rom(self, ctx: "BizHawkClientContext") -> bool:
@@ -148,6 +169,19 @@ class MMZXClient(BizHawkClient):
         if self.slot_name:
             ctx.auth = self.slot_name
 
+    def on_package(self, ctx: "BizHawkClientContext", cmd: str, args: dict) -> None:
+        """Start every connection afresh: what the server lacks is sent again, items wait for the list."""
+        if cmd == "Connected":
+            self.pending_sent = set()
+            self.connected_at = monotonic()
+            self.items_synced = False
+        elif cmd == "ReceivedItems":
+            self.items_synced = True
+
+    def inventory_known(self) -> bool:
+        """The connection's items arrived, or enough time passed to take the list as empty."""
+        return self.items_synced or monotonic() - self.connected_at >= INVENTORY_WAIT_SECONDS
+
     def _debug(self, msg: str) -> None:
         """Log at INFO after /mmzx_debug on, else at DEBUG (hidden by the client)."""
         (logger.info if self.debug_log else logger.debug)(msg)
@@ -159,10 +193,20 @@ class MMZXClient(BizHawkClient):
         self.death_link_enabled = bool(opts.get("death_link", False))
         if self.death_link_enabled:
             await ctx.update_death_link(True)
+        self.goal = GoalRequirement(opts)
+        for line in self.goal.report(received_counts(ctx), self.missions_cleared):
+            logger.info("[mmzx] " + line)
         self.skip_boss_rush = bool(opts.get("skip_boss_rush", False))
         if self.skip_boss_rush:
             logger.info("[mmzx] skip_boss_rush: the D-4 boss rush is skipped (each pair of "
                         "Pseudoroids is marked as beaten when the elevator reaches its stop)")
+        self.skip_minibosses = parse_mode(opts.get("skip_minibosses", MODE_OFF))
+        if self.skip_minibosses != MODE_OFF:
+            logger.info("[mmzx] skip_minibosses = %s: %s" % (
+                self.skip_minibosses,
+                "the mini-bosses of each area count as beaten; their fights do not start"
+                if self.skip_minibosses == "always" else
+                "a mini-boss stays beaten once you have beaten it"))
         self.mailbox_enabled = any(bool(opts.get(k, False)) for k in PICKUP_OPTION_KEYS)
         # notice thresholds from the YAML, unless /mmzx_notify already set them
         for key in ("received", "sent"):
@@ -210,7 +254,7 @@ class MMZXClient(BizHawkClient):
 
     async def game_watcher(self, ctx: "BizHawkClientContext") -> None:
         """One tick: detect checks, grant items and repair the game."""
-        if ctx.server is None or ctx.slot_data is None:
+        if ctx.server is None or ctx.slot_data is None or not logged_in(ctx):
             return
         if not self.setup_done:
             await self._setup(ctx)
@@ -226,16 +270,23 @@ class MMZXClient(BizHawkClient):
                 await self._stage("where", log_where(self, ctx))
             await self._stage("position", send_position(self, ctx, tick))
             window = await ProgressWindow.read(ctx)
+            self.missions_cleared = missions_completed(window)
             await self._stage("checks", detect_checks(self, ctx, window))
-            await self._stage("item icons", sync_icon_table(self, ctx, tick))
+            await self._stage("taken disks", sync_taken_disks(self, ctx, window, tick))
+            await self._stage("pickup state", sync_pickup_state(self, ctx))
             await self._stage("missions repair", repair_missions(self, ctx, tick))
-            await self._stage("starting state", apply_start_state(self, ctx, tick))
-            await self._stage("items", grant_items(self, ctx, tick))
-            await self._stage("notifications", push_notices(self, ctx))
-            await self._stage("models", revert_unowned_models(self, ctx, tick))
+            # everything that follows from the items waits for the connection's list
+            if self.inventory_known():
+                await self._stage("starting state", apply_start_state(self, ctx, tick))
+                await self._stage("items", grant_items(self, ctx, tick))
+                await self._stage("goal line", sync_goal_line(self, ctx, tick, received_counts(ctx)))
+                await self._stage("notifications", push_notices(self, ctx))
+                await self._stage("models", revert_unowned_models(self, ctx, tick))
             await self._stage("auto-accept", auto_accept_mission(self, ctx, tick))
             if self.skip_boss_rush:
                 await self._stage("boss rush", skip_boss_rush(self, ctx, tick))
+            if self.skip_minibosses != MODE_OFF:
+                await self._stage("mini-bosses", skip_minibosses(self, ctx, tick))
             if self.death_link_enabled:
                 await self._stage("deathlink receive", receive_death_link(self, ctx, tick))
             await self._stage("warps", handle_warps(self, ctx, tick))

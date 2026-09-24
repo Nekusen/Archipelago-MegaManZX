@@ -27,7 +27,7 @@ Use the boss name or its room code as the key.
 | Prometheus | X-3 | |
 | Pandora | M-3 | |
 | Prometheus & Pandora | O-2 | |
-| Serpent | D-5 | Implicit "ALL6" since you need those models to enter the final area |
+| Serpent | D-5 | The gate to the final area follows `goal_requirements`; a requirement here is added on top |
 | Omega Zero | N-1 | Not used at the moment as there's no checks behind Omega Zero |
 
 Giga Aspis, the boss for the first mission, is not listed because the randomizer skips it.

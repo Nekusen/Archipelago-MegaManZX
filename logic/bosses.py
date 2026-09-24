@@ -89,11 +89,11 @@ def parse_boss_logic(value) -> dict:
     return out
 
 
-def compile_rules(reqs, tier, player, hu_in_pool=False) -> dict:
+def compile_rules(reqs, tier, player, hu_in_pool=False, full_models=False) -> dict:
     """{BOSS_<ID> atom: rule} for the bosses with a real requirement."""
     rules = {}
     for bid, req in (reqs or {}).items():
-        r = F.compile_req(req, tier, player, hu_in_pool)
+        r = F.compile_req(req, tier, player, hu_in_pool, full_models=full_models)
         if r is not None:
             rules[F.boss_atom(bid)] = r
     return rules

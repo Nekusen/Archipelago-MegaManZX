@@ -23,9 +23,9 @@ from .addresses import (
     STORY_BLOCK_MIRROR, STORY_HANDLER_ID, STORY_HANDLER_STATE, TROOP_MERGE, TROOP_MERGE_SUBAREA,
     TROOP_NAME, TROOP_ROOMS, TROOP_START, TROOP_STATE)
 from .ram import (
-    ProgressWindow, Tick, bits_by_byte, copies_reads, copies_values, copies_writes,
-    decode_position, missing_bits, mission_completed, mission_done_bits, read_copies,
-    story_handler_writes)
+    ProgressWindow, Tick, area_missions_done, bits_by_byte, copies_reads, copies_values,
+    copies_writes, decode_position, missing_bits, mission_completed, mission_done_bits,
+    read_copies, story_handler_writes)
 from .checks import report_goal
 
 if TYPE_CHECKING:
@@ -192,8 +192,9 @@ async def auto_accept_mission(client: "MMZXClient", ctx, tick: Tick) -> None:
     """Accept the mission of the subarea or hub floor just entered (open world).
 
     Never re-accepts a completed mission (a second Report would pay again); an
-    active one only gets its missing extra bits back. Protect HQ is not in the
-    table; the game launches it on its own.
+    active one only gets its missing extra bits back. A mission the game
+    launches by itself (Protect HQ) waits for that launch: accepting another
+    area's mission overwrites it, and here it resumes.
     """
     found = await mission_here(client, ctx, tick.subarea)
     if found is None:
@@ -221,6 +222,14 @@ async def auto_accept_mission(client: "MMZXClient", ctx, tick: Tick) -> None:
                 client._debug("[mmzx] %s was already accepted: restored %d missing mission bits"
                               % (rec["name"], missing_bits(addrs, live, canon, masks)))
         return
+    needed = rec.get("after_missions", 0)
+    if needed:
+        done = await area_missions_done(ctx)
+        if done < needed:
+            client.last_accept_sub = key
+            client._debug("[mmzx] %s not launched by the game yet (%d of %d area missions completed)"
+                          % (rec["name"], done, needed))
+            return
     if await accept_mission(ctx, rec, guard):
         client.last_accept_sub = key      # only marked if the write went through
         client._debug("[mmzx] open world: mission auto-accepted -> %s" % rec["name"])

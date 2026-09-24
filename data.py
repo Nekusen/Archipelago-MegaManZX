@@ -10,22 +10,22 @@ CANON_BLOCK = 0x021602B4
 
 # name -> {id, category, detect:[kind,addr,bit], room, pos, status[, icon:[sub,idx]]}
 LOCATIONS = {
-    'B-2: Disk B-1': {'id': 13631488, 'category': 'disk', 'detect': ['bit', 34620931, 6], 'room': 'b02', 'pos': [4232, 456], 'status': 'verified', 'icon': [6, 23]},
-    'N-1: Disk B-2': {'id': 13631489, 'category': 'disk', 'detect': ['bit', 34620931, 7], 'room': 'n01', 'pos': [488, 648], 'status': 'verified', 'icon': [64, 7]},
-    'A-2: Disk B-3': {'id': 13631490, 'category': 'disk', 'detect': ['bit', 34620932, 0], 'room': 'a02', 'pos': [3168, 920], 'status': 'verified', 'icon': [2, 14]},
-    'D-2: Disk B-4': {'id': 13631491, 'category': 'disk', 'detect': ['bit', 34620932, 1], 'room': 'd02', 'pos': [8672, 536], 'status': 'verified', 'icon': [16, 41]},
-    'D-4: Disk B-5': {'id': 13631492, 'category': 'disk', 'detect': ['bit', 34620932, 2], 'room': 'd04', 'pos': [1136, 3864], 'status': 'verified', 'icon': [18, 25]},
-    'D-5: Disk B-6': {'id': 13631493, 'category': 'disk', 'detect': ['bit', 34620932, 3], 'room': 'd05', 'pos': [2584, 552], 'status': 'verified', 'icon': [19, 16]},
-    'H-4: Disk B-7': {'id': 13631494, 'category': 'disk', 'detect': ['bit', 34620932, 4], 'room': 'h04', 'pos': [1072, 248], 'status': 'verified', 'icon': [41, 9]},
-    'E-8: Disk B-8': {'id': 13631495, 'category': 'disk', 'detect': ['bit', 34620932, 5], 'room': 'e08', 'pos': [2220, 728], 'status': 'verified', 'icon': [27, 13]},
-    'I-3: Disk B-9': {'id': 13631496, 'category': 'disk', 'detect': ['bit', 34620932, 6], 'room': 'i03', 'pos': [280, 808], 'status': 'verified', 'icon': [44, 1]},
-    'M-3: Disk B-10': {'id': 13631497, 'category': 'disk', 'detect': ['bit', 34620932, 7], 'room': 'm03', 'pos': [792, 744], 'status': 'verified', 'icon': [63, 6]},
-    'G-5: Disk B-11': {'id': 13631498, 'category': 'disk', 'detect': ['bit', 34620933, 0], 'room': 'g05', 'pos': [3788, 452], 'status': 'verified', 'icon': [37, 44]},
-    'K-4: Disk B-12': {'id': 13631499, 'category': 'disk', 'detect': ['bit', 34620933, 1], 'room': 'k04', 'pos': [848, 1858], 'status': 'verified', 'icon': [55, 10]},
-    'L-4: Disk B-13': {'id': 13631500, 'category': 'disk', 'detect': ['bit', 34620933, 2], 'room': 'l04', 'pos': [1144, 606], 'status': 'verified', 'icon': [60, 13]},
-    'O-2: Disk B-14': {'id': 13631501, 'category': 'disk', 'detect': ['bit', 34620933, 3], 'room': 'o02', 'pos': [5224, 536], 'status': 'verified', 'icon': [66, 34]},
-    'F-4: Disk B-15': {'id': 13631502, 'category': 'disk', 'detect': ['bit', 34620933, 4], 'room': 'f04', 'pos': [1576, 306], 'status': 'verified', 'icon': [31, 32]},
-    'J-5: Disk B-16': {'id': 13631503, 'category': 'disk', 'detect': ['bit', 34620933, 5], 'room': 'j05', 'pos': [2008, 472], 'status': 'verified', 'icon': [51, 15]},
+    'B-2: Disk B-1': {'id': 13631488, 'category': 'disk', 'detect': ['bit', 34620944, 1], 'room': 'b02', 'pos': [4232, 456], 'status': 'verified', 'icon': [6, 23]},
+    'N-1: Disk B-2': {'id': 13631489, 'category': 'disk', 'detect': ['bit', 34620944, 2], 'room': 'n01', 'pos': [488, 648], 'status': 'verified', 'icon': [64, 7]},
+    'A-2: Disk B-3': {'id': 13631490, 'category': 'disk', 'detect': ['bit', 34620944, 3], 'room': 'a02', 'pos': [3168, 920], 'status': 'verified', 'icon': [2, 14]},
+    'D-2: Disk B-4': {'id': 13631491, 'category': 'disk', 'detect': ['bit', 34620944, 4], 'room': 'd02', 'pos': [8672, 536], 'status': 'verified', 'icon': [16, 41]},
+    'D-4: Disk B-5': {'id': 13631492, 'category': 'disk', 'detect': ['bit', 34620944, 5], 'room': 'd04', 'pos': [1136, 3864], 'status': 'verified', 'icon': [18, 25]},
+    'D-5: Disk B-6': {'id': 13631493, 'category': 'disk', 'detect': ['bit', 34620944, 6], 'room': 'd05', 'pos': [2584, 552], 'status': 'verified', 'icon': [19, 16]},
+    'H-4: Disk B-7': {'id': 13631494, 'category': 'disk', 'detect': ['bit', 34620944, 7], 'room': 'h04', 'pos': [1072, 248], 'status': 'verified', 'icon': [41, 9]},
+    'E-8: Disk B-8': {'id': 13631495, 'category': 'disk', 'detect': ['bit', 34620945, 0], 'room': 'e08', 'pos': [2220, 728], 'status': 'verified', 'icon': [27, 13]},
+    'I-3: Disk B-9': {'id': 13631496, 'category': 'disk', 'detect': ['bit', 34620945, 1], 'room': 'i03', 'pos': [280, 808], 'status': 'verified', 'icon': [44, 1]},
+    'M-3: Disk B-10': {'id': 13631497, 'category': 'disk', 'detect': ['bit', 34620945, 2], 'room': 'm03', 'pos': [792, 744], 'status': 'verified', 'icon': [63, 6]},
+    'G-5: Disk B-11': {'id': 13631498, 'category': 'disk', 'detect': ['bit', 34620945, 3], 'room': 'g05', 'pos': [3788, 452], 'status': 'verified', 'icon': [37, 44]},
+    'K-4: Disk B-12': {'id': 13631499, 'category': 'disk', 'detect': ['bit', 34620945, 4], 'room': 'k04', 'pos': [848, 1858], 'status': 'verified', 'icon': [55, 10]},
+    'L-4: Disk B-13': {'id': 13631500, 'category': 'disk', 'detect': ['bit', 34620945, 5], 'room': 'l04', 'pos': [1144, 606], 'status': 'verified', 'icon': [60, 13]},
+    'O-2: Disk B-14': {'id': 13631501, 'category': 'disk', 'detect': ['bit', 34620945, 6], 'room': 'o02', 'pos': [5224, 536], 'status': 'verified', 'icon': [66, 34]},
+    'F-4: Disk B-15': {'id': 13631502, 'category': 'disk', 'detect': ['bit', 34620945, 7], 'room': 'f04', 'pos': [1576, 306], 'status': 'verified', 'icon': [31, 32]},
+    'J-5: Disk B-16': {'id': 13631503, 'category': 'disk', 'detect': ['bit', 34620946, 0], 'room': 'j05', 'pos': [2008, 472], 'status': 'verified', 'icon': [51, 15]},
     'D-1: Life Up': {'id': 13631744, 'category': 'life_up', 'detect': ['bit', 34929783, 4], 'room': 'd01', 'pos': [3144, 728], 'status': 'verified', 'icon': [15, 20]},
     'F-2: Life Up': {'id': 13631745, 'category': 'life_up', 'detect': ['bit', 34929783, 5], 'room': 'f02', 'pos': [712, 544], 'status': 'verified', 'icon': [29, 3]},
     'J-1: Life Up': {'id': 13631746, 'category': 'life_up', 'detect': ['bit', 34929783, 6], 'room': 'j01', 'pos': [728, 872], 'status': 'verified', 'icon': [47, 4]},
@@ -73,85 +73,85 @@ LOCATIONS = {
     'Quest - Gather The Screws': {'id': 13632358, 'category': 'quest', 'detect': None, 'room': 'K-3K-4K-5', 'pos': None, 'status': 'detect_pending'},
     'Quest - Clean The Room': {'id': 13632359, 'category': 'quest', 'detect': None, 'room': 'C-1', 'pos': None, 'status': 'detect_pending'},
     'Quest - Deliver The Aid Kit': {'id': 13632360, 'category': 'quest', 'detect': None, 'room': 'L-1L-2L-3', 'pos': None, 'status': 'detect_pending'},
-    'I-4: Disk M-1': {'id': 13632488, 'category': 'disk', 'detect': ['bit', 34620933, 7], 'room': 'i04', 'pos': [1528, 312], 'status': 'verified', 'icon': [45, 5]},
-    'M-1: Disk M-2': {'id': 13632489, 'category': 'disk', 'detect': ['bit', 34620934, 0], 'room': 'm01', 'pos': [5592, 280], 'status': 'verified', 'icon': [61, 33]},
-    'O-1: Disk M-3': {'id': 13632490, 'category': 'disk', 'detect': ['bit', 34620934, 1], 'room': 'o01', 'pos': [2544, 904], 'status': 'verified', 'icon': [65, 14]},
-    'D-2: Disk M-4': {'id': 13632491, 'category': 'disk', 'detect': ['bit', 34620934, 2], 'room': 'd02', 'pos': [3664, 744], 'status': 'verified', 'icon': [16, 14]},
-    'E-5: Disk M-5': {'id': 13632492, 'category': 'disk', 'detect': ['bit', 34620934, 3], 'room': 'e05', 'pos': [2192, 264], 'status': 'verified', 'icon': [24, 40]},
-    'I-5: Disk M-6': {'id': 13632493, 'category': 'disk', 'detect': ['bit', 34620934, 4], 'room': 'i05', 'pos': [1416, 648], 'status': 'verified', 'icon': [46, 3]},
-    'J-3: Disk M-7': {'id': 13632494, 'category': 'disk', 'detect': ['bit', 34620934, 5], 'room': 'j03', 'pos': [1704, 1000], 'status': 'verified', 'icon': [49, 15]},
-    'H-3: Disk M-8': {'id': 13632495, 'category': 'disk', 'detect': ['bit', 34620934, 6], 'room': 'h03', 'pos': [2248, 936], 'status': 'verified', 'icon': [40, 34]},
-    'K-3: Disk M-9': {'id': 13632496, 'category': 'disk', 'detect': ['bit', 34620934, 7], 'room': 'k03', 'pos': [560, 1102], 'status': 'verified', 'icon': [54, 1]},
-    'A-1: Disk E-1': {'id': 13633488, 'category': 'disk', 'detect': ['bit', 34620935, 1], 'room': 'a01', 'pos': [7632, 344], 'status': 'verified', 'icon': [1, 51]},
-    'F-3: Disk E-2': {'id': 13633489, 'category': 'disk', 'detect': ['bit', 34620935, 2], 'room': 'f03', 'pos': [1984, 628], 'status': 'verified', 'icon': [30, 85]},
-    'I-1: Disk E-3': {'id': 13633490, 'category': 'disk', 'detect': ['bit', 34620935, 3], 'room': 'i01', 'pos': [2592, 632], 'status': 'verified', 'icon': [42, 27]},
-    'E-1: Disk E-4': {'id': 13633491, 'category': 'disk', 'detect': ['bit', 34620935, 4], 'room': 'e01', 'pos': [1800, 728], 'status': 'verified', 'icon': [20, 8]},
-    'L-3: Disk E-5': {'id': 13633492, 'category': 'disk', 'detect': ['bit', 34620935, 5], 'room': 'l03', 'pos': [4032, 722], 'status': 'verified', 'icon': [59, 58]},
-    'D-3: Disk E-6': {'id': 13633493, 'category': 'disk', 'detect': ['bit', 34620935, 6], 'room': 'd03', 'pos': [2800, 920], 'status': 'verified', 'icon': [17, 17]},
-    'J-2: Disk E-7': {'id': 13633494, 'category': 'disk', 'detect': ['bit', 34620935, 7], 'room': 'j02', 'pos': [2448, 472], 'status': 'verified', 'icon': [48, 32]},
-    'E-4: Disk E-8': {'id': 13633495, 'category': 'disk', 'detect': ['bit', 34620936, 0], 'room': 'e04', 'pos': [3032, 264], 'status': 'verified', 'icon': [23, 33]},
-    'G-3: Disk E-9': {'id': 13633496, 'category': 'disk', 'detect': ['bit', 34620936, 1], 'room': 'g03', 'pos': [888, 546], 'status': 'verified', 'icon': [35, 12]},
-    'H-3: Disk E-10': {'id': 13633497, 'category': 'disk', 'detect': ['bit', 34620936, 2], 'room': 'h03', 'pos': [1824, 712], 'status': 'verified', 'icon': [40, 20]},
-    'B-4: Disk E-11': {'id': 13633498, 'category': 'disk', 'detect': ['bit', 34620936, 3], 'room': 'b04', 'pos': [2224, 664], 'status': 'verified', 'icon': [8, 13]},
-    'D-1: Disk E-12': {'id': 13633499, 'category': 'disk', 'detect': ['bit', 34620936, 4], 'room': 'd01', 'pos': [2832, 728], 'status': 'verified', 'icon': [15, 12]},
-    'I-5: Disk E-13': {'id': 13633500, 'category': 'disk', 'detect': ['bit', 34620936, 5], 'room': 'i05', 'pos': [3280, 520], 'status': 'verified', 'icon': [46, 20]},
-    'I-4: Disk E-14': {'id': 13633501, 'category': 'disk', 'detect': ['bit', 34620936, 6], 'room': 'i04', 'pos': [1928, 312], 'status': 'verified', 'icon': [45, 8]},
-    'F-2: Disk E-15': {'id': 13633502, 'category': 'disk', 'detect': ['bit', 34620936, 7], 'room': 'f02', 'pos': [992, 930], 'status': 'verified', 'icon': [29, 5]},
-    'G-2: Disk E-16': {'id': 13633503, 'category': 'disk', 'detect': ['bit', 34620937, 0], 'room': 'g02', 'pos': [348, 362], 'status': 'verified', 'icon': [34, 24]},
-    'B-2: Disk E-17': {'id': 13633504, 'category': 'disk', 'detect': ['bit', 34620937, 1], 'room': 'b02', 'pos': [2672, 472], 'status': 'verified', 'icon': [6, 16]},
-    'L-1: Disk E-18': {'id': 13633505, 'category': 'disk', 'detect': ['bit', 34620937, 2], 'room': 'l01', 'pos': [3280, 528], 'status': 'verified', 'icon': [57, 26]},
-    'D-1: Disk E-19': {'id': 13633506, 'category': 'disk', 'detect': ['bit', 34620937, 3], 'room': 'd01', 'pos': [3824, 632], 'status': 'verified', 'icon': [15, 23]},
-    'A-4: Disk E-20': {'id': 13633507, 'category': 'disk', 'detect': ['bit', 34620937, 4], 'room': 'a04', 'pos': [1224, 248], 'status': 'verified', 'icon': [4, 9]},
-    'E-4: Disk E-21': {'id': 13633508, 'category': 'disk', 'detect': ['bit', 34620937, 5], 'room': 'e04', 'pos': [3272, 1112], 'status': 'verified', 'icon': [23, 35]},
-    'K-1: Disk E-22': {'id': 13633509, 'category': 'disk', 'detect': ['bit', 34620937, 6], 'room': 'k01', 'pos': [3386, 622], 'status': 'verified', 'icon': [52, 31]},
-    'I-5: Disk E-23': {'id': 13633510, 'category': 'disk', 'detect': ['bit', 34620937, 7], 'room': 'i05', 'pos': [2536, 712], 'status': 'verified', 'icon': [46, 11]},
-    'B-1: Disk E-24': {'id': 13633511, 'category': 'disk', 'detect': ['bit', 34620938, 0], 'room': 'b01', 'pos': [4992, 888], 'status': 'verified', 'icon': [5, 28]},
-    'K-5: Disk E-25': {'id': 13633512, 'category': 'disk', 'detect': ['bit', 34620938, 1], 'room': 'k05', 'pos': [552, 1250], 'status': 'verified', 'icon': [56, 7]},
-    'K-4: Disk E-26': {'id': 13633513, 'category': 'disk', 'detect': ['bit', 34620938, 2], 'room': 'k04', 'pos': [352, 526], 'status': 'verified', 'icon': [55, 3]},
-    'A-2: Disk E-27': {'id': 13633514, 'category': 'disk', 'detect': ['bit', 34620938, 3], 'room': 'a02', 'pos': [5112, 568], 'status': 'verified', 'icon': [2, 20]},
-    'B-2: Disk E-28': {'id': 13633515, 'category': 'disk', 'detect': ['bit', 34620938, 4], 'room': 'b02', 'pos': [1712, 920], 'status': 'verified', 'icon': [6, 10]},
-    'A-2: Disk E-29': {'id': 13633516, 'category': 'disk', 'detect': ['bit', 34620938, 5], 'room': 'a02', 'pos': [4400, 920], 'status': 'verified', 'icon': [2, 15]},
-    'C-2: Disk E-30': {'id': 13633517, 'category': 'disk', 'detect': ['bit', 34620938, 6], 'room': 'c02', 'pos': [4992, 1128], 'status': 'verified', 'icon': [10, 43]},
-    'A-1: Disk E-31': {'id': 13633518, 'category': 'disk', 'detect': ['bit', 34620938, 7], 'room': 'a01', 'pos': [3208, 824], 'status': 'verified', 'icon': [1, 22]},
-    'G-5: Disk E-32': {'id': 13633519, 'category': 'disk', 'detect': ['bit', 34620939, 0], 'room': 'g05', 'pos': [1278, 676], 'status': 'verified', 'icon': [37, 14]},
-    'I-2: Disk E-33': {'id': 13633520, 'category': 'disk', 'detect': ['bit', 34620939, 1], 'room': 'i02', 'pos': [2192, 344], 'status': 'verified', 'icon': [43, 20]},
-    'I-2: Disk E-34': {'id': 13633521, 'category': 'disk', 'detect': ['bit', 34620939, 2], 'room': 'i02', 'pos': [1496, 632], 'status': 'verified', 'icon': [43, 12]},
-    'K-3: Disk E-35': {'id': 13633522, 'category': 'disk', 'detect': ['bit', 34620939, 3], 'room': 'k03', 'pos': [904, 688], 'status': 'verified', 'icon': [54, 3]},
-    'J-3: Disk E-36': {'id': 13633523, 'category': 'disk', 'detect': ['bit', 34620939, 4], 'room': 'j03', 'pos': [1960, 456], 'status': 'verified', 'icon': [49, 17]},
-    'E-5: Disk E-37': {'id': 13633524, 'category': 'disk', 'detect': ['bit', 34620939, 5], 'room': 'e05', 'pos': [2656, 264], 'status': 'verified', 'icon': [24, 48]},
-    'G-1: Disk E-38': {'id': 13633525, 'category': 'disk', 'detect': ['bit', 34620939, 6], 'room': 'g01', 'pos': [1278, 896], 'status': 'verified', 'icon': [33, 9]},
-    'F-1: Disk E-39': {'id': 13633526, 'category': 'disk', 'detect': ['bit', 34620939, 7], 'room': 'f01', 'pos': [894, 544], 'status': 'verified', 'icon': [28, 5]},
-    'D-2: Disk E-40': {'id': 13633527, 'category': 'disk', 'detect': ['bit', 34620940, 0], 'room': 'd02', 'pos': [3696, 536], 'status': 'verified', 'icon': [16, 15]},
-    'L-2: Disk E-41': {'id': 13633528, 'category': 'disk', 'detect': ['bit', 34620940, 1], 'room': 'l02', 'pos': [1608, 478], 'status': 'verified', 'icon': [58, 10]},
-    'O-1: Disk E-42': {'id': 13633529, 'category': 'disk', 'detect': ['bit', 34620940, 2], 'room': 'o01', 'pos': [2248, 728], 'status': 'verified', 'icon': [65, 11]},
-    'K-3: Disk E-43': {'id': 13633530, 'category': 'disk', 'detect': ['bit', 34620940, 3], 'room': 'k03', 'pos': [1560, 1088], 'status': 'verified', 'icon': [54, 11]},
-    'F-2: Disk E-44': {'id': 13633531, 'category': 'disk', 'detect': ['bit', 34620940, 4], 'room': 'f02', 'pos': [1416, 1026], 'status': 'verified', 'icon': [29, 20]},
-    'F-4: Disk E-45': {'id': 13633532, 'category': 'disk', 'detect': ['bit', 34620940, 5], 'room': 'f04', 'pos': [1522, 512], 'status': 'verified', 'icon': [31, 31]},
-    'A-3: Disk E-46': {'id': 13633533, 'category': 'disk', 'detect': ['bit', 34620940, 6], 'room': 'a03', 'pos': [1240, 792], 'status': 'verified', 'icon': [3, 8]},
-    'H-1: Disk E-47': {'id': 13633534, 'category': 'disk', 'detect': ['bit', 34620940, 7], 'room': 'h01', 'pos': [3656, 682], 'status': 'verified', 'icon': [38, 29]},
-    'F-3: Disk E-48': {'id': 13633535, 'category': 'disk', 'detect': ['bit', 34620941, 0], 'room': 'f03', 'pos': [496, 468], 'status': 'verified', 'icon': [30, 17]},
-    'C-3: Disk E-49': {'id': 13633536, 'category': 'disk', 'detect': ['bit', 34620941, 1], 'room': 'c03', 'pos': [592, 552], 'status': 'verified', 'icon': [11, 3]},
-    'M-1: Disk E-50': {'id': 13633537, 'category': 'disk', 'detect': ['bit', 34620941, 2], 'room': 'm01', 'pos': [6104, 744], 'status': 'verified', 'icon': [61, 40]},
-    'X-1: Disk O-1': {'id': 13634488, 'category': 'disk', 'detect': ['bit', 34620941, 4], 'room': 'x01', 'pos': [2392, 1032], 'status': 'verified', 'icon': [67, 50]},
-    'X-1: Disk O-2': {'id': 13634489, 'category': 'disk', 'detect': ['bit', 34620941, 5], 'room': 'x01', 'pos': [504, 1112], 'status': 'verified', 'icon': [67, 6]},
-    'X-2: Disk O-3': {'id': 13634490, 'category': 'disk', 'detect': ['bit', 34620941, 6], 'room': 'x02', 'pos': [606, 504], 'status': 'verified', 'icon': [68, 8]},
-    'X-1: Disk O-4': {'id': 13634491, 'category': 'disk', 'detect': ['bit', 34620941, 7], 'room': 'x01', 'pos': [2080, 728], 'status': 'verified', 'icon': [67, 47]},
-    'X-1: Disk O-5': {'id': 13634492, 'category': 'disk', 'detect': ['bit', 34620942, 0], 'room': 'x01', 'pos': [2080, 344], 'status': 'verified', 'icon': [67, 46]},
-    'X-1: Disk O-6': {'id': 13634493, 'category': 'disk', 'detect': ['bit', 34620942, 1], 'room': 'x01', 'pos': [3032, 344], 'status': 'verified', 'icon': [67, 64]},
-    'X-1: Disk O-7': {'id': 13634494, 'category': 'disk', 'detect': ['bit', 34620942, 2], 'room': 'x01', 'pos': [1048, 1480], 'status': 'verified', 'icon': [67, 19]},
-    'X-1: Disk O-8': {'id': 13634495, 'category': 'disk', 'detect': ['bit', 34620942, 3], 'room': 'x01', 'pos': [760, 1112], 'status': 'verified', 'icon': [67, 13]},
-    'A-1: Disk O-9': {'id': 13634496, 'category': 'disk', 'detect': ['bit', 34620942, 4], 'room': 'a01', 'pos': [2416, 1128], 'status': 'verified', 'icon': [1, 21]},
-    'X-1: Disk O-10': {'id': 13634497, 'category': 'disk', 'detect': ['bit', 34620942, 5], 'room': 'x01', 'pos': [1278, 1112], 'status': 'verified', 'icon': [67, 36]},
-    'X-3: Disk O-11': {'id': 13634498, 'category': 'disk', 'detect': ['bit', 34620942, 6], 'room': 'x03', 'pos': [992, 520], 'status': 'verified', 'icon': [69, 4]},
-    'D-2: Disk O-12': {'id': 13634499, 'category': 'disk', 'detect': ['bit', 34620942, 7], 'room': 'd02', 'pos': [7026, 536], 'status': 'verified', 'icon': [16, 36]},
-    'X-1: Disk O-13': {'id': 13634500, 'category': 'disk', 'detect': ['bit', 34620943, 0], 'room': 'x01', 'pos': [1032, 952], 'status': 'verified', 'icon': [67, 17]},
-    'X-1: Disk O-14': {'id': 13634501, 'category': 'disk', 'detect': ['bit', 34620943, 1], 'room': 'x01', 'pos': [280, 728], 'status': 'verified', 'icon': [67, 2]},
-    'X-1: Disk O-15': {'id': 13634502, 'category': 'disk', 'detect': ['bit', 34620943, 2], 'room': 'x01', 'pos': [3544, 344], 'status': 'verified', 'icon': [67, 68]},
-    'X-2: Disk O-16': {'id': 13634503, 'category': 'disk', 'detect': ['bit', 34620943, 3], 'room': 'x02', 'pos': [1056, 536], 'status': 'verified', 'icon': [68, 13]},
-    'C-2: Disk O-17': {'id': 13634504, 'category': 'disk', 'detect': ['bit', 34620943, 4], 'room': 'c02', 'pos': [3912, 696], 'status': 'verified', 'icon': [10, 35]},
-    'C-2: Disk O-18': {'id': 13634505, 'category': 'disk', 'detect': ['bit', 34620943, 5], 'room': 'c02', 'pos': [1712, 776], 'status': 'verified', 'icon': [10, 14]},
-    'X-1: Disk O-19': {'id': 13634506, 'category': 'disk', 'detect': ['bit', 34620943, 6], 'room': 'x01', 'pos': [3032, 728], 'status': 'verified', 'icon': [67, 65]},
-    'X-1: Disk O-20': {'id': 13634507, 'category': 'disk', 'detect': ['bit', 34620943, 7], 'room': 'x01', 'pos': [1288, 952], 'status': 'verified', 'icon': [67, 37]},
+    'I-4: Disk M-1': {'id': 13632488, 'category': 'disk', 'detect': ['bit', 34620946, 2], 'room': 'i04', 'pos': [1528, 312], 'status': 'verified', 'icon': [45, 5]},
+    'M-1: Disk M-2': {'id': 13632489, 'category': 'disk', 'detect': ['bit', 34620946, 3], 'room': 'm01', 'pos': [5592, 280], 'status': 'verified', 'icon': [61, 33]},
+    'O-1: Disk M-3': {'id': 13632490, 'category': 'disk', 'detect': ['bit', 34620946, 4], 'room': 'o01', 'pos': [2544, 904], 'status': 'verified', 'icon': [65, 14]},
+    'D-2: Disk M-4': {'id': 13632491, 'category': 'disk', 'detect': ['bit', 34620946, 5], 'room': 'd02', 'pos': [3664, 744], 'status': 'verified', 'icon': [16, 14]},
+    'E-5: Disk M-5': {'id': 13632492, 'category': 'disk', 'detect': ['bit', 34620946, 6], 'room': 'e05', 'pos': [2192, 264], 'status': 'verified', 'icon': [24, 40]},
+    'I-5: Disk M-6': {'id': 13632493, 'category': 'disk', 'detect': ['bit', 34620946, 7], 'room': 'i05', 'pos': [1416, 648], 'status': 'verified', 'icon': [46, 3]},
+    'J-3: Disk M-7': {'id': 13632494, 'category': 'disk', 'detect': ['bit', 34620947, 0], 'room': 'j03', 'pos': [1704, 1000], 'status': 'verified', 'icon': [49, 15]},
+    'H-3: Disk M-8': {'id': 13632495, 'category': 'disk', 'detect': ['bit', 34620947, 1], 'room': 'h03', 'pos': [2248, 936], 'status': 'verified', 'icon': [40, 34]},
+    'K-3: Disk M-9': {'id': 13632496, 'category': 'disk', 'detect': ['bit', 34620947, 2], 'room': 'k03', 'pos': [560, 1102], 'status': 'verified', 'icon': [54, 1]},
+    'A-1: Disk E-1': {'id': 13633488, 'category': 'disk', 'detect': ['bit', 34620947, 4], 'room': 'a01', 'pos': [7632, 344], 'status': 'verified', 'icon': [1, 51]},
+    'F-3: Disk E-2': {'id': 13633489, 'category': 'disk', 'detect': ['bit', 34620947, 5], 'room': 'f03', 'pos': [1984, 628], 'status': 'verified', 'icon': [30, 85]},
+    'I-1: Disk E-3': {'id': 13633490, 'category': 'disk', 'detect': ['bit', 34620947, 6], 'room': 'i01', 'pos': [2592, 632], 'status': 'verified', 'icon': [42, 27]},
+    'E-1: Disk E-4': {'id': 13633491, 'category': 'disk', 'detect': ['bit', 34620947, 7], 'room': 'e01', 'pos': [1800, 728], 'status': 'verified', 'icon': [20, 8]},
+    'L-3: Disk E-5': {'id': 13633492, 'category': 'disk', 'detect': ['bit', 34620948, 0], 'room': 'l03', 'pos': [4032, 722], 'status': 'verified', 'icon': [59, 58]},
+    'D-3: Disk E-6': {'id': 13633493, 'category': 'disk', 'detect': ['bit', 34620948, 1], 'room': 'd03', 'pos': [2800, 920], 'status': 'verified', 'icon': [17, 17]},
+    'J-2: Disk E-7': {'id': 13633494, 'category': 'disk', 'detect': ['bit', 34620948, 2], 'room': 'j02', 'pos': [2448, 472], 'status': 'verified', 'icon': [48, 32]},
+    'E-4: Disk E-8': {'id': 13633495, 'category': 'disk', 'detect': ['bit', 34620948, 3], 'room': 'e04', 'pos': [3032, 264], 'status': 'verified', 'icon': [23, 33]},
+    'G-3: Disk E-9': {'id': 13633496, 'category': 'disk', 'detect': ['bit', 34620948, 4], 'room': 'g03', 'pos': [888, 546], 'status': 'verified', 'icon': [35, 12]},
+    'H-3: Disk E-10': {'id': 13633497, 'category': 'disk', 'detect': ['bit', 34620948, 5], 'room': 'h03', 'pos': [1824, 712], 'status': 'verified', 'icon': [40, 20]},
+    'B-4: Disk E-11': {'id': 13633498, 'category': 'disk', 'detect': ['bit', 34620948, 6], 'room': 'b04', 'pos': [2224, 664], 'status': 'verified', 'icon': [8, 13]},
+    'D-1: Disk E-12': {'id': 13633499, 'category': 'disk', 'detect': ['bit', 34620948, 7], 'room': 'd01', 'pos': [2832, 728], 'status': 'verified', 'icon': [15, 12]},
+    'I-5: Disk E-13': {'id': 13633500, 'category': 'disk', 'detect': ['bit', 34620949, 0], 'room': 'i05', 'pos': [3280, 520], 'status': 'verified', 'icon': [46, 20]},
+    'I-4: Disk E-14': {'id': 13633501, 'category': 'disk', 'detect': ['bit', 34620949, 1], 'room': 'i04', 'pos': [1928, 312], 'status': 'verified', 'icon': [45, 8]},
+    'F-2: Disk E-15': {'id': 13633502, 'category': 'disk', 'detect': ['bit', 34620949, 2], 'room': 'f02', 'pos': [992, 930], 'status': 'verified', 'icon': [29, 5]},
+    'G-2: Disk E-16': {'id': 13633503, 'category': 'disk', 'detect': ['bit', 34620949, 3], 'room': 'g02', 'pos': [348, 362], 'status': 'verified', 'icon': [34, 24]},
+    'B-2: Disk E-17': {'id': 13633504, 'category': 'disk', 'detect': ['bit', 34620949, 4], 'room': 'b02', 'pos': [2672, 472], 'status': 'verified', 'icon': [6, 16]},
+    'L-1: Disk E-18': {'id': 13633505, 'category': 'disk', 'detect': ['bit', 34620949, 5], 'room': 'l01', 'pos': [3280, 528], 'status': 'verified', 'icon': [57, 26]},
+    'D-1: Disk E-19': {'id': 13633506, 'category': 'disk', 'detect': ['bit', 34620949, 6], 'room': 'd01', 'pos': [3824, 632], 'status': 'verified', 'icon': [15, 23]},
+    'A-4: Disk E-20': {'id': 13633507, 'category': 'disk', 'detect': ['bit', 34620949, 7], 'room': 'a04', 'pos': [1224, 248], 'status': 'verified', 'icon': [4, 9]},
+    'E-4: Disk E-21': {'id': 13633508, 'category': 'disk', 'detect': ['bit', 34620950, 0], 'room': 'e04', 'pos': [3272, 1112], 'status': 'verified', 'icon': [23, 35]},
+    'K-1: Disk E-22': {'id': 13633509, 'category': 'disk', 'detect': ['bit', 34620950, 1], 'room': 'k01', 'pos': [3386, 622], 'status': 'verified', 'icon': [52, 31]},
+    'I-5: Disk E-23': {'id': 13633510, 'category': 'disk', 'detect': ['bit', 34620950, 2], 'room': 'i05', 'pos': [2536, 712], 'status': 'verified', 'icon': [46, 11]},
+    'B-1: Disk E-24': {'id': 13633511, 'category': 'disk', 'detect': ['bit', 34620950, 3], 'room': 'b01', 'pos': [4992, 888], 'status': 'verified', 'icon': [5, 28]},
+    'K-5: Disk E-25': {'id': 13633512, 'category': 'disk', 'detect': ['bit', 34620950, 4], 'room': 'k05', 'pos': [552, 1250], 'status': 'verified', 'icon': [56, 7]},
+    'K-4: Disk E-26': {'id': 13633513, 'category': 'disk', 'detect': ['bit', 34620950, 5], 'room': 'k04', 'pos': [352, 526], 'status': 'verified', 'icon': [55, 3]},
+    'A-2: Disk E-27': {'id': 13633514, 'category': 'disk', 'detect': ['bit', 34620950, 6], 'room': 'a02', 'pos': [5112, 568], 'status': 'verified', 'icon': [2, 20]},
+    'B-2: Disk E-28': {'id': 13633515, 'category': 'disk', 'detect': ['bit', 34620950, 7], 'room': 'b02', 'pos': [1712, 920], 'status': 'verified', 'icon': [6, 10]},
+    'A-2: Disk E-29': {'id': 13633516, 'category': 'disk', 'detect': ['bit', 34620951, 0], 'room': 'a02', 'pos': [4400, 920], 'status': 'verified', 'icon': [2, 15]},
+    'C-2: Disk E-30': {'id': 13633517, 'category': 'disk', 'detect': ['bit', 34620951, 1], 'room': 'c02', 'pos': [4992, 1128], 'status': 'verified', 'icon': [10, 43]},
+    'A-1: Disk E-31': {'id': 13633518, 'category': 'disk', 'detect': ['bit', 34620951, 2], 'room': 'a01', 'pos': [3208, 824], 'status': 'verified', 'icon': [1, 22]},
+    'G-5: Disk E-32': {'id': 13633519, 'category': 'disk', 'detect': ['bit', 34620951, 3], 'room': 'g05', 'pos': [1278, 676], 'status': 'verified', 'icon': [37, 14]},
+    'I-2: Disk E-33': {'id': 13633520, 'category': 'disk', 'detect': ['bit', 34620951, 4], 'room': 'i02', 'pos': [2192, 344], 'status': 'verified', 'icon': [43, 20]},
+    'I-2: Disk E-34': {'id': 13633521, 'category': 'disk', 'detect': ['bit', 34620951, 5], 'room': 'i02', 'pos': [1496, 632], 'status': 'verified', 'icon': [43, 12]},
+    'K-3: Disk E-35': {'id': 13633522, 'category': 'disk', 'detect': ['bit', 34620951, 6], 'room': 'k03', 'pos': [904, 688], 'status': 'verified', 'icon': [54, 3]},
+    'J-3: Disk E-36': {'id': 13633523, 'category': 'disk', 'detect': ['bit', 34620951, 7], 'room': 'j03', 'pos': [1960, 456], 'status': 'verified', 'icon': [49, 17]},
+    'E-5: Disk E-37': {'id': 13633524, 'category': 'disk', 'detect': ['bit', 34620952, 0], 'room': 'e05', 'pos': [2656, 264], 'status': 'verified', 'icon': [24, 48]},
+    'G-1: Disk E-38': {'id': 13633525, 'category': 'disk', 'detect': ['bit', 34620952, 1], 'room': 'g01', 'pos': [1278, 896], 'status': 'verified', 'icon': [33, 9]},
+    'F-1: Disk E-39': {'id': 13633526, 'category': 'disk', 'detect': ['bit', 34620952, 2], 'room': 'f01', 'pos': [894, 544], 'status': 'verified', 'icon': [28, 5]},
+    'D-2: Disk E-40': {'id': 13633527, 'category': 'disk', 'detect': ['bit', 34620952, 3], 'room': 'd02', 'pos': [3696, 536], 'status': 'verified', 'icon': [16, 15]},
+    'L-2: Disk E-41': {'id': 13633528, 'category': 'disk', 'detect': ['bit', 34620952, 4], 'room': 'l02', 'pos': [1608, 478], 'status': 'verified', 'icon': [58, 10]},
+    'O-1: Disk E-42': {'id': 13633529, 'category': 'disk', 'detect': ['bit', 34620952, 5], 'room': 'o01', 'pos': [2248, 728], 'status': 'verified', 'icon': [65, 11]},
+    'K-3: Disk E-43': {'id': 13633530, 'category': 'disk', 'detect': ['bit', 34620952, 6], 'room': 'k03', 'pos': [1560, 1088], 'status': 'verified', 'icon': [54, 11]},
+    'F-2: Disk E-44': {'id': 13633531, 'category': 'disk', 'detect': ['bit', 34620952, 7], 'room': 'f02', 'pos': [1416, 1026], 'status': 'verified', 'icon': [29, 20]},
+    'F-4: Disk E-45': {'id': 13633532, 'category': 'disk', 'detect': ['bit', 34620953, 0], 'room': 'f04', 'pos': [1522, 512], 'status': 'verified', 'icon': [31, 31]},
+    'A-3: Disk E-46': {'id': 13633533, 'category': 'disk', 'detect': ['bit', 34620953, 1], 'room': 'a03', 'pos': [1240, 792], 'status': 'verified', 'icon': [3, 8]},
+    'H-1: Disk E-47': {'id': 13633534, 'category': 'disk', 'detect': ['bit', 34620953, 2], 'room': 'h01', 'pos': [3656, 682], 'status': 'verified', 'icon': [38, 29]},
+    'F-3: Disk E-48': {'id': 13633535, 'category': 'disk', 'detect': ['bit', 34620953, 3], 'room': 'f03', 'pos': [496, 468], 'status': 'verified', 'icon': [30, 17]},
+    'C-3: Disk E-49': {'id': 13633536, 'category': 'disk', 'detect': ['bit', 34620953, 4], 'room': 'c03', 'pos': [592, 552], 'status': 'verified', 'icon': [11, 3]},
+    'M-1: Disk E-50': {'id': 13633537, 'category': 'disk', 'detect': ['bit', 34620953, 5], 'room': 'm01', 'pos': [6104, 744], 'status': 'verified', 'icon': [61, 40]},
+    'X-1: Disk O-1': {'id': 13634488, 'category': 'disk', 'detect': ['bit', 34620953, 7], 'room': 'x01', 'pos': [2392, 1032], 'status': 'verified', 'icon': [67, 50]},
+    'X-1: Disk O-2': {'id': 13634489, 'category': 'disk', 'detect': ['bit', 34620954, 0], 'room': 'x01', 'pos': [504, 1112], 'status': 'verified', 'icon': [67, 6]},
+    'X-2: Disk O-3': {'id': 13634490, 'category': 'disk', 'detect': ['bit', 34620954, 1], 'room': 'x02', 'pos': [606, 504], 'status': 'verified', 'icon': [68, 8]},
+    'X-1: Disk O-4': {'id': 13634491, 'category': 'disk', 'detect': ['bit', 34620954, 2], 'room': 'x01', 'pos': [2080, 728], 'status': 'verified', 'icon': [67, 47]},
+    'X-1: Disk O-5': {'id': 13634492, 'category': 'disk', 'detect': ['bit', 34620954, 3], 'room': 'x01', 'pos': [2080, 344], 'status': 'verified', 'icon': [67, 46]},
+    'X-1: Disk O-6': {'id': 13634493, 'category': 'disk', 'detect': ['bit', 34620954, 4], 'room': 'x01', 'pos': [3032, 344], 'status': 'verified', 'icon': [67, 64]},
+    'X-1: Disk O-7': {'id': 13634494, 'category': 'disk', 'detect': ['bit', 34620954, 5], 'room': 'x01', 'pos': [1048, 1480], 'status': 'verified', 'icon': [67, 19]},
+    'X-1: Disk O-8': {'id': 13634495, 'category': 'disk', 'detect': ['bit', 34620954, 6], 'room': 'x01', 'pos': [760, 1112], 'status': 'verified', 'icon': [67, 13]},
+    'A-1: Disk O-9': {'id': 13634496, 'category': 'disk', 'detect': ['bit', 34620954, 7], 'room': 'a01', 'pos': [2416, 1128], 'status': 'verified', 'icon': [1, 21]},
+    'X-1: Disk O-10': {'id': 13634497, 'category': 'disk', 'detect': ['bit', 34620955, 0], 'room': 'x01', 'pos': [1278, 1112], 'status': 'verified', 'icon': [67, 36]},
+    'X-3: Disk O-11': {'id': 13634498, 'category': 'disk', 'detect': ['bit', 34620955, 1], 'room': 'x03', 'pos': [992, 520], 'status': 'verified', 'icon': [69, 4]},
+    'D-2: Disk O-12': {'id': 13634499, 'category': 'disk', 'detect': ['bit', 34620955, 2], 'room': 'd02', 'pos': [7026, 536], 'status': 'verified', 'icon': [16, 36]},
+    'X-1: Disk O-13': {'id': 13634500, 'category': 'disk', 'detect': ['bit', 34620955, 3], 'room': 'x01', 'pos': [1032, 952], 'status': 'verified', 'icon': [67, 17]},
+    'X-1: Disk O-14': {'id': 13634501, 'category': 'disk', 'detect': ['bit', 34620955, 4], 'room': 'x01', 'pos': [280, 728], 'status': 'verified', 'icon': [67, 2]},
+    'X-1: Disk O-15': {'id': 13634502, 'category': 'disk', 'detect': ['bit', 34620955, 5], 'room': 'x01', 'pos': [3544, 344], 'status': 'verified', 'icon': [67, 68]},
+    'X-2: Disk O-16': {'id': 13634503, 'category': 'disk', 'detect': ['bit', 34620955, 6], 'room': 'x02', 'pos': [1056, 536], 'status': 'verified', 'icon': [68, 13]},
+    'C-2: Disk O-17': {'id': 13634504, 'category': 'disk', 'detect': ['bit', 34620955, 7], 'room': 'c02', 'pos': [3912, 696], 'status': 'verified', 'icon': [10, 35]},
+    'C-2: Disk O-18': {'id': 13634505, 'category': 'disk', 'detect': ['bit', 34620956, 0], 'room': 'c02', 'pos': [1712, 776], 'status': 'verified', 'icon': [10, 14]},
+    'X-1: Disk O-19': {'id': 13634506, 'category': 'disk', 'detect': ['bit', 34620956, 1], 'room': 'x01', 'pos': [3032, 728], 'status': 'verified', 'icon': [67, 65]},
+    'X-1: Disk O-20': {'id': 13634507, 'category': 'disk', 'detect': ['bit', 34620956, 2], 'room': 'x01', 'pos': [1288, 952], 'status': 'verified', 'icon': [67, 37]},
     'A-1: E-Crystal L': {'id': 13635713, 'category': 'pickup_crystal', 'detect': ['mailbox', 1, 1], 'room': 'a01', 'pos': [300, 1112], 'status': 'verified', 'icon': [1, 1]},
     'A-1: 1-Up': {'id': 13635716, 'category': 'pickup_1up', 'detect': ['mailbox', 1, 4], 'room': 'a01', 'pos': [392, 728], 'status': 'verified', 'icon': [1, 4]},
     'A-1: Energy Capsule L': {'id': 13635725, 'category': 'pickup_energy', 'detect': ['mailbox', 1, 13], 'room': 'a01', 'pos': [1656, 840], 'status': 'verified', 'icon': [1, 13]},
@@ -297,6 +297,10 @@ ITEMS = {
     'Model OX': {'id': 13664261, 'classification': 'progression', 'grant': ['live_bit', 34620882, 1], 'pooled': True},
     'Model X': {'id': 13664262, 'classification': 'progression', 'grant': ['live_bit', 34620879, 7], 'pooled': True},
     'Model Hu': {'id': 13664263, 'classification': 'progression', 'grant': ['live_bit', 34620891, 0], 'pooled': False},
+    'Model HX': {'id': 13664264, 'classification': 'progression', 'grant': ['bits', [[34620933, 6], [34620946, 1]]], 'pooled': False},
+    'Model FX': {'id': 13664265, 'classification': 'progression', 'grant': ['bits', [[34620935, 0], [34620947, 3]]], 'pooled': False},
+    'Model LX': {'id': 13664266, 'classification': 'progression', 'grant': ['bits', [[34620941, 3], [34620953, 6]]], 'pooled': False},
+    'Model PX': {'id': 13664267, 'classification': 'progression', 'grant': ['bits', [[34620944, 0], [34620883, 6]]], 'pooled': False},
     'Yellow Card Key': {'id': 13664512, 'classification': 'progression', 'grant': ['live_bit', 34620925, 1], 'pooled': True},
     'Green Card Key': {'id': 13664513, 'classification': 'progression', 'grant': ['live_bit', 34620925, 0], 'pooled': True},
     'Red Card Key': {'id': 13664514, 'classification': 'progression', 'grant': ['live_bit', 34620924, 5], 'pooled': True},
@@ -328,6 +332,7 @@ ITEMS = {
     'Eraser Chip': {'id': 13664583, 'classification': 'useful', 'grant': ['live_bit', 34620957, 6], 'pooled': True},
     'E-Crystals': {'id': 13664768, 'classification': 'filler', 'grant': ['ecrystals'], 'pooled': True},
     '1-Up': {'id': 13664769, 'classification': 'filler', 'grant': ['oneup'], 'pooled': True},
+    'Secret Disk': {'id': 13665024, 'classification': 'progression', 'grant': ['secret_disk'], 'pooled': False},
 }
 
 # Goal bits: the epilogue event flag set after Serpent's final explosion,
@@ -335,25 +340,127 @@ ITEMS = {
 GOAL_BITS = [(0x021045CA, 5)]
 GOAL_BITS_SERPENT = [(0x02104602, 2), (0x02104602, 3)]
 
-# Mailbox of respawnable pickups, installed by the ROM patch: a counter and a
-# ring of (subarea, coords index, role) entries.
-PICKUP_MAILBOX_ADDR = 0x020CB500
-PICKUP_MAILBOX_SLOTS = 8
-# In-world item icon table that the client fills per subarea; every physical
-# location carries 'icon': [subarea, coords index].
-ICON_TABLE_ADDR = 0x02191460
-ICON_TABLE_SIZE = 0xC4
-ICON_TABLE_PRESENT_OFF = 0xA4
+# The game's own 'disk collected' bits, one per database entry (series B, M, E, O).
+# The ROM patch stops the world's disks from writing them: the client lights one
+# per Secret Disk received, in the seed's order.
+SECRET_DISK_ENTRIES = [
+    [0x02104603, 6],   # B-1
+    [0x02104603, 7],   # B-2
+    [0x02104604, 0],   # B-3
+    [0x02104604, 1],   # B-4
+    [0x02104604, 2],   # B-5
+    [0x02104604, 3],   # B-6
+    [0x02104604, 4],   # B-7
+    [0x02104604, 5],   # B-8
+    [0x02104604, 6],   # B-9
+    [0x02104604, 7],   # B-10
+    [0x02104605, 0],   # B-11
+    [0x02104605, 1],   # B-12
+    [0x02104605, 2],   # B-13
+    [0x02104605, 3],   # B-14
+    [0x02104605, 4],   # B-15
+    [0x02104605, 5],   # B-16
+    [0x02104605, 7],   # M-1
+    [0x02104606, 0],   # M-2
+    [0x02104606, 1],   # M-3
+    [0x02104606, 2],   # M-4
+    [0x02104606, 3],   # M-5
+    [0x02104606, 4],   # M-6
+    [0x02104606, 5],   # M-7
+    [0x02104606, 6],   # M-8
+    [0x02104606, 7],   # M-9
+    [0x02104607, 1],   # E-1
+    [0x02104607, 2],   # E-2
+    [0x02104607, 3],   # E-3
+    [0x02104607, 4],   # E-4
+    [0x02104607, 5],   # E-5
+    [0x02104607, 6],   # E-6
+    [0x02104607, 7],   # E-7
+    [0x02104608, 0],   # E-8
+    [0x02104608, 1],   # E-9
+    [0x02104608, 2],   # E-10
+    [0x02104608, 3],   # E-11
+    [0x02104608, 4],   # E-12
+    [0x02104608, 5],   # E-13
+    [0x02104608, 6],   # E-14
+    [0x02104608, 7],   # E-15
+    [0x02104609, 0],   # E-16
+    [0x02104609, 1],   # E-17
+    [0x02104609, 2],   # E-18
+    [0x02104609, 3],   # E-19
+    [0x02104609, 4],   # E-20
+    [0x02104609, 5],   # E-21
+    [0x02104609, 6],   # E-22
+    [0x02104609, 7],   # E-23
+    [0x0210460A, 0],   # E-24
+    [0x0210460A, 1],   # E-25
+    [0x0210460A, 2],   # E-26
+    [0x0210460A, 3],   # E-27
+    [0x0210460A, 4],   # E-28
+    [0x0210460A, 5],   # E-29
+    [0x0210460A, 6],   # E-30
+    [0x0210460A, 7],   # E-31
+    [0x0210460B, 0],   # E-32
+    [0x0210460B, 1],   # E-33
+    [0x0210460B, 2],   # E-34
+    [0x0210460B, 3],   # E-35
+    [0x0210460B, 4],   # E-36
+    [0x0210460B, 5],   # E-37
+    [0x0210460B, 6],   # E-38
+    [0x0210460B, 7],   # E-39
+    [0x0210460C, 0],   # E-40
+    [0x0210460C, 1],   # E-41
+    [0x0210460C, 2],   # E-42
+    [0x0210460C, 3],   # E-43
+    [0x0210460C, 4],   # E-44
+    [0x0210460C, 5],   # E-45
+    [0x0210460C, 6],   # E-46
+    [0x0210460C, 7],   # E-47
+    [0x0210460D, 0],   # E-48
+    [0x0210460D, 1],   # E-49
+    [0x0210460D, 2],   # E-50
+    [0x0210460D, 4],   # O-1
+    [0x0210460D, 5],   # O-2
+    [0x0210460D, 6],   # O-3
+    [0x0210460D, 7],   # O-4
+    [0x0210460E, 0],   # O-5
+    [0x0210460E, 1],   # O-6
+    [0x0210460E, 2],   # O-7
+    [0x0210460E, 3],   # O-8
+    [0x0210460E, 4],   # O-9
+    [0x0210460E, 5],   # O-10
+    [0x0210460E, 6],   # O-11
+    [0x0210460E, 7],   # O-12
+    [0x0210460F, 0],   # O-13
+    [0x0210460F, 1],   # O-14
+    [0x0210460F, 2],   # O-15
+    [0x0210460F, 3],   # O-16
+    [0x0210460F, 4],   # O-17
+    [0x0210460F, 5],   # O-18
+    [0x0210460F, 6],   # O-19
+    [0x0210460F, 7],   # O-20
+]
+
+# The pickup table the patch bakes into the ROM (layout in rom/table.py); every physical
+# location carries 'icon': [subarea, coords index], its place in the table.
+PICKUP_TABLE_ADDR = 0x02191B00
 ICON_SET = 261
-ICON_CODES = {'logo_useful': 1, 'logo_progression': 2, 'logo_filler': 3, 'lifeup': 4, 'subtank': 5, 'chip_Absorber': 6, 'chip_Eraser': 7, 'chip_Featherweight': 8, 'chip_Extender': 9, 'chip_QuickCharger': 10, 'chip_IceBoots': 11, 'chip_WindBoots': 12, 'chip_Frog': 13, 'model_Hu': 14, 'model_X': 15, 'model_ZX': 16, 'model_HX': 17, 'model_FX': 18, 'model_LX': 19, 'model_PX': 20, 'model_OX': 21, 'card_Red': 22, 'card_Blue': 23, 'card_Purple': 24, 'card_Green': 25, 'card_Yellow': 26, 'card_White': 27}
+ICON_CODES = {'logo_useful': 1, 'logo_progression': 2, 'logo_filler': 3, 'lifeup': 4, 'subtank': 5, 'chip_Absorber': 6, 'chip_Eraser': 7, 'chip_Featherweight': 8, 'chip_Extender': 9, 'chip_QuickCharger': 10, 'chip_IceBoots': 11, 'chip_WindBoots': 12, 'chip_Frog': 13, 'model_Hu': 14, 'model_X': 15, 'model_ZX': 16, 'model_HX': 17, 'model_FX': 18, 'model_LX': 19, 'model_PX': 20, 'model_OX': 21, 'card_Red': 22, 'card_Blue': 23, 'card_Purple': 24, 'card_Green': 25, 'card_Yellow': 26, 'card_White': 27, 'secret_disk': 28}
 # On-screen notice buffer (request flag, state, duration, text).
 NOTIFY_ADDR = 0x020CB700
 NOTIFY_BUF_MAX = 0xFC
 NOTIFY_POPUP_GLYPHS = 30
+# Goal progress line of the pause menu (STATUS tab), kept by the client.
+GOAL_LINE_ADDR = 0x020CB6A0
+GOAL_LINE_GLYPHS = 30
 PICKUP_CATEGORIES = ['pickup_1up', 'pickup_crystal', 'pickup_energy', 'pickup_weapon']
 
+# The eight bits the game counts as completed area missions (ids 5 to 12).
+AREA_MISSION_BITS = [[34620897, 4], [34620897, 7], [34620899, 7], [34620900, 3], [34620900, 7], [34620901, 2], [34620901, 6], [34620902, 1]]
 # Missions the client force-accepts when the player enters their target
-# subarea: subarea -> {id, state, flag:[addr,bit], name[, extra:[[addr,bit]..]]}.
+# subarea: subarea -> {id, state, flag:[addr,bit], name[, extra:[[addr,bit]..],
+# hstate, after_missions]}; after_missions = area missions that must be
+# completed first (Protect HQ, which the game launches at four).
 MISSION_STATE_ADDR = 0x021046AC
 MISSION_ACTIVE_FLAG = 0x02160FA8
 MISSION_ACCEPT = {
@@ -412,6 +519,22 @@ MISSION_ACCEPT = {
     63: {'id': 14, 'state': 218, 'flag': [34620903, 2], 'name': 'Stop The Dig'},
     65: {'id': 15, 'state': 221, 'flag': [34620903, 5], 'name': 'Repel The Army'},
     66: {'id': 15, 'state': 221, 'flag': [34620903, 5], 'name': 'Repel The Army'},
+    67: {'id': 13, 'state': 211, 'flag': [34620902, 3], 'name': 'Protect Hq', 'extra': [[34620902, 4]], 'after_missions': 4},
+    68: {'id': 13, 'state': 211, 'flag': [34620902, 3], 'name': 'Protect Hq', 'extra': [[34620902, 4]], 'after_missions': 4},
+    69: {'id': 13, 'state': 211, 'flag': [34620902, 3], 'name': 'Protect Hq', 'extra': [[34620902, 4]], 'after_missions': 4},
+}
+# Mini-bosses skip_minibosses treats as beaten: area letter -> [[addr, bit], ...],
+# the flag each room script sets when the mini-boss dies.
+MINIBOSS_FLAGS = {
+    'D': [[34620877, 5], [34620877, 6]],
+    'E': [[34620878, 3]],
+    'F': [[34620878, 4]],
+    'H': [[34620878, 2]],
+    'I': [[34620878, 5], [34620878, 6]],
+    'J': [[34620878, 0]],
+    'K': [[34620877, 7]],
+    'M': [[34620878, 7]],
+    'O': [[34620878, 1], [34620903, 6]],
 }
 # Hub floors whose left door leads to a boss room (floor y -> subarea); the
 # client accepts that area's mission when the player walks up to the door.
@@ -641,7 +764,7 @@ EVENT_GATES = {
     769: [0x0210462C, 1],
 }
 EVENT_GATES_OPEN = [205, 221, 379, 381, 382, 395]
-EVENT_GATES_ALL6 = [225, 378]
+EVENT_GATES_GOAL = [225, 378]
 # Warp menu destinations (map badges) and save-only pads (DATA rooms).
 WARP_DESTINATIONS = ['a02', 'b02', 'c02', 'd02', 'e07', 'f05', 'g05', 'i03', 'k04', 'l04', 'm03', 'o02']
 DOORS = [

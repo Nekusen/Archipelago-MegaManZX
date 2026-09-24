@@ -14,8 +14,18 @@ Missions are accepted automatically when you enter their area, and they can be d
 
 ## What is the goal?
 
-Defeat Serpent at the top of Slither Inc. (D-5). The gate from D-2 into the tower opens once you hold the six main
-biometals (X, Z, H, F, L and P).
+Defeat Serpent at the top of Slither Inc. (D-5). The gate from D-2 into the tower opens once you meet all your chosen
+`goal_requirements`. You can pick any number of goal requirements from this list:
+
+- `Biometals`: own `required_models_count` models from the models listed in `required_models`. With `require_full_models` a progressive model
+  counts only once you hold both halves.
+- `Secret Disks`: collect `required_secret_disks` Secret Disks out of the `total_secret_disks`
+  (30) shuffled into the multiworld. 
+- `Missions`: complete a number `required_missions` out of the 14 story missions available, in any
+  order. The skipped intro mission and the final mission do not count.
+
+The STATUS tab of the pause menu shows your progress, and a popup announces the moment the gate opens (you can also check your goal progress using the command `/mmzx_goal` in the
+client). `goal_requirements` must list at least one requirement.
 
 ## What items and locations get randomized?
 
@@ -23,7 +33,7 @@ Items:
 
 - Biometals: Model X, Model ZX, Model OX, and the progressive Model HX, FX, LX and PX. The first copy of a progressive
   model gives you the form; the second is the biometal's other half, which unlocks the level 2 charged attack and the
-  full Weapon Energy bar.
+  full Weapon Energy bar. With `progressive_models` off each of the four is a single item that gives both at once.
 - The Yellow, Green, Red, Blue and Purple Card Keys.
 - Transerver Access for each of the 13 areas with a Transerver (A, B, C, D, E, F, G, I, K, L, M, O and X).
 - Four Life Ups, four Sub Tanks and the eight ITEM B chips.
@@ -52,6 +62,9 @@ Locations:
 
 - Pickups in the world show the item they hold: the game's own icon for a Life Up, Sub Tank, chip, biometal or Card
   Key, and the Archipelago logo for anything else (an arrow for progression, a cross for useful, grey for filler).
+  The icons are part of the patched ROM, so they show even while the client is disconnected.
+- A pickup that holds a multiworld item cannot be sliced into small pieces with a weapon; once its check is sent
+  and it is back to a normal refill, it breaks as usual.
 - Items you receive and items you send are announced in the game's own popup without stopping play. The `notify_*`
   options and the `/mmzx_notify` command choose which items are announced and how much text is shown.
 
@@ -81,8 +94,11 @@ Locations:
 - Troop Reinforcement can be started from D-1, D-2 or D-3 without the base cutscene.
 - "Protect HQ" becomes available, when you have completed and reported 4 of the "main" missions (the ones with Pseudoroids in them)
   - To start the mission, teleport to Area X and speak with Prairie (you should have seen the previous cutscene on any transerver when reporting a mission
-- The gate from D-2 into the Slither Inc. tower opens once you hold the six main biometals (X, Z, F, H, P, L).
+  - If you take another area's mission in between, Protect HQ resumes as soon as you enter Area X again. Until you report it, the Transerver consoles do not offer "Abort the mission?" (the game treats it as a story mission).
+- The gate from D-2 into the Slither Inc. tower opens once you meet your `goal_requirements`.
 - With `skip_boss_rush` the Pseudoroid refights of the D-4 tower are skipped and the elevator climbs straight to D-5.
+- The mini-bosses that guard a stretch of an area (the King Flyers of D-2, the Lava Demon of K-2 and the others) come back every time you re-enter their area. With `skip_minibosses: after_first_defeat` each one stays beaten once you have beaten it; with `always` they all count as beaten from the start.
+  - With `always` the Giro cutscene and boss fight at D-2 triggers right as you walk into it, since that fight required beating both mini bosses and this options marks them as defeated from the start.
 
 ### Cutscenes and menus
 

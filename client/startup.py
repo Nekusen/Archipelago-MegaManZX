@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 import worlds._bizhawk as bizhawk
 
 from ..data import ACTIVE_MODEL_ADDR, ITEMS, MODEL_X_POSSESSION, STARTING_MODELS, STARTING_TRANSERVERS
+from ..rom.golden import second_half_bit
 from .addresses import DOM, ITEM_ID_TO_NAME, START_CONFIRM_TICKS, START_MAX_RETRIES
 from .ram import Tick, bits_by_byte, copies_writes, read_copies
 
@@ -106,9 +107,14 @@ async def write_start_state(client: "MMZXClient", ctx, guard) -> int | None:
     if rec is None:
         logger.info("[mmzx] unknown starting_model: %r (ignored)" % key)
         return -1
-    # possessions: revoke X if applicable, grant those of the chosen model
+    # possessions: revoke X if applicable, grant those of the chosen model (both halves
+    # when the models are not progressive)
     clear = bits_by_byte([tuple(MODEL_X_POSSESSION)]) if rec["revoke_x"] else {}
-    on = bits_by_byte(tuple(g) for g in rec["grant"])
+    grants = [tuple(g) for g in rec["grant"]]
+    second = second_half_bit(key)
+    if second and not ctx.slot_data.get("progressive_models", True):
+        grants.append(second)
+    on = bits_by_byte(grants)
     addrs = sorted(set(clear) | set(on))
     writes: list[tuple[int, bytes, str]] = []
     if addrs:

@@ -28,6 +28,7 @@ from .items import grant_items, received_counts, revert_unowned_models
 from .minibosses import MODE_OFF, parse_mode, skip_minibosses
 from .missions import auto_accept_mission, handle_ending, repair_missions, skip_boss_rush
 from .tracker import log_where, receive_death_link, report_death, send_position
+from .usables import sync_usables
 from .warps import handle_warps
 from .commands import COMMANDS
 
@@ -116,6 +117,9 @@ class MMZXClient(BizHawkClient):
         self.goal_line_written: bytes | None = None
         self.missions_cleared: set[str] | None = None   # counted missions completed, from the game's flags
         self.ending_ticks = 0             # ticks with the stuck-ending signature
+        # ITEM A usables: the possession bits granted so far, and whether a console is in use
+        self.usables_granted = 0
+        self.console_busy = False
 
     async def validate_rom(self, ctx: "BizHawkClientContext") -> bool:
         """Accept only a ROM patched by this apworld version; take the slot name from its header."""
@@ -279,6 +283,7 @@ class MMZXClient(BizHawkClient):
             if self.inventory_known():
                 await self._stage("starting state", apply_start_state(self, ctx, tick))
                 await self._stage("items", grant_items(self, ctx, tick))
+                await self._stage("usables", sync_usables(self, ctx, tick))
                 await self._stage("goal line", sync_goal_line(self, ctx, tick, received_counts(ctx)))
                 await self._stage("notifications", push_notices(self, ctx))
                 await self._stage("models", revert_unowned_models(self, ctx, tick))

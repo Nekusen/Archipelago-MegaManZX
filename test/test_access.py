@@ -25,6 +25,7 @@ ACCESS_X_LOCATIONS = [
     "X-1: Disk O-13", "X-1: Disk O-14", "X-1: Disk O-15", "X-1: Disk O-19", "X-1: Disk O-2",
     "X-1: Disk O-20", "X-1: Disk O-4", "X-1: Disk O-5", "X-1: Disk O-6", "X-1: Disk O-7",
     "X-1: Disk O-8", "X-2: Disk O-16", "X-2: Disk O-3", "X-3: Disk O-11",
+    "X-1: Smelling Salts", "X-2: W Tank", "X-3: E Tank",
 ]
 TOWER_LOCATIONS = ["D-4: Disk B-5", "D-5: Disk B-6"]
 POOL_BIOMETALS = ["Model X", "Progressive Model HX", "Progressive Model FX",

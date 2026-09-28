@@ -2,6 +2,8 @@
 the pickup mailbox, pickups that stand for a multiworld item, and Model Hu as an item."""
 
 from .arm9 import Arm9, thumb_bl
+from .nds import patch_overlay
+from .table import usable_flag
 from .ui import CUTSCENE_SKIP_CAVE_RAM
 
 # Yellow Card Key dialogue: the Operator re-grants the key while Troop is
@@ -133,6 +135,39 @@ HUGATE_LISTS0_ORIG = b"\x00\x00\x00\x00"
 HUGATE_ARRAY_RAM = 0x020CB434
 HUGATE_FLAG_INDEX = 120                   # 0x021045DB bit 0: "visited" slot of the hub itself, never set
 
+# ITEM A usables: the menu's eight flags are set when the game hands an object over and
+# cleared on use, so they are the locations; the list is pointed at a byte of the pickup
+# table section that only the items received fill (the routines take 32-bit flag indexes).
+USABLE_FLAG_FIRST = 644                   # E Tank; 644..651 are 0x0210461C.4 to 0x0210461D.3
+USABLE_TABLE_RAM = 0x020D96DC             # u32[8]: the flag of each menu row
+USABLE_TABLE_ORIG = bytes.fromhex("8b0200008602000087020000880200008902000084020000850200008a020000")
+USABLE_TABLE_NEW = bytes.fromhex("c7b34600c2b34600c3b34600c4b34600c5b34600c0b34600c1b34600c6b34600")
+# The cake comes from a child who moves to town after Save The People, and only on the
+# console owner's birthday; the salts come after Troop Reinforcement. Those three tests go,
+# so the six townspeople of that init are in town from the start.
+USABLE_STORY_PATCH = [
+    # (RAM, vanilla, patched)
+    (0x0209F9EA, bytes.fromhex("0bd1"), bytes.fromhex("0be0")),   # rescued townspeople: bne -> b (always spawn)
+    (0x0209C5F2, bytes.fromhex("08d0"), bytes.fromhex("c046")),   # cake: beq past the offer -> nop
+    (0x020992AE, bytes.fromhex("09d0"), bytes.fromhex("c046")),   # salts: beq past the offer -> nop
+]
+# Room code hands out two usables: the tree of A-3 shakes for the punch class alone and
+# drops the apple one time in sixteen, the doll of X-2 frees the W Tank once its thousand
+# hit points are gone. Both answer any attack now, and the tree's first fruit is the apple.
+OVERLAY_USABLE_PATCH = {
+    # overlay: [(RAM, vanilla, patched)]
+    46: [(0x021942F4, "00000200", "00ffff00"),   # A-3 tree: hit mask, one attack class -> any attack
+         (0x0219422E, "02d1", "c046")],          # A-3 tree: bne past the apple (one in sixteen) -> nop
+    113: [(0x02194F54, "00020000", "00ffff00")],  # X-2 doll: hit mask, hit points gone -> any attack
+}
+# While Protect HQ is under way every Guardian but the three operators leaves the base.
+# The two who sell usables stay, so those locations do not depend on the story.
+GUARDIAN_KEEP_PATCH = [
+    # (RAM, vanilla, patched)
+    (0x0209C40C, bytes.fromhex("217d042902d1607d002814d0042902d1607d01280fd0042902d1607d02280ad0"),
+     bytes.fromhex("217d607d042901d1032814d3012901d1032810d0052903d104280cd0c046c046")),
+]
+
 
 def patch_yellow_key_dialogue(arm9: Arm9) -> None:
     """Stop the Operator from re-granting the Yellow Card Key on every visit."""
@@ -204,3 +239,23 @@ def patch_hu_gate(arm9: Arm9, hu_in_pool: bool) -> None:
         return
     arm9.write(HUGATE_ARRAY_RAM, HUGATE_FLAG_INDEX.to_bytes(4, "little"))
     arm9.write(HUGATE_LISTS0_RAM, HUGATE_ARRAY_RAM.to_bytes(4, "little"), HUGATE_LISTS0_ORIG)
+
+
+def usable_table() -> bytes:
+    """The menu's flag list pointed at the possession byte, row by row."""
+    return b"".join(usable_flag(f - USABLE_FLAG_FIRST).to_bytes(4, "little")
+                    for f in (int.from_bytes(USABLE_TABLE_ORIG[i:i + 4], "little") for i in range(0, 32, 4)))
+
+
+def patch_usables(arm9: Arm9) -> None:
+    """Make the eight ITEM A usables locations, free of the birthday, Troop and Protect HQ conditions."""
+    assert USABLE_TABLE_NEW == usable_table()
+    arm9.write(USABLE_TABLE_RAM, USABLE_TABLE_NEW, USABLE_TABLE_ORIG)
+    for ram, orig, new in USABLE_STORY_PATCH + GUARDIAN_KEEP_PATCH:
+        arm9.write(ram, new, orig)
+
+
+def patch_usable_rooms(rom: bytearray) -> None:
+    """Let any attack shake the tree of A-3, with the apple first, and knock the W Tank off the doll of X-2."""
+    for ovl, patches in OVERLAY_USABLE_PATCH.items():
+        patch_overlay(rom, ovl, patches)

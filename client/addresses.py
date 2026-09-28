@@ -137,8 +137,10 @@ SCENE_DESC = 0x0216047C       # spawn x, y and subarea; layout of PLAYER_PERSIST
 SCENE_DESC_LEN = 0x6C
 
 # Missions and story
-MISSION_ACTIVE_BYTE = 0x0210462B   # .1 mission accepted, .2 story mission
+MISSION_ACTIVE_BYTE = 0x0210462B   # .1 mission accepted, .2 quest accepted
 MISSION_ACCEPTED_MASK = 0x02
+MISSION_QUEST_MASK = 0x04
+MISSION_IN_PROGRESS_MASK = MISSION_ACCEPTED_MASK | MISSION_QUEST_MASK
 # Boss room scripts set these while a fight runs and clear them when the boss
 # dies; doors everywhere check them. Leaving the fight by teleport carries them
 # out of the room, so the client releases them once the player is elsewhere.

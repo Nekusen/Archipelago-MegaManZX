@@ -100,6 +100,14 @@ USABLE_TEXT_NEW = bytes.fromhex(
 
 # Cutscene skip: START skips a story cutscene only on a replay. The "event seen"
 # test becomes a no-op and the cave marks the event seen, as watching it would.
+# Names of the Transerver list (m_sys_en.bin): Troop Reinforcement and Protect HQ, which
+# vanilla never lists, only have placeholder names there.
+MISSION_NAME_FILE_ID = 225         # m_sys_en.bin
+MISSION_NAME_TEXTS = {             # message index: (vanilla text, name)
+    0x3D: (bytes.fromhex("2d495353494f4e0014"), bytes.fromhex("34524f4f50003245494e464f5243454d454e54")),
+    0x46: (bytes.fromhex("2d495353494f4e0024"), bytes.fromhex("30524f54454354002831")),
+}
+
 CUTSCENE_SKIP_PATCH = [
     # (RAM, vanilla, patched)
     (0x0201C00C, bytes.fromhex("17d0"), bytes.fromhex("c046")),           # open skippable block: beq -> nop
@@ -191,8 +199,8 @@ def install_pause_texts(rom: bytearray) -> None:
     relocate_file(rom, PAUSE_TEXT_FILE_ID, pause_texts_with_goal_line(file_bytes(rom, PAUSE_TEXT_FILE_ID)))
 
 
-def talk_texts_with_usable_notice(data: bytes) -> bytes:
-    """talk_sys_en.bin with the eight usable popups replaced by the multiworld notice."""
+def rebuild_texts(data: bytes, replace) -> bytes:
+    """A text file with every message passed through replace(index, text) and its offsets relaid."""
     total, tsize = struct.unpack_from("<HH", data, 0)
     n = tsize // 2
     base = 4 + tsize
@@ -202,12 +210,7 @@ def talk_texts_with_usable_notice(data: bytes) -> bytes:
     for k, o in enumerate(offs):
         end = data.index(bytes([PAUSE_TEXT_END]), base + o)
         tail = max(tail, end + 1)
-        text = data[base + o:end]
-        if USABLE_TEXT_FIRST <= k < USABLE_TEXT_FIRST + USABLE_TEXT_COUNT:
-            if not text.startswith(USABLE_TEXT_HEAD):
-                raise ValueError("MMZX: system text %d is not a pickup popup" % k)
-            text = USABLE_TEXT_NEW
-        texts.append(text + bytes([PAUSE_TEXT_END]))
+        texts.append(replace(k, data[base + o:end]) + bytes([PAUSE_TEXT_END]))
     body = b"".join(texts)
     new_offs = []
     pos = 0
@@ -218,9 +221,37 @@ def talk_texts_with_usable_notice(data: bytes) -> bytes:
     return out + data[tail:]   # whatever trails the last message
 
 
+def talk_texts_with_usable_notice(data: bytes) -> bytes:
+    """talk_sys_en.bin with the eight usable popups replaced by the multiworld notice."""
+    def replace(k: int, text: bytes) -> bytes:
+        if not USABLE_TEXT_FIRST <= k < USABLE_TEXT_FIRST + USABLE_TEXT_COUNT:
+            return text
+        if not text.startswith(USABLE_TEXT_HEAD):
+            raise ValueError("MMZX: system text %d is not a pickup popup" % k)
+        return USABLE_TEXT_NEW
+    return rebuild_texts(data, replace)
+
+
 def install_usable_texts(rom: bytearray) -> None:
     """Rebuild talk_sys_en.bin with the usable notice and relocate it to the end padding."""
     relocate_file(rom, USABLE_TEXT_FILE_ID, talk_texts_with_usable_notice(file_bytes(rom, USABLE_TEXT_FILE_ID)))
+
+
+def system_texts_with_mission_names(data: bytes) -> bytes:
+    """m_sys_en.bin with the placeholder names of the two story missions replaced."""
+    def replace(k: int, text: bytes) -> bytes:
+        if k not in MISSION_NAME_TEXTS:
+            return text
+        orig, name = MISSION_NAME_TEXTS[k]
+        if text != orig:
+            raise ValueError("MMZX: system text %d is not the placeholder mission name" % k)
+        return name
+    return rebuild_texts(data, replace)
+
+
+def install_mission_names(rom: bytearray) -> None:
+    """Rebuild m_sys_en.bin with the two mission names and relocate it to the end padding."""
+    relocate_file(rom, MISSION_NAME_FILE_ID, system_texts_with_mission_names(file_bytes(rom, MISSION_NAME_FILE_ID)))
 
 
 def patch_menu_warp_text(rom: bytearray) -> None:

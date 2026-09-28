@@ -13,11 +13,12 @@ from pathlib import Path
 
 from .. import rom
 from ..apnds import lz
-from ..data import (GOAL_LINE_ADDR, ICON_CODES, ITEMS, LIVE_BLOCK, LOCATIONS, NOTIFY_ADDR, NOTIFY_BUF_MAX,
-                    PICKUP_TABLE_ADDR, STARTING_MODELS, STARTING_TRANSERVERS)
-from ..rom import arm9, blz, golden, nds, pickups, sprites, table, ui
+from ..data import (GOAL_LINE_ADDR, ICON_CODES, ITEMS, LIVE_BLOCK, LOCATIONS, MISSION_COMPLETED_BIT,
+                    MISSION_REPEAT_BITS, NOTIFY_ADDR, NOTIFY_BUF_MAX, PICKUP_TABLE_ADDR, STARTING_MODELS,
+                    STARTING_TRANSERVERS)
+from ..rom import arm9, blz, golden, missions, nds, pickups, sprites, table, ui
 
-PATCH_MODULES = (pickups, sprites, ui)     # the modules that hold patch tables and caves
+PATCH_MODULES = (pickups, sprites, ui, missions)     # the modules that hold patch tables and caves
 ARM9_RAM = (0x02000000, 0x02400000)
 # Zero stretches of the vanilla ARM9 that take the caves.
 FREE_STRETCHES = [(0x020CB434, 0x020CB9D4), (0x020C8150, sprites.GFX_CAVES_END)]
@@ -463,6 +464,91 @@ class TestPatchTables(unittest.TestCase):
 
 
 @unittest.skipUnless(os.path.isfile(ROM_PATH), "set MMZX_ROM to the vanilla Mega Man ZX (USA) ROM")
+class TestMissionSection(unittest.TestCase):
+    """The mission list section: its tables come from data.py and its hooks replace the vanilla calls."""
+
+    def test_layout(self) -> None:
+        section = missions.build_section()
+        self.assertEqual(len(section), missions.MISSION_SECTION_LEN)
+        self.assertEqual(section[:len(missions.MISSION_SECTION_CODE)], missions.MISSION_SECTION_CODE)
+        self.assertLessEqual(len(missions.MISSION_SECTION_CODE), missions.MISSION_LIST_OFF)
+        listing = missions.mission_list_table()
+        self.assertEqual(section[missions.MISSION_LIST_OFF:missions.MISSION_LIST_OFF + len(listing)], listing)
+        self.assertEqual(section[missions.MISSION_NEVER_OFF:missions.MISSION_NEVER_OFF + 4], bytes(4))
+        repeat = missions.mission_repeat_table()
+        self.assertEqual(section[missions.MISSION_REPEAT_OFF:missions.MISSION_REPEAT_OFF + len(repeat)], repeat)
+        for name, off in missions.MISSION_SECTION_ENTRIES.items():
+            with self.subTest(entry=name):
+                self.assertEqual(off % 2, 0)
+                self.assertLess(off, len(missions.MISSION_SECTION_CODE))
+        self.assertGreaterEqual(missions.MISSION_SECTION_RAM,
+                                PICKUP_TABLE_ADDR + table.ENTRIES_OFF + table.MAX_SLOTS * table.ENTRY_LEN)
+        self.assertLessEqual(missions.MISSION_SECTION_RAM + missions.MISSION_SECTION_LEN, ui.ROOM_OVERLAY_SLOT_RAM)
+
+    def test_list_table(self) -> None:
+        """Each mission lists on its completed bit, the final mission never, the quests as in vanilla."""
+        words = struct.unpack("<%dI" % len(missions.MISSION_LIST_IDS), missions.mission_list_table())
+        by_id = dict(zip(missions.MISSION_LIST_IDS, words))
+        for mid, (addr, bit) in MISSION_COMPLETED_BIT.items():
+            with self.subTest(mission=mid):
+                self.assertEqual(by_id[mid], (addr - LIVE_BLOCK) * 8 + bit)
+        never = by_id[missions.MISSION_LAST_STORY]
+        self.assertEqual(LIVE_BLOCK + (never >> 3), missions.MISSION_SECTION_RAM + missions.MISSION_NEVER_OFF)
+        quests = struct.unpack("<%dI" % (len(missions.MISSION_QUEST_FLAGS_ORIG) // 4), missions.MISSION_QUEST_FLAGS_ORIG)
+        self.assertEqual(words[-len(quests):], quests)
+        self.assertEqual(missions.MISSION_QUEST_FLAGS_RAM, 0x020DAE7C + 4 * (missions.MISSION_LAST_STORY + 1 - 2))
+
+    def test_repeat_table(self) -> None:
+        """One row per mission, its flags in order, the end mark after them; every flag clears the sign test."""
+        rows = missions.mission_repeat_table()
+        slots = missions.MISSION_REPEAT_ROW // 2
+        self.assertEqual(len(rows), len(missions.MISSION_REPEAT_IDS) * missions.MISSION_REPEAT_ROW)
+        for k, mid in enumerate(missions.MISSION_REPEAT_IDS):
+            row = struct.unpack_from("<%dH" % slots, rows, k * missions.MISSION_REPEAT_ROW)
+            flags = [(a - LIVE_BLOCK) * 8 + b for a, b in MISSION_REPEAT_BITS[mid]]
+            with self.subTest(mission=mid):
+                self.assertEqual(list(row[:len(flags)]), flags)
+                self.assertTrue(all(f == missions.MISSION_REPEAT_END for f in row[len(flags):]))
+                self.assertTrue(all(0 < f < 0x8000 for f in flags))
+                self.assertLess(len(flags), slots)
+
+    def test_hooks(self) -> None:
+        """The redirected calls were the vanilla count, accept and pending-story-mission calls."""
+        for ram, orig in missions.MISSION_COUNT_HOOKS:
+            self.assertTrue(is_bl(orig)) and self.assertEqual(decode_bl(ram, orig), 0x02008774)
+        for ram, orig in missions.MISSION_TAKE_HOOKS:
+            self.assertTrue(is_bl(orig)) and self.assertEqual(decode_bl(ram, orig), 0x02094FAC)
+        for ram, orig, new in missions.MISSION_ABORT_PATCH:
+            with self.subTest(ram=hex(ram)):
+                self.assertTrue(is_bl(orig))
+                self.assertEqual(decode_bl(ram, orig), 0x02008A34)
+                self.assertEqual(new, bytes.fromhex("0020c046"))
+        (ram, orig, new), = missions.MISSION_LIST_LITERAL_PATCH
+        self.assertEqual(int.from_bytes(orig, "little"), 0x020DAE7C)
+        self.assertEqual(int.from_bytes(new, "little"), missions.MISSION_SECTION_RAM + missions.MISSION_LIST_OFF)
+
+    def test_mission_names(self) -> None:
+        """The two placeholder names are replaced and every other message keeps its bytes."""
+        n = max(ui.MISSION_NAME_TEXTS) + 2
+        texts = [(ui.MISSION_NAME_TEXTS[k][0] if k in ui.MISSION_NAME_TEXTS else bytes([0x21 + k % 26] * (k % 4 + 1)))
+                 + bytes([ui.PAUSE_TEXT_END]) for k in range(n)]
+        offs, pos = [], 0
+        for t in texts:
+            offs.append(pos)
+            pos += len(t)
+        body = b"".join(texts)
+        data = struct.pack("<HH", 4 + 2 * n + len(body), 2 * n) + struct.pack("<%dH" % n, *offs) + body
+        out = ui.system_texts_with_mission_names(data)
+        new_offs = struct.unpack_from("<%dH" % n, out, 4)
+        base = 4 + 2 * n
+        for k in range(n):
+            end = out.index(bytes([ui.PAUSE_TEXT_END]), base + new_offs[k])
+            want = ui.MISSION_NAME_TEXTS[k][1] if k in ui.MISSION_NAME_TEXTS else texts[k][:-1]
+            self.assertEqual(out[base + new_offs[k]:end], want, k)
+        with self.assertRaises(ValueError):
+            ui.system_texts_with_mission_names(data.replace(ui.MISSION_NAME_TEXTS[0x3D][0], b"" * 9, 1))
+
+
 class TestVanillaBytes(unittest.TestCase):
     """The vanilla bytes the patch modules record match the real ROM, and the caves land on zeros."""
 
@@ -529,6 +615,16 @@ class TestVanillaBytes(unittest.TestCase):
         out = ui.talk_texts_with_usable_notice(data)
         self.assertEqual(out.count(ui.USABLE_TEXT_NEW), ui.USABLE_TEXT_COUNT)
         self.assertGreater(len(out), len(data))
+
+    def test_mission_names_of_the_rom(self) -> None:
+        """The Transerver list file rebuilds with the two names in place of the placeholders."""
+        data = nds.file_bytes(bytearray(self.rom), ui.MISSION_NAME_FILE_ID)
+        out = ui.system_texts_with_mission_names(data)
+        for orig, name in ui.MISSION_NAME_TEXTS.values():
+            self.assertEqual(data.count(orig + bytes([ui.PAUSE_TEXT_END])), 1)
+            self.assertEqual(out.count(name + bytes([ui.PAUSE_TEXT_END])), 1)
+        self.assertEqual(self.read(missions.MISSION_QUEST_FLAGS_RAM, len(missions.MISSION_QUEST_FLAGS_ORIG)),
+                         missions.MISSION_QUEST_FLAGS_ORIG)
 
     def test_pause_texts_of_the_rom(self) -> None:
         """The pause menu file rebuilds: one-line BIOMETAL texts and the signature message where the cave reads it."""

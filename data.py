@@ -49,7 +49,7 @@ LOCATIONS = {
     'Mission - Attack The Excavators': {'id': 13632267, 'category': 'mission', 'detect': ['all', [[34620901, 6]]], 'room': 'K-4', 'pos': None, 'status': 'verified'},
     'Mission - Protect The Lab': {'id': 13632268, 'category': 'mission', 'detect': ['all', [[34620902, 1]]], 'room': 'L-4', 'pos': None, 'status': 'verified'},
     'Mission - Protect Hq': {'id': 13632269, 'category': 'mission', 'detect': ['all', [[34620903, 0]]], 'room': 'X HQ', 'pos': None, 'status': 'verified'},
-    'Mission - Stop The Dig': {'id': 13632270, 'category': 'mission', 'detect': ['all', [[34620903, 3], [34620903, 4]]], 'room': 'M', 'pos': None, 'status': 'verified'},
+    'Mission - Stop The Dig': {'id': 13632270, 'category': 'mission', 'detect': ['all', [[34620903, 3]]], 'room': 'M', 'pos': None, 'status': 'verified'},
     'Mission - Repel The Army': {'id': 13632271, 'category': 'mission', 'detect': ['all', [[34620903, 7], [34620904, 0]]], 'room': 'O', 'pos': None, 'status': 'verified'},
     'Mission - Destroy Model W': {'id': 13632272, 'category': 'mission', 'detect': None, 'room': 'D-4D-5', 'pos': None, 'status': 'detect_pending'},
     'Quest - Find The Flower': {'id': 13632340, 'category': 'quest', 'detect': None, 'room': 'A-1', 'pos': None, 'status': 'detect_pending'},
@@ -538,6 +538,42 @@ MISSION_ACCEPT = {
     67: {'id': 13, 'state': 211, 'flag': [34620902, 3], 'name': 'Protect Hq', 'extra': [[34620902, 4]], 'after_missions': 4},
     68: {'id': 13, 'state': 211, 'flag': [34620902, 3], 'name': 'Protect Hq', 'extra': [[34620902, 4]], 'after_missions': 4},
     69: {'id': 13, 'state': 211, 'flag': [34620902, 3], 'name': 'Protect Hq', 'extra': [[34620902, 4]], 'after_missions': 4},
+}
+# The 'completed' bit of each mission (ids 2 to 15), set by its Report; the
+# Mission Requests list of the patched ROM offers the missions whose bit is set.
+MISSION_COMPLETED_BIT = {
+    2: [34620894, 7],
+    3: [34620896, 0],
+    4: [34620897, 1],
+    5: [34620897, 4],
+    6: [34620897, 7],
+    7: [34620899, 7],
+    8: [34620900, 3],
+    9: [34620900, 7],
+    10: [34620901, 2],
+    11: [34620901, 6],
+    12: [34620902, 1],
+    13: [34620903, 0],
+    14: [34620903, 3],
+    15: [34620903, 7],
+}
+# Bits the ROM clears when a mission is taken again from that list, so that its
+# objective and its boss come back: mission id -> [[addr, bit], ...].
+MISSION_REPEAT_BITS = {
+    2: [[34620930, 0]],
+    3: [[34620895, 2], [34620895, 3], [34620895, 4], [34620895, 5], [34620895, 6], [34620895, 7]],
+    4: [[34620930, 1]],
+    5: [[34620926, 4], [34620925, 4]],
+    6: [[34620926, 5], [34620925, 5]],
+    7: [[34620926, 6], [34620925, 6]],
+    8: [[34620926, 7], [34620925, 7]],
+    9: [[34620900, 6], [34620926, 0], [34620927, 0], [34620923, 4]],
+    10: [[34620926, 1], [34620927, 1]],
+    11: [[34620927, 2], [34620926, 2]],
+    12: [[34620927, 3], [34620926, 3]],
+    13: [],
+    14: [[34620929, 6]],
+    15: [[34620929, 7]],
 }
 # Mini-bosses skip_minibosses treats as beaten: area letter -> [[addr, bit], ...],
 # the flag each room script sets when the mini-boss dies.

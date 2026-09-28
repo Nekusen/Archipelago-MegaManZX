@@ -8,6 +8,18 @@ All notable changes to this project are documented in this file. The format is b
 
 ### Added
 
+- Missions can be played again: the "Mission Requests" list of the Transerver consoles offers the missions you have already reported (plus the quests, as before), and taking one brings back its objective and its boss.
+  - While a mission taken from the list is under way, entering an area does not accept that area's mission; report or abort the one you took to go back to normal.
+- Troop Reinforcement and Protect HQ show their names in that list instead of "Mission 4" and "Mission D".
+
+### Changed
+
+- The Transerver consoles offer "Abort the mission?" during Troop Reinforcement and Protect HQ too.
+
+### Fixed
+
+- Stop The Dig stopped counting as completed after reporting Repel The Army.
+
 - The eight usable items of the pause menu (Cake, Orange, Candy, Bread, Apple, E Tank, W Tank and Smelling Salts) are items of the pool, and the eight places that hand them out are locations.
   - A usable you have used comes back when you open any Transerver console.
   - The child who gives the cake is in C-1 from the start and needs no birthday; Scombrésoce sells the salts without Troop Reinforcement; Cédre and Scombrésoce stay in the base during Protect HQ.

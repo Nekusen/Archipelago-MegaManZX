@@ -176,8 +176,10 @@ class TestDoorConstraints(MMZXTestBase):
                 for item in self.multiworld.itempool:
                     if item.name != key:
                         state.collect(item, prevent_sweep=True)
+                state.sweep_for_advancements()
                 self.assertFalse(entrance.access_rule(state))
                 state.collect(world.create_item(key), prevent_sweep=True)
+                state.sweep_for_advancements()      # a door may also wait for a mission
                 self.assertTrue(entrance.access_rule(state))
 
     def test_a_new_game_keeps_something_to_do(self) -> None:

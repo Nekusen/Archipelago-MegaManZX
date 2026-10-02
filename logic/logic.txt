@@ -341,6 +341,7 @@ room C-1 [c01]
     <- Hub
     <- B-2
     check C-1: Cake
+      normal: HU & SAVE_THE_PEOPLE
     check C-1: E-Crystal L
       normal: HX
       normal: PX
@@ -375,6 +376,7 @@ room C-1 [c01]
     internal -> Main
     <- A-2
     check C-1: Bread
+      normal: HU
     conn -> A-2 Entrance (Top Part)
       normal: HX
       normal: PX
@@ -469,6 +471,7 @@ room C-2 [c02]
     internal -> Main  key Yellow Card Key
     internal -> Yellow Card Key Hidden Room
     check C-2: Orange
+      normal: HU
   region Yellow Card Key Hidden Room
     internal -> Yellow Card Key Building Interior
     check C-2: Disk O-18
@@ -2239,6 +2242,7 @@ room X-1 [x01]
     check X-1: Disk O-7
     check X-1: Disk O-8
     check X-1: Smelling Salts
+      normal: TROOP_REINFORCEMENT
 
 room X-2 [x02]
   region Main

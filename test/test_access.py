@@ -28,6 +28,9 @@ ACCESS_X_LOCATIONS = [
     "X-1: Smelling Salts", "X-2: W Tank", "X-3: E Tank",
 ]
 TOWER_LOCATIONS = ["D-4: Disk B-5", "D-5: Disk B-6"]
+# Usables whose giver shows up, or starts selling, once a mission is cleared.
+USABLE_MISSIONS = {"C-1: Cake": "Cleared: Save The People",
+                   "X-1: Smelling Salts": "Cleared: Troop Reinforcement"}
 POOL_BIOMETALS = ["Model X", "Progressive Model HX", "Progressive Model FX",
                   "Progressive Model LX", "Progressive Model PX"]
 
@@ -142,11 +145,29 @@ class BiometalTests:
                 self.assertAccessDependency(TOWER_LOCATIONS, [[name]], only_check_listed=True)
 
 
+class UsableTests:
+    def test_usables_wait_for_their_mission(self) -> None:
+        """The cake and the salts are out of reach until their mission is cleared."""
+        for location, event in USABLE_MISSIONS.items():
+            with self.subTest(location=location):
+                state = CollectionState(self.multiworld)
+                for item in self.multiworld.get_items():
+                    if item.name != event:
+                        state.collect(item, prevent_sweep=True)
+                self.assertFalse(state.can_reach(location, "Location", 1))
+                state.collect(self.multiworld.get_location(event, 1).item, prevent_sweep=True)
+                self.assertTrue(state.can_reach(location, "Location", 1))
+
+
 class TestCardKeys(CardKeyTests, MMZXTestBase):
     pass
 
 
 class TestTranserver(TranserverTests, MMZXTestBase):
+    pass
+
+
+class TestUsables(UsableTests, MMZXTestBase):
     pass
 
 

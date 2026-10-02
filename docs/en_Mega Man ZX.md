@@ -75,9 +75,10 @@ Locations:
 - Usable items: the objects handed out in the world are checks and give nothing; the usables you hold are the ones
   received from the multiworld. A usable you have used comes back the next time you open any Transerver console,
   even if you only cancel the menu. The townspeople give their object on the second or third talk, in human form;
-  the Guardians answer when you stand a little to their left. The child who gives the cake is in C-1 from the start
-  and needs no birthday, Scombrésoce sells the salts without Troop Reinforcement, and Cédre and Scombrésoce stay in
-  the base during Protect HQ. Any attack shakes the tree of A-3 and its first fruit is the apple; any hit on the
+  the Guardians answer when you stand a little to their left. The child who gives the cake moves to C-1 once you
+  complete Save The People, as in the original game, and needs no birthday; Scombrésoce sells the salts once you
+  complete Troop Reinforcement; neither goes away afterwards, and Cédre and Scombrésoce stay in the base during
+  Protect HQ. Any attack shakes the tree of A-3 and its first fruit is the apple; any hit on the
   hanging doll of X-2 frees the W Tank; the crane game of H-3 gives the candy the first time you catch a prize.
 
 ### The "Open World" state

@@ -3,7 +3,7 @@ import io
 import unittest
 
 from .bases import MMZXTestBase
-from .test_access import ACCESS_X_LOCATIONS
+from .test_access import ACCESS_X_LOCATIONS, USABLE_MISSIONS
 from .test_regions import RegionsReachable
 from ..rom.golden import (BLOCK_MIRROR, BLOCK_OFF, OFF_SCENE_WORD, OFF_SPAWN_X, OFF_SPAWN_Y,
                           PLAYER_MIRROR, TRANSERVER_BITS, build_image)
@@ -75,7 +75,7 @@ class TestGuardianBaseStart(RegionsReachable, MMZXTestBase):
         self.assertFalse(self.can_reach_entrance("z01 transerver to a02"))
         reachable = {loc.name for loc in self.multiworld.get_locations(1)
                      if loc.address is not None and loc.can_reach(self.multiworld.state)}
-        self.assertEqual(reachable, {n for n in ACCESS_X_LOCATIONS if n.startswith("X-")})
+        self.assertEqual(reachable, {n for n in ACCESS_X_LOCATIONS if n.startswith("X-")} - set(USABLE_MISSIONS))
 
     def test_area_a_opens_with_its_access(self) -> None:
         self.assertFalse(self.can_reach_location("A-2: Disk B-3"))

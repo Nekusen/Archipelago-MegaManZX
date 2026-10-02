@@ -142,14 +142,11 @@ USABLE_FLAG_FIRST = 644                   # E Tank; 644..651 are 0x0210461C.4 to
 USABLE_TABLE_RAM = 0x020D96DC             # u32[8]: the flag of each menu row
 USABLE_TABLE_ORIG = bytes.fromhex("8b0200008602000087020000880200008902000084020000850200008a020000")
 USABLE_TABLE_NEW = bytes.fromhex("c7b34600c2b34600c3b34600c4b34600c5b34600c0b34600c1b34600c6b34600")
-# The cake comes from a child who moves to town after Save The People, and only on the
-# console owner's birthday; the salts come after Troop Reinforcement. Those three tests go,
-# so the six townspeople of that init are in town from the start.
-USABLE_STORY_PATCH = [
+# The child gives the cake only on the console owner's birthday; a location cannot wait for
+# a date, so that test goes. The missions that bring the child and the salts stay required.
+CAKE_BIRTHDAY_PATCH = [
     # (RAM, vanilla, patched)
-    (0x0209F9EA, bytes.fromhex("0bd1"), bytes.fromhex("0be0")),   # rescued townspeople: bne -> b (always spawn)
-    (0x0209C5F2, bytes.fromhex("08d0"), bytes.fromhex("c046")),   # cake: beq past the offer -> nop
-    (0x020992AE, bytes.fromhex("09d0"), bytes.fromhex("c046")),   # salts: beq past the offer -> nop
+    (0x0209C5F2, bytes.fromhex("08d0"), bytes.fromhex("c046")),   # beq past the offer -> nop
 ]
 # Room code hands out two usables: the tree of A-3 shakes for the punch class alone and
 # drops the apple one time in sixteen, the doll of X-2 frees the W Tank once its thousand
@@ -248,10 +245,10 @@ def usable_table() -> bytes:
 
 
 def patch_usables(arm9: Arm9) -> None:
-    """Make the eight ITEM A usables locations, free of the birthday, Troop and Protect HQ conditions."""
+    """Make the eight ITEM A usables locations, free of the birthday and of Protect HQ emptying the base."""
     assert USABLE_TABLE_NEW == usable_table()
     arm9.write(USABLE_TABLE_RAM, USABLE_TABLE_NEW, USABLE_TABLE_ORIG)
-    for ram, orig, new in USABLE_STORY_PATCH + GUARDIAN_KEEP_PATCH:
+    for ram, orig, new in CAKE_BIRTHDAY_PATCH + GUARDIAN_KEEP_PATCH:
         arm9.write(ram, new, orig)
 
 

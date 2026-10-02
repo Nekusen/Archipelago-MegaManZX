@@ -4,10 +4,12 @@
 @ A-3, the crane of H-3, the hanging doll of X-2) and clears when the player uses
 @ it. Those flags are the locations now, so the menu list is pointed at the
 @ possession byte of the pickup table section (rom/table.py USABLES_OFF), which
-@ only the items received fill. Three story conditions go: the six townspeople
-@ who move in after Save The People are in town from the start, the cake needs no
-@ birthday, the salts need no Troop Reinforcement; and the two Guardians who sell
-@ usables stay in the base while Protect HQ is under way. No cave.
+@ only the items received fill. The cake needs no birthday, and the two Guardians
+@ who sell usables stay in the base while Protect HQ is under way. The missions
+@ that the game asks for stay required: the child who gives the cake moves to
+@ town once Save The People is reported (flag 199), and the salts are on sale
+@ once Troop Reinforcement is reported (flag 169); the game only ever sets those
+@ two flags, so neither source goes away afterwards. No cave.
 
         .thumb
 
@@ -28,20 +30,10 @@
         .word   usable_flag_base + 1
         .word   usable_flag_base + 6
 
-        .org    0x0209F9EA
-@ rom: USABLE_STORY_PATCH[0][2]
-@ was: bne 0x0209FA04   (USABLE_STORY_PATCH[0][1]): the townspeople of this init exist only with flag 199 (Save The People reported)
-        b       0x0209FA04              @ always run the normal init
-
         .org    0x0209C5F2
-@ rom: USABLE_STORY_PATCH[1][2]
-@ was: beq 0x0209C606   (USABLE_STORY_PATCH[1][1]): no cake unless today is the console owner's birthday
+@ rom: CAKE_BIRTHDAY_PATCH[0][2]
+@ was: beq 0x0209C606   (CAKE_BIRTHDAY_PATCH[0][1]): no cake unless today is the console owner's birthday
         mov     r8, r8                  @ the cake dialogue whenever the flag is clear
-
-        .org    0x020992AE
-@ rom: USABLE_STORY_PATCH[2][2]
-@ was: beq 0x020992C4   (USABLE_STORY_PATCH[2][1]): no salts unless Troop Reinforcement is reported
-        mov     r8, r8                  @ the salts dialogue whenever the flag is clear
 
         .org    0x0209C40C
 @ rom: GUARDIAN_KEEP_PATCH[0][2]

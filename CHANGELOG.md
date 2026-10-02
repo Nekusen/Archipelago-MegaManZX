@@ -10,7 +10,7 @@ All notable changes to this project are documented in this file. The format is b
 
 - The eight usable items of the pause menu (Cake, Orange, Candy, Bread, Apple, E Tank, W Tank and Smelling Salts) are items of the pool, and the eight places that hand them out are locations.
   - A usable you have used comes back when you open any Transerver console.
-  - The child who gives the cake is in C-1 from the start and needs no birthday; Scombrésoce sells the salts without Troop Reinforcement; Cédre and Scombrésoce stay in the base during Protect HQ.
+  - The child gives the cake on any day, once Save The People has brought him to C-1; Scombrésoce sells the salts once Troop Reinforcement is complete; Cédre and Scombrésoce stay in the base during Protect HQ.
   - Any attack shakes the tree of A-3 and its first fruit is the apple; any hit on the hanging doll of X-2 frees the W Tank.
 
 ## [0.2.0] - 2026-09-26

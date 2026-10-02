@@ -5,6 +5,7 @@ import re
 from .. import data as _data
 from . import document as F
 from ..data import HUB_ROOM, STARTING_TRANSERVERS, TRANSERVER_ACCESS, TRANSERVER_ALWAYS
+from ..door_constraints import site_doors
 
 # Logic level the world ships. The document also carries expert alternatives (tricks,
 # tight jumps); they are not offered as an option yet.
@@ -12,14 +13,19 @@ TIER = "normal"
 
 WORLD = F.build_world(_data)
 ROOM_NAMES = WORLD["rooms"]
+SITE_DOORS = site_doors()
 
 
-def door_rule(edge: dict, player: int):
-    """Key rule of an edge, or None if it has no key."""
-    key = edge.get("key")
-    if not key:
+def door_rule(edge: dict, world):
+    """Key rule of an edge, or None if it has no key and no seed gives it one."""
+    player = world.player
+    name, vanilla = edge["name"], edge.get("key")
+    if name in SITE_DOORS:
+        # the keys of a door constraint site are drawn once the regions exist
+        return lambda state: (key := world.door_keys.get(name, vanilla)) is None or state.has(key, player)
+    if not vanilla:
         return None
-    return lambda state: state.has(key, player)
+    return lambda state: state.has(vanilla, player)
 
 
 def transerver_rule(edge: dict, player: int):

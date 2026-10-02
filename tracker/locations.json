@@ -181,6 +181,14 @@
             ],
             "sections": [
               {
+                "name": "B-1: Computer Chip",
+                "item_count": 1
+              },
+              {
+                "name": "B-1: Computer Chip (2)",
+                "item_count": 1
+              },
+              {
                 "name": "B-1: Disk E-24",
                 "item_count": 1
               },
@@ -210,6 +218,14 @@
               },
               {
                 "name": "B-2: Disk B-1",
+                "item_count": 1
+              },
+              {
+                "name": "B-2: Computer Chip",
+                "item_count": 1
+              },
+              {
+                "name": "B-2: Computer Chip (2)",
                 "item_count": 1
               },
               {
@@ -334,6 +350,18 @@
                 "item_count": 1
               },
               {
+                "name": "C-1: Guardian Oeillet",
+                "item_count": 1
+              },
+              {
+                "name": "C-1: Guardian Carrelet",
+                "item_count": 1
+              },
+              {
+                "name": "C-1: Guardian Congre",
+                "item_count": 1
+              },
+              {
                 "name": "C-1: Weapon Energy L",
                 "item_count": 1
               },
@@ -415,6 +443,14 @@
               },
               {
                 "name": "C-2: Orange",
+                "item_count": 1
+              },
+              {
+                "name": "C-2: Stuffed Animal",
+                "item_count": 1
+              },
+              {
+                "name": "C-2: Guardian Thon",
                 "item_count": 1
               },
               {
@@ -730,6 +766,22 @@
             ]
           },
           {
+            "name": "E-3",
+            "map_locations": [
+              {
+                "map": "overall",
+                "x": 248,
+                "y": 472
+              }
+            ],
+            "sections": [
+              {
+                "name": "E-3: Generator",
+                "item_count": 1
+              }
+            ]
+          },
+          {
             "name": "E-4",
             "map_locations": [
               {
@@ -909,6 +961,14 @@
             ],
             "sections": [
               {
+                "name": "F-3: Data Disk 1",
+                "item_count": 1
+              },
+              {
+                "name": "F-3: Lock Hack",
+                "item_count": 1
+              },
+              {
                 "name": "F-3: Disk E-2",
                 "item_count": 1
               },
@@ -1022,6 +1082,58 @@
             ],
             "sections": [
               {
+                "name": "G-2: Guardian Chene",
+                "item_count": 1
+              },
+              {
+                "name": "G-2: Guardian Sole",
+                "item_count": 1
+              },
+              {
+                "name": "G-2: Guardian Platane",
+                "item_count": 1
+              },
+              {
+                "name": "G-2: Guardian Bonite",
+                "item_count": 1
+              },
+              {
+                "name": "G-2: Civilian",
+                "item_count": 1
+              },
+              {
+                "name": "G-2: Civilian (5)",
+                "item_count": 1
+              },
+              {
+                "name": "G-2: Civilian (2)",
+                "item_count": 1
+              },
+              {
+                "name": "G-2: Civilian (3)",
+                "item_count": 1
+              },
+              {
+                "name": "G-2: Civilian (6)",
+                "item_count": 1
+              },
+              {
+                "name": "G-2: Civilian (7)",
+                "item_count": 1
+              },
+              {
+                "name": "G-2: Civilian (4)",
+                "item_count": 1
+              },
+              {
+                "name": "G-2: Civilian (8)",
+                "item_count": 1
+              },
+              {
+                "name": "G-2: Sprinkler Key",
+                "item_count": 1
+              },
+              {
                 "name": "G-2: Disk E-16",
                 "item_count": 1
               },
@@ -1041,6 +1153,10 @@
               }
             ],
             "sections": [
+              {
+                "name": "G-3: Dog",
+                "item_count": 1
+              },
               {
                 "name": "G-3: Disk E-9",
                 "item_count": 1
@@ -1513,6 +1629,10 @@
                 "item_count": 1
               },
               {
+                "name": "J-5: Data Disk 2",
+                "item_count": 1
+              },
+              {
                 "name": "J-5: Energy Capsule L",
                 "item_count": 1
               }
@@ -1535,6 +1655,10 @@
             "sections": [
               {
                 "name": "K-1: Sub Tank",
+                "item_count": 1
+              },
+              {
+                "name": "K-1: Lava Flow Control",
                 "item_count": 1
               },
               {
@@ -1756,6 +1880,10 @@
               },
               {
                 "name": "L-4: Disk B-13",
+                "item_count": 1
+              },
+              {
+                "name": "L-4: Data Disk 3",
                 "item_count": 1
               }
             ]
@@ -2689,6 +2817,48 @@
         "name": "B-1",
         "children": [
           {
+            "name": "B-1: Computer Chip",
+            "map_locations": [
+              {
+                "map": "area_b",
+                "x": 481,
+                "y": 243
+              },
+              {
+                "map": "room_b01",
+                "x": 481,
+                "y": 153
+              }
+            ],
+            "sections": [
+              {
+                "name": "B-1: Computer Chip",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "B-1: Computer Chip (2)",
+            "map_locations": [
+              {
+                "map": "area_b",
+                "x": 1254,
+                "y": 220
+              },
+              {
+                "map": "room_b01",
+                "x": 1254,
+                "y": 130
+              }
+            ],
+            "sections": [
+              {
+                "name": "B-1: Computer Chip (2)",
+                "item_count": 1
+              }
+            ]
+          },
+          {
             "name": "B-1: Disk E-24",
             "map_locations": [
               {
@@ -2773,6 +2943,48 @@
             "sections": [
               {
                 "name": "B-2: Disk B-1",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "B-2: Computer Chip",
+            "map_locations": [
+              {
+                "map": "area_b",
+                "x": 316,
+                "y": 493
+              },
+              {
+                "map": "room_b02",
+                "x": 365,
+                "y": 173
+              }
+            ],
+            "sections": [
+              {
+                "name": "B-2: Computer Chip",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "B-2: Computer Chip (2)",
+            "map_locations": [
+              {
+                "map": "area_b",
+                "x": 706,
+                "y": 476
+              },
+              {
+                "map": "room_b02",
+                "x": 817,
+                "y": 153
+              }
+            ],
+            "sections": [
+              {
+                "name": "B-2: Computer Chip (2)",
                 "item_count": 1
               }
             ]
@@ -3294,6 +3506,69 @@
             ]
           },
           {
+            "name": "C-1: Guardian Oeillet",
+            "map_locations": [
+              {
+                "map": "area_c",
+                "x": 1214,
+                "y": 488
+              },
+              {
+                "map": "room_c01",
+                "x": 1214,
+                "y": 326
+              }
+            ],
+            "sections": [
+              {
+                "name": "C-1: Guardian Oeillet",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "C-1: Guardian Carrelet",
+            "map_locations": [
+              {
+                "map": "area_c",
+                "x": 2037,
+                "y": 228
+              },
+              {
+                "map": "room_c01",
+                "x": 2037,
+                "y": 66
+              }
+            ],
+            "sections": [
+              {
+                "name": "C-1: Guardian Carrelet",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "C-1: Guardian Congre",
+            "map_locations": [
+              {
+                "map": "area_c",
+                "x": 2037,
+                "y": 343
+              },
+              {
+                "map": "room_c01",
+                "x": 2037,
+                "y": 181
+              }
+            ],
+            "sections": [
+              {
+                "name": "C-1: Guardian Congre",
+                "item_count": 1
+              }
+            ]
+          },
+          {
             "name": "C-1: Weapon Energy L",
             "map_locations": [
               {
@@ -3651,6 +3926,48 @@
             "sections": [
               {
                 "name": "C-2: Orange",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "C-2: Stuffed Animal",
+            "map_locations": [
+              {
+                "map": "area_c",
+                "x": 992,
+                "y": 788
+              },
+              {
+                "map": "room_c02",
+                "x": 1063,
+                "y": 242
+              }
+            ],
+            "sections": [
+              {
+                "name": "C-2: Stuffed Animal",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "C-2: Guardian Thon",
+            "map_locations": [
+              {
+                "map": "area_c",
+                "x": 800,
+                "y": 780
+              },
+              {
+                "map": "room_c02",
+                "x": 857,
+                "y": 233
+              }
+            ],
+            "sections": [
+              {
+                "name": "C-2: Guardian Thon",
                 "item_count": 1
               }
             ]
@@ -4554,6 +4871,32 @@
         ]
       },
       {
+        "name": "E-3",
+        "children": [
+          {
+            "name": "E-3: Generator",
+            "map_locations": [
+              {
+                "map": "area_e",
+                "x": 836,
+                "y": 723
+              },
+              {
+                "map": "room_e03",
+                "x": 1880,
+                "y": 330
+              }
+            ],
+            "sections": [
+              {
+                "name": "E-3: Generator",
+                "item_count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
         "name": "E-4",
         "children": [
           {
@@ -4997,6 +5340,48 @@
         "name": "F-3",
         "children": [
           {
+            "name": "F-3: Data Disk 1",
+            "map_locations": [
+              {
+                "map": "area_f",
+                "x": 740,
+                "y": 1260
+              },
+              {
+                "map": "room_f03",
+                "x": 1456,
+                "y": 962
+              }
+            ],
+            "sections": [
+              {
+                "name": "F-3: Data Disk 1",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "F-3: Lock Hack",
+            "map_locations": [
+              {
+                "map": "area_f",
+                "x": 756,
+                "y": 1260
+              },
+              {
+                "map": "room_f03",
+                "x": 1488,
+                "y": 962
+              }
+            ],
+            "sections": [
+              {
+                "name": "F-3: Lock Hack",
+                "item_count": 1
+              }
+            ]
+          },
+          {
             "name": "F-3: Disk E-2",
             "map_locations": [
               {
@@ -5259,6 +5644,279 @@
         "name": "G-2",
         "children": [
           {
+            "name": "G-2: Guardian Chene",
+            "map_locations": [
+              {
+                "map": "area_g",
+                "x": 1125,
+                "y": 419
+              },
+              {
+                "map": "room_g02",
+                "x": 109,
+                "y": 372
+              }
+            ],
+            "sections": [
+              {
+                "name": "G-2: Guardian Chene",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "G-2: Guardian Sole",
+            "map_locations": [
+              {
+                "map": "area_g",
+                "x": 1038,
+                "y": 1534
+              },
+              {
+                "map": "room_g02",
+                "x": 9,
+                "y": 1652
+              }
+            ],
+            "sections": [
+              {
+                "name": "G-2: Guardian Sole",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "G-2: Guardian Platane",
+            "map_locations": [
+              {
+                "map": "area_g",
+                "x": 1125,
+                "y": 327
+              },
+              {
+                "map": "room_g02",
+                "x": 109,
+                "y": 267
+              }
+            ],
+            "sections": [
+              {
+                "name": "G-2: Guardian Platane",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "G-2: Guardian Bonite",
+            "map_locations": [
+              {
+                "map": "area_g",
+                "x": 1156,
+                "y": 1429
+              },
+              {
+                "map": "room_g02",
+                "x": 144,
+                "y": 1531
+              }
+            ],
+            "sections": [
+              {
+                "name": "G-2: Guardian Bonite",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "G-2: Civilian",
+            "map_locations": [
+              {
+                "map": "area_g",
+                "x": 1063,
+                "y": 556
+              },
+              {
+                "map": "room_g02",
+                "x": 38,
+                "y": 530
+              }
+            ],
+            "sections": [
+              {
+                "name": "G-2: Civilian",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "G-2: Civilian (5)",
+            "map_locations": [
+              {
+                "map": "area_g",
+                "x": 1092,
+                "y": 1205
+              },
+              {
+                "map": "room_g02",
+                "x": 71,
+                "y": 1274
+              }
+            ],
+            "sections": [
+              {
+                "name": "G-2: Civilian (5)",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "G-2: Civilian (2)",
+            "map_locations": [
+              {
+                "map": "area_g",
+                "x": 1101,
+                "y": 661
+              },
+              {
+                "map": "room_g02",
+                "x": 81,
+                "y": 650
+              }
+            ],
+            "sections": [
+              {
+                "name": "G-2: Civilian (2)",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "G-2: Civilian (3)",
+            "map_locations": [
+              {
+                "map": "area_g",
+                "x": 1092,
+                "y": 986
+              },
+              {
+                "map": "room_g02",
+                "x": 71,
+                "y": 1023
+              }
+            ],
+            "sections": [
+              {
+                "name": "G-2: Civilian (3)",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "G-2: Civilian (6)",
+            "map_locations": [
+              {
+                "map": "area_g",
+                "x": 1154,
+                "y": 1319
+              },
+              {
+                "map": "room_g02",
+                "x": 142,
+                "y": 1406
+              }
+            ],
+            "sections": [
+              {
+                "name": "G-2: Civilian (6)",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "G-2: Civilian (7)",
+            "map_locations": [
+              {
+                "map": "area_g",
+                "x": 1051,
+                "y": 1754
+              },
+              {
+                "map": "room_g02",
+                "x": 24,
+                "y": 1904
+              }
+            ],
+            "sections": [
+              {
+                "name": "G-2: Civilian (7)",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "G-2: Civilian (4)",
+            "map_locations": [
+              {
+                "map": "area_g",
+                "x": 1160,
+                "y": 1100
+              },
+              {
+                "map": "room_g02",
+                "x": 149,
+                "y": 1154
+              }
+            ],
+            "sections": [
+              {
+                "name": "G-2: Civilian (4)",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "G-2: Civilian (8)",
+            "map_locations": [
+              {
+                "map": "area_g",
+                "x": 1153,
+                "y": 1868
+              },
+              {
+                "map": "room_g02",
+                "x": 142,
+                "y": 2035
+              }
+            ],
+            "sections": [
+              {
+                "name": "G-2: Civilian (8)",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "G-2: Sprinkler Key",
+            "map_locations": [
+              {
+                "map": "area_g",
+                "x": 1144,
+                "y": 193
+              },
+              {
+                "map": "room_g02",
+                "x": 131,
+                "y": 113
+              }
+            ],
+            "sections": [
+              {
+                "name": "G-2: Sprinkler Key",
+                "item_count": 1
+              }
+            ]
+          },
+          {
             "name": "G-2: Disk E-16",
             "map_locations": [
               {
@@ -5305,6 +5963,27 @@
       {
         "name": "G-3",
         "children": [
+          {
+            "name": "G-3: Dog",
+            "map_locations": [
+              {
+                "map": "area_g",
+                "x": 1614,
+                "y": 167
+              },
+              {
+                "map": "room_g03",
+                "x": 1512,
+                "y": 186
+              }
+            ],
+            "sections": [
+              {
+                "name": "G-3: Dog",
+                "item_count": 1
+              }
+            ]
+          },
           {
             "name": "G-3: Disk E-9",
             "map_locations": [
@@ -6672,6 +7351,27 @@
             ]
           },
           {
+            "name": "J-5: Data Disk 2",
+            "map_locations": [
+              {
+                "map": "area_j",
+                "x": 256,
+                "y": 1772
+              },
+              {
+                "map": "room_j05",
+                "x": 480,
+                "y": 593
+              }
+            ],
+            "sections": [
+              {
+                "name": "J-5: Data Disk 2",
+                "item_count": 1
+              }
+            ]
+          },
+          {
             "name": "J-5: Energy Capsule L",
             "map_locations": [
               {
@@ -6772,6 +7472,27 @@
             "sections": [
               {
                 "name": "K-1: Sub Tank",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "K-1: Lava Flow Control",
+            "map_locations": [
+              {
+                "map": "area_k",
+                "x": 1825,
+                "y": 378
+              },
+              {
+                "map": "room_k01",
+                "x": 1825,
+                "y": 288
+              }
+            ],
+            "sections": [
+              {
+                "name": "K-1: Lava Flow Control",
                 "item_count": 1
               }
             ]
@@ -7353,6 +8074,27 @@
             "sections": [
               {
                 "name": "L-4: Disk B-13",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "L-4: Data Disk 3",
+            "map_locations": [
+              {
+                "map": "area_l",
+                "x": 1336,
+                "y": 1004
+              },
+              {
+                "map": "room_l04",
+                "x": 1781,
+                "y": 279
+              }
+            ],
+            "sections": [
+              {
+                "name": "L-4: Data Disk 3",
                 "item_count": 1
               }
             ]

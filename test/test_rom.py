@@ -13,12 +13,12 @@ from pathlib import Path
 
 from .. import rom
 from ..apnds import lz
-from ..data import (GOAL_LINE_ADDR, ICON_CODES, ITEMS, LIVE_BLOCK, LOCATIONS, MISSION_COMPLETED_BIT,
+from ..data import (EVENT_GATES, GOAL_LINE_ADDR, ICON_CODES, ITEMS, LIVE_BLOCK, LOCATIONS, MISSION_COMPLETED_BIT,
                     MISSION_REPEAT_BITS, NOTIFY_ADDR, NOTIFY_BUF_MAX, PICKUP_TABLE_ADDR, STARTING_MODELS,
-                    STARTING_TRANSERVERS)
-from ..rom import arm9, blz, golden, missions, nds, pickups, sprites, table, ui
+                    STARTING_TRANSERVERS, STORY_GATE_ITEMS, STORY_LAVA_ITEM, STORY_REPORT_STATES)
+from ..rom import arm9, blz, golden, missions, nds, pickups, sprites, story, table, ui
 
-PATCH_MODULES = (pickups, sprites, ui, missions)     # the modules that hold patch tables and caves
+PATCH_MODULES = (pickups, sprites, ui, missions, story)     # the modules that hold patch tables and caves
 ARM9_RAM = (0x02000000, 0x02400000)
 # Zero stretches of the vanilla ARM9 that take the caves.
 FREE_STRETCHES = [(0x020CB434, 0x020CB9D4), (0x020C8150, sprites.GFX_CAVES_END)]
@@ -307,7 +307,7 @@ class TestPatchTables(unittest.TestCase):
             ui.talk_texts_with_usable_notice(data.replace(head, b"\x01" * len(head), 1))
 
     def test_overlay_patches_keep_their_length(self) -> None:
-        for ovl, patches in pickups.OVERLAY_USABLE_PATCH.items():
+        for ovl, patches in {**pickups.OVERLAY_USABLE_PATCH, **story.STORY_OVERLAY_PATCH}.items():
             for ram, orig, new in patches:
                 with self.subTest(ovl=ovl, ram=hex(ram)):
                     self.assertEqual(len(as_bytes(orig)), len(as_bytes(new)))
@@ -549,6 +549,80 @@ class TestMissionSection(unittest.TestCase):
             ui.system_texts_with_mission_names(data.replace(ui.MISSION_NAME_TEXTS[0x3D][0], b"" * 9, 1))
 
 
+class TestStorySection(unittest.TestCase):
+    """mission_objectives: items. The Report gate, the door and menu flags, and the room literals."""
+
+    def test_layout(self) -> None:
+        section = story.build_section()
+        self.assertEqual(len(section), story.STORY_SECTION_LEN)
+        self.assertEqual(section[:len(story.STORY_SECTION_CODE)], story.STORY_SECTION_CODE)
+        self.assertLessEqual(len(story.STORY_SECTION_CODE), story.STORY_REPORT_OFF)
+        self.assertGreaterEqual(story.STORY_SECTION_RAM, missions.MISSION_SECTION_RAM + missions.MISSION_SECTION_LEN)
+        self.assertLessEqual(story.STORY_SECTION_RAM + story.STORY_SECTION_LEN, ui.ROOM_OVERLAY_SLOT_RAM)
+        # the routine's literals: the mission state, its table and the story byte
+        lits = struct.unpack_from("<3I", story.STORY_SECTION_CODE, len(story.STORY_SECTION_CODE) - 12)
+        self.assertEqual(lits, (0x021046AC, story.STORY_SECTION_RAM + story.STORY_REPORT_OFF,
+                                PICKUP_TABLE_ADDR + table.STORY_OFF))
+
+    def test_report_table(self) -> None:
+        """One row per mission that asks for an object, its mask a bit of that object, then the end mark."""
+        rows = story.report_table()
+        size = struct.calcsize(story.STORY_REPORT_ROW)
+        got = [struct.unpack_from(story.STORY_REPORT_ROW, rows, k) for k in range(0, len(rows), size)]
+        self.assertEqual(got[-1], (0, 0, 0))
+        self.assertEqual({state for state, _mask, _pad in got[:-1]}, set(STORY_REPORT_STATES))
+        for state, mask, _pad in got[:-1]:
+            with self.subTest(state=hex(state)):
+                grant = ITEMS[STORY_REPORT_STATES[state]]["grant"]
+                self.assertEqual(grant[0], "story")
+                self.assertEqual(mask, 1 << grant[1][0])
+
+    def test_hooks(self) -> None:
+        """The four redirected calls asked the game whether the objective is met."""
+        for ram, orig in story.STORY_REPORT_HOOKS:
+            with self.subTest(ram=hex(ram)):
+                self.assertTrue(is_bl(orig))
+                self.assertEqual(decode_bl(ram, orig), 0x020318EC)
+
+    def test_door_and_menu_flags(self) -> None:
+        """The vanilla words are the game's flags; the new ones land on the two possession bytes."""
+        self.assertEqual(struct.unpack("<2I", story.STORY_DOOR_FLAGS_ORIG), story.STORY_DOOR_FLAGS)
+        self.assertEqual(set(story.STORY_DOOR_FLAGS), set(STORY_GATE_ITEMS))
+        self.assertEqual(story.STORY_DOOR_FLAGS_NEW, story.door_flags())
+        self.assertEqual(story.STORY_MENU_FLAGS_NEW, story.menu_flags())
+        gates = PICKUP_TABLE_ADDR + table.STORY_GATES_OFF
+        for flag, word in zip(story.STORY_DOOR_FLAGS, struct.unpack("<2I", story.STORY_DOOR_FLAGS_NEW)):
+            with self.subTest(flag=flag):
+                self.assertEqual(LIVE_BLOCK + (word >> 3), gates)
+                # the item's bit is the bit of the game's own flag, which the room code tests by mask
+                self.assertEqual(word & 7, EVENT_GATES[flag][1])
+        for word in struct.unpack("<8I", story.STORY_MENU_FLAGS_NEW):
+            self.assertEqual(LIVE_BLOCK + (word >> 3), PICKUP_TABLE_ADDR + table.STORY_OFF)
+        self.assertLess(table.STORY_GATES_OFF, table.INDEX_OFF)
+        self.assertGreater(table.STORY_OFF, table.USABLES_MARK_OFF)
+
+    def test_room_literals(self) -> None:
+        """Each literal makes the room code read the gates byte with the offset and mask it already uses."""
+        gates = PICKUP_TABLE_ADDR + table.STORY_GATES_OFF
+        (_ram, orig, new), = story.STORY_OVERLAY_PATCH[73]
+        self.assertEqual(int.from_bytes(as_bytes(orig), "little") + story.STORY_F3_DOOR_OFF, EVENT_GATES[381][0])
+        self.assertEqual(int.from_bytes(as_bytes(new), "little") + story.STORY_F3_DOOR_OFF, gates)
+        self.assertEqual(ITEMS[STORY_GATE_ITEMS[381]]["grant"][1], [story.STORY_F3_DOOR_BIT])
+        for ram, orig, new in story.STORY_OVERLAY_PATCH[98]:
+            with self.subTest(ram=hex(ram)):
+                self.assertEqual(int.from_bytes(as_bytes(orig), "little"), LIVE_BLOCK)
+                self.assertEqual(int.from_bytes(as_bytes(new), "little") + story.STORY_LAVA_OFF, gates)
+        self.assertEqual(ITEMS[STORY_LAVA_ITEM]["grant"][1], [story.STORY_LAVA_BIT])
+
+    def test_only_with_the_items(self) -> None:
+        """The other modes leave the ARM9 and the rooms alone."""
+        class Untouched:
+            def __getattr__(self, name):
+                raise AssertionError("patched without mission_objectives: items")
+        story.patch_story_items(Untouched(), False)
+        story.patch_story_rooms(Untouched(), False)
+
+
 class TestVanillaBytes(unittest.TestCase):
     """The vanilla bytes the patch modules record match the real ROM, and the caves land on zeros."""
 
@@ -595,16 +669,19 @@ class TestVanillaBytes(unittest.TestCase):
                 self.assertEqual(self.read(lo, hi - lo), bytes(hi - lo))
 
     def test_overlay_patch_sites(self) -> None:
-        """The room overlays hold the vanilla bytes where the usable patches go, and patch cleanly."""
+        """The room overlays hold the vanilla bytes where the room patches go, and patch cleanly."""
         rom = bytearray(self.rom)
-        for ovl, patches in pickups.OVERLAY_USABLE_PATCH.items():
+        tables = {**pickups.OVERLAY_USABLE_PATCH, **story.STORY_OVERLAY_PATCH}
+        self.assertEqual(len(tables), len(pickups.OVERLAY_USABLE_PATCH) + len(story.STORY_OVERLAY_PATCH))
+        for ovl, patches in tables.items():
             ram, code = nds.overlay_code(rom, ovl)
             self.assertEqual(ram, ui.ROOM_OVERLAY_SLOT_RAM)
             for site, orig, _new in patches:
                 with self.subTest(ovl=ovl, site=hex(site)):
                     self.assertEqual(code[site - ram:site - ram + len(as_bytes(orig))], as_bytes(orig))
         pickups.patch_usable_rooms(rom)
-        for ovl, patches in pickups.OVERLAY_USABLE_PATCH.items():
+        story.patch_story_rooms(rom, True)
+        for ovl, patches in tables.items():
             ram, code = nds.overlay_code(rom, ovl)
             for site, _orig, new in patches:
                 self.assertEqual(code[site - ram:site - ram + len(as_bytes(new))], as_bytes(new))

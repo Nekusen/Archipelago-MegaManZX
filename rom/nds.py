@@ -1,6 +1,9 @@
-"""The ROM container: header fields, the file allocation table and the header CRC."""
+"""The ROM container: header fields, the file allocation table, the ARM9 overlays and the header CRC."""
 
 import struct
+
+from ..apnds import lz
+from . import blz
 
 # NDS header fields, as ROM offsets. The CRC covers every byte before its field.
 NDS_HDR_ARM9 = 0x20                       # u32 ROM offset, entry point, RAM address, size
@@ -19,6 +22,12 @@ NITROCODE_MAGIC = b"\x21\x06\xC0\xDE"     # footer(s) that follow the ARM9 in th
 NITROCODE_LEN = 12
 CRC16_INIT = 0xFFFF                       # CRC-16/MODBUS of the header
 CRC16_POLY = 0xA001
+# ARM9 overlay table entries: id, RAM address, size, bss size, static init start and end,
+# file id, then the compressed size with the compressed flag in its high byte
+OVERLAY_ENTRY_LEN = 32
+OVERLAY_SIZE_OFF = 28
+OVERLAY_COMPRESSED = 1 << 24
+OVERLAY_SIZE_MASK = 0xFFFFFF
 
 
 def file_bytes(rom: bytearray, fid: int) -> bytes:
@@ -46,6 +55,55 @@ def relocate_file(rom: bytearray, fid: int, data: bytes) -> int:
     struct.pack_into("<II", rom, fat + fid * FAT_ENTRY_LEN, start, end)
     struct.pack_into("<I", rom, NDS_HDR_ROM_SIZE, (end + FILE_ALIGN_MASK) & ~FILE_ALIGN_MASK)
     return start
+
+
+def overlay_entry(rom: bytearray, ovl: int) -> int:
+    """ROM offset of the overlay's entry in the ARM9 overlay table."""
+    table, size = struct.unpack_from("<II", rom, NDS_HDR_OVERLAYS9)
+    if (ovl + 1) * OVERLAY_ENTRY_LEN > size:
+        raise ValueError("MMZX: no overlay %d in the ROM" % ovl)
+    return table + ovl * OVERLAY_ENTRY_LEN
+
+
+def overlay_code(rom: bytearray, ovl: int) -> tuple[int, bytes]:
+    """(RAM address, code) of an overlay, decompressed when the table says it is."""
+    entry = overlay_entry(rom, ovl)
+    _id, ram, size, _bss, _init0, _init1, fid, comp = struct.unpack_from("<8I", rom, entry)
+    data = file_bytes(rom, fid)
+    if comp & OVERLAY_COMPRESSED:
+        data = lz.decompress_code(data, len(data))[0]
+    return ram, bytes(data[:size])
+
+
+def patch_overlay(rom: bytearray, ovl: int, patches) -> None:
+    """Apply (RAM, vanilla, patched) replacements inside an overlay and store it again.
+
+    The new file goes to the free padding after every file, like a relocated
+    NitroFS file, and the table entry takes its size.
+    """
+    entry = overlay_entry(rom, ovl)
+    ram, code = overlay_code(rom, ovl)
+    fid, comp = struct.unpack_from("<II", rom, entry + OVERLAY_SIZE_OFF - 4)
+    buf = bytearray(code)
+    for addr, orig, new in patches:
+        orig, new = bytes.fromhex(orig) if isinstance(orig, str) else orig, bytes.fromhex(new) if isinstance(new, str) else new
+        off = addr - ram
+        if not 0 <= off <= len(buf) - len(new):
+            raise ValueError("MMZX: 0x%08X is outside overlay %d" % (addr, ovl))
+        cur = bytes(buf[off:off + len(new)])
+        if cur == new:
+            continue
+        if cur != orig:
+            raise ValueError("MMZX: unexpected bytes at 0x%08X of overlay %d (%s, expected %s). Wrong ROM?"
+                             % (addr, ovl, cur.hex(), orig.hex()))
+        buf[off:off + len(new)] = new
+    packed = bytes(buf)
+    if comp & OVERLAY_COMPRESSED:
+        packed = blz.compress(packed)
+        if packed is None:
+            raise ValueError("MMZX: overlay %d did not compress" % ovl)
+    relocate_file(rom, fid, packed)
+    struct.pack_into("<I", rom, entry + OVERLAY_SIZE_OFF, (comp & ~OVERLAY_SIZE_MASK) | len(packed))
 
 
 def update_header_crc(rom: bytearray) -> None:

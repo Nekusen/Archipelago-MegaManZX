@@ -8,6 +8,9 @@ All notable changes to this project are documented in this file. The format is b
 
 ### Added
 
+- Added `mission_objectives`: the objects and events of the story missions can be checks, and items too.
+  - `checks`: the four Computer Chips, the four guardians of Pass The Test and their Stuffed Animal, the three Data Disks, the thirteen people trapped in Area G, the generator of E-3 and the lava control of K-1 are locations. The game plays as before.
+  - `items`: the same locations, plus the terminal of F-3 and the sprinkler key of G-2, and the objects are items of the pool. A mission is reported only with its object, the F-3 and G-2 doors open with their own items, and the lava of Area K is slow only with its item.
 - Missions can be played again: "Replay Missions" in the Transerver consoles lists the missions you have already reported (plus the quests, as before), and picking one brings back its objective and its boss.
   - While a mission picked there is under way, entering an area does not accept that area's mission; report or abort the one you picked to go back to normal.
   - "Abort Mission" is offered only for a mission or quest picked from that list. With the mission of an area under way the consoles show their normal menu instead, and picking a mission there replaces it.

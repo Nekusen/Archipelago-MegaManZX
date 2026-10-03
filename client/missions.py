@@ -27,6 +27,7 @@ from .ram import (
     copies_writes, decode_position, manual_mission_active, missing_bits, mission_completed,
     mission_done_bits, mission_settled, read_copies, story_handler_writes)
 from .checks import report_goal
+from .story import MODE_OFF as STORY_OFF, survivors_unstick
 
 if TYPE_CHECKING:
     from . import MMZXClient
@@ -38,6 +39,8 @@ async def repair_missions(client: "MMZXClient", ctx, tick: Tick) -> None:
     """Undo what the game does to an active mission, and what a fight leaves behind."""
     await troop_unstick(client, ctx, tick)
     await people_unstick(client, ctx, tick)
+    if client.story_mode != STORY_OFF:
+        await survivors_unstick(client, ctx, tick)
     await restore_mission_bits(client, ctx, tick.guard)
     await release_boss_locks(client, ctx, tick)
 

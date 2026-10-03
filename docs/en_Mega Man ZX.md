@@ -39,6 +39,8 @@ Items:
 - Four Life Ups, four Sub Tanks and the eight ITEM B chips.
 - The eight usable items of the pause menu (ITEM A): Cake, Orange, Candy, Bread, Apple, E Tank, W Tank and
   Smelling Salts.
+- With `mission_objectives: items`, the story objects (four Computer Chips, the Stuffed Animal and the Data Disks 1, 2
+  and 3) and what three story events unlock (Area F Lock Hack, Sprinkler Key and Lava Flow Control).
 - E-Crystals and 1-Ups as filler.
 
 Locations:
@@ -50,6 +52,11 @@ Locations:
   Guardians Cédre in X-3 (E Tank, 200 E-Crystals) and Scombrésoce in X-1 (Smelling Salts, 20 E-Crystals).
 - Obtaining each of the four biometals, from either Pseudoroid of its pair.
 - Completing 14 story missions (Destroy Model W is the goal itself, and the initial mission "Catch the Maverick" is skipped).
+- Optionally (`mission_objectives`), the objects and events of the story missions: the four Computer Chips of
+  Area B, the four guardians of Pass The Test (Oeillet, Carrelet, Congre and Thon) and the Stuffed Animal, the Data
+  Disk in the terminal of F-3 and the ones Leganchor and Protectos leave behind, the thirteen people trapped in Area G,
+  the generator of E-3 and the Lava Flow Control of K-1 (27 locations). With `items`, the terminal of F-3 and the
+  sprinkler key of G-2 are two more.
 - Optionally, the 133 pickups (energy capsules, weapon energy, E-Crystals and 1-Ups). Only the "big" pickups are considered. Small pickups from drops do not count.
   - 7 1-Ups
   - 45 Life Energy
@@ -104,6 +111,7 @@ Locations:
     - This means you don't need to beat the mini-boss in this area 
   - The G-2 door to G-4
     - These changes mean you don't have to rescue anyone in area G 
+  - With `mission_objectives: items` the F-3 and G-2 doors are not open from the start: each opens with its item.
   - The M-1 seal (which normally requires all models)
   - The D-1 bridge
   - The sand fall that hides the pit from K-1 to K-2
@@ -116,6 +124,28 @@ Locations:
 - With `skip_boss_rush` the Pseudoroid refights of the D-4 tower are skipped and the elevator climbs straight to D-5.
 - The mini-bosses that guard a stretch of an area (the King Flyers of D-2, the Lava Demon of K-2 and the others) come back every time you re-enter their area. With `skip_minibosses: after_first_defeat` each one stays beaten once you have beaten it; with `always` they all count as beaten from the start.
   - With `always` the Giro cutscene and boss fight at D-2 triggers right as you walk into it, since that fight required beating both mini bosses and this options marks them as defeated from the start.
+
+### Mission objectives
+
+With `mission_objectives` the objects and events of the story missions become checks.
+
+- `checks`: picking up a Computer Chip, talking to each guardian of Pass The Test, getting the Stuffed Animal, using the
+  terminal of F-3, rescuing each person of Area G, destroying the generator of E-3, setting the lava control of K-1 and
+  picking up the Data Disks of J-5 and L-4 each send a check. Nothing else changes.
+- `items`: the same, and what those things gave is now an item of the pool.
+  - The Report of a mission needs its object: a Computer Chip for Locate Giro, the Stuffed Animal for Pass The Test and
+    the Data Disk 1, 2 or 3 for Find The Survivors, Recover The Disk and Protect The Lab. The objective of the mission is
+    still needed; the client tells you which object a mission is waiting for.
+  - The terminal of F-3 and the sprinkler key of G-2 are checks, and their doors open with the Area F Lock Hack and the
+    Sprinkler Key.
+  - The lava of Area K is slow only while you hold the Lava Flow Control; the device in K-1 is a check.
+  - The ITEM C list of the pause menu shows the objects you hold.
+- The guardians of Pass The Test answer in order, and Congre only in human form. The sprinkler key comes with eight
+  people rescued, and the civilians of Area G only talk to you in human form.
+- The Computer Chips, the guardians and the people of Area G are in the world only while their mission is under way.
+  If you reported it first, take the mission again from the "Mission Requests" list to bring them back. The same goes for
+  the terminal of F-3.
+- The generator of E-3 and the lava control of K-1 go back to normal when you leave their area, as in the original game.
 
 ### Cutscenes and menus
 

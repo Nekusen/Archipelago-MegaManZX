@@ -1,6 +1,6 @@
 """The .apmmzx patch for Mega Man ZX (USA): the ARM9 code patches, the AP icon set and the AP marker.
 
-One module per domain applies its patches to the ARM9 (`pickups`, `sprites`, `ui`, `missions`);
+One module per domain applies its patches to the ARM9 (`pickups`, `sprites`, `ui`, `missions`, `story`);
 `arm9`, `blz` and `nds` handle the image, its compression and the ROM container.
 """
 
@@ -10,7 +10,7 @@ from settings import get_settings
 from worlds.Files import (APProcedurePatch, APTokenMixin, APTokenTypes,
                           APPatchExtension)
 
-from . import golden, missions, nds, pickups, sprites, table, ui
+from . import golden, missions, nds, pickups, sprites, story, table, ui
 from .arm9 import Arm9, replace_arm9
 
 MMZX_US_MD5 = "88b684b1b3eea885a07625da89f1e5b3"
@@ -29,6 +29,7 @@ AP_MARKER_SLOT_MAX = 63                   # bytes of UTF-8, then a NUL
 AP_MARKER_SEED_OFF = 0x50
 AP_MARKER_SEED_MAX = 31
 CFG_HU_IN_POOL = 0x01                     # mmzx_cfg.bin byte 0, bit 0
+CFG_STORY_ITEMS = 0x02                    # bit 1: mission_objectives is items
 
 
 class MMZXPatchExtension(APPatchExtension):
@@ -40,6 +41,7 @@ class MMZXPatchExtension(APPatchExtension):
         """Apply the code patches to the ARM9 and the ROM-level edits; returns the new image."""
         cfg = caller.get_file(cfg_file)
         hu_in_pool = bool(cfg[0] & CFG_HU_IN_POOL) if cfg else False
+        story_items = bool(cfg[0] & CFG_STORY_ITEMS) if cfg else False
         d = bytearray(rom)
         arm9_off, _entry, arm9_ram, arm9_len = struct.unpack_from("<4I", d, nds.NDS_HDR_ARM9)
         arm9 = Arm9(bytes(d[arm9_off:arm9_off + arm9_len]), arm9_ram)
@@ -68,6 +70,7 @@ class MMZXPatchExtension(APPatchExtension):
         pickups.patch_secret_disks(arm9)
         pickups.patch_usables(arm9)
         missions.patch_mission_list(arm9)
+        story.patch_story_items(arm9, story_items)
         ui.patch_goal_line(arm9)
         table.patch_pickup_table(arm9, caller.get_file(table_file))
 
@@ -79,6 +82,7 @@ class MMZXPatchExtension(APPatchExtension):
         ui.install_talk_texts(d)
         ui.install_mission_names(d)
         pickups.patch_usable_rooms(d)
+        story.patch_story_rooms(d, story_items)
         sprites.patch_disk_logo(d, fnt_start)
         nds.update_header_crc(d)
         return bytes(d)
@@ -114,7 +118,8 @@ def unpack_version(word: int) -> tuple[int, int, int]:
 
 def write_patch_tokens(patch: MMZXPatch, slot_name: str, seed_name: str,
                        world_version: tuple[int, int, int], golden_image: bytes,
-                       pickup_table: bytes, hu_in_pool: bool = False) -> None:
+                       pickup_table: bytes, hu_in_pool: bool = False,
+                       story_items: bool = False) -> None:
     """Write the AP marker (magic, version, slot, seed), the option blob, the golden image and the pickup table.
 
     `world_version` is the world's (major, minor, build), as the core reads it
@@ -136,5 +141,5 @@ def write_patch_tokens(patch: MMZXPatch, slot_name: str, seed_name: str,
     patch.write_file("token_data.bin", patch.get_token_binary())
     # option flags for patch_arm9, which runs before apply_tokens
     cfg = bytearray(4)
-    cfg[0] = CFG_HU_IN_POOL if hu_in_pool else 0
+    cfg[0] = (CFG_HU_IN_POOL if hu_in_pool else 0) | (CFG_STORY_ITEMS if story_items else 0)
     patch.write_file("mmzx_cfg.bin", bytes(cfg))

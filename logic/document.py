@@ -59,6 +59,11 @@ MACRO_ATOMS = ("MODEL", "ALL6", "GOAL")
 CONST_TRUE = ("TRUE", "ANY", "FREE")
 CONST_FALSE = ("FALSE", "NEVER", "IMPOSSIBLE")
 
+# The lava of Area K set to slow: an item with mission_objectives: items, else the event of
+# the Lava Flow Control of K-1. The world resolves it; alone, it means the item.
+SLOW_LAVA = "SLOW_LAVA"
+STORY_ATOMS = {SLOW_LAVA: "Lava Flow Control"}
+
 # Useful items; progression_items() promotes them when a requirement uses them.
 CHIP_ATOMS = {
     "CHIP_ABSORBER": "Absorber Chip",
@@ -183,6 +188,8 @@ def atom_catalog(exclude=()):
         out.append({"id": "ACCESS_" + a, "group": "transerver", "label": "Transerver Access - Area " + a})
     for k, item in CHIP_ATOMS.items():
         out.append({"id": k, "group": "chip", "label": item})
+    out.append({"id": SLOW_LAVA, "group": "story",
+                "label": "Lava of Area K set to slow (the control of K-1, or its item)"})
     for atom, bid in BOSS_ATOMS.items():
         b = BOSSES[bid]
         out.append({"id": atom, "group": "boss",
@@ -194,7 +201,7 @@ def canonical_atom(tok: str):
     """Normalized atom, or None if it does not exist."""
     t = tok.strip().upper().replace(" ", "")
     if (t in ATOM_ITEM or t in MISSION_EVENT or t in MACRO_ATOMS
-            or t in FULL_MODEL_ATOMS or t in BOSS_ATOMS):
+            or t in FULL_MODEL_ATOMS or t in BOSS_ATOMS or t in STORY_ATOMS):
         return t
     m = _COUNT_RE.match(t)
     if m and (m.group(1) in COUNT_ATOMS or m.group(1) in LIST_COUNT_ATOMS):
@@ -481,6 +488,9 @@ def atom_predicate(atom, player, hu_in_pool=False, extra_atoms=None, full_models
         return lambda state: state.has(name, player, copies)
     if atom in MISSION_EVENT:
         name = MISSION_EVENT[atom]
+        return lambda state: state.has(name, player)
+    if atom in STORY_ATOMS:
+        name = STORY_ATOMS[atom]
         return lambda state: state.has(name, player)
     m = _COUNT_RE.match(atom)
     if m and m.group(1) in COUNT_ATOMS:

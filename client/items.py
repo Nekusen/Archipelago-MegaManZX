@@ -13,6 +13,7 @@ from .addresses import (
     PLAYTIME, SUBTANK_BYTE, SUBTANK_SLOTS, WE_BASE, WE_FULL)
 from .notices import notify_bytes
 from .ram import Tick, bits_by_byte, copies_writes, read_copies
+from .seal import GATE_BIT as SEAL_GATE_BIT, OPEN_NOTICE as SEAL_OPEN_NOTICE
 
 if TYPE_CHECKING:
     from . import MMZXClient
@@ -195,11 +196,17 @@ async def grant_items(client: "MMZXClient", ctx, tick: Tick) -> None:
     writes = await weapon_energy_writes(ctx, counts)
     # idempotent bits go to live (effect now) and canonical (persistence)
     gate_opening = False
-    if bits:
-        masks = bits_by_byte(bits)
-        addrs = sorted(masks)
+    # the seal of Area M holds its bits down until it opens
+    sealed = client.seal.closed_bits(counts)
+    bits -= sealed
+    seal_opening = False
+    if bits or sealed:
+        masks, held = bits_by_byte(bits), bits_by_byte(sealed)
+        addrs = sorted(masks.keys() | held.keys())
         live, canon = await read_copies(ctx, addrs)
-        writes += copies_writes(addrs, live, canon, set_masks=masks)
+        writes += copies_writes(addrs, live, canon, set_masks=masks, clear_masks=held)
+        seal_addr, seal_bit = SEAL_GATE_BIT
+        seal_opening = client.seal.gated and not sealed and not live[seal_addr] & (1 << seal_bit)
         # the gate flags were down until now: the requirement was just met
         gate_opening = goal.met(counts, missions) and any(not live[a] & (1 << b) for a, b in goal.gate_bits())
     # Card Keys: exactly the received set, since the game also hands them out
@@ -226,6 +233,9 @@ async def grant_items(client: "MMZXClient", ctx, tick: Tick) -> None:
     ok = await bizhawk.guarded_write(ctx.bizhawk_ctx, writes, [tick.guard])
     if ok and gate_opening:
         client.notify_queue.append(notify_bytes(*GATE_OPEN_NOTICE, client.notify_style))
+    if ok and seal_opening:
+        client.seal.rearm = True
+        client.notify_queue.append(notify_bytes(*SEAL_OPEN_NOTICE, client.notify_style))
     # consumables count as applied only if the write went through
     if ok and new_consumables:
         client.cons_log = [e for e in client.cons_log if e[1] <= pt] + [[len(consumables), pt]]

@@ -83,10 +83,12 @@ class GoalRequirement:
         wanted = {tuple(SECRET_DISK_ENTRIES[i]) for i in self.disk_order[:n]}
         return wanted, {tuple(e) for e in SECRET_DISK_ENTRIES}
 
-    def progress_lines(self, counts: dict[str, int], missions: int) -> tuple[str, str]:
+    def progress_lines(self, counts: dict[str, int], missions: int,
+                       extra: tuple[str, ...] = ()) -> tuple[str, str]:
         """(first line, second line) of the pause menu, each at most GOAL_LINE_GLYPHS glyphs.
 
-        Requirements share a line while they fit. A blank first line keeps the vanilla help.
+        Requirements share a line while they fit, and the `extra` parts follow them.
+        A blank first line keeps the vanilla help.
         """
         parts = []
         if self.wants_disks:
@@ -98,6 +100,7 @@ class GoalRequirement:
         if self.wants_missions:
             width = len(str(self.missions_required))
             parts.append("Missions %0*d/%d" % (width, missions, self.missions_required))
+        parts += extra
         lines: list[str] = []
         for part in parts:
             if lines and len(lines[-1]) + len(PART_GAP) + len(part) <= GOAL_LINE_GLYPHS:
@@ -153,7 +156,9 @@ def goal_line_bytes(first: str, second: str) -> bytes:
 
 async def sync_goal_line(client: "MMZXClient", ctx, tick: Tick, counts: dict[str, int]) -> None:
     """Keep the pause menu lines equal to the progress; written only when they change."""
-    first, second = client.goal.progress_lines(counts, len(client.missions_cleared or ()))
+    seal = client.seal.progress_part(counts)
+    first, second = client.goal.progress_lines(counts, len(client.missions_cleared or ()),
+                                               (seal,) if seal else ())
     data = goal_line_bytes(first, second)
     if data == client.goal_line_written:
         return

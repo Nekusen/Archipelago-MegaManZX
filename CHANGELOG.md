@@ -6,6 +6,13 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+### Added
+
+- Added `area_m_access`: what opens the seal at the entrance of Area M.
+  - `open`: the seal is open from the start, as before.
+  - `bosses`: beat the eight Pseudoroids and Giro.
+  - `passwords`: collect `required_passwords` Passwords out of the `total_passwords` in the pool.
+
 ## [0.2.0] - 2026-09-26
 
 ### Added

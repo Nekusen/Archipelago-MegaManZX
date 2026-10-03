@@ -37,6 +37,7 @@ Items:
 - The Yellow, Green, Red, Blue and Purple Card Keys.
 - Transerver Access for each of the 13 areas with a Transerver (A, B, C, D, E, F, G, I, K, L, M, O and X).
 - Four Life Ups, four Sub Tanks and the eight ITEM B chips.
+- Passwords, with `area_m_access: passwords`.
 - E-Crystals and 1-Ups as filler.
 
 Locations:
@@ -87,7 +88,7 @@ Locations:
     - This means you don't need to beat the mini-boss in this area 
   - The G-2 door to G-4
     - These changes mean you don't have to rescue anyone in area G 
-  - The M-1 seal (which normally requires all models)
+  - The M-1 seal (which normally requires all models), unless `area_m_access` closes it (see below)
   - The D-1 bridge
   - The sand fall that hides the pit from K-1 to K-2
   - The D-3 ladder up to the walkway that leads to Area O.
@@ -99,6 +100,19 @@ Locations:
 - With `skip_boss_rush` the Pseudoroid refights of the D-4 tower are skipped and the elevator climbs straight to D-5.
 - The mini-bosses that guard a stretch of an area (the King Flyers of D-2, the Lava Demon of K-2 and the others) come back every time you re-enter their area. With `skip_minibosses: after_first_defeat` each one stays beaten once you have beaten it; with `always` they all count as beaten from the start.
   - With `always` the Giro cutscene and boss fight at D-2 triggers right as you walk into it, since that fight required beating both mini bosses and this options marks them as defeated from the start.
+
+### The seal of Area M
+
+- The seal a few steps into M-1 follows `area_m_access`:
+  - `open` (default): it is open from the start.
+  - `bosses`: it opens once you have beaten the eight Pseudoroids and Giro, as in the original story. Giro counts when
+    Troop Reinforcement is completed, which the game reports by itself right after his fight.
+  - `passwords`: it opens once you have received `required_passwords` Passwords out of the `total_passwords`
+    shuffled into the multiworld.
+- While the seal is closed the Transerver of Area M is not offered either, even if you hold its Transerver Access, so
+  Area M and N-1 (which is reached through it) stay closed. Nothing is placed between the door of A-4 and the seal.
+- The STATUS tab of the pause menu and `/mmzx_goal` show the progress (`Passwords 2/6`, `Bosses 5/9`), and a popup
+  announces the moment the seal opens. Its scene plays the next time you walk up to it.
 
 ### Cutscenes and menus
 

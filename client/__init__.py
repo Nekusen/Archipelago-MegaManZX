@@ -24,6 +24,7 @@ from .startup import apply_start_state, resolve_start_state
 from ..rom.ui import SKIP_COPY_CAVE, SKIP_COPY_CAVE_RAM
 from .checks import detect_checks, sync_taken_disks
 from .goal import GoalRequirement, missions_completed, sync_goal_line
+from .seal import Seal, hold_seal_scene
 from .items import grant_items, received_counts, revert_unowned_models
 from .minibosses import MODE_OFF, parse_mode, skip_minibosses
 from .missions import auto_accept_mission, handle_ending, repair_missions, skip_boss_rush
@@ -53,6 +54,7 @@ class MMZXClient(BizHawkClient):
         # slot options, read once per connection (_setup)
         self.death_link_enabled = False
         self.goal: GoalRequirement | None = None   # what opens the gate to the final area
+        self.seal = Seal({})               # area_m_access: what opens the seal of Area M
         self.skip_boss_rush = False        # QoL: skip the D-4 boss rush
         self.skip_minibosses = MODE_OFF    # QoL: which mini-bosses count as beaten
         # mini-bosses beaten once (after_first_defeat); None until the datastore answers
@@ -194,7 +196,9 @@ class MMZXClient(BizHawkClient):
         if self.death_link_enabled:
             await ctx.update_death_link(True)
         self.goal = GoalRequirement(opts)
-        for line in self.goal.report(received_counts(ctx), self.missions_cleared):
+        self.seal = Seal(opts)
+        counts = received_counts(ctx)
+        for line in self.goal.report(counts, self.missions_cleared) + self.seal.report(counts):
             logger.info("[mmzx] " + line)
         self.skip_boss_rush = bool(opts.get("skip_boss_rush", False))
         if self.skip_boss_rush:
@@ -271,6 +275,7 @@ class MMZXClient(BizHawkClient):
             await self._stage("position", send_position(self, ctx, tick))
             window = await ProgressWindow.read(ctx)
             self.missions_cleared = missions_completed(window)
+            self.seal.read_bosses(window)
             await self._stage("checks", detect_checks(self, ctx, window))
             await self._stage("taken disks", sync_taken_disks(self, ctx, window, tick))
             await self._stage("pickup state", sync_pickup_state(self, ctx))
@@ -283,6 +288,8 @@ class MMZXClient(BizHawkClient):
                 await self._stage("notifications", push_notices(self, ctx))
                 await self._stage("models", revert_unowned_models(self, ctx, tick))
             await self._stage("auto-accept", auto_accept_mission(self, ctx, tick))
+            if self.seal.gated and self.inventory_known():
+                await self._stage("seal", hold_seal_scene(self, ctx, tick, received_counts(ctx)))
             if self.skip_boss_rush:
                 await self._stage("boss rush", skip_boss_rush(self, ctx, tick))
             if self.skip_minibosses != MODE_OFF:

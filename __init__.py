@@ -9,6 +9,7 @@ from Options import OptionError
 from worlds.AutoWorld import WebWorld, World
 
 from . import goal as G
+from . import seal as S
 from .logic import bosses
 from .data import LOCATIONS, ITEMS, STARTING_MODEL_ITEM, STARTING_MODELS
 from .items import MMZXItem, item_name_to_id, get_classification, ITEM_GROUPS
@@ -80,6 +81,7 @@ class MMZXWorld(World):
 
     # resolved in generate_early; the defaults serve a world used without it
     goal = G.GoalRequirement((), 0, 0, 0)
+    seal = S.Seal()
     disk_order: list[int] = list(range(G.DISK_ENTRIES))
 
     # Universal Tracker runs in hybrid mode: the map layout ships here in tracker/, while the
@@ -107,7 +109,8 @@ class MMZXWorld(World):
         active = locations_for_options(pickups=pickup_flags_from_options(self.options))
         room = len(active) - len(self.fixed_items()[0])
         reserve = len(set(self.options.exclude_locations.value) & set(active))
-        self.goal = G.resolve(self.options, room, reserve, self.player_name)
+        self.seal = S.resolve(self.options, room, reserve, self.player_name)
+        self.goal = G.resolve(self.options, room - self.seal.passwords_total, reserve, self.player_name)
         # the order the disks received light the database entries in
         self.disk_order = self.random.sample(range(G.DISK_ENTRIES), G.DISK_ENTRIES)
         try:
@@ -176,7 +179,7 @@ class MMZXWorld(World):
         return fixed, granted
 
     def create_items(self) -> None:
-        """Fills the pool: the fixed items, the Secret Disks of the goal, then filler."""
+        """Fills the pool: the fixed items, the Secret Disks of the goal, the Passwords of the seal, then filler."""
         active_locs = locations_for_options(pickups=pickup_flags_from_options(self.options))
         n_locations = len(active_locs)  # not counting the Victory event
 
@@ -185,6 +188,7 @@ class MMZXWorld(World):
             self.multiworld.push_precollected(self.create_item(name))
         pool: list[MMZXItem] = [self.create_item(name) for name in fixed]
         pool += [self.create_item(G.DISK_ITEM) for _ in range(self.goal.disks_total)]
+        pool += [self.create_item(S.PASSWORD_ITEM) for _ in range(self.seal.passwords_total)]
 
         remaining = n_locations - len(pool)
         if remaining < 0:
@@ -248,6 +252,7 @@ class MMZXWorld(World):
             ", ".join(pre) or "nothing"))
         spoiler_handle.write("Goal: %s; requirements: %s\n" % (
             self.options.goal.current_key, G.describe(self.goal)))
+        spoiler_handle.write("Area M seal: %s\n" % S.describe(self.seal))
         reqs = bosses.describe(boss_requirements(self))
         spoiler_handle.write("Boss logic: %s\n" % (
             "; ".join("%s: %s" % kv for kv in reqs.items()) if reqs else "none"))
@@ -260,6 +265,8 @@ class MMZXWorld(World):
             # the client opens the gate to the final area on these, and lights the
             # database entries of the disks received in this order
             "goal_requirements": G.slot_data(self.goal, self.disk_order),
+            # the client keeps the seal of Area M closed until this is met
+            "area_m_access": S.slot_data(self.seal),
             "death_link": bool(self.options.death_link.value),
             "starting_model": self.options.starting_model.current_key,
             "starting_transerver": self.options.starting_transerver.current_key,

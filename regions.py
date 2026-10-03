@@ -3,6 +3,7 @@
 from BaseClasses import Region
 
 from . import goal as G
+from . import seal as S
 from .logic import bosses as B
 from .logic import document as F
 from .logic import load_document
@@ -105,6 +106,13 @@ def create_regions(world) -> None:
                  and_rules(rule(doc["rooms"][start].get("req")), arena_rule(start, "main")))
     menu.connect(field, "Field access")
 
+    if world.seal.mode == S.MODE_BOSSES:
+        arenas = {boss: F.region_name(room, rid) for (room, rid), boss in boss_of.items()}
+        for boss in S.PSEUDOROIDS:
+            ev = MMZXLocation(player, S.defeated_event(boss), None, regions[arenas[boss]])
+            ev.place_locked_item(world.create_event(S.defeated_event(boss)))
+            ev.parent_region.locations.append(ev)
+
     # drawn connections inside each room
     for room, rl in doc["rooms"].items():
         for c in rl.get("conns", []):
@@ -116,6 +124,7 @@ def create_regions(world) -> None:
     # door table edges
     gates = doc.get("gates", {})
     edge_ov = doc.get("edges", {})
+    seal_rule = S.rule(world.seal, player)
     for src_name, dst_name, d, dst_rid in door_edges():
         gate_req = gates.get(str(d["gate"]), {}).get("req") if d.get("gate") is not None else None
         entry_req = doc["rooms"][d["dst"]].get("req") if d["src"] != d["dst"] else None
@@ -125,7 +134,8 @@ def create_regions(world) -> None:
         r = and_rules(door_rule(d, player), rule(entry_req), rule(edge_req),
                       transerver_rule(d, player), rule(gate_req),
                       arena_rule(d["dst"], dst_rid))
-        regions[src_name].connect(regions[dst_name], d["name"], r)
+        regions[src_name].connect(regions[dst_name], d["name"],
+                                  and_rules(r, seal_rule if S.behind(d) else None))
 
     # locations
     checks = doc.get("checks", {})

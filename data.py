@@ -333,6 +333,7 @@ ITEMS = {
     'E-Crystals': {'id': 13664768, 'classification': 'filler', 'grant': ['ecrystals'], 'pooled': True},
     '1-Up': {'id': 13664769, 'classification': 'filler', 'grant': ['oneup'], 'pooled': True},
     'Secret Disk': {'id': 13665024, 'classification': 'progression', 'grant': ['secret_disk'], 'pooled': False},
+    'Password': {'id': 13665025, 'classification': 'progression', 'grant': ['password'], 'pooled': False},
 }
 
 # Goal bits: the epilogue event flag set after Serpent's final explosion,
@@ -765,6 +766,24 @@ EVENT_GATES = {
 }
 EVENT_GATES_OPEN = [205, 221, 379, 381, 382, 395]
 EVENT_GATES_GOAL = [225, 378]
+# The seal of Area M (area_m_access): its gate flag, the Transerver item held back with
+# it, the rooms it closes off (the seal stands a few steps inside M-1, with nothing
+# before it), the victory bit each Pseudoroid's room sets, and the mission that
+# stands for Giro.
+SEAL_GATE = 395
+SEAL_TRANSERVER = 'Transerver Access - Area M'
+SEAL_ROOMS = ['m01', 'm02', 'm03', 'n01']
+SEAL_BOSS_BITS = {
+    'hivolt': [0x021045D0, 1],
+    'lurerre': [0x021045D0, 3],
+    'fistleo': [0x021045D0, 5],
+    'purprill': [0x021045D0, 7],
+    'hurricaune': [0x021045D1, 1],
+    'leganchor': [0x021045D1, 3],
+    'flammole': [0x021045D1, 5],
+    'protectos': [0x021045D1, 7],
+}
+SEAL_GIRO_MISSION = 'Troop Reinforcement'
 # Warp menu destinations (map badges) and save-only pads (DATA rooms).
 WARP_DESTINATIONS = ['a02', 'b02', 'c02', 'd02', 'e07', 'f05', 'g05', 'i03', 'k04', 'l04', 'm03', 'o02']
 DOORS = [

@@ -142,6 +142,7 @@ room A-3 [a03]
     door -> A-1/A-3 Entrance  key Yellow Card Key
     <- A-1
     <- H-1
+    check A-3: Apple
     check A-3: Disk E-46
     conn -> H-4 Entrance
       normal: FX
@@ -339,6 +340,8 @@ room C-1 [c01]
     <- C-3
     <- Hub
     <- B-2
+    check C-1: Cake
+      normal: HU & SAVE_THE_PEOPLE
     check C-1: E-Crystal L
       normal: HX
       normal: PX
@@ -372,6 +375,8 @@ room C-1 [c01]
     door -> A-2/Hub Right Side
     internal -> Main
     <- A-2
+    check C-1: Bread
+      normal: HU
     conn -> A-2 Entrance (Top Part)
       normal: HX
       normal: PX
@@ -465,6 +470,8 @@ room C-2 [c02]
   region Yellow Card Key Building Interior
     internal -> Main  key Yellow Card Key
     internal -> Yellow Card Key Hidden Room
+    check C-2: Orange
+      normal: HU
   region Yellow Card Key Hidden Room
     internal -> Yellow Card Key Building Interior
     check C-2: Disk O-18
@@ -1320,6 +1327,7 @@ room H-3 [h03]
     conn -> Left Area
       normal: FX & HU
   region Left Area
+    check H-3: Candy
     check H-3: Disk E-10
     check H-3: E-Crystal L
     conn -> Hidden Room
@@ -2233,6 +2241,8 @@ room X-1 [x01]
     check X-1: Disk O-6
     check X-1: Disk O-7
     check X-1: Disk O-8
+    check X-1: Smelling Salts
+      normal: TROOP_REINFORCEMENT
 
 room X-2 [x02]
   region Main
@@ -2240,12 +2250,14 @@ room X-2 [x02]
     <- X-1
     check X-2: Disk O-16
     check X-2: Disk O-3
+    check X-2: W Tank
 
 room X-3 [x03]
   region Main
     door -> X-1
     <- X-1
     check X-3: Disk O-11
+    check X-3: E Tank
     conn -> Boss Room
       normal: MODEL
   region Boss Room   [ARENA: Prometheus]

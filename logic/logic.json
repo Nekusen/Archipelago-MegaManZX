@@ -299,6 +299,29 @@
    },
    "unsure": false
   },
+  "C-1: Bread": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "C-1: Cake": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU",
+      "SAVE_THE_PEOPLE"
+     ]
+    ]
+   },
+   "unsure": false
+  },
   "C-1: E-Crystal L": {
    "note": "",
    "req": {
@@ -472,6 +495,17 @@
     "normal": [
      [
       "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "C-2: Orange": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU"
      ]
     ]
    },
@@ -1512,6 +1546,17 @@
     ]
    },
    "unsure": true
+  },
+  "X-1: Smelling Salts": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "TROOP_REINFORCEMENT"
+     ]
+    ]
+   },
+   "unsure": false
   }
  },
  "edges": {

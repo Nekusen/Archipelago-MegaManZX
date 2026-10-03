@@ -26,5 +26,6 @@ ITEM_GROUPS = {
     "Biometals": {n for n in ITEMS if "Model " in n},
     "Card Keys": {n for n in ITEMS if n.endswith("Card Key")},
     "Chips": {n for n in ITEMS if n.endswith(" Chip")},
+    "Usable Items": {n for n, v in ITEMS.items() if v["grant"][0] == "usable"},
     "Filler": {n for n, v in ITEMS.items() if v["classification"] == "filler"},
 }

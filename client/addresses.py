@@ -7,7 +7,9 @@ from ..data import (
     CANON_BLOCK, GOAL_BITS, GOAL_BITS_SERPENT, ITEMS, LIVE_BLOCK, LOCATIONS, PICKUP_TABLE_ADDR,
     WARP_DESTINATIONS)
 from ..goal import DISK_ITEM
-from ..rom.table import BITMAP_LEN, CHECKED_OFF, COLLECTED_OFF, FLAGS_OFF, PICKUP_SLOTS
+from ..rom.table import (
+    BITMAP_LEN, CHECKED_OFF, COLLECTED_OFF, FLAGS_OFF, PICKUP_SLOTS, USABLES_MARK, USABLES_MARK_OFF,
+    USABLES_OFF)
 
 
 GAME = "Mega Man ZX"
@@ -135,8 +137,10 @@ SCENE_DESC = 0x0216047C       # spawn x, y and subarea; layout of PLAYER_PERSIST
 SCENE_DESC_LEN = 0x6C
 
 # Missions and story
-MISSION_ACTIVE_BYTE = 0x0210462B   # .1 mission accepted, .2 story mission
+MISSION_ACTIVE_BYTE = 0x0210462B   # .1 mission accepted, .2 quest accepted
 MISSION_ACCEPTED_MASK = 0x02
+MISSION_QUEST_MASK = 0x04
+MISSION_IN_PROGRESS_MASK = MISSION_ACCEPTED_MASK | MISSION_QUEST_MASK
 # Boss room scripts set these while a fight runs and clear them when the boss
 # dies; doors everywhere check them. Leaving the fight by teleport carries them
 # out of the room, so the client releases them once the player is elsewhere.
@@ -238,6 +242,19 @@ PICKUP_STATE_LEN = CHECKED_OFF - FLAGS_OFF + BITMAP_LEN
 PICKUP_CHECKED_REL = CHECKED_OFF - FLAGS_OFF
 PICKUP_ICONS_OFF = 1            # value of the switch that turns the icons off
 PICKUP_COLLECTED_ADDR = PICKUP_TABLE_ADDR + COLLECTED_OFF
+# ITEM A usables: the possession byte the pause menu reads and clears, and the mark
+# the client leaves once it has filled it since boot
+USABLES_ADDR = PICKUP_TABLE_ADDR + USABLES_OFF
+USABLES_MARK_ADDR = PICKUP_TABLE_ADDR + USABLES_MARK_OFF
+USABLES_MARK_VALUE = USABLES_MARK
+USABLE_BITS = {n: int(v["grant"][1]) for n, v in ITEMS.items() if v["grant"][0] == "usable"}
+# Using a console: the player's state while its menu is up, and the hitbox the
+# interaction targets, which belongs to the console entity (NPC talks use the same state)
+PLAYER_STATE_CONSOLE = 14
+INTERACT_HITBOX_PTR = 0x02108B60   # entity + ENTITY_HITBOX_OFF of the target, 0 when none
+ENTITY_HITBOX_OFF = 0x7C
+ENTITY_CLASS_OFF = 0x09
+CONSOLE_CLASS = 0x1C               # Transerver and computer consoles
 # A check the server has not confirmed yet is sent again after this many seconds
 RESEND_SECONDS = 2.0
 # Items are granted once the connection's ReceivedItems arrived, or after this wait

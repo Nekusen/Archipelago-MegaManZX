@@ -6,6 +6,10 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+### Fixed
+
+- Find The Survivors stopped counting as completed after reporting Recover The Disk, and Fight The Mavericks after reporting Attack The Excavators: the Missions goal requirement lost them from its count, and their missions could be accepted again.
+
 ## [0.2.0] - 2026-09-26
 
 ### Added

@@ -52,9 +52,12 @@ class TestPasswords(MMZXTestBase):
         for region in PAST_THE_SEAL:
             self.assertTrue(self.can_reach_region(region), region)
 
-    def test_transerver_does_not_get_around_it(self) -> None:
+    def test_transerver_leaves_the_pool(self) -> None:
+        """Nothing gets around the seal, and the pool still fills every location."""
+        self.assertEqual(self.get_items_by_name(TRANSERVER), [])
+        real = [loc for loc in self.multiworld.get_locations(self.player) if loc.address is not None]
+        self.assertEqual(len(self.multiworld.itempool), len(real))
         collect_pool_but(self, [PASSWORD_ITEM])
-        self.assertTrue(self.multiworld.state.has(TRANSERVER, self.player))
         self.assertFalse(self.can_reach_location("Mission - Stop The Dig"))
 
     def test_goal_does_not_need_them(self) -> None:
@@ -69,8 +72,9 @@ class TestPasswords(MMZXTestBase):
 class TestBosses(MMZXTestBase):
     options = BOSSES
 
-    def test_no_passwords_in_the_pool(self) -> None:
-        self.assertEqual(Counter(item.name for item in self.multiworld.itempool)[PASSWORD_ITEM], 0)
+    def test_no_passwords_nor_transerver_in_the_pool(self) -> None:
+        names = Counter(item.name for item in self.multiworld.itempool)
+        self.assertEqual((names[PASSWORD_ITEM], names[TRANSERVER]), (0, 0))
 
     def test_every_boss_has_its_event(self) -> None:
         events = {loc.name for loc in self.multiworld.get_locations(self.player) if loc.address is None}
@@ -103,6 +107,20 @@ class TestBossesWithBossLogic(MMZXTestBase):
         self.assertFalse(self.can_reach_region("m01/main-area"))
         self.collect_by_name(WITNESS)
         self.assertTrue(self.can_reach_region("m01/main-area"))
+
+
+class TestTranserverHeldAnyway(MMZXTestBase):
+    options = PASSWORDS
+
+    def test_warp_waits_for_the_seal(self) -> None:
+        """Held all the same (a start inventory), the Transerver Access does not get around a closed seal."""
+        collect_pool_but(self, [PASSWORD_ITEM])
+        self.collect(self.world.create_item(TRANSERVER))
+        for region in PAST_THE_SEAL:
+            self.assertFalse(self.can_reach_region(region), region)
+        self.collect(self.get_items_by_name(PASSWORD_ITEM))
+        for region in PAST_THE_SEAL:
+            self.assertTrue(self.can_reach_region(region), region)
 
 
 class TestDocument(unittest.TestCase):

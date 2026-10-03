@@ -4,12 +4,13 @@ import logging
 
 from Options import OptionError
 
-from .data import SEAL_BOSS_BITS, SEAL_GIRO_MISSION, SEAL_ROOMS
+from .data import SEAL_BOSS_BITS, SEAL_GIRO_MISSION, SEAL_ROOMS, SEAL_TRANSERVER
 from .goal import MISSION_PREFIX, cleared_event
 from .logic import document as F
 
 MODE_OPEN, MODE_BOSSES, MODE_PASSWORDS = "open", "bosses", "passwords"
 PASSWORD_ITEM = "Password"
+TRANSERVER_ITEM = SEAL_TRANSERVER     # out of the pool unless the seal starts open
 # Beating Giro ends in the mission's own Report, so its Cleared event stands for the fight.
 GIRO_EVENT = cleared_event(MISSION_PREFIX + SEAL_GIRO_MISSION)
 

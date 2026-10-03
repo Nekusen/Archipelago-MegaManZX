@@ -36,6 +36,7 @@ Items:
   full Weapon Energy bar. With `progressive_models` off each of the four is a single item that gives both at once.
 - The Yellow, Green, Red, Blue and Purple Card Keys.
 - Transerver Access for each of the 13 areas with a Transerver (A, B, C, D, E, F, G, I, K, L, M, O and X).
+  The one of Area M is left out when `area_m_access` closes the seal.
 - Four Life Ups, four Sub Tanks and the eight ITEM B chips.
 - Passwords, with `area_m_access: passwords`.
 - E-Crystals and 1-Ups as filler.
@@ -109,8 +110,10 @@ Locations:
     Troop Reinforcement is completed, which the game reports by itself right after his fight.
   - `passwords`: it opens once you have received `required_passwords` Passwords out of the `total_passwords`
     shuffled into the multiworld.
-- While the seal is closed the Transerver of Area M is not offered either, even if you hold its Transerver Access, so
-  Area M and N-1 (which is reached through it) stay closed. Nothing is placed between the door of A-4 and the seal.
+- With `bosses` or `passwords` the Transerver Access of Area M is not in the pool, so nothing gets around the seal:
+  Area M and N-1 (which is reached through it) stay closed until it opens. The Transerver of Area M joins your
+  Transport list when you reach it on foot, as in the original game. Nothing is placed between the door of A-4
+  and the seal.
 - The STATUS tab of the pause menu and `/mmzx_goal` show the progress (`Passwords 2/6`, `Bosses 5/9`), and a popup
   announces the moment the seal opens. Its scene plays the next time you walk up to it.
 

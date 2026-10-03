@@ -166,6 +166,9 @@ class MMZXWorld(World):
                     fixed += [n] * int(v.get("count", 1))
         if self.options.hu_in_pool.value:
             fixed.append("Model Hu")
+        # past a closed seal the Transerver registers on foot, as in the original game
+        if self.options.area_m_access.current_key != S.MODE_OPEN:
+            fixed.remove(S.TRANSERVER_ITEM)
         granted: list[str] = []
         start_item = STARTING_MODEL_ITEM.get(self.options.starting_model.current_key)
         start_item = G.model_item(start_item, progressive) if start_item else None

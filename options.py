@@ -124,7 +124,8 @@ class AreaMAccess(Choice):
     - bosses: beat the eight Pseudoroids and Giro, as the story asks. Giro counts once
       Troop Reinforcement, the mission of his fight, is completed.
     - passwords: collect Passwords, items of the pool; required_passwords sets how many.
-    While the seal is closed the Transerver of Area M does not work either, so nothing gets around it."""
+    With bosses or passwords the Transerver Access of Area M is not in the pool: that Transerver
+    registers when you reach it on foot, as in the original game."""
     display_name = "Area M Access"
     option_open = 0
     option_bosses = 1

@@ -41,7 +41,8 @@ Items:
 - The eight usable items of the pause menu (ITEM A): Cake, Orange, Candy, Bread, Apple, E Tank, W Tank and
   Smelling Salts.
 - With `mission_objectives: items`, the story objects (four Computer Chips, the Stuffed Animal and the Data Disks 1, 2
-  and 3) and what three story events unlock (Area F Lock Hack, Sprinkler Key and Lava Flow Control).
+  and 3) and what four story events unlock (Area F Lock Hack, Sprinkler Key, Lava Flow Control and Area K Door
+  Switch).
 - Passwords, with `area_m_access: passwords`.
 - E-Crystals and 1-Ups as filler.
 
@@ -57,8 +58,8 @@ Locations:
 - Optionally (`mission_objectives`), the objects and events of the story missions: the four Computer Chips of
   Area B, the four guardians of Pass The Test (Oeillet, Carrelet, Congre and Thon) and the Stuffed Animal, the Data
   Disk in the terminal of F-3 and the ones Leganchor and Protectos leave behind, the thirteen people trapped in Area G,
-  the generator of E-3 and the Lava Flow Control of K-1 (27 locations). With `items`, the terminal of F-3 and the
-  sprinkler key of G-2 are two more.
+  the generator of E-3, the Lava Flow Control of K-1 and the door switch of K-4 (28 locations). With `items`, the
+  terminal of F-3 and the sprinkler key of G-2 are two more.
 - Optionally, the 133 pickups (energy capsules, weapon energy, E-Crystals and 1-Ups). Only the "big" pickups are considered. Small pickups from drops do not count.
   - 7 1-Ups
   - 45 Life Energy
@@ -132,8 +133,9 @@ Locations:
 With `mission_objectives` the objects and events of the story missions become checks.
 
 - `checks`: picking up a Computer Chip, talking to each guardian of Pass The Test, getting the Stuffed Animal, using the
-  terminal of F-3, rescuing each person of Area G, destroying the generator of E-3, setting the lava control of K-1 and
-  picking up the Data Disks of J-5 and L-4 each send a check. Nothing else changes.
+  terminal of F-3, rescuing each person of Area G, destroying the generator of E-3, setting the lava control of K-1,
+  stepping on the door switch of K-4 and picking up the Data Disks of J-5 and L-4 each send a check. Nothing else
+  changes.
 - `items`: the same, and what those things gave is now an item of the pool.
   - The Report of a mission needs its object: a Computer Chip for Locate Giro, the Stuffed Animal for Pass The Test and
     the Data Disk 1, 2 or 3 for Find The Survivors, Recover The Disk and Protect The Lab. The objective of the mission is
@@ -141,6 +143,7 @@ With `mission_objectives` the objects and events of the story missions become ch
   - The terminal of F-3 and the sprinkler key of G-2 are checks, and their doors open with the Area F Lock Hack and the
     Sprinkler Key.
   - The lava of Area K is slow only while you hold the Lava Flow Control; the device in K-1 is a check.
+  - The door of K-1 on the way to its Sub Tank opens with the Area K Door Switch; the switch in K-4 is a check.
   - The ITEM C list of the pause menu shows the objects you hold.
 - The guardians of Pass The Test answer in order, and Congre only in human form. The sprinkler key comes with eight
   people rescued, and the civilians of Area G only talk to you in human form.

@@ -1,9 +1,9 @@
-"""Mission objectives as items: a mission is reported only with its object, and two doors, the
+"""Mission objectives as items: a mission is reported only with its object, and three doors, the
 lava of Area K and the ITEM C list follow the items held instead of the game's own flags."""
 
 import struct
 
-from ..data import ITEMS, STORY_GATE_ITEMS, STORY_LAVA_ITEM, STORY_REPORT_STATES
+from ..data import ITEMS, STORY_GATE_ITEMS, STORY_LAVA_ITEM, STORY_REPORT_STATES, STORY_SWITCH_ITEM
 from .arm9 import Arm9, thumb_bl
 from .missions import MISSION_SECTION_LEN, MISSION_SECTION_RAM
 from .nds import patch_overlay
@@ -36,15 +36,18 @@ STORY_MENU_FLAGS_RAM = 0x020D97B0
 STORY_MENU_ITEMS = ("Computer Chip", "Stuffed Animal", "Data Disk 1", "Data Disk 2", "Data Disk 3")
 STORY_MENU_FLAGS_ORIG = bytes.fromhex("9702000098020000990200009a0200009b020000b5020000b6020000b7020000")
 STORY_MENU_FLAGS_NEW = bytes.fromhex("d0b34600d1b34600d2b34600d3b34600d4b34600d5b34600d6b34600d7b34600")
-# Room code that reads the gate flags by address: the door tiles of F-3 (bit 5 of the byte
-# 0x0F past its literal) and the two lava walls of K-4 (bit 0 of the byte after theirs).
+# Room code that reads the gate flags by address: the door tiles of F-3 and the door of K-1
+# (bits 5 and 7 of the byte 0x0F past their literal) and the two lava walls of K-4 (bit 0 of
+# the byte after theirs).
 STORY_OVERLAY_PATCH = {
     # overlay: [(RAM, vanilla, patched)]
     73: [(0x021948EC, "ec451002", "381c1902")],
+    95: [(0x02195DA8, "ec451002", "381c1902")],
     98: [(0x02195584, "cc451002", "461c1902"),
          (0x021956BC, "cc451002", "461c1902")],
 }
 STORY_F3_DOOR_OFF, STORY_F3_DOOR_BIT = 0x0F, 5
+STORY_K1_DOOR_OFF, STORY_K1_DOOR_BIT = 0x0F, 7
 STORY_LAVA_OFF, STORY_LAVA_BIT = 1, 0
 
 
@@ -104,12 +107,14 @@ def patch_story_items(arm9: Arm9, enabled: bool) -> None:
 
 
 def patch_story_rooms(rom: bytearray, enabled: bool) -> None:
-    """With mission_objectives: items, make the door of F-3 and the lava of K-4 follow their items."""
+    """With mission_objectives: items, make the doors of F-3 and K-1 and the lava of K-4 follow their items."""
     if not enabled:
         return
     assert item_bits(STORY_GATE_ITEMS[STORY_DOOR_FLAGS[0]]) == [STORY_F3_DOOR_BIT]
     assert item_bits(STORY_LAVA_ITEM) == [STORY_LAVA_BIT]
+    assert item_bits(STORY_SWITCH_ITEM) == [STORY_K1_DOOR_BIT]
     assert STORY_OVERLAY_PATCH[73][0][2] == gate_literal(STORY_F3_DOOR_OFF)
+    assert STORY_OVERLAY_PATCH[95][0][2] == gate_literal(STORY_K1_DOOR_OFF)
     assert all(p[2] == gate_literal(STORY_LAVA_OFF) for p in STORY_OVERLAY_PATCH[98])
     for ovl, patches in STORY_OVERLAY_PATCH.items():
         patch_overlay(rom, ovl, patches)

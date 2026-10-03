@@ -21,10 +21,12 @@ All notable changes to this project are documented in this file. The format is b
   - While a mission picked there is under way, entering an area does not accept that area's mission; report or abort the one you picked to go back to normal.
   - "Abort Mission" is offered only for a mission or quest picked from that list. With the mission of an area under way the consoles show their normal menu instead, and picking a mission there replaces it.
 - Troop Reinforcement and Protect HQ show their names in that list instead of "Mission 4" and "Mission D".
+- `mission_objectives` also covers the switch of K-4 that unlocks the door of K-1 on the way to its Sub Tank: stepping on it is a check, and with `items` that door opens with the Area K Door Switch instead.
 
 ### Changed
 
 - The Transerver consoles show their normal menu during Troop Reinforcement and Protect HQ instead of the reduced one.
+- Logic: the Sub Tank of K-1 asks for Model LX and that door unlocked, instead of four biometals.
 
 ### Fixed
 

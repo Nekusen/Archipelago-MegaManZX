@@ -16,7 +16,8 @@ from ..apnds import lz
 from ..data import (EVENT_GATES, GOAL_LINE_ADDR, ICON_CODES, ITEMS, LIVE_BLOCK, LOCATIONS, MISSION_ACCEPT,
                     MISSION_COMPLETED_BIT,
                     MISSION_REPEAT_BITS, NOTIFY_ADDR, NOTIFY_BUF_MAX, PICKUP_TABLE_ADDR, STARTING_MODELS,
-                    STARTING_TRANSERVERS, STORY_GATE_ITEMS, STORY_LAVA_ITEM, STORY_REPORT_STATES)
+                    STARTING_TRANSERVERS, STORY_GATE_ITEMS, STORY_LAVA_ITEM, STORY_REPORT_STATES,
+                    STORY_SWITCH_ITEM, STORY_SWITCH_LOCATION)
 from ..rom import arm9, blz, golden, icons, missions, nds, pickups, sprites, story, table, ui
 
 PATCH_MODULES = (pickups, sprites, ui, missions, story)     # the modules that hold patch tables and caves
@@ -654,6 +655,12 @@ class TestStorySection(unittest.TestCase):
         self.assertEqual(int.from_bytes(as_bytes(orig), "little") + story.STORY_F3_DOOR_OFF, EVENT_GATES[381][0])
         self.assertEqual(int.from_bytes(as_bytes(new), "little") + story.STORY_F3_DOOR_OFF, gates)
         self.assertEqual(ITEMS[STORY_GATE_ITEMS[381]]["grant"][1], [story.STORY_F3_DOOR_BIT])
+        (_ram, orig, new), = story.STORY_OVERLAY_PATCH[95]
+        switch_addr, switch_bit = LOCATIONS[STORY_SWITCH_LOCATION]["detect"][1:]
+        self.assertEqual(int.from_bytes(as_bytes(orig), "little") + story.STORY_K1_DOOR_OFF, switch_addr)
+        self.assertEqual(int.from_bytes(as_bytes(new), "little") + story.STORY_K1_DOOR_OFF, gates)
+        self.assertEqual(ITEMS[STORY_SWITCH_ITEM]["grant"][1], [story.STORY_K1_DOOR_BIT])
+        self.assertEqual(switch_bit, story.STORY_K1_DOOR_BIT)
         for ram, orig, new in story.STORY_OVERLAY_PATCH[98]:
             with self.subTest(ram=hex(ram)):
                 self.assertEqual(int.from_bytes(as_bytes(orig), "little"), LIVE_BLOCK)

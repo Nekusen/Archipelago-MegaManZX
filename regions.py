@@ -8,13 +8,19 @@ from .logic import bosses as B
 from .logic import document as F
 from .logic import load_document
 from .data import (DOORS, LOCATIONS, STORY_CHAINS, STORY_COUNTS, STORY_GATE_ITEMS, STORY_LAVA_ITEM,
-                   STORY_LAVA_LOCATION, STORY_REPORT_ITEMS)
+                   STORY_LAVA_LOCATION, STORY_REPORT_ITEMS, STORY_SWITCH_ITEM, STORY_SWITCH_LOCATION)
 from .locations import MMZXLocation, STORY_ITEMS, active_locations, story_mode
 from .logic.rules import (TIER, WORLD, and_rules, door_rule, label_rule, starting_room,
                           transerver_rule)
 
 MISSION_PREFIX = "Mission - "
 LAVA_EVENT = "Lava Flow Slowed"   # what SLOW_LAVA tests while no item slows the lava
+SWITCH_EVENT = "K-1 Door Unlocked"
+# story atom -> (event at its location that stands for it while no item does, location, item)
+STORY_EVENTS = {
+    F.SLOW_LAVA: (LAVA_EVENT, STORY_LAVA_LOCATION, STORY_LAVA_ITEM),
+    F.K_DOOR_SWITCH: (SWITCH_EVENT, STORY_SWITCH_LOCATION, STORY_SWITCH_ITEM),
+}
 
 
 def boss_requirements(world) -> dict:
@@ -56,10 +62,10 @@ def create_regions(world) -> None:
     boss_of = F.boss_regions(doc)
     goal_rule = G.rule(world.goal, player)
     host_atoms["GOAL"] = goal_rule or (lambda state: True)
-    # with mission_objectives: items a Report, a story gate and the slow lava each ask for an item
+    # with mission_objectives: items a Report, a story gate and each story atom ask for an item
     story_items = story_mode(world.options) == STORY_ITEMS
-    lava = STORY_LAVA_ITEM if story_items else LAVA_EVENT
-    host_atoms[F.SLOW_LAVA] = lambda state: state.has(lava, player)
+    for atom, (event, _location, item) in STORY_EVENTS.items():
+        host_atoms[atom] = lambda state, _held=item if story_items else event: state.has(_held, player)
 
     def has(item):
         return (lambda state: state.has(item, player)) if item and story_items else None
@@ -150,7 +156,7 @@ def create_regions(world) -> None:
     for src_name, dst_name, _d, _rid in door_edges():
         needed.update((src_name, dst_name))
     missions = [n for n, v in LOCATIONS.items() if v.get("category") == "mission"]
-    for name in [*active, *missions, final, STORY_LAVA_LOCATION]:
+    for name in [*active, *missions, final, *(location for _e, location, _i in STORY_EVENTS.values())]:
         needed.update(placed_regions(name))
 
     menu = Region("Menu", player, mw)
@@ -252,7 +258,8 @@ def create_regions(world) -> None:
             continue
         add_event(G.cleared_event(name), name, v)
     if not story_items:
-        add_event(LAVA_EVENT, STORY_LAVA_LOCATION, LOCATIONS[STORY_LAVA_LOCATION])
+        for event, location, _item in STORY_EVENTS.values():
+            add_event(event, location, LOCATIONS[location])
 
     # goal: Victory event anchored to the final mission
     victory = MMZXLocation(player, "Defeat Serpent", None, field)

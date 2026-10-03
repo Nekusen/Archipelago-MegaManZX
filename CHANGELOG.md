@@ -23,6 +23,7 @@ All notable changes to this project are documented in this file. The format is b
 ### Fixed
 
 - Stop The Dig stopped counting as completed after reporting Repel The Army.
+- Find The Survivors stopped counting as completed after reporting Recover The Disk, and Fight The Mavericks after reporting Attack The Excavators: the Missions goal requirement lost them from its count, and their missions could be accepted again.
 
 - The eight usable items of the pause menu (Cake, Orange, Candy, Bread, Apple, E Tank, W Tank and Smelling Salts) are items of the pool, and the eight places that hand them out are locations.
   - A usable you have used comes back when you open any Transerver console.

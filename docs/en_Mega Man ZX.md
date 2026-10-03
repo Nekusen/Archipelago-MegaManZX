@@ -92,9 +92,11 @@ Locations:
 
 - The mission of an area is accepted automatically when you enter it (no need to select it from a transerver), so you can play the
   areas in any order without going back to the hub. You DO have to report missions on a transerver.
-- The "Mission Requests" list of the transerver consoles shows the missions you have already reported (and the quests, as usual), so
-  you can play any of them again: its objective and its boss come back. While a mission you took from the list is under way, entering
-  an area does not accept that area's mission; report or abort it to go back to normal.
+- "Replay Missions" in the transerver consoles lists the missions you have already reported (and the quests, as usual), so you can
+  play any of them again: its objective and its boss come back. While a mission you picked there is under way, entering an area does
+  not accept that area's mission; report or abort it to go back to normal.
+  - "Abort Mission" only appears for a mission or quest you picked from that list. With the mission of an area under way the console
+    shows its normal menu, and picking a mission from "Replay Missions" replaces the one you had.
 - All bosses are spawned from the beginning, and you can start the fight with them from both sides.
   - The exception for this rule are Rayfly (B-2) and Giro (D-2).
     - Rayfly requires you to get the nearest "Computer Chip" to the boss area to spawn the boss.
@@ -117,7 +119,7 @@ Locations:
 - Troop Reinforcement can be started from D-1, D-2 or D-3 without the base cutscene.
 - "Protect HQ" becomes available, when you have completed and reported 4 of the "main" missions (the ones with Pseudoroids in them)
   - To start the mission, teleport to Area X and speak with Prairie (you should have seen the previous cutscene on any transerver when reporting a mission
-  - If you take another area's mission in between, Protect HQ resumes as soon as you enter Area X again. The Transerver consoles offer "Abort the mission?" during it, as for any other mission; the next report launches it again.
+  - If you take another area's mission in between, Protect HQ resumes as soon as you enter Area X again. The Transerver consoles show their normal menu during it, as for any other mission of an area.
 - The gate from D-2 into the Slither Inc. tower opens once you meet your `goal_requirements`.
 - With `skip_boss_rush` the Pseudoroid refights of the D-4 tower are skipped and the elevator climbs straight to D-5.
 - The mini-bosses that guard a stretch of an area (the King Flyers of D-2, the Lava Demon of K-2 and the others) come back every time you re-enter their area. With `skip_minibosses: after_first_defeat` each one stays beaten once you have beaten it; with `always` they all count as beaten from the start.

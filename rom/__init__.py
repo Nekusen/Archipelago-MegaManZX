@@ -1,6 +1,6 @@
 """The .apmmzx patch for Mega Man ZX (USA): the ARM9 code patches, the AP icon set and the AP marker.
 
-One module per domain applies its patches to the ARM9 (`pickups`, `sprites`, `ui`);
+One module per domain applies its patches to the ARM9 (`pickups`, `sprites`, `ui`, `missions`);
 `arm9`, `blz` and `nds` handle the image, its compression and the ROM container.
 """
 
@@ -10,7 +10,7 @@ from settings import get_settings
 from worlds.Files import (APProcedurePatch, APTokenMixin, APTokenTypes,
                           APPatchExtension)
 
-from . import golden, nds, pickups, sprites, table, ui
+from . import golden, missions, nds, pickups, sprites, table, ui
 from .arm9 import Arm9, replace_arm9
 
 MMZX_US_MD5 = "88b684b1b3eea885a07625da89f1e5b3"
@@ -67,6 +67,7 @@ class MMZXPatchExtension(APPatchExtension):
         pickups.patch_hu_gate(arm9, hu_in_pool)
         pickups.patch_secret_disks(arm9)
         pickups.patch_usables(arm9)
+        missions.patch_mission_list(arm9)
         ui.patch_goal_line(arm9)
         table.patch_pickup_table(arm9, caller.get_file(table_file))
 
@@ -75,7 +76,8 @@ class MMZXPatchExtension(APPatchExtension):
         fnt_start = sprites.install_icon_set(d)
         ui.patch_menu_warp_text(d)
         ui.install_pause_texts(d)
-        ui.install_usable_texts(d)
+        ui.install_talk_texts(d)
+        ui.install_mission_names(d)
         pickups.patch_usable_rooms(d)
         sprites.patch_disk_logo(d, fnt_start)
         nds.update_header_crc(d)

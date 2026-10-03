@@ -477,7 +477,6 @@ class TestPatchTables(unittest.TestCase):
                                                  for i in range(0, len(ui.SKIP_CAVE), 4)])
 
 
-@unittest.skipUnless(os.path.isfile(ROM_PATH), "set MMZX_ROM to the vanilla Mega Man ZX (USA) ROM")
 class TestMissionSection(unittest.TestCase):
     """The mission list section: its tables come from data.py and its hooks replace the vanilla calls."""
 
@@ -659,6 +658,7 @@ class TestStorySection(unittest.TestCase):
         story.patch_story_rooms(Untouched(), False)
 
 
+@unittest.skipUnless(os.path.isfile(ROM_PATH), "set MMZX_ROM to the vanilla Mega Man ZX (USA) ROM")
 class TestVanillaBytes(unittest.TestCase):
     """The vanilla bytes the patch modules record match the real ROM, and the caves land on zeros."""
 

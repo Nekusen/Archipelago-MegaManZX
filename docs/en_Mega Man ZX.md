@@ -37,12 +37,17 @@ Items:
 - The Yellow, Green, Red, Blue and Purple Card Keys.
 - Transerver Access for each of the 13 areas with a Transerver (A, B, C, D, E, F, G, I, K, L, M, O and X).
 - Four Life Ups, four Sub Tanks and the eight ITEM B chips.
+- The eight usable items of the pause menu (ITEM A): Cake, Orange, Candy, Bread, Apple, E Tank, W Tank and
+  Smelling Salts.
 - E-Crystals and 1-Ups as filler.
 
 Locations:
 
 - The 95 Secret Disks.
 - The four Life Ups and the three Sub Tanks found in the world.
+- The eight places that hand out a usable item: the child (Cake), Lucia (Bread) and Max (Orange) in Area C, the
+  crane game of H-3 (Candy), the tree of A-3 (Apple), the hanging doll of Prairie's room in X-2 (W Tank), and the
+  Guardians Cédre in X-3 (E Tank, 200 E-Crystals) and Scombrésoce in X-1 (Smelling Salts, 20 E-Crystals).
 - Obtaining each of the four biometals, from either Pseudoroid of its pair.
 - Completing 14 story missions (Destroy Model W is the goal itself, and the initial mission "Catch the Maverick" is skipped).
 - Optionally, the 133 pickups (energy capsules, weapon energy, E-Crystals and 1-Ups). Only the "big" pickups are considered. Small pickups from drops do not count.
@@ -67,6 +72,14 @@ Locations:
   and it is back to a normal refill, it breaks as usual.
 - Items you receive and items you send are announced in the game's own popup without stopping play. The `notify_*`
   options and the `/mmzx_notify` command choose which items are announced and how much text is shown.
+- Usable items: the objects handed out in the world are checks and give nothing; the usables you hold are the ones
+  received from the multiworld. A usable you have used comes back the next time you open any Transerver console,
+  even if you only cancel the menu. The townspeople give their object on the second or third talk, in human form;
+  the Guardians answer when you stand a little to their left. The child who gives the cake moves to C-1 once you
+  complete Save The People, as in the original game, and needs no birthday; Scombrésoce sells the salts once you
+  complete Troop Reinforcement; neither goes away afterwards, and Cédre and Scombrésoce stay in the base during
+  Protect HQ. Any attack shakes the tree of A-3 and its first fruit is the apple; any hit on the
+  hanging doll of X-2 frees the W Tank; the crane game of H-3 gives the candy the first time you catch a prize.
 
 ### The "Open World" state
 

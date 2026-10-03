@@ -108,6 +108,10 @@
             ],
             "sections": [
               {
+                "name": "A-3: Apple",
+                "item_count": 1
+              },
+              {
                 "name": "A-3: Disk E-46",
                 "item_count": 1
               },
@@ -322,6 +326,14 @@
             ],
             "sections": [
               {
+                "name": "C-1: Bread",
+                "item_count": 1
+              },
+              {
+                "name": "C-1: Cake",
+                "item_count": 1
+              },
+              {
                 "name": "C-1: Weapon Energy L",
                 "item_count": 1
               },
@@ -399,6 +411,10 @@
             "sections": [
               {
                 "name": "Mission - Pass The Test",
+                "item_count": 1
+              },
+              {
+                "name": "C-2: Orange",
                 "item_count": 1
               },
               {
@@ -1164,6 +1180,10 @@
             "sections": [
               {
                 "name": "H-3: Disk M-8",
+                "item_count": 1
+              },
+              {
+                "name": "H-3: Candy",
                 "item_count": 1
               },
               {
@@ -1939,6 +1959,10 @@
             ],
             "sections": [
               {
+                "name": "X-1: Smelling Salts",
+                "item_count": 1
+              },
+              {
                 "name": "X-1: Disk O-1",
                 "item_count": 1
               },
@@ -2003,6 +2027,10 @@
             ],
             "sections": [
               {
+                "name": "X-2: W Tank",
+                "item_count": 1
+              },
+              {
                 "name": "X-2: Disk O-3",
                 "item_count": 1
               },
@@ -2024,6 +2052,10 @@
             "sections": [
               {
                 "name": "Mission - Protect Hq",
+                "item_count": 1
+              },
+              {
+                "name": "X-3: E Tank",
                 "item_count": 1
               },
               {
@@ -2462,6 +2494,27 @@
       {
         "name": "A-3",
         "children": [
+          {
+            "name": "A-3: Apple",
+            "map_locations": [
+              {
+                "map": "area_a",
+                "x": 554,
+                "y": 683
+              },
+              {
+                "map": "room_a03",
+                "x": 2008,
+                "y": 42
+              }
+            ],
+            "sections": [
+              {
+                "name": "A-3: Apple",
+                "item_count": 1
+              }
+            ]
+          },
           {
             "name": "A-3: Disk E-46",
             "map_locations": [
@@ -3199,6 +3252,48 @@
         "name": "C-1",
         "children": [
           {
+            "name": "C-1: Bread",
+            "map_locations": [
+              {
+                "map": "area_c",
+                "x": 1379,
+                "y": 335
+              },
+              {
+                "map": "room_c01",
+                "x": 1379,
+                "y": 173
+              }
+            ],
+            "sections": [
+              {
+                "name": "C-1: Bread",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "C-1: Cake",
+            "map_locations": [
+              {
+                "map": "area_c",
+                "x": 534,
+                "y": 373
+              },
+              {
+                "map": "room_c01",
+                "x": 534,
+                "y": 211
+              }
+            ],
+            "sections": [
+              {
+                "name": "C-1: Cake",
+                "item_count": 1
+              }
+            ]
+          },
+          {
             "name": "C-1: Weapon Energy L",
             "map_locations": [
               {
@@ -3539,6 +3634,27 @@
       {
         "name": "C-2",
         "children": [
+          {
+            "name": "C-2: Orange",
+            "map_locations": [
+              {
+                "map": "area_c",
+                "x": 1675,
+                "y": 669
+              },
+              {
+                "map": "room_c02",
+                "x": 1794,
+                "y": 114
+              }
+            ],
+            "sections": [
+              {
+                "name": "C-2: Orange",
+                "item_count": 1
+              }
+            ]
+          },
           {
             "name": "C-2: Disk E-30",
             "map_locations": [
@@ -5583,6 +5699,27 @@
             "sections": [
               {
                 "name": "H-3: Disk M-8",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "H-3: Candy",
+            "map_locations": [
+              {
+                "map": "area_h",
+                "x": 228,
+                "y": 920
+              },
+              {
+                "map": "room_h03",
+                "x": 293,
+                "y": 405
+              }
+            ],
+            "sections": [
+              {
+                "name": "H-3: Candy",
                 "item_count": 1
               }
             ]
@@ -7733,6 +7870,27 @@
         "name": "X-1",
         "children": [
           {
+            "name": "X-1: Smelling Salts",
+            "map_locations": [
+              {
+                "map": "area_x",
+                "x": 640,
+                "y": 690
+              },
+              {
+                "map": "room_x01",
+                "x": 640,
+                "y": 600
+              }
+            ],
+            "sections": [
+              {
+                "name": "X-1: Smelling Salts",
+                "item_count": 1
+              }
+            ]
+          },
+          {
             "name": "X-1: Disk O-1",
             "map_locations": [
               {
@@ -8011,6 +8169,27 @@
         "name": "X-2",
         "children": [
           {
+            "name": "X-2: W Tank",
+            "map_locations": [
+              {
+                "map": "area_x",
+                "x": 507,
+                "y": 1124
+              },
+              {
+                "map": "room_x02",
+                "x": 824,
+                "y": 250
+              }
+            ],
+            "sections": [
+              {
+                "name": "X-2: W Tank",
+                "item_count": 1
+              }
+            ]
+          },
+          {
             "name": "X-2: Disk O-3",
             "map_locations": [
               {
@@ -8057,6 +8236,27 @@
       {
         "name": "X-3",
         "children": [
+          {
+            "name": "X-3: E Tank",
+            "map_locations": [
+              {
+                "map": "area_x",
+                "x": 1064,
+                "y": 1193
+              },
+              {
+                "map": "room_x03",
+                "x": 696,
+                "y": 362
+              }
+            ],
+            "sections": [
+              {
+                "name": "X-3: E Tank",
+                "item_count": 1
+              }
+            ]
+          },
           {
             "name": "X-3: Disk O-11",
             "map_locations": [

@@ -13,8 +13,8 @@ from pathlib import Path
 
 from .. import rom
 from ..apnds import lz
-from ..data import (GOAL_LINE_ADDR, ICON_CODES, LOCATIONS, NOTIFY_ADDR, NOTIFY_BUF_MAX, PICKUP_TABLE_ADDR,
-                    STARTING_MODELS, STARTING_TRANSERVERS)
+from ..data import (GOAL_LINE_ADDR, ICON_CODES, ITEMS, LIVE_BLOCK, LOCATIONS, NOTIFY_ADDR, NOTIFY_BUF_MAX,
+                    PICKUP_TABLE_ADDR, STARTING_MODELS, STARTING_TRANSERVERS)
 from ..rom import arm9, blz, golden, nds, pickups, sprites, table, ui
 
 PATCH_MODULES = (pickups, sprites, ui)     # the modules that hold patch tables and caves
@@ -258,6 +258,93 @@ class TestPatchTables(unittest.TestCase):
         self.assertLessEqual(PICKUP_TABLE_ADDR + len(full), ui.ROOM_OVERLAY_SLOT_RAM)
         self.assertGreaterEqual(PICKUP_TABLE_ADDR, ui.GOLDEN_IMAGE_RAM + golden.GOLDEN_IMAGE_SIZE)
 
+    def test_usable_table(self) -> None:
+        """The relocated ITEM A flags all index the possession byte of the pickup table section."""
+        self.assertEqual(pickups.USABLE_TABLE_NEW, pickups.usable_table())
+        vanilla = struct.unpack("<8I", pickups.USABLE_TABLE_ORIG)
+        self.assertEqual(sorted(vanilla), list(range(pickups.USABLE_FLAG_FIRST, pickups.USABLE_FLAG_FIRST + 8)))
+        for flag in struct.unpack("<8I", pickups.USABLE_TABLE_NEW):
+            self.assertEqual(LIVE_BLOCK + (flag >> 3), PICKUP_TABLE_ADDR + table.USABLES_OFF)
+        self.assertGreaterEqual(table.USABLES_OFF, table.COLLECTED_OFF + table.BITMAP_LEN)
+        self.assertLess(table.USABLES_MARK_OFF, table.INDEX_OFF)
+        # the items' grant bits are the flags' bits
+        bits = {name: v["grant"][1] for name, v in ITEMS.items() if v["grant"][0] == "usable"}
+        self.assertEqual(sorted(bits.values()), list(range(8)))
+        for name, v in LOCATIONS.items():
+            if v["category"] == "usable":
+                item = name.split(": ", 1)[1]
+                flag = (v["detect"][1] - LIVE_BLOCK) * 8 + v["detect"][2]
+                self.assertEqual(bits[item], flag - pickups.USABLE_FLAG_FIRST, name)
+
+    def test_usable_texts(self) -> None:
+        """The eight pickup popups become the multiworld notice; the rest of the file is untouched."""
+        head = ui.USABLE_TEXT_HEAD
+        n = ui.USABLE_TEXT_FIRST + ui.USABLE_TEXT_COUNT + 2
+        texts = [(head + bytes([0x21 + k % 26, 0x22]) if ui.USABLE_TEXT_FIRST <= k < n - 2 else bytes([0x30 + k % 10] * (k % 5 + 1)))
+                 + bytes([ui.PAUSE_TEXT_END]) for k in range(n)]
+        offs, pos = [], 0
+        for t in texts:
+            offs.append(pos)
+            pos += len(t)
+        body = b"".join(texts)
+        data = struct.pack("<HH", 4 + 2 * n + len(body), 2 * n) + struct.pack("<%dH" % n, *offs) + body + b"\x00\x00"
+        out = ui.talk_texts_with_usable_notice(data)
+        total, tsize = struct.unpack_from("<HH", out, 0)
+        self.assertEqual(tsize, 2 * n)
+        self.assertEqual(total, len(out) - 2)
+        new_offs = struct.unpack_from("<%dH" % n, out, 4)
+        base = 4 + tsize
+        for k in range(n):
+            end = out.index(bytes([ui.PAUSE_TEXT_END]), base + new_offs[k])
+            text = out[base + new_offs[k]:end]
+            if ui.USABLE_TEXT_FIRST <= k < n - 2:
+                self.assertEqual(text, ui.USABLE_TEXT_NEW, k)
+            else:
+                self.assertEqual(text, texts[k][:-1], k)
+        self.assertEqual(out[-2:], b"\x00\x00")
+        with self.assertRaises(ValueError):
+            ui.talk_texts_with_usable_notice(data.replace(head, b"\x01" * len(head), 1))
+
+    def test_overlay_patches_keep_their_length(self) -> None:
+        for ovl, patches in pickups.OVERLAY_USABLE_PATCH.items():
+            for ram, orig, new in patches:
+                with self.subTest(ovl=ovl, ram=hex(ram)):
+                    self.assertEqual(len(as_bytes(orig)), len(as_bytes(new)))
+                    self.assertEqual(ram % 2, 0)
+                    self.assertGreaterEqual(ram, ui.ROOM_OVERLAY_SLOT_RAM)
+
+    def test_overlay_round_trip(self) -> None:
+        """A synthetic overlay survives compress, store, read back and patch."""
+        random.seed(5)
+        code = bytes(random.choice(b"\x00\x01\x02\xff") for _ in range(600)) * 4 + bytes(range(256)) * 3
+        packed = blz.compress(code)
+        self.assertIsNotNone(packed)
+        self.assertEqual(lz.decompress_code(packed, len(packed))[0][:len(code)], code)
+        # a tiny ROM: header fields, one FAT entry, one overlay entry and the file
+        rom = bytearray(0x4000)
+        table, fat, file_off = 0x800, 0x900, 0x1000
+        struct.pack_into("<II", rom, nds.NDS_HDR_OVERLAYS9, table, nds.OVERLAY_ENTRY_LEN)
+        struct.pack_into("<II", rom, nds.NDS_HDR_FAT, fat, nds.FAT_ENTRY_LEN)
+        struct.pack_into("<8I", rom, table, 0, ui.ROOM_OVERLAY_SLOT_RAM, len(code), 0, 0, 0, 0,
+                         nds.OVERLAY_COMPRESSED | len(packed))
+        struct.pack_into("<II", rom, fat, file_off, file_off + len(packed))
+        rom[file_off:file_off + len(packed)] = packed
+        struct.pack_into("<I", rom, nds.NDS_HDR_ROM_SIZE, file_off + len(packed))
+        ram, back = nds.overlay_code(rom, 0)
+        self.assertEqual((ram, back), (ui.ROOM_OVERLAY_SLOT_RAM, code))
+        site = ui.ROOM_OVERLAY_SLOT_RAM + 100
+        nds.patch_overlay(rom, 0, [(site, code[100:104], b"\xaa\xbb\xcc\xdd")])
+        ram, after = nds.overlay_code(rom, 0)
+        self.assertEqual(after[100:104], b"\xaa\xbb\xcc\xdd")
+        self.assertEqual(after[:100] + after[104:], code[:100] + code[104:])
+        comp = struct.unpack_from("<I", rom, table + nds.OVERLAY_SIZE_OFF)[0]
+        start, end = struct.unpack_from("<II", rom, fat)
+        self.assertTrue(comp & nds.OVERLAY_COMPRESSED)
+        self.assertEqual(comp & nds.OVERLAY_SIZE_MASK, end - start)
+        self.assertGreaterEqual(start, file_off + len(packed))   # relocated after the old file
+        with self.assertRaises(ValueError):
+            nds.patch_overlay(rom, 0, [(site, b"\x00\x00\x00\x00", b"\x01\x02\x03\x04")])
+
     def test_pickup_table_routines_know_the_layout(self) -> None:
         """The routines' literal pools name the switch, the bitmaps, the index and the entries."""
         code = table.PICKUP_TABLE_CODE
@@ -420,6 +507,28 @@ class TestVanillaBytes(unittest.TestCase):
         for lo, hi in FREE_STRETCHES:
             with self.subTest(stretch=hex(lo)):
                 self.assertEqual(self.read(lo, hi - lo), bytes(hi - lo))
+
+    def test_overlay_patch_sites(self) -> None:
+        """The room overlays hold the vanilla bytes where the usable patches go, and patch cleanly."""
+        rom = bytearray(self.rom)
+        for ovl, patches in pickups.OVERLAY_USABLE_PATCH.items():
+            ram, code = nds.overlay_code(rom, ovl)
+            self.assertEqual(ram, ui.ROOM_OVERLAY_SLOT_RAM)
+            for site, orig, _new in patches:
+                with self.subTest(ovl=ovl, site=hex(site)):
+                    self.assertEqual(code[site - ram:site - ram + len(as_bytes(orig))], as_bytes(orig))
+        pickups.patch_usable_rooms(rom)
+        for ovl, patches in pickups.OVERLAY_USABLE_PATCH.items():
+            ram, code = nds.overlay_code(rom, ovl)
+            for site, _orig, new in patches:
+                self.assertEqual(code[site - ram:site - ram + len(as_bytes(new))], as_bytes(new))
+
+    def test_usable_texts_of_the_rom(self) -> None:
+        """The system text file rebuilds with the eight popups replaced."""
+        data = nds.file_bytes(bytearray(self.rom), ui.USABLE_TEXT_FILE_ID)
+        out = ui.talk_texts_with_usable_notice(data)
+        self.assertEqual(out.count(ui.USABLE_TEXT_NEW), ui.USABLE_TEXT_COUNT)
+        self.assertGreater(len(out), len(data))
 
     def test_pause_texts_of_the_rom(self) -> None:
         """The pause menu file rebuilds: one-line BIOMETAL texts and the signature message where the cave reads it."""

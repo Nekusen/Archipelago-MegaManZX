@@ -88,6 +88,16 @@ PAUSE_TEXT_FILE_ID = 222           # m_sub_en.bin
 PAUSE_TEXT_LINE_BREAK = 0xFC
 PAUSE_TEXT_END = 0xFE
 
+# The popup that announces a usable ("YOU GOT CAKE") is one message per object in the
+# system text file. The object stands for a multiworld item now, so the eight messages
+# say so; the client's notice names what was actually sent.
+USABLE_TEXT_FILE_ID = 415          # talk_sys_en.bin
+USABLE_TEXT_FIRST = 72             # Cake, then E Tank, W Tank, Orange, Candy, Bread, Apple, Smelling Salts
+USABLE_TEXT_COUNT = 8
+USABLE_TEXT_HEAD = bytes.fromhex("394f5500474f5400")   # "You got "
+USABLE_TEXT_NEW = bytes.fromhex(
+    "394f5500474f5400414e00f103215243484950454c41474f004954454df10001")   # "You got an Archipelago item!"
+
 # Cutscene skip: START skips a story cutscene only on a replay. The "event seen"
 # test becomes a no-op and the cave marks the event seen, as watching it would.
 CUTSCENE_SKIP_PATCH = [
@@ -179,6 +189,38 @@ def pause_texts_with_goal_line(data: bytes) -> bytes:
 def install_pause_texts(rom: bytearray) -> None:
     """Rebuild m_sub_en.bin with the goal line and relocate it to the end padding."""
     relocate_file(rom, PAUSE_TEXT_FILE_ID, pause_texts_with_goal_line(file_bytes(rom, PAUSE_TEXT_FILE_ID)))
+
+
+def talk_texts_with_usable_notice(data: bytes) -> bytes:
+    """talk_sys_en.bin with the eight usable popups replaced by the multiworld notice."""
+    total, tsize = struct.unpack_from("<HH", data, 0)
+    n = tsize // 2
+    base = 4 + tsize
+    offs = list(struct.unpack_from("<%dH" % n, data, 4))
+    texts = []
+    tail = base
+    for k, o in enumerate(offs):
+        end = data.index(bytes([PAUSE_TEXT_END]), base + o)
+        tail = max(tail, end + 1)
+        text = data[base + o:end]
+        if USABLE_TEXT_FIRST <= k < USABLE_TEXT_FIRST + USABLE_TEXT_COUNT:
+            if not text.startswith(USABLE_TEXT_HEAD):
+                raise ValueError("MMZX: system text %d is not a pickup popup" % k)
+            text = USABLE_TEXT_NEW
+        texts.append(text + bytes([PAUSE_TEXT_END]))
+    body = b"".join(texts)
+    new_offs = []
+    pos = 0
+    for t in texts:
+        new_offs.append(pos)
+        pos += len(t)
+    out = struct.pack("<HH", 4 + tsize + len(body), tsize) + struct.pack("<%dH" % n, *new_offs) + body
+    return out + data[tail:]   # whatever trails the last message
+
+
+def install_usable_texts(rom: bytearray) -> None:
+    """Rebuild talk_sys_en.bin with the usable notice and relocate it to the end padding."""
+    relocate_file(rom, USABLE_TEXT_FILE_ID, talk_texts_with_usable_notice(file_bytes(rom, USABLE_TEXT_FILE_ID)))
 
 
 def patch_menu_warp_text(rom: bytearray) -> None:

@@ -58,6 +58,7 @@ LOCATION_GROUPS = {
     "Life Ups": {n for n, v in LOCATIONS.items() if v["category"] == "life_up"},
     "Sub Tanks": {n for n, v in LOCATIONS.items() if v["category"] == "sub_tank"},
     "Missions": {n for n, v in LOCATIONS.items() if v["category"] == "mission"},
+    "Usable Items": {n for n, v in LOCATIONS.items() if v["category"] == "usable"},
     "Pickups": {n for n, v in LOCATIONS.items() if v["category"] in PICKUP_OPTION_BY_CATEGORY},
     "1-Ups": {n for n, v in LOCATIONS.items() if v["category"] == "pickup_1up"},
     "Energy Capsules": {n for n, v in LOCATIONS.items() if v["category"] == "pickup_energy"},

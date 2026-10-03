@@ -66,6 +66,7 @@ class MMZXPatchExtension(APPatchExtension):
         pickups.patch_refill_cut(arm9)
         pickups.patch_hu_gate(arm9, hu_in_pool)
         pickups.patch_secret_disks(arm9)
+        pickups.patch_usables(arm9)
         ui.patch_goal_line(arm9)
         table.patch_pickup_table(arm9, caller.get_file(table_file))
 
@@ -74,6 +75,8 @@ class MMZXPatchExtension(APPatchExtension):
         fnt_start = sprites.install_icon_set(d)
         ui.patch_menu_warp_text(d)
         ui.install_pause_texts(d)
+        ui.install_usable_texts(d)
+        pickups.patch_usable_rooms(d)
         sprites.patch_disk_logo(d, fnt_start)
         nds.update_header_crc(d)
         return bytes(d)

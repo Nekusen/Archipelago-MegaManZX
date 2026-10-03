@@ -36,14 +36,16 @@ Items:
   full Weapon Energy bar. With `progressive_models` off each of the four is a single item that gives both at once.
 - The Yellow, Green, Red, Blue and Purple Card Keys.
 - Transerver Access for each of the 13 areas with a Transerver (A, B, C, D, E, F, G, I, K, L, M, O and X).
+  The one of Area M is left out when `area_m_access` closes the seal.
 - Four Life Ups, four Sub Tanks and the eight ITEM B chips.
+- Passwords, with `area_m_access: passwords`.
 - E-Crystals and 1-Ups as filler.
 
 Locations:
 
 - The 95 Secret Disks.
 - The four Life Ups and the three Sub Tanks found in the world.
-- Obtaining each of the four biometals, from either Pseudoroid of its pair.
+- Obtaining each of the five biometals: Z from Giro, and H, F, L and P from either Pseudoroid of its pair.
 - Completing 14 story missions (Destroy Model W is the goal itself, and the initial mission "Catch the Maverick" is skipped).
 - Optionally, the 133 pickups (energy capsules, weapon energy, E-Crystals and 1-Ups). Only the "big" pickups are considered. Small pickups from drops do not count.
   - 7 1-Ups
@@ -87,7 +89,7 @@ Locations:
     - This means you don't need to beat the mini-boss in this area 
   - The G-2 door to G-4
     - These changes mean you don't have to rescue anyone in area G 
-  - The M-1 seal (which normally requires all models)
+  - The M-1 seal (which normally requires all models), unless `area_m_access` closes it (see below)
   - The D-1 bridge
   - The sand fall that hides the pit from K-1 to K-2
   - The D-3 ladder up to the walkway that leads to Area O.
@@ -99,6 +101,21 @@ Locations:
 - With `skip_boss_rush` the Pseudoroid refights of the D-4 tower are skipped and the elevator climbs straight to D-5.
 - The mini-bosses that guard a stretch of an area (the King Flyers of D-2, the Lava Demon of K-2 and the others) come back every time you re-enter their area. With `skip_minibosses: after_first_defeat` each one stays beaten once you have beaten it; with `always` they all count as beaten from the start.
   - With `always` the Giro cutscene and boss fight at D-2 triggers right as you walk into it, since that fight required beating both mini bosses and this options marks them as defeated from the start.
+
+### The seal of Area M
+
+- The seal a few steps into M-1 follows `area_m_access`:
+  - `open` (default): it is open from the start.
+  - `biometals`: it opens once the five "Obtain Biometal" checks of your own game are done: Z from Giro, and H, F, L
+    and P from either Pseudoroid of each pair. Owning the biometals as items does not count.
+  - `passwords`: it opens once you have received `required_passwords` Passwords out of the `total_passwords`
+    shuffled into the multiworld.
+- With `biometals` or `passwords` the Transerver Access of Area M is not in the pool, so nothing gets around the seal:
+  Area M and N-1 (which is reached through it) stay closed until it opens. The Transerver of Area M joins your
+  Transport list when you reach it on foot, as in the original game. Nothing is placed between the door of A-4
+  and the seal.
+- A popup announces the moment the seal opens, and its scene plays the next time you walk up to it. Each Password
+  you receive is announced with its count. The pause menu and `/mmzx_goal` keep showing the goal only.
 
 ### Cutscenes and menus
 

@@ -24,3 +24,14 @@ def reach(multiworld, without=()):
                  if loc.address is not None and loc.can_reach(state)},
         "victory": bool(multiworld.completion_condition[player](state)),
     }
+
+
+def window_with(bits):
+    """A progress window of the client with only these (address, bit) flags set."""
+    from ..client.addresses import DETECT_WINDOW
+    from ..client.ram import ProgressWindow
+    lo, hi = DETECT_WINDOW
+    block = bytearray(hi - lo)
+    for addr, bit in bits:
+        block[addr - lo] |= 1 << bit
+    return ProgressWindow(bytes(block), {})

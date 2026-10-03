@@ -8,13 +8,14 @@ All notable changes to this project are documented in this file. The format is b
 
 ### Added
 
-- Missions can be played again: the "Mission Requests" list of the Transerver consoles offers the missions you have already reported (plus the quests, as before), and taking one brings back its objective and its boss.
-  - While a mission taken from the list is under way, entering an area does not accept that area's mission; report or abort the one you took to go back to normal.
+- Missions can be played again: "Replay Missions" in the Transerver consoles lists the missions you have already reported (plus the quests, as before), and picking one brings back its objective and its boss.
+  - While a mission picked there is under way, entering an area does not accept that area's mission; report or abort the one you picked to go back to normal.
+  - "Abort Mission" is offered only for a mission or quest picked from that list. With the mission of an area under way the consoles show their normal menu instead, and picking a mission there replaces it.
 - Troop Reinforcement and Protect HQ show their names in that list instead of "Mission 4" and "Mission D".
 
 ### Changed
 
-- The Transerver consoles offer "Abort the mission?" during Troop Reinforcement and Protect HQ too.
+- The Transerver consoles show their normal menu during Troop Reinforcement and Protect HQ instead of the reduced one.
 
 ### Fixed
 

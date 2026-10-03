@@ -98,6 +98,19 @@ USABLE_TEXT_HEAD = bytes.fromhex("394f5500474f5400")   # "You got "
 USABLE_TEXT_NEW = bytes.fromhex(
     "394f5500474f5400414e00f103215243484950454c41474f004954454df10001")   # "You got an Archipelago item!"
 
+# The Transerver menu says what the list is for now: the console option, the prompt over the
+# list and the entry's "take", as (vanilla text, new text) by message index
+REPLAY_TEXTS = {
+    0x00: (bytes.fromhex("fbf302f85500002d495353494f4e003245515545535453fc000024415441002d414e4147454d454e54fc00003452414e53504f5254"),
+           bytes.fromhex("fbf302f85500003245504c4159002d495353494f4e53fc000024415441002d414e4147454d454e54fc00003452414e53504f5254")),
+    0x03: (bytes.fromhex("fbf302f85500002d495353494f4e003245515545535453fc000024415441002d414e4147454d454e54fc000025584954"),
+           bytes.fromhex("fbf302f85500003245504c4159002d495353494f4e53fc000024415441002d414e4147454d454e54fc000025584954")),
+    0x37: (bytes.fromhex("f201f302f85533454c45435400544845004d495353494f4e0efce0e1234f4e54524f4c00304144000033454c454354fce2e3225554544f4e00002f2b"),
+           bytes.fromhex("f201f302f855234f4d504c45544544004d495353494f4e530efc3049434b004f4e4500544f005245504c41590049540efce2e3225554544f4e00002f2b")),
+    0x38: (bytes.fromhex("f201f601f302f855374841540057494c4c00594f5500444f1ffc000028454152002445534352495054494f4efc000034414b45002d495353494f4e"),
+           bytes.fromhex("f201f601f302f855374841540057494c4c00594f5500444f1ffc000028454152002445534352495054494f4efc00003245504c4159002d495353494f4e")),
+}
+
 # Cutscene skip: START skips a story cutscene only on a replay. The "event seen"
 # test becomes a no-op and the cave marks the event seen, as watching it would.
 # Names of the Transerver list (m_sys_en.bin): Troop Reinforcement and Protect HQ, which
@@ -221,9 +234,14 @@ def rebuild_texts(data: bytes, replace) -> bytes:
     return out + data[tail:]   # whatever trails the last message
 
 
-def talk_texts_with_usable_notice(data: bytes) -> bytes:
-    """talk_sys_en.bin with the eight usable popups replaced by the multiworld notice."""
+def talk_texts_rebuilt(data: bytes) -> bytes:
+    """talk_sys_en.bin with the usable popups as the multiworld notice and the mission menu renamed."""
     def replace(k: int, text: bytes) -> bytes:
+        if k in REPLAY_TEXTS:
+            orig, new = REPLAY_TEXTS[k]
+            if text != orig:
+                raise ValueError("MMZX: system text %d is not the mission menu text" % k)
+            return new
         if not USABLE_TEXT_FIRST <= k < USABLE_TEXT_FIRST + USABLE_TEXT_COUNT:
             return text
         if not text.startswith(USABLE_TEXT_HEAD):
@@ -232,9 +250,9 @@ def talk_texts_with_usable_notice(data: bytes) -> bytes:
     return rebuild_texts(data, replace)
 
 
-def install_usable_texts(rom: bytearray) -> None:
-    """Rebuild talk_sys_en.bin with the usable notice and relocate it to the end padding."""
-    relocate_file(rom, USABLE_TEXT_FILE_ID, talk_texts_with_usable_notice(file_bytes(rom, USABLE_TEXT_FILE_ID)))
+def install_talk_texts(rom: bytearray) -> None:
+    """Rebuild talk_sys_en.bin with the usable notice and the menu texts, relocated to the end padding."""
+    relocate_file(rom, USABLE_TEXT_FILE_ID, talk_texts_rebuilt(file_bytes(rom, USABLE_TEXT_FILE_ID)))
 
 
 def system_texts_with_mission_names(data: bytes) -> bytes:

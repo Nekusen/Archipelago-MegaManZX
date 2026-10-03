@@ -76,7 +76,7 @@ class MMZXPatchExtension(APPatchExtension):
         fnt_start = sprites.install_icon_set(d)
         ui.patch_menu_warp_text(d)
         ui.install_pause_texts(d)
-        ui.install_usable_texts(d)
+        ui.install_talk_texts(d)
         ui.install_mission_names(d)
         pickups.patch_usable_rooms(d)
         sprites.patch_disk_logo(d, fnt_start)

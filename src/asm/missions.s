@@ -7,21 +7,26 @@
 @ already reported, ready to be played again, plus the quests as in vanilla.
 @ Taking a mission from the list goes through `take`, which accepts it the vanilla
 @ way and then clears the bits that would end it at once: the objective, the boss
-@ already beaten, the phases already played. Both routines and their tables travel
-@ in an autoload section (rom/missions.py MISSION_SECTION_RAM); the tables are
-@ built from data.py. The consoles' "story mission pending" test, which hides
-@ "Abort the mission?" during Troop Reinforcement and Protect HQ, is replaced by
-@ zero at its three menu sites.
+@ already beaten, the phases already played. The consoles' "story mission pending"
+@ test, which hides "Abort the mission?" during Troop Reinforcement and Protect HQ,
+@ becomes `pending`: Abort is offered only for what the player took from the list
+@ (a quest, or a mission whose completed bit is set), and with any other mission
+@ under way the consoles show their normal menu, list included, instead of the
+@ reduced one. The routines and their tables travel in an autoload section
+@ (rom/missions.py MISSION_SECTION_RAM); the tables are built from data.py.
 
         .thumb
 
 .equ progress_block,        0x021045CC
 .equ take_mission,          0x02094FAC  @ mission start snapshot, story handler and accept, by id
 .equ section,               0x02193000  @ MISSION_SECTION_RAM
-.equ list_table,            section + 0x80   @ u32[39]: the flag that lists ids 2 to 40
-.equ repeat_table,          section + 0x120  @ 14 rows of 8 u16: the flags `take` clears for ids 2 to 15
+.equ list_table,            section + 0xC0   @ u32[39]: the flag that lists ids 2 to 40
+.equ state_table,           section + 0x160  @ u8[14]: the state value of ids 2 to 15
+.equ repeat_index,          section + 0x170  @ u8[14]: where each id's row starts in repeat_table
+.equ repeat_table,          section + 0x180  @ u16 flags `take` clears, 0xFFFF ends each row
 .equ count_routine,         section + 0x00   @ MISSION_SECTION_ENTRIES
 .equ take_routine,          section + 0x30
+.equ pending_routine,       section + 0x70
 
         .org    0x02193000
 @ rom: MISSION_SECTION_CODE
@@ -59,11 +64,11 @@ take:                                   @ r0 = r1 = id chosen in the list
         subs    r4, #2
         cmp     r4, #13
         bhi     take_done               @ a quest: nothing to clear
-        lsls    r4, r4, #4
+        ldr     r5, lit_index
+        ldrb    r4, [r5, r4]
         ldr     r5, lit_repeat
         adds    r5, r5, r4
         ldr     r6, lit_block2
-        movs    r4, #8
 take_loop:
         ldrh    r3, [r5]
         lsls    r2, r3, #16
@@ -77,13 +82,55 @@ take_loop:
         bics    r0, r1
         strb    r0, [r6, r2]            @ live copy only, like the accept itself
         adds    r5, #2
-        subs    r4, #1
-        bne     take_loop
+        b       take_loop
 take_done:
         pop     {r4, r5, r6, pc}
         .align  2
+lit_index:  .word repeat_index
 lit_repeat: .word repeat_table
 lit_block2: .word progress_block
+
+pending:                                @ r0 = 0 when what is under way was taken from the list
+        push    {r4, r5}
+        ldr     r3, lit_block3
+        movs    r1, #0x5f               @ the mission byte
+        ldrb    r0, [r3, r1]
+        lsls    r0, r0, #29
+        bmi     pending_chosen          @ bit 2: a quest
+        movs    r1, #0xe0               @ the state word
+        ldr     r4, [r3, r1]
+        ldr     r2, lit_states
+        movs    r5, #0
+pending_next:
+        ldrb    r0, [r2, r5]
+        cmp     r0, r4
+        beq     pending_found
+        adds    r5, #1
+        cmp     r5, #14
+        blo     pending_next
+        movs    r0, #1                  @ no mission of the list: offer the menu
+        b       pending_done
+pending_found:
+        ldr     r2, lit_list3
+        lsls    r5, r5, #2
+        ldr     r1, [r2, r5]            @ the mission's completed flag
+        lsrs    r2, r1, #3
+        ldrb    r2, [r3, r2]
+        movs    r0, #7
+        ands    r1, r0
+        lsrs    r2, r1
+        movs    r0, #1
+        bics    r0, r2                  @ completed: it was taken from the list
+        b       pending_done
+pending_chosen:
+        movs    r0, #0
+pending_done:
+        pop     {r4, r5}
+        bx      lr
+        .align  2
+lit_block3: .word progress_block
+lit_states: .word state_table
+lit_list3:  .word list_table
 
         .org    0x02027FEC
 @ rom: MISSION_LIST_LITERAL_PATCH[0][2]
@@ -111,19 +158,26 @@ lit_block2: .word progress_block
         bl      take_routine
 
         .org    0x020934EE
-@ rom: MISSION_ABORT_PATCH[0][2]
-@ was: bl 0x02008A34   (MISSION_ABORT_PATCH[0][1]): "story mission pending" hides Abort in the Computer console
-        movs    r0, #0
-        mov     r8, r8
+@ rom: thumb_bl(0x020934EE, MISSION_SECTION_RAM + MISSION_SECTION_ENTRIES["pending"])
+@ was: bl 0x02008A34   (MISSION_PENDING_HOOKS[0][1]): "story mission pending" in the Computer console
+        bl      pending_routine
 
         .org    0x02093C8A
-@ rom: MISSION_ABORT_PATCH[1][2]
-@ was: bl 0x02008A34   (MISSION_ABORT_PATCH[1][1]): the same test in the Teleporter console
-        movs    r0, #0
-        mov     r8, r8
+@ rom: thumb_bl(0x02093C8A, MISSION_SECTION_RAM + MISSION_SECTION_ENTRIES["pending"])
+@ was: bl 0x02008A34   (MISSION_PENDING_HOOKS[1][1]): the same test in the Teleporter console
+        bl      pending_routine
 
         .org    0x0202C522
-@ rom: MISSION_ABORT_PATCH[2][2]
-@ was: bl 0x02008A34   (MISSION_ABORT_PATCH[2][1]): the same test when the mission menu lists its entries
-        movs    r0, #0
-        mov     r8, r8
+@ rom: thumb_bl(0x0202C522, MISSION_SECTION_RAM + MISSION_SECTION_ENTRIES["pending"])
+@ was: bl 0x02008A34   (MISSION_PENDING_HOOKS[2][1]): the same test when the retry menu lists its entries
+        bl      pending_routine
+
+        .org    0x020934F6
+@ rom: MISSION_MENU_PATCH[0][2]
+@ was: ldr r0, [pc, #0x18c]   (MISSION_MENU_PATCH[0][1]): first instruction of the Computer console's reduced menu
+        b       0x02093496              @ the normal menu instead, list included
+
+        .org    0x02093C92
+@ rom: MISSION_MENU_PATCH[1][2]
+@ was: lsls r1, r5, #1   (MISSION_MENU_PATCH[1][1]): first instruction of the Teleporter console's reduced menu
+        b       0x02093C28

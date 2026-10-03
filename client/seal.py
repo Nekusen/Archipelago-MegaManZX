@@ -41,7 +41,6 @@ class Seal:
         mode = s.get("mode")
         self.mode = mode if mode in (MODE_BIOMETALS, MODE_PASSWORDS) else MODE_OPEN
         self.passwords_required = int(s.get("passwords", 0))
-        self.passwords_total = int(s.get("passwords_total", 0))
         self.obtained: set[str] | None = None   # biometal checks done; None until the flags are read
         self.rearm = False                    # the seal just opened: its scene is due
 
@@ -69,21 +68,6 @@ class Seal:
     def closed_bits(self, counts: dict[str, int]) -> frozenset:
         """The progress bits to keep down: none once the seal is open."""
         return frozenset() if self.is_open(counts) else CLOSED_BITS
-
-    def report(self, counts: dict[str, int]) -> list[str]:
-        """Lines for the console."""
-        if not self.gated:
-            return []
-        state = "open" if self.is_open(counts) else "closed"
-        done, needed = self.progress(counts)
-        if self.mode == MODE_PASSWORDS:
-            return ["Area M seal: %d of %d Passwords received (%d in the multiworld): %s"
-                    % (done, needed, self.passwords_total, state)]
-        if self.obtained is None:
-            return ["Area M seal: the five Obtain Biometal checks (progress is read in game)"]
-        missing = [letter for letter in BIOMETAL_CHECKS if letter not in self.obtained]
-        return ["Area M seal: %d of %d Obtain Biometal checks done (missing: %s): %s"
-                % (done, needed, ", ".join(missing) or "none", state)]
 
 
 async def track_biometals(client: "MMZXClient", ctx, window: ProgressWindow) -> None:

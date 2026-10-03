@@ -183,15 +183,13 @@ class TestClientSeal(unittest.TestCase):
         seal = ClientSeal({})
         self.assertFalse(seal.gated)
         self.assertEqual(seal.closed_bits({}), frozenset())
-        self.assertEqual(seal.report({}), [])
 
     def test_passwords(self) -> None:
         seal = ClientSeal({"area_m_access": {"mode": "passwords", "passwords": 4, "passwords_total": 6}})
         self.assertEqual(seal.closed_bits({PASSWORD_ITEM: 3}), CLOSED_BITS)
         self.assertEqual(seal.progress({PASSWORD_ITEM: 3}), (3, 4))
         self.assertEqual(seal.closed_bits({PASSWORD_ITEM: 4}), frozenset())
-        self.assertIn("closed", seal.report({PASSWORD_ITEM: 3})[0])
-        self.assertIn("open", seal.report({PASSWORD_ITEM: 5})[0])
+        self.assertTrue(seal.is_open({PASSWORD_ITEM: 5}))
 
     def test_biometals_from_the_flags(self) -> None:
         """Either Pseudoroid of a pair gives its biometal; Z comes with the megamerge after Giro."""
@@ -200,7 +198,7 @@ class TestClientSeal(unittest.TestCase):
         second_of_each_pair = [(0x021045D1, bit) for bit in (1, 3, 5, 7)]
         seal.read_biometals(window_with(second_of_each_pair), set())
         self.assertEqual(seal.progress({}), (4, 5))
-        self.assertIn("missing: Z", seal.report({})[0])
+        self.assertEqual(seal.obtained, set("HLFP"))
         seal.read_biometals(window_with(second_of_each_pair + [(0x02104602, 1)]), set())
         self.assertEqual(seal.closed_bits({}), frozenset())
 

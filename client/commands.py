@@ -112,12 +112,11 @@ def _cmd_icons(self, *args) -> None:
 
 
 def _cmd_goal(self, *args) -> None:
-    """Progress towards the goal requirements and the seal of Area M: /mmzx_goal."""
+    """Progress towards the goal requirements: /mmzx_goal."""
     handler = _handler(self)
     if handler is None or handler.goal is None:
         return
-    counts = received_counts(self.ctx)
-    for line in handler.goal.report(counts, handler.missions_cleared) + handler.seal.report(counts):
+    for line in handler.goal.report(received_counts(self.ctx), handler.missions_cleared):
         logger.info("[mmzx] " + line)
 
 

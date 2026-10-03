@@ -196,10 +196,9 @@ class MMZXClient(BizHawkClient):
         if self.death_link_enabled:
             await ctx.update_death_link(True)
         self.goal = GoalRequirement(opts)
-        self.seal = Seal(opts)
-        counts = received_counts(ctx)
-        for line in self.goal.report(counts, self.missions_cleared) + self.seal.report(counts):
+        for line in self.goal.report(received_counts(ctx), self.missions_cleared):
             logger.info("[mmzx] " + line)
+        self.seal = Seal(opts)
         self.skip_boss_rush = bool(opts.get("skip_boss_rush", False))
         if self.skip_boss_rush:
             logger.info("[mmzx] skip_boss_rush: the D-4 boss rush is skipped (each pair of "

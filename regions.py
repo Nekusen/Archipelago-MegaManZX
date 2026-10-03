@@ -185,7 +185,7 @@ def create_regions(world) -> None:
         edge_req = edge_ov.get(d["name"], {}).get("req")
         if skip_rush and d["name"] == F.BOSS_RUSH_EXIT:
             edge_req = None
-        r = and_rules(door_rule(d, player), rule(entry_req, src_name), rule(edge_req, src_name),
+        r = and_rules(door_rule(d, world), rule(entry_req, src_name), rule(edge_req, src_name),
                       transerver_rule(d, player), rule(gate_req, src_name), has(STORY_GATE_ITEMS.get(d.get("gate"))),
                       arena_rule(d["dst"], dst_rid))
         regions[src_name].connect(regions[dst_name], d["name"],

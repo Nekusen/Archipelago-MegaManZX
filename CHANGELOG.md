@@ -21,6 +21,8 @@ All notable changes to this project are documented in this file. The format is b
   - While a mission picked there is under way, entering an area does not accept that area's mission; report or abort the one you picked to go back to normal.
   - "Abort Mission" is offered only for a mission or quest picked from that list. With the mission of an area under way the consoles show their normal menu instead, and picking a mission there replaces it.
 - Troop Reinforcement and Protect HQ show their names in that list instead of "Mission 4" and "Mission D".
+- Added "door constraints": each seed can lock some of the doors between rooms behind a Card Key, so the map opens in smaller steps instead of most of it at once. A locked door shows the colour of its key.
+  - `door_constraints_min` and `door_constraints_max`: how many doors a seed locks (0 to 15, both 0 by default).
 
 ### Changed
 

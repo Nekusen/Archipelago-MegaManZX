@@ -10,7 +10,7 @@ from settings import get_settings
 from worlds.Files import (APProcedurePatch, APTokenMixin, APTokenTypes,
                           APPatchExtension)
 
-from . import golden, missions, nds, pickups, sprites, story, table, ui
+from . import doors, golden, missions, nds, pickups, sprites, story, table, ui
 from .arm9 import Arm9, replace_arm9
 
 MMZX_US_MD5 = "88b684b1b3eea885a07625da89f1e5b3"
@@ -37,9 +37,11 @@ class MMZXPatchExtension(APPatchExtension):
 
     @staticmethod
     def patch_arm9(caller: APProcedurePatch, rom: bytes, cfg_file: str, image_file: str,
-                   table_file: str) -> bytes:
+                   table_file: str, locks_file: str = "") -> bytes:
         """Apply the code patches to the ARM9 and the ROM-level edits; returns the new image."""
         cfg = caller.get_file(cfg_file)
+        # a patch made before the door constraints names no such file
+        locks = doors.read_locks(caller.get_file(locks_file) if locks_file else None)
         hu_in_pool = bool(cfg[0] & CFG_HU_IN_POOL) if cfg else False
         story_items = bool(cfg[0] & CFG_STORY_ITEMS) if cfg else False
         d = bytearray(rom)
@@ -73,6 +75,7 @@ class MMZXPatchExtension(APPatchExtension):
         story.patch_story_items(arm9, story_items)
         ui.patch_goal_line(arm9)
         table.patch_pickup_table(arm9, caller.get_file(table_file))
+        doors.patch_door_tables(arm9, locks)
 
         # Recompress into the original slot; a rebuilt ROM shifts the layout (melonDS: bad_alloc)
         replace_arm9(d, arm9_off, arm9_len, arm9.pack())
@@ -84,6 +87,7 @@ class MMZXPatchExtension(APPatchExtension):
         pickups.patch_usable_rooms(d)
         story.patch_story_rooms(d, story_items)
         sprites.patch_disk_logo(d, fnt_start)
+        doors.patch_door_overlays(d, locks)
         nds.update_header_crc(d)
         return bytes(d)
 
@@ -96,7 +100,7 @@ class MMZXPatch(APProcedurePatch, APTokenMixin):
     result_file_ending = ".nds"
 
     procedure = [
-        ("patch_arm9", ["mmzx_cfg.bin", "golden_image.bin", "pickup_table.bin"]),
+        ("patch_arm9", ["mmzx_cfg.bin", "golden_image.bin", "pickup_table.bin", doors.LOCKS_FILE]),
         ("apply_tokens", ["token_data.bin"]),
     ]
 
@@ -119,8 +123,9 @@ def unpack_version(word: int) -> tuple[int, int, int]:
 def write_patch_tokens(patch: MMZXPatch, slot_name: str, seed_name: str,
                        world_version: tuple[int, int, int], golden_image: bytes,
                        pickup_table: bytes, hu_in_pool: bool = False,
-                       story_items: bool = False) -> None:
-    """Write the AP marker (magic, version, slot, seed), the option blob, the golden image and the pickup table.
+                       story_items: bool = False,
+                       door_sites: dict[str, str] | None = None) -> None:
+    """Write the AP marker (magic, version, slot, seed), the option blob, the golden image, the pickup table and the door locks.
 
     `world_version` is the world's (major, minor, build), as the core reads it
     from archipelago.json; `golden_image` is the slot's starting save and
@@ -129,6 +134,7 @@ def write_patch_tokens(patch: MMZXPatch, slot_name: str, seed_name: str,
     """
     patch.write_file("golden_image.bin", bytes(golden_image))
     patch.write_file("pickup_table.bin", bytes(pickup_table))
+    patch.write_file(doors.LOCKS_FILE, doors.pack_locks(door_sites or {}))
     blob = bytearray(AP_MARKER_LEN)
     blob[0:len(AP_MAGIC)] = AP_MAGIC
     version = pack_version(world_version)

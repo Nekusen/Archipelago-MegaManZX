@@ -1689,6 +1689,17 @@
    },
    "unsure": false
   },
+  "Obtain Biometal Z": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
   "Quest - Deliver The Aid Kit": {
    "note": "destroy containers in L",
    "req": {

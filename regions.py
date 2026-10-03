@@ -3,6 +3,7 @@
 from BaseClasses import Region
 
 from . import goal as G
+from . import seal as S
 from .logic import bosses as B
 from .logic import document as F
 from .logic import load_document
@@ -177,6 +178,7 @@ def create_regions(world) -> None:
     # door table edges
     gates = doc.get("gates", {})
     edge_ov = doc.get("edges", {})
+    seal_rule = S.rule(world.seal, player)
     for src_name, dst_name, d, dst_rid in door_edges():
         gate_req = gates.get(str(d["gate"]), {}).get("req") if d.get("gate") is not None else None
         entry_req = doc["rooms"][d["dst"]].get("req") if d["src"] != d["dst"] else None
@@ -186,7 +188,8 @@ def create_regions(world) -> None:
         r = and_rules(door_rule(d, player), rule(entry_req, src_name), rule(edge_req, src_name),
                       transerver_rule(d, player), rule(gate_req, src_name), has(STORY_GATE_ITEMS.get(d.get("gate"))),
                       arena_rule(d["dst"], dst_rid))
-        regions[src_name].connect(regions[dst_name], d["name"], r)
+        regions[src_name].connect(regions[dst_name], d["name"],
+                                  and_rules(r, seal_rule if S.behind(d) else None))
 
     # locations
     checks = doc.get("checks", {})
@@ -262,3 +265,11 @@ def create_regions(world) -> None:
         base = lambda state, _p=pname: state.can_reach_region(_p, player)  # noqa: E731
     victory.access_rule = and_rules(base, rule(checks.get(final, {}).get("req")), goal_rule)
     field.locations.append(victory)
+
+    if world.seal.mode == S.MODE_BIOMETALS:
+        for name in S.BIOMETAL_LOCATIONS:
+            loc = mw.get_location(name, player)
+            ev = MMZXLocation(player, S.obtained_event(name), None, loc.parent_region)
+            ev.place_locked_item(world.create_event(ev.name))
+            ev.access_rule = loc.access_rule
+            loc.parent_region.locations.append(ev)

@@ -37,6 +37,7 @@ LOCATIONS = {
     'Obtain Biometal L': {'id': 13632003, 'category': 'biometal', 'detect': ['any', [[34620880, 3], [34620881, 3]]], 'room': 'F-5/J-5', 'pos': None, 'status': 'verified'},
     'Obtain Biometal F': {'id': 13632005, 'category': 'biometal', 'detect': ['any', [[34620880, 5], [34620881, 5]]], 'room': 'G-5/K-4', 'pos': None, 'status': 'verified'},
     'Obtain Biometal P': {'id': 13632007, 'category': 'biometal', 'detect': ['any', [[34620880, 7], [34620881, 7]]], 'room': 'H-4/L-4', 'pos': None, 'status': 'verified'},
+    'Obtain Biometal Z': {'id': 13632000, 'category': 'biometal', 'detect': ['any', [[34620930, 1], [34620897, 1]]], 'room': 'd02', 'pos': [7808, 544], 'status': 'verified'},
     'Mission - Locate Giro': {'id': 13632258, 'category': 'mission', 'detect': ['all', [[34620894, 7]]], 'room': 'B-1B-2', 'pos': None, 'status': 'verified'},
     'Mission - Pass The Test': {'id': 13632259, 'category': 'mission', 'detect': ['all', [[34620896, 0]]], 'room': 'C-1C-2', 'pos': None, 'status': 'verified'},
     'Mission - Troop Reinforcement': {'id': 13632260, 'category': 'mission', 'detect': ['all', [[34620897, 1]]], 'room': 'D-2', 'pos': None, 'status': 'verified'},
@@ -386,6 +387,7 @@ ITEMS = {
     'E-Crystals': {'id': 13664768, 'classification': 'filler', 'grant': ['ecrystals'], 'pooled': True},
     '1-Up': {'id': 13664769, 'classification': 'filler', 'grant': ['oneup'], 'pooled': True},
     'Secret Disk': {'id': 13665024, 'classification': 'progression', 'grant': ['secret_disk'], 'pooled': False},
+    'Password': {'id': 13665025, 'classification': 'progression', 'grant': ['password'], 'pooled': False},
 }
 
 # Goal bits: the epilogue event flag set after Serpent's final explosion,
@@ -867,6 +869,12 @@ EVENT_GATES = {
 }
 EVENT_GATES_OPEN = [205, 221, 379, 381, 382, 395]
 EVENT_GATES_GOAL = [225, 378]
+# The seal of Area M (area_m_access): its gate flag, the Transerver item held back with
+# it, and the rooms it closes off (the seal stands a few steps inside M-1, with
+# nothing before it).
+SEAL_GATE = 395
+SEAL_TRANSERVER = 'Transerver Access - Area M'
+SEAL_ROOMS = ['m01', 'm02', 'm03', 'n01']
 # Warp menu destinations (map badges) and save-only pads (DATA rooms).
 WARP_DESTINATIONS = ['a02', 'b02', 'c02', 'd02', 'e07', 'f05', 'g05', 'i03', 'k04', 'l04', 'm03', 'o02']
 DOORS = [

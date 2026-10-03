@@ -36,11 +36,13 @@ Items:
   full Weapon Energy bar. With `progressive_models` off each of the four is a single item that gives both at once.
 - The Yellow, Green, Red, Blue and Purple Card Keys.
 - Transerver Access for each of the 13 areas with a Transerver (A, B, C, D, E, F, G, I, K, L, M, O and X).
+  The one of Area M is left out when `area_m_access` closes the seal.
 - Four Life Ups, four Sub Tanks and the eight ITEM B chips.
 - The eight usable items of the pause menu (ITEM A): Cake, Orange, Candy, Bread, Apple, E Tank, W Tank and
   Smelling Salts.
 - With `mission_objectives: items`, the story objects (four Computer Chips, the Stuffed Animal and the Data Disks 1, 2
   and 3) and what three story events unlock (Area F Lock Hack, Sprinkler Key and Lava Flow Control).
+- Passwords, with `area_m_access: passwords`.
 - E-Crystals and 1-Ups as filler.
 
 Locations:
@@ -50,7 +52,7 @@ Locations:
 - The eight places that hand out a usable item: the child (Cake), Lucia (Bread) and Max (Orange) in Area C, the
   crane game of H-3 (Candy), the tree of A-3 (Apple), the hanging doll of Prairie's room in X-2 (W Tank), and the
   Guardians Cédre in X-3 (E Tank, 200 E-Crystals) and Scombrésoce in X-1 (Smelling Salts, 20 E-Crystals).
-- Obtaining each of the four biometals, from either Pseudoroid of its pair.
+- Obtaining each of the five biometals: Z from Giro, and H, F, L and P from either Pseudoroid of its pair.
 - Completing 14 story missions (Destroy Model W is the goal itself, and the initial mission "Catch the Maverick" is skipped).
 - Optionally (`mission_objectives`), the objects and events of the story missions: the four Computer Chips of
   Area B, the four guardians of Pass The Test (Oeillet, Carrelet, Congre and Thon) and the Stuffed Animal, the Data
@@ -112,7 +114,7 @@ Locations:
   - The G-2 door to G-4
     - These changes mean you don't have to rescue anyone in area G 
   - With `mission_objectives: items` the F-3 and G-2 doors are not open from the start: each opens with its item.
-  - The M-1 seal (which normally requires all models)
+  - The M-1 seal (which normally requires all models), unless `area_m_access` closes it (see below)
   - The D-1 bridge
   - The sand fall that hides the pit from K-1 to K-2
   - The D-3 ladder up to the walkway that leads to Area O.
@@ -146,6 +148,21 @@ With `mission_objectives` the objects and events of the story missions become ch
   If you reported it first, take the mission again from the "Mission Requests" list to bring them back. The same goes for
   the terminal of F-3.
 - The generator of E-3 and the lava control of K-1 go back to normal when you leave their area, as in the original game.
+
+### The seal of Area M
+
+- The seal a few steps into M-1 follows `area_m_access`:
+  - `open` (default): it is open from the start.
+  - `biometals`: it opens once the five "Obtain Biometal" checks of your own game are done: Z from Giro, and H, F, L
+    and P from either Pseudoroid of each pair. Owning the biometals as items does not count.
+  - `passwords`: it opens once you have received `required_passwords` Passwords out of the `total_passwords`
+    shuffled into the multiworld.
+- With `biometals` or `passwords` the Transerver Access of Area M is not in the pool, so nothing gets around the seal:
+  Area M and N-1 (which is reached through it) stay closed until it opens. The Transerver of Area M joins your
+  Transport list when you reach it on foot, as in the original game. Nothing is placed between the door of A-4
+  and the seal.
+- A popup announces the moment the seal opens, and its scene plays the next time you walk up to it. Each Password
+  you receive is announced with its count. The pause menu and `/mmzx_goal` keep showing the goal only.
 
 ### Cutscenes and menus
 

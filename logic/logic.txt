@@ -584,6 +584,8 @@ room D-2 [d02]
     <- D-4
     check Mission - Troop Reinforcement
       normal: MODEL
+    check Obtain Biometal Z
+      normal: MODEL
     conn -> Middle Area
       normal: MODEL
     conn -> Hub Entrance

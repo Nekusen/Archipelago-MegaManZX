@@ -136,6 +136,38 @@ class MissionObjectives(Choice):
     default = 0
 
 
+class AreaMAccess(Choice):
+    """What opens the seal at the entrance of Area M, the door of M-1 the rest of the area lies behind.
+    - open: the seal is open from the start.
+    - biometals: get the five "Obtain Biometal" checks of your own game: Z from Giro, and
+      H, F, L and P from either Pseudoroid of each pair.
+    - passwords: collect Passwords, items of the pool; required_passwords sets how many.
+    With biometals or passwords the Transerver Access of Area M is not in the pool: that Transerver
+    registers when you reach it on foot, as in the original game."""
+    display_name = "Area M Access"
+    option_open = 0
+    option_biometals = 1
+    option_passwords = 2
+    default = 0
+
+
+class RequiredPasswords(Range):
+    """How many Passwords open the seal of Area M. Only used with area_m_access: passwords."""
+    display_name = "Required Passwords"
+    range_start = 1
+    range_end = 6
+    default = 6
+
+
+class TotalPasswords(Range):
+    """How many Passwords go into the pool. Only used with area_m_access: passwords.
+    A total below required_passwords is raised to match it."""
+    display_name = "Total Passwords"
+    range_start = 1
+    range_end = 6
+    default = 6
+
+
 class StartingTranserver(Choice):
     """Transerver floor of the hub where a new game starts. Only that area's
     Transerver Access is yours from the start; every other destination is an item like the rest."""
@@ -275,6 +307,7 @@ OPTION_GROUPS = [
                          RequiredSecretDisks, TotalSecretDisks, RequiredMissions]),
     OptionGroup("Start", [Character, StartingModel, StartingTranserver]),
     OptionGroup("Items and Logic", [ProgressiveModels, HuInPool, MissionObjectives, BossLogic]),
+    OptionGroup("Area M", [AreaMAccess, RequiredPasswords, TotalPasswords]),
     OptionGroup("Pickup Checks", [PickupChecks1Up, PickupChecksEnergy, PickupChecksWeapon, PickupChecksCrystals]),
     OptionGroup("Quality of Life", [SkipBossRush, SkipMinibosses]),
     OptionGroup("Notifications", [NotifyReceived, NotifySent, NotifyStyle]),
@@ -297,6 +330,9 @@ class MMZXOptions(PerGameCommonOptions):
     progressive_models: ProgressiveModels
     hu_in_pool: HuInPool
     mission_objectives: MissionObjectives
+    area_m_access: AreaMAccess
+    required_passwords: RequiredPasswords
+    total_passwords: TotalPasswords
     starting_transerver: StartingTranserver
     boss_logic: BossLogic
     skip_boss_rush: SkipBossRush

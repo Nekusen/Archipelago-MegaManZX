@@ -8,6 +8,7 @@ from BaseClasses import ItemClassification, Tutorial
 from Options import OptionError
 from worlds.AutoWorld import WebWorld, World
 
+from . import door_constraints
 from . import goal as G
 from . import seal as S
 from .logic import bosses
@@ -83,6 +84,9 @@ class MMZXWorld(World):
     goal = G.GoalRequirement((), 0, 0, 0)
     seal = S.Seal()
     disk_order: list[int] = list(range(G.DISK_ENTRIES))
+    # drawn in create_regions: the sites locked in this seed and the key of each of their doors
+    door_sites: dict[str, str] = {}
+    door_keys: dict[str, str] = {}
 
     # Universal Tracker runs in hybrid mode: the map layout ships here in tracker/, while the
     # images come from the external pack the player points ut_pack_path at, so no game graphics
@@ -126,7 +130,20 @@ class MMZXWorld(World):
                 "arena in tools/logic_editor/." % (self.player_name, ", ".join(loose)))
 
     def create_regions(self) -> None:
+        """The regions, then the door constraints: their draw checks what a new game reaches."""
         create_regions(self)
+        # Universal Tracker rebuilds the world from the slot data and must see the same doors
+        passed = getattr(self.multiworld, "re_gen_passthrough", {}).get(self.game)
+        if passed is not None:
+            self.door_sites = dict(passed.get(door_constraints.SLOT_DATA_KEY) or {})
+            self.door_keys = door_constraints.door_keys(self.door_sites)
+        else:
+            door_constraints.choose(self)
+
+    @staticmethod
+    def interpret_slot_data(slot_data: dict) -> dict:
+        """Universal Tracker hook: the slot data goes back into the regeneration as it is."""
+        return slot_data
 
     def create_item(self, name: str) -> MMZXItem:
         """Creates an item, promoting a useful one to progression when a rule needs it."""
@@ -245,7 +262,8 @@ class MMZXWorld(World):
         write_patch_tokens(patch, self.player_name, self.multiworld.seed_name, self.world_version,
                            image, build_table(self.pickup_icons()),
                            hu_in_pool=bool(self.options.hu_in_pool.value),
-                           story_items=story_mode(self.options) == STORY_ITEMS)
+                           story_items=story_mode(self.options) == STORY_ITEMS,
+                           door_sites=self.door_sites)
         out_name = self.multiworld.get_out_file_name_base(self.player)
         patch.write(os.path.join(output_directory, out_name + patch.patch_file_ending))
 
@@ -263,6 +281,7 @@ class MMZXWorld(World):
         reqs = bosses.describe(boss_requirements(self))
         spoiler_handle.write("Boss logic: %s\n" % (
             "; ".join("%s: %s" % kv for kv in reqs.items()) if reqs else "none"))
+        spoiler_handle.write("Door constraints: %s\n" % door_constraints.describe(self.door_sites))
 
     def fill_slot_data(self) -> dict:
         """Options the client needs, plus the boss requirements as text."""
@@ -282,6 +301,8 @@ class MMZXWorld(World):
             # checks: the client only detects; items: it also keeps the story items held
             "mission_objectives": story_mode(self.options),
             "boss_logic": bosses.describe(boss_requirements(self)),
+            # the doors locked in this seed, by site: the tracker rebuilds its logic from them
+            door_constraints.SLOT_DATA_KEY: dict(self.door_sites),
             # the client marks the rush pairs as beaten; the logic stops requiring them
             "skip_boss_rush": bool(self.options.skip_boss_rush.value),
             # the client keeps the mini-boss flags of the current area set

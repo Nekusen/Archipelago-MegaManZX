@@ -166,6 +166,18 @@ With `mission_objectives` the objects and events of the story missions become ch
   and the seal.
 - A popup announces the moment the seal opens, and its scene plays the next time you walk up to it. Each Password
   you receive is announced with its count. The pause menu and `/mmzx_goal` keep showing the goal only.
+### Door constraints
+
+- With `door_constraints_min` and `door_constraints_max` above 0, each seed locks a number of doors between rooms
+  behind a Card Key, a different set every time. The Card Keys and the Transerver Access items then open the map in
+  smaller steps: an area behind a locked door is still reachable through its own Transerver.
+- A locked door shows the colour of its key: a coloured gate where you walk from one room into the next, and coloured
+  top and bottom halves on a door you enter with UP. It opens from both sides once you have the key, like the key
+  doors of the original game.
+- The doors that already need a key, the doors inside a room, the Guardian Base and the Slither Inc. tower are never
+  changed.
+- The spoiler log lists the locked doors of every player, and Universal Tracker follows them.
+- If a locked door leaves you somewhere you do not want to be, the fast travel of the MISSION tab still works.
 
 ### Cutscenes and menus
 

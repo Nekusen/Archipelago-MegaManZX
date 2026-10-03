@@ -113,3 +113,35 @@ def update_header_crc(rom: bytearray) -> None:
         for _ in range(8):
             crc = (crc >> 1) ^ CRC16_POLY if crc & 1 else crc >> 1
     struct.pack_into("<H", rom, NDS_HDR_CRC, crc)
+
+
+OVERLAY_RAM_SIZE_OFF = 8                  # size of the loaded code, then the bss size
+OVERLAY_BSS_SIZE_OFF = 12
+OVERLAY_CODE_MAX = 25312                  # the largest room overlay of the game: what the room slot is known to hold
+
+
+def overlay_bss_size(rom: bytearray, ovl: int) -> int:
+    """Bytes the loader clears after the overlay's code."""
+    return struct.unpack_from("<I", rom, overlay_entry(rom, ovl) + OVERLAY_BSS_SIZE_OFF)[0]
+
+
+def store_overlay(rom: bytearray, ovl: int, code: bytes, bss_size: int | None = None) -> None:
+    """Store a new version of an overlay, which may have grown, and update its table entry.
+
+    A grown overlay reaches into its old bss: the caller appends that many zeros first
+    and passes the bss size that is left.
+    """
+    if len(code) > OVERLAY_CODE_MAX:
+        raise ValueError("MMZX: overlay %d would grow to %d bytes, past the room slot" % (ovl, len(code)))
+    entry = overlay_entry(rom, ovl)
+    fid, comp = struct.unpack_from("<II", rom, entry + OVERLAY_SIZE_OFF - 4)
+    packed = bytes(code)
+    if comp & OVERLAY_COMPRESSED:
+        packed = blz.compress(packed)
+        if packed is None:
+            raise ValueError("MMZX: overlay %d did not compress" % ovl)
+    relocate_file(rom, fid, packed)
+    struct.pack_into("<I", rom, entry + OVERLAY_RAM_SIZE_OFF, len(code))
+    if bss_size is not None:
+        struct.pack_into("<I", rom, entry + OVERLAY_BSS_SIZE_OFF, bss_size)
+    struct.pack_into("<I", rom, entry + OVERLAY_SIZE_OFF, (comp & ~OVERLAY_SIZE_MASK) | len(packed))

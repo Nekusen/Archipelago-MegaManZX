@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from Options import (Accessibility, Choice, DeathLink, NamedRange, OptionDict, OptionGroup, OptionSet,
                      PerGameCommonOptions, ProgressionBalancing, Range, StartInventoryPool, Toggle)
 
+from .door_constraints import MAX_SITES
 from .goal import (MISSION_COUNT, MODEL_ITEM_BY_KEY, REQ_BIOMETALS, REQ_DISKS, REQ_MISSIONS,
                    SIX_MODEL_KEYS)
 
@@ -262,6 +263,29 @@ class BossLogic(OptionDict):
     default = {}
 
 
+class DoorConstraintsMin(Range):
+    """Door constraints lock some of the doors between rooms behind a Card Key, a
+    different set in every seed, so the Card Keys and the Transerver Access items open
+    the map in smaller steps instead of most of it at once. A locked door shows the
+    colour of its key; the doors that already had a key and the Guardian Base keep
+    their own. Each seed locks a number of doors between this minimum and
+    door_constraints_max; 0 and 0 leave every door as in the original game."""
+    display_name = "Door Constraints: Minimum"
+    range_start = 0
+    range_end = MAX_SITES
+    default = 0
+
+
+class DoorConstraintsMax(Range):
+    """The most doors a seed locks behind a Card Key (see door_constraints_min). A
+    value below the minimum counts as the minimum. More than 12 adds little: by then
+    the map already opens about as evenly as the Card Keys allow."""
+    display_name = "Door Constraints: Maximum"
+    range_start = 0
+    range_end = MAX_SITES
+    default = 0
+
+
 class NotifyReceived(Choice):
     """On-screen notifications (the game's small popup) when you receive an
     item: which item classes are shown. off: none; progression: progression
@@ -309,6 +333,7 @@ OPTION_GROUPS = [
     OptionGroup("Start", [Character, StartingModel, StartingTranserver]),
     OptionGroup("Items and Logic", [ProgressiveModels, HuInPool, MissionObjectives, BossLogic]),
     OptionGroup("Area M", [AreaMAccess, RequiredPasswords, TotalPasswords]),
+    OptionGroup("Door Constraints", [DoorConstraintsMin, DoorConstraintsMax]),
     OptionGroup("Pickup Checks", [PickupChecks1Up, PickupChecksEnergy, PickupChecksWeapon, PickupChecksCrystals]),
     OptionGroup("Quality of Life", [SkipBossRush, SkipMinibosses]),
     OptionGroup("Notifications", [NotifyReceived, NotifySent, NotifyStyle]),
@@ -336,6 +361,8 @@ class MMZXOptions(PerGameCommonOptions):
     total_passwords: TotalPasswords
     starting_transerver: StartingTranserver
     boss_logic: BossLogic
+    door_constraints_min: DoorConstraintsMin
+    door_constraints_max: DoorConstraintsMax
     skip_boss_rush: SkipBossRush
     skip_minibosses: SkipMinibosses
     pickup_checks_1up: PickupChecks1Up

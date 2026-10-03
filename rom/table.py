@@ -61,6 +61,10 @@ for _n in ITEMS:
         ICON_BY_ITEM[_n] = _n.replace(" ", "").lower()
     elif _n == DISK_ITEM:
         ICON_BY_ITEM[_n] = "secret_disk"
+    elif _n == "Stuffed Animal":
+        ICON_BY_ITEM[_n] = "stuffed_animal"
+    elif _w[:2] == ["Data", "Disk"]:
+        ICON_BY_ITEM[_n] = "data_disk"
     elif _w[-1] == "Chip":
         ICON_BY_ITEM[_n] = "chip_" + "".join(_w[:-1])
     elif _w[-2:] == ["Card", "Key"]:

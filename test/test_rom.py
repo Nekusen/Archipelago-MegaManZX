@@ -415,6 +415,9 @@ class TestPatchTables(unittest.TestCase):
         self.assertEqual(table.icon_code("Something", False, True, True), ICON_CODES["logo_progression"])
         self.assertEqual(table.icon_code("Something", False, False, False), ICON_CODES["logo_filler"])
         self.assertEqual(table.icon_code("Computer Chip", True, True, False), ICON_CODES["chip_Computer"])
+        self.assertEqual(table.icon_code("Stuffed Animal", True, True, False), ICON_CODES["stuffed_animal"])
+        for disk in ("Data Disk 1", "Data Disk 2", "Data Disk 3"):
+            self.assertEqual(table.icon_code(disk, True, True, False), ICON_CODES["data_disk"])
 
     def test_every_item_icon_exists(self) -> None:
         """An item named like the ones with a sprite must have one in the set, or the table cannot be built."""

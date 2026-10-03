@@ -1,6 +1,7 @@
 """mission_objectives: the story objects and events as locations, and as items the game asks for."""
 import unittest
 from collections import Counter
+from contextlib import contextmanager
 
 from BaseClasses import CollectionState
 
@@ -13,7 +14,9 @@ from ..data import (DOORS, EVENT_GATES, ITEMS, LOCATIONS, STORY_CHAINS, STORY_CO
 from ..goal import cleared_event
 from ..items import ITEM_GROUPS, STORY_GRANTS
 from ..locations import STORY_CATEGORY, STORY_GATE
-from ..regions import LAVA_EVENT
+from ..logic import document as F
+from ..logic import load_document
+from ..regions import LAVA_EVENT, area_of
 
 STORY_LOCATIONS = {n for n, v in LOCATIONS.items() if v["category"] == STORY_CATEGORY}
 GATE_LOCATIONS = {n for n in STORY_LOCATIONS if LOCATIONS[n]["story"] == STORY_GATE}
@@ -38,7 +41,67 @@ def state_without(multiworld, item: str | None = None) -> CollectionState:
     return state
 
 
-class TestOff(MMZXTestBase):
+def lava_edges(multiworld) -> list:
+    """The entrances whose rule in the document asks for the slow lava."""
+    asking = {(F.region_name(room, conn["from"]), F.region_name(room, conn["to"]))
+              for room, layout in load_document()["rooms"].items() for conn in layout.get("conns", [])
+              if any(F.SLOW_LAVA in clause for clauses in conn.get("req", {}).values() for clause in clauses)}
+    return [entrance for entrance in multiworld.get_entrances(1)
+            if (entrance.parent_region.name, entrance.connected_region.name) in asking]
+
+
+def ways_in_from_its_area(multiworld, region) -> list:
+    """The entrances into the room of a region from the other rooms of its area."""
+    room = region.name.split("/")[0]
+    return [entrance for entrance in multiworld.get_entrances(1)
+            if entrance.connected_region.name.split("/")[0] == room
+            and entrance.parent_region.name.split("/")[0] != room
+            and area_of(entrance.parent_region.name) == area_of(room)]
+
+
+@contextmanager
+def shut(entrances):
+    """The entrances closed for the length of the block."""
+    rules = [entrance.access_rule for entrance in entrances]
+    for entrance in entrances:
+        entrance.access_rule = lambda _state: False
+    try:
+        yield
+    finally:
+        for entrance, rule in zip(entrances, rules):
+            entrance.access_rule = rule
+
+
+class LavaByItsControl:
+    """With no item for the slow lava, it is set at its control and lost on leaving the area."""
+
+    def test_slow_lava_needs_the_room_of_its_control(self) -> None:
+        edges = lava_edges(self.multiworld)
+        if not edges:
+            self.skipTest("no rule of the document asks for the slow lava")
+        control = self.multiworld.get_location(LAVA_EVENT, 1).parent_region
+        with shut(control.entrances):
+            cut_off = state_without(self.multiworld)
+        reached = state_without(self.multiworld)
+        for edge in edges:
+            with self.subTest(edge=edge.name):
+                self.assertFalse(edge.access_rule(cut_off))
+                self.assertTrue(edge.access_rule(reached))
+
+    def test_slow_lava_has_to_be_walked_from_its_control(self) -> None:
+        """A way shut inside the area closes the edge, though its control and its room stay in reach."""
+        edges = lava_edges(self.multiworld)
+        if not edges:
+            self.skipTest("no rule of the document asks for the slow lava")
+        for edge in edges:
+            with self.subTest(edge=edge.name), shut(ways_in_from_its_area(self.multiworld, edge.parent_region)):
+                state = state_without(self.multiworld)
+                self.assertTrue(state.has(LAVA_EVENT, 1))
+                self.assertTrue(state.can_reach_region(edge.parent_region.name, 1))
+                self.assertFalse(edge.access_rule(state))
+
+
+class TestOff(LavaByItsControl, MMZXTestBase):
     def test_nothing_is_added(self) -> None:
         self.assertFalse(real_locations(self.multiworld) & STORY_LOCATIONS)
         self.assertFalse({item.name for item in self.multiworld.itempool} & set(STORY_ITEM_COUNTS))
@@ -52,7 +115,7 @@ class TestOff(MMZXTestBase):
         self.assertIn(LAVA_EVENT, event_locations(self.multiworld))
 
 
-class TestChecks(MMZXTestBase):
+class TestChecks(LavaByItsControl, MMZXTestBase):
     options = {"mission_objectives": "checks"}
 
     def test_objects_and_events_are_locations(self) -> None:
@@ -146,6 +209,20 @@ class TestItems(MMZXTestBase):
         self.assertNotIn(LAVA_EVENT, event_locations(self.multiworld))
         self.assertIn(STORY_LAVA_ITEM, {item.name for item in self.multiworld.itempool})
         self.assertIn(STORY_LAVA_LOCATION, real_locations(self.multiworld))
+
+    def test_slow_lava_needs_its_item(self) -> None:
+        """Reaching the control is not enough here, and the item needs no walk from it."""
+        edges = lava_edges(self.multiworld)
+        if not edges:
+            self.skipTest("no rule of the document asks for the slow lava")
+        full, lacking = state_without(self.multiworld), state_without(self.multiworld, STORY_LAVA_ITEM)
+        self.assertTrue(self.multiworld.get_location(STORY_LAVA_LOCATION, 1).can_reach(lacking))
+        for edge in edges:
+            with self.subTest(edge=edge.name):
+                self.assertTrue(edge.access_rule(full))
+                self.assertFalse(edge.access_rule(lacking))
+                with shut(ways_in_from_its_area(self.multiworld, edge.parent_region)):
+                    self.assertTrue(edge.access_rule(state_without(self.multiworld)))
 
 
 class TestClientState(unittest.TestCase):

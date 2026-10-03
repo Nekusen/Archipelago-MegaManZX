@@ -25,6 +25,11 @@ def boss_requirements(world) -> dict:
     return reqs
 
 
+def area_of(region_name: str) -> str:
+    """Area letter of a region: the rooms are named after their area, k04 being K-4."""
+    return region_name[0]
+
+
 def progression_overrides(world) -> set:
     """Useful items that the document or the player's boss YAML turn into progression."""
     return F.count_items_used(load_document()) | B.items_used(boss_requirements(world))
@@ -64,8 +69,46 @@ def create_regions(world) -> None:
             return None
         return has(STORY_REPORT_ITEMS.get(name[len(MISSION_PREFIX):]))
 
-    def rule(req):
-        return F.compile_req(req, tier, player, hu_in_pool, host_atoms, full_models)
+    carrying = []   # not empty while a walk from the lava control is being followed
+
+    def lava_carried_to(target):
+        """SLOW_LAVA at one region while no item slows the lava.
+
+        The game forgets the control's setting on leaving its area, so the lava is slow at a
+        region only after a walk there from the control through the regions of that area.
+        """
+        def carried(state):
+            if carrying:
+                return True     # an edge of the walk itself: the lava is already slow there
+            if not state.has(LAVA_EVENT, player):
+                return False
+            control = mw.get_location(LAVA_EVENT, player).parent_region
+            if control is field:
+                return True
+            carrying.append(target)
+            try:
+                seen, todo = {control}, [control]
+                while todo:
+                    region = todo.pop()
+                    if region.name == target:
+                        return True
+                    for way in region.exits:
+                        nxt = way.connected_region
+                        inside = area_of(nxt.name) == area_of(control.name)
+                        if inside and nxt not in seen and way.access_rule(state):
+                            seen.add(nxt)
+                            todo.append(nxt)
+                return False
+            finally:
+                carrying.pop()
+        return carried
+
+    def rule(req, at=None):
+        """Rule of a requirement; `at` is the region it is asked at, for what depends on the place."""
+        atoms = host_atoms
+        if at and not story_items and any(F.SLOW_LAVA in alt for alt in F.req_alternatives(req, tier)):
+            atoms = {**host_atoms, F.SLOW_LAVA: lava_carried_to(at)}
+        return F.compile_req(req, tier, player, hu_in_pool, atoms, full_models)
 
     def arena_rule(room, rid):
         """Rule of the boss whose arena is this region, or None."""
@@ -129,7 +172,7 @@ def create_regions(world) -> None:
             src = regions[F.region_name(room, c["from"])]
             dst = regions[F.region_name(room, c["to"])]
             src.connect(dst, "%s: %s -> %s" % (room, c["from"], c["to"]),
-                        and_rules(rule(c.get("req")), arena_rule(room, c["to"])))
+                        and_rules(rule(c.get("req"), src.name), arena_rule(room, c["to"])))
 
     # door table edges
     gates = doc.get("gates", {})
@@ -140,8 +183,8 @@ def create_regions(world) -> None:
         edge_req = edge_ov.get(d["name"], {}).get("req")
         if skip_rush and d["name"] == F.BOSS_RUSH_EXIT:
             edge_req = None
-        r = and_rules(door_rule(d, player), rule(entry_req), rule(edge_req),
-                      transerver_rule(d, player), rule(gate_req), has(STORY_GATE_ITEMS.get(d.get("gate"))),
+        r = and_rules(door_rule(d, player), rule(entry_req, src_name), rule(edge_req, src_name),
+                      transerver_rule(d, player), rule(gate_req, src_name), has(STORY_GATE_ITEMS.get(d.get("gate"))),
                       arena_rule(d["dst"], dst_rid))
         regions[src_name].connect(regions[dst_name], d["name"], r)
 
@@ -163,10 +206,14 @@ def create_regions(world) -> None:
             return field, (lambda state, _n=names: any(state.can_reach_region(x, player) for x in _n))
         return field, label_rule(v.get("room"), player)
 
+    def check_rule(name, parent):
+        """Rule the document gives a location, asked at its region when it has one of its own."""
+        return rule(checks.get(name, {}).get("req"), None if parent is field else parent.name)
+
     for name, v in active.items():
         parent, base = place(name, v)
         loc = MMZXLocation(player, name, v["id"], parent)
-        r = and_rules(base, rule(checks.get(name, {}).get("req")), report_rule(name))
+        r = and_rules(base, check_rule(name, parent), report_rule(name))
         if r:
             loc.access_rule = r
         parent.locations.append(loc)
@@ -191,7 +238,7 @@ def create_regions(world) -> None:
         parent, base = place(name, v)
         ev = MMZXLocation(player, ev_name, None, parent)
         ev.place_locked_item(world.create_event(ev_name))
-        r = and_rules(base, rule(checks.get(name, {}).get("req")), report_rule(name))
+        r = and_rules(base, check_rule(name, parent), report_rule(name))
         if r:
             ev.access_rule = r
         parent.locations.append(ev)

@@ -8,6 +8,12 @@ All notable changes to this project are documented in this file. The format is b
 
 ### Added
 
+- Added the location `Obtain Biometal Z`, sent when you beat Giro in D-2.
+- Added `area_m_access`: what opens the seal at the entrance of Area M.
+  - `open`: the seal is open from the start, as before.
+  - `biometals`: get the five `Obtain Biometal` checks of your game (Z, H, F, L and P).
+  - `passwords`: collect `required_passwords` Passwords out of the `total_passwords` in the pool.
+  - With `biometals` or `passwords` the Transerver Access of Area M is not in the pool.
 - Added `mission_objectives`: the objects and events of the story missions can be checks, and items too.
   - `checks`: the four Computer Chips, the four guardians of Pass The Test and their Stuffed Animal, the three Data Disks, the thirteen people trapped in Area G, the generator of E-3 and the lava control of K-1 are locations. The game plays as before.
   - `items`: the same locations, plus the terminal of F-3 and the sprinkler key of G-2, and the objects are items of the pool. A mission is reported only with its object, the F-3 and G-2 doors open with their own items, and the lava of Area K is slow only with its item.
@@ -25,6 +31,7 @@ All notable changes to this project are documented in this file. The format is b
 ### Fixed
 
 - Stop The Dig stopped counting as completed after reporting Repel The Army.
+- Find The Survivors stopped counting as completed after reporting Recover The Disk, and Fight The Mavericks after reporting Attack The Excavators: the Missions goal requirement lost them from its count, and their missions could be accepted again.
 
 - The eight usable items of the pause menu (Cake, Orange, Candy, Bread, Apple, E Tank, W Tank and Smelling Salts) are items of the pool, and the eight places that hand them out are locations.
   - A usable you have used comes back when you open any Transerver console.

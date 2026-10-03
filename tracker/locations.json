@@ -619,6 +619,10 @@
                 "item_count": 1
               },
               {
+                "name": "Obtain Biometal Z",
+                "item_count": 1
+              },
+              {
                 "name": "D-2: Disk M-4",
                 "item_count": 1
               },
@@ -4382,6 +4386,27 @@
             "sections": [
               {
                 "name": "D-2: Disk B-4",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "Obtain Biometal Z",
+            "map_locations": [
+              {
+                "map": "area_d",
+                "x": 1831,
+                "y": 342
+              },
+              {
+                "map": "room_d02",
+                "x": 1831,
+                "y": 119
+              }
+            ],
+            "sections": [
+              {
+                "name": "Obtain Biometal Z",
                 "item_count": 1
               }
             ]

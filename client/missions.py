@@ -24,9 +24,10 @@ from .addresses import (
     TROOP_NAME, TROOP_ROOMS, TROOP_START, TROOP_STATE)
 from .ram import (
     ProgressWindow, Tick, area_missions_done, bits_by_byte, copies_reads, copies_values,
-    copies_writes, decode_position, missing_bits, mission_completed, mission_done_bits,
-    read_copies, story_handler_writes)
+    copies_writes, decode_position, manual_mission_active, missing_bits, mission_completed,
+    mission_done_bits, mission_settled, read_copies, story_handler_writes)
 from .checks import report_goal
+from .story import MODE_OFF as STORY_OFF, survivors_unstick
 
 if TYPE_CHECKING:
     from . import MMZXClient
@@ -38,6 +39,8 @@ async def repair_missions(client: "MMZXClient", ctx, tick: Tick) -> None:
     """Undo what the game does to an active mission, and what a fight leaves behind."""
     await troop_unstick(client, ctx, tick)
     await people_unstick(client, ctx, tick)
+    if client.story_mode != STORY_OFF:
+        await survivors_unstick(client, ctx, tick)
     await restore_mission_bits(client, ctx, tick.guard)
     await release_boss_locks(client, ctx, tick)
 
@@ -92,7 +95,7 @@ async def troop_unstick(client: "MMZXClient", ctx, tick: Tick) -> None:
     stuck_start = not (live[saddr] & canon[saddr] & (1 << sbit))
     if not (stuck_merge or stuck_start):
         return
-    if await mission_completed(ctx, TROOP_NAME):
+    if await mission_settled(ctx, TROOP_NAME):
         return       # the bits are legitimate now
     what = []
     if stuck_merge:
@@ -132,7 +135,7 @@ async def people_unstick(client: "MMZXClient", ctx, tick: Tick) -> None:
         why = "left I-3 with the people still locked"
     else:
         return
-    if await mission_completed(ctx, PEOPLE_NAME):
+    if await mission_settled(ctx, PEOPLE_NAME):
         return
     writes = story_handler_writes(PEOPLE_HANDLER_ID, PEOPLE_HANDLER_ENTRANCE_DONE)
     if not await bizhawk.guarded_write(ctx.bizhawk_ctx, writes, [tick.guard]):
@@ -194,8 +197,21 @@ async def auto_accept_mission(client: "MMZXClient", ctx, tick: Tick) -> None:
     Never re-accepts a completed mission (a second Report would pay again); an
     active one only gets its missing extra bits back. A mission the game
     launches by itself (Protect HQ) waits for that launch: accepting another
-    area's mission overwrites it, and here it resumes.
+    area's mission overwrites it, and here it resumes. A mission or quest the
+    player took from the Transerver list is theirs until it is reported or
+    aborted: nothing is accepted over it.
     """
+    manual = await manual_mission_active(ctx)
+    if manual and not client.force_accept:
+        if not client.manual_mission:
+            client.manual_mission = True
+            logger.info("[mmzx] %s was taken from the Transerver list: no mission is accepted "
+                        "automatically until it is reported or aborted" % manual)
+        return
+    if client.manual_mission:
+        client.manual_mission = False
+        client.last_accept_sub = None
+        logger.info("[mmzx] the mission taken from the list is over: missions are accepted automatically again")
     found = await mission_here(client, ctx, tick.subarea)
     if found is None:
         return

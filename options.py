@@ -118,6 +118,24 @@ class HuInPool(Toggle):
     default = 0
 
 
+class MissionObjectives(Choice):
+    """What the objects and events of the story missions are: the Computer Chips, the guardians of
+    Pass The Test and their Stuffed Animal, the terminal of Area F and the three Data Disks, the
+    people trapped in Area G, the generator of Area E and the lava control of Area K.
+    - off: nothing changes.
+    - checks: each one is a location. The game itself plays as before.
+    - items: each one is a location, and the objects and what the events unlock are items of
+      the pool. A mission is reported only with its object (a Computer Chip for Locate Giro,
+      the Stuffed Animal for Pass The Test, each Data Disk for its mission), the doors the
+      terminal of Area F and the sprinkler key of Area G open need their items, and so does
+      the slow lava of Area K."""
+    display_name = "Mission Objectives"
+    option_off = 0
+    option_checks = 1
+    option_items = 2
+    default = 0
+
+
 class StartingTranserver(Choice):
     """Transerver floor of the hub where a new game starts. Only that area's
     Transerver Access is yours from the start; every other destination is an item like the rest."""
@@ -256,7 +274,7 @@ OPTION_GROUPS = [
     OptionGroup("Goal", [Goal, GoalRequirements, RequiredModels, RequiredModelsCount, RequireFullModels,
                          RequiredSecretDisks, TotalSecretDisks, RequiredMissions]),
     OptionGroup("Start", [Character, StartingModel, StartingTranserver]),
-    OptionGroup("Items and Logic", [ProgressiveModels, HuInPool, BossLogic]),
+    OptionGroup("Items and Logic", [ProgressiveModels, HuInPool, MissionObjectives, BossLogic]),
     OptionGroup("Pickup Checks", [PickupChecks1Up, PickupChecksEnergy, PickupChecksWeapon, PickupChecksCrystals]),
     OptionGroup("Quality of Life", [SkipBossRush, SkipMinibosses]),
     OptionGroup("Notifications", [NotifyReceived, NotifySent, NotifyStyle]),
@@ -278,6 +296,7 @@ class MMZXOptions(PerGameCommonOptions):
     starting_model: StartingModel
     progressive_models: ProgressiveModels
     hu_in_pool: HuInPool
+    mission_objectives: MissionObjectives
     starting_transerver: StartingTranserver
     boss_logic: BossLogic
     skip_boss_rush: SkipBossRush

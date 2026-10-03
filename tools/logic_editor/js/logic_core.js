@@ -36,6 +36,7 @@ const DEFAULT_ATOMS = (() => {
   for (const a of 'ABCDEFGIKLMOX') {
     out.push({ id: 'ACCESS_' + a, group: 'transerver', label: 'Transerver Access - Area ' + a });
   }
+  out.push({ id: 'SLOW_LAVA', group: 'story', label: 'Lava of Area K set to slow (the control of K-1, or its item)' });
   return out;
 })();
 

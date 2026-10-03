@@ -142,6 +142,7 @@ room A-3 [a03]
     door -> A-1/A-3 Entrance  key Yellow Card Key
     <- A-1
     <- H-1
+    check A-3: Apple
     check A-3: Disk E-46
     conn -> H-4 Entrance
       normal: FX
@@ -192,6 +193,7 @@ room B-1 [b01]
   region A-2 Entrance
     door -> A-2/Hub Right Side
     <- A-2
+    check B-1: Computer Chip
     conn -> Middle Area
       normal: MODEL
       expert: free
@@ -207,6 +209,7 @@ room B-1 [b01]
     internal -> Main
     door -> B-4  key Yellow Card Key
     <- B-4
+    check B-1: Computer Chip (2)
     check B-1: E-Crystal L
       normal: MODEL
     conn -> A-2 Entrance
@@ -232,6 +235,8 @@ room B-2 [b02]
     <- B-1
     <- Hub
     <- C-1
+    check B-2: Computer Chip
+    check B-2: Computer Chip (2)
     check B-2: Disk E-28
     check B-2: E-Crystal L
       normal: MODEL
@@ -339,6 +344,8 @@ room C-1 [c01]
     <- C-3
     <- Hub
     <- B-2
+    check C-1: Cake
+      normal: HU & SAVE_THE_PEOPLE
     check C-1: E-Crystal L
       normal: HX
       normal: PX
@@ -355,6 +362,9 @@ room C-1 [c01]
       expert: free
     check C-1: E-Crystal L (8)
       normal: HU
+    check C-1: Guardian Carrelet
+    check C-1: Guardian Congre
+    check C-1: Guardian Oeillet
     check C-1: Weapon Energy L
       normal: HX
       normal: PX
@@ -372,6 +382,8 @@ room C-1 [c01]
     door -> A-2/Hub Right Side
     internal -> Main
     <- A-2
+    check C-1: Bread
+      normal: HU
     conn -> A-2 Entrance (Top Part)
       normal: HX
       normal: PX
@@ -432,6 +444,7 @@ room C-2 [c02]
       normal: HX
     check C-2: E-Crystal L (2)
       normal: HU
+    check C-2: Stuffed Animal
     check Mission - Pass The Test
       normal: HU   # (talk + pass it)
     conn -> Middle Building Bottom
@@ -449,6 +462,7 @@ room C-2 [c02]
     check C-2: Disk E-30
       normal: MODEL
   region Middle Building Bottom
+    check C-2: Guardian Thon
     conn -> Main
       normal: HU
   region Middle Building Top
@@ -465,6 +479,8 @@ room C-2 [c02]
   region Yellow Card Key Building Interior
     internal -> Main  key Yellow Card Key
     internal -> Yellow Card Key Hidden Room
+    check C-2: Orange
+      normal: HU
   region Yellow Card Key Hidden Room
     internal -> Yellow Card Key Building Interior
     check C-2: Disk O-18
@@ -751,6 +767,7 @@ room E-3 [e03]
   region Main
     door -> E-4/Upper Area
     <- E-4
+    check E-3: Generator
 
 room E-4 [e04]
   region After Mini-Boss Room
@@ -962,6 +979,8 @@ room F-3 [f03]
     internal -> Mini-Boss Room
       normal: MODEL
     internal -> Top Door
+    check F-3: Data Disk 1
+    check F-3: Lock Hack
   region Top Door
     internal -> Mini-Boss Room
       normal: MODEL
@@ -1065,6 +1084,7 @@ room G-2 [g02]
       normal: free
   region 2nd Floor Room (Outside)
     internal -> 2nd Floor Room (r-2nd-floor-2)
+    check G-2: Civilian (7)
     conn -> 2nd Floor Room (r-2nd-floor-2)
       normal: free
   region 2nd Floor Room (r-2nd-floor-2)
@@ -1076,6 +1096,7 @@ room G-2 [g02]
       normal: free
   region 3rd Floor
     internal -> 3rd Floor Room (r-3rd-floor-room)
+    check G-2: Guardian Chene
     conn -> 4th Floor
       normal: free
     conn -> G-1 Entrance
@@ -1086,11 +1107,13 @@ room G-2 [g02]
       normal: free
   region 3rd Floor Room (Outside)
     internal -> 3rd Floor Room (r-3rd-floor-room)
+    check G-2: Guardian Sole
     conn -> 3rd Floor Room (r-3rd-floor-room)
       normal: free
   region 3rd Floor Room (r-3rd-floor-room)
     internal -> 3rd Floor Room (Outside)
     internal -> 3rd Floor
+    check G-2: Guardian Bonite
     conn -> 3rd Floor
       normal: free
     conn -> 3rd Floor Room (Outside)
@@ -1105,10 +1128,12 @@ room G-2 [g02]
       normal: free
   region 4th Floor Room
     internal -> 4th Floor
+    check G-2: Civilian (6)
     conn -> 4th Floor
       normal: free
   region 5th Floor
     internal -> 5th Floor Room (r-5th-floor-room)
+    check G-2: Guardian Platane
     conn -> 6th Floor
       normal: free
     conn -> 4th Floor
@@ -1117,11 +1142,13 @@ room G-2 [g02]
       normal: free
   region 5th Floor Room (Outside)
     internal -> 5th Floor Room (r-5th-floor-room)
+    check G-2: Civilian (5)
     conn -> 5th Floor Room (r-5th-floor-room)
       normal: free
   region 5th Floor Room (r-5th-floor-room)
     internal -> 5th Floor Room (Outside)
     internal -> 5th Floor
+    check G-2: Civilian (4)
     conn -> 5th Floor
       normal: free
     conn -> 5th Floor Room (Outside)
@@ -1136,6 +1163,7 @@ room G-2 [g02]
       normal: free
   region 6th Floor Room (Outside)
     internal -> 6th Floor Room (r-6th-floor-room)
+    check G-2: Civilian (3)
     conn -> 6th Floor Room (r-6th-floor-room)
       normal: free
   region 6th Floor Room (r-6th-floor-room)
@@ -1161,6 +1189,7 @@ room G-2 [g02]
   region 7th Floor Room (r-7th-floor-room)
     internal -> 7th Floor Room (Outside)
     internal -> 7th Floor
+    check G-2: Civilian (2)
     conn -> 7th Floor Room (Outside)
       normal: free
     conn -> 7th Floor
@@ -1171,16 +1200,19 @@ room G-2 [g02]
     check G-2: Disk E-16
       normal: HX
       normal: LX & FIGHT_THE_MAVERICKS
+    check G-2: Sprinkler Key
     conn -> 7th Floor
       normal: free
   region Basement
     internal -> Basement Room  gate 191
+    check G-2: Civilian
     conn -> 1st Floor
       normal: free
     conn -> Basement Room
       normal: free
   region Basement Room
     internal -> Basement
+    check G-2: Civilian (8)
     conn -> Basement
       normal: free
   region G-1 Entrance
@@ -1194,6 +1226,7 @@ room G-3 [g03]
     door -> G-2/1st Floor
     <- G-2
     check G-3: Disk E-9
+    check G-3: Dog
 
 room G-4 [g04]
   region Main
@@ -1320,6 +1353,7 @@ room H-3 [h03]
     conn -> Left Area
       normal: FX & HU
   region Left Area
+    check H-3: Candy
     check H-3: Disk E-10
     check H-3: E-Crystal L
     conn -> Hidden Room
@@ -1728,6 +1762,7 @@ room J-5 [j05]
     conn -> J-4 Entrance
       normal: MODEL
   region Boss Room   [ARENA: Leganchor]
+    check J-5: Data Disk 2
     check Mission - Recover The Disk
       normal: MODEL
     check Obtain Biometal L   (also in F-5: any of them counts)
@@ -1751,6 +1786,7 @@ room J-5 [j05]
 room K-1 [k01]
   region Main
     internal -> Right Area  (x2)
+    check K-1: Lava Flow Control
     check K-1: Sub Tank
       normal: HX & FX & LX & PX   # the longest one (ceilings, blocks, hidden button, swimming)
   region C-3 Entrance
@@ -1973,6 +2009,7 @@ room L-3 [l03]
 
 room L-4 [l04]
   region Boss Room   [ARENA: Protectos]
+    check L-4: Data Disk 3
     check Mission - Protect The Lab
       normal: MODEL
     check Obtain Biometal P   (also in H-4: any of them counts)
@@ -2233,6 +2270,8 @@ room X-1 [x01]
     check X-1: Disk O-6
     check X-1: Disk O-7
     check X-1: Disk O-8
+    check X-1: Smelling Salts
+      normal: TROOP_REINFORCEMENT
 
 room X-2 [x02]
   region Main
@@ -2240,12 +2279,14 @@ room X-2 [x02]
     <- X-1
     check X-2: Disk O-16
     check X-2: Disk O-3
+    check X-2: W Tank
 
 room X-3 [x03]
   region Main
     door -> X-1
     <- X-1
     check X-3: Disk O-11
+    check X-3: E Tank
     conn -> Boss Room
       normal: MODEL
   region Boss Room   [ARENA: Prometheus]

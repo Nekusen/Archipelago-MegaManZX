@@ -6,6 +6,29 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+### Added
+
+- Added `mission_objectives`: the objects and events of the story missions can be checks, and items too.
+  - `checks`: the four Computer Chips, the four guardians of Pass The Test and their Stuffed Animal, the three Data Disks, the thirteen people trapped in Area G, the generator of E-3 and the lava control of K-1 are locations. The game plays as before.
+  - `items`: the same locations, plus the terminal of F-3 and the sprinkler key of G-2, and the objects are items of the pool. A mission is reported only with its object, the F-3 and G-2 doors open with their own items, and the lava of Area K is slow only with its item.
+- Missions can be played again: "Replay Missions" in the Transerver consoles lists the missions you have already reported (plus the quests, as before), and picking one brings back its objective and its boss.
+  - While a mission picked there is under way, entering an area does not accept that area's mission; report or abort the one you picked to go back to normal.
+  - "Abort Mission" is offered only for a mission or quest picked from that list. With the mission of an area under way the consoles show their normal menu instead, and picking a mission there replaces it.
+- Troop Reinforcement and Protect HQ show their names in that list instead of "Mission 4" and "Mission D".
+
+### Changed
+
+- The Transerver consoles show their normal menu during Troop Reinforcement and Protect HQ instead of the reduced one.
+
+### Fixed
+
+- Stop The Dig stopped counting as completed after reporting Repel The Army.
+
+- The eight usable items of the pause menu (Cake, Orange, Candy, Bread, Apple, E Tank, W Tank and Smelling Salts) are items of the pool, and the eight places that hand them out are locations.
+  - A usable you have used comes back when you open any Transerver console.
+  - The child gives the cake on any day, once Save The People has brought him to C-1; Scombrésoce sells the salts once Troop Reinforcement is complete; Cédre and Scombrésoce stay in the base during Protect HQ.
+  - Any attack shakes the tree of A-3 and its first fruit is the apple; any hit on the hanging doll of X-2 frees the W Tank.
+
 ## [0.2.0] - 2026-09-26
 
 ### Added

@@ -50,6 +50,10 @@ class TestPickupTableFilled(FilledTestBase):
             self.assertEqual(bool(flags & ENTRY_RESPAWNS), LOCATIONS[name]["detect"][0] == "mailbox")
 
 
+class TestPickupTableWithStoryItems(TestPickupTableFilled):
+    options = {"pickup_checks_energy": True, "mission_objectives": "items"}
+
+
 class TestPickupTableWithoutRefills(FilledTestBase):
     def test_refills_have_no_entry(self) -> None:
         codes = self.world.pickup_icons()

@@ -11,9 +11,9 @@ from worlds.AutoWorld import WebWorld, World
 from . import goal as G
 from .logic import bosses
 from .data import LOCATIONS, ITEMS, STARTING_MODEL_ITEM, STARTING_MODELS
-from .items import MMZXItem, item_name_to_id, get_classification, ITEM_GROUPS
-from .locations import (location_name_to_id, locations_for_options, LOCATION_GROUPS,
-                        pickup_flags_from_options)
+from .items import MMZXItem, item_name_to_id, get_classification, ITEM_GROUPS, STORY_GRANTS
+from .locations import (active_locations, location_name_to_id, LOCATION_GROUPS, STORY_ITEMS,
+                        story_mode)
 from .options import MMZXOptions, OPTION_GROUPS
 from .logic import load_document
 from .logic.document import room_label
@@ -104,7 +104,7 @@ class MMZXWorld(World):
         # rather than rejected, so a random starting_model may land on none
         if self.options.starting_model.current_key == "none":
             self.options.hu_in_pool.value = 0
-        active = locations_for_options(pickups=pickup_flags_from_options(self.options))
+        active = active_locations(self.options)
         room = len(active) - len(self.fixed_items()[0])
         reserve = len(set(self.options.exclude_locations.value) & set(active))
         self.goal = G.resolve(self.options, room, reserve, self.player_name)
@@ -163,6 +163,10 @@ class MMZXWorld(World):
                     fixed += [n] * int(v.get("count", 1))
         if self.options.hu_in_pool.value:
             fixed.append("Model Hu")
+        if story_mode(self.options) == STORY_ITEMS:
+            for n, v in ITEMS.items():
+                if v["grant"][0] in STORY_GRANTS:
+                    fixed += [n] * int(v.get("count", 1))
         granted: list[str] = []
         start_item = STARTING_MODEL_ITEM.get(self.options.starting_model.current_key)
         start_item = G.model_item(start_item, progressive) if start_item else None
@@ -177,8 +181,7 @@ class MMZXWorld(World):
 
     def create_items(self) -> None:
         """Fills the pool: the fixed items, the Secret Disks of the goal, then filler."""
-        active_locs = locations_for_options(pickups=pickup_flags_from_options(self.options))
-        n_locations = len(active_locs)  # not counting the Victory event
+        n_locations = len(active_locations(self.options))  # not counting the events
 
         fixed, granted = self.fixed_items()
         for name in granted:
@@ -234,7 +237,8 @@ class MMZXWorld(World):
                             full_models=not self.options.progressive_models.value)
         write_patch_tokens(patch, self.player_name, self.multiworld.seed_name, self.world_version,
                            image, build_table(self.pickup_icons()),
-                           hu_in_pool=bool(self.options.hu_in_pool.value))
+                           hu_in_pool=bool(self.options.hu_in_pool.value),
+                           story_items=story_mode(self.options) == STORY_ITEMS)
         out_name = self.multiworld.get_out_file_name_base(self.player)
         patch.write(os.path.join(output_directory, out_name + patch.patch_file_ending))
 
@@ -265,6 +269,8 @@ class MMZXWorld(World):
             "starting_transerver": self.options.starting_transerver.current_key,
             "progressive_models": bool(self.options.progressive_models.value),
             "hu_in_pool": bool(self.options.hu_in_pool.value),
+            # checks: the client only detects; items: it also keeps the story items held
+            "mission_objectives": story_mode(self.options),
             "boss_logic": bosses.describe(boss_requirements(self)),
             # the client marks the rush pairs as beaten; the logic stops requiring them
             "skip_boss_rush": bool(self.options.skip_boss_rush.value),

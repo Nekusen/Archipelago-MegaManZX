@@ -9,7 +9,7 @@ and remembers a pickup with no client attached.
 
 import struct
 
-from ..data import ICON_CODES, ITEMS, LOCATIONS, PICKUP_TABLE_ADDR
+from ..data import ICON_CODES, ITEMS, LIVE_BLOCK, LOCATIONS, PICKUP_TABLE_ADDR
 from ..goal import DISK_ITEM
 from .golden import GOLDEN_IMAGE_SIZE
 from .ui import GOLDEN_IMAGE_RAM, ROOM_OVERLAY_SLOT_RAM
@@ -20,6 +20,11 @@ CODE_MAX = 0x100
 FLAGS_OFF = 0x100           # u8: 1 = icons off, written by the client
 CHECKED_OFF = 0x104         # u8[BITMAP_LEN] by slot: the server has the location, written by the client
 COLLECTED_OFF = 0x124       # u8[BITMAP_LEN] by slot: the pickup was taken since boot, written by the game
+USABLES_OFF = 0x144         # u8: ITEM A usables held, bit = vanilla flag - 644; the client sets, the menu clears
+USABLES_MARK_OFF = 0x145    # u8: USABLES_MARK once the client has granted the usables held since boot
+USABLES_MARK = 0xA5
+STORY_OFF = 0x146           # u8: story objects held with mission_objectives: items; the client sets
+STORY_GATES_OFF = 0x147     # u8: what the story events unlock, held as items; bits as in the game's flags
 INDEX_OFF = 0x160           # u16[INDEX_SUBAREAS + 1]: first entry of each subarea
 INDEX_SUBAREAS = 128
 ENTRIES_OFF = 0x264         # entries of ENTRY_LEN bytes, sorted by subarea then coords index
@@ -56,12 +61,36 @@ for _n in ITEMS:
         ICON_BY_ITEM[_n] = _n.replace(" ", "").lower()
     elif _n == DISK_ITEM:
         ICON_BY_ITEM[_n] = "secret_disk"
+    elif _n == "Stuffed Animal":
+        ICON_BY_ITEM[_n] = "stuffed_animal"
+    elif _w[:2] == ["Data", "Disk"]:
+        ICON_BY_ITEM[_n] = "data_disk"
     elif _w[-1] == "Chip":
         ICON_BY_ITEM[_n] = "chip_" + "".join(_w[:-1])
     elif _w[-2:] == ["Card", "Key"]:
         ICON_BY_ITEM[_n] = "card_" + _w[0]
     elif len(_w) >= 2 and _w[-2] == "Model":
         ICON_BY_ITEM[_n] = "model_" + _w[-1]
+
+
+def usable_flag(bit: int) -> int:
+    """Flag index of a usable's possession bit, counted from the progress block like the menu lists do."""
+    return (PICKUP_TABLE_ADDR + USABLES_OFF - LIVE_BLOCK) * 8 + bit
+
+
+def story_flag(bit: int) -> int:
+    """Flag index of a story object's possession bit, counted from the progress block."""
+    return (PICKUP_TABLE_ADDR + STORY_OFF - LIVE_BLOCK) * 8 + bit
+
+
+def story_gates_addr() -> int:
+    """RAM address of the byte that holds what the story events unlock."""
+    return PICKUP_TABLE_ADDR + STORY_GATES_OFF
+
+
+def story_gate_flag(bit: int) -> int:
+    """Flag index of a bit of the story gates byte, counted from the progress block."""
+    return (story_gates_addr() - LIVE_BLOCK) * 8 + bit
 
 
 def icon_code(item: str, own: bool, advancement: bool, useful: bool) -> int:

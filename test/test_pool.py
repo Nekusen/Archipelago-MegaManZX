@@ -55,6 +55,21 @@ class TestPool(MMZXTestBase):
         self.assertNotIn("White Card Key", names)
         self.assertNotIn("Model Hu", names)
 
+    def test_usables_are_useful_items_with_a_location_each(self) -> None:
+        """The eight ITEM A usables are useful items of the pool, one per usable location."""
+        counts = Counter(item.name for item in self.multiworld.itempool)
+        usables = [n for n, v in ITEMS.items() if v["grant"][0] == "usable"]
+        self.assertEqual(len(usables), 8)
+        for name in usables:
+            self.assertEqual(counts[name], 1, name)
+        placed = {loc.name for loc in self.multiworld.get_locations(1) if loc.address is not None}
+        for name in ("C-1: Cake", "C-2: Orange", "H-3: Candy", "C-1: Bread", "A-3: Apple",
+                     "X-3: E Tank", "X-2: W Tank", "X-1: Smelling Salts"):
+            self.assertIn(name, placed)
+        for item in self.multiworld.itempool:
+            if item.name in usables:
+                self.assertTrue(item.useful and not item.advancement, item.name)
+
     def test_filler(self) -> None:
         """E-Crystals pad the pool and are its only filler item."""
         self.assertEqual(self.world.get_filler_item_name(), "E-Crystals")

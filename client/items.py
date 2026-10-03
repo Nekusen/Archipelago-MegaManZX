@@ -37,12 +37,13 @@ def model_halves(counts: dict[str, int], model: int) -> int:
     return counts.get(MODEL_POSSESSION[model][0], 0) + 2 * counts.get(FULL_MODEL_ITEMS.get(model, ""), 0)
 
 
-def wanted_progress_bits(counts: dict[str, int], goal: "GoalRequirement", missions: int
-                         ) -> tuple[set[tuple[int, int]], set[tuple[int, int]]]:
+def wanted_progress_bits(counts: dict[str, int], goal: "GoalRequirement", missions: int,
+                         closed_gates=frozenset()) -> tuple[set[tuple[int, int]], set[tuple[int, int]]]:
     """(idempotent bits, Card Key bits) the received items and the missions completed call for.
 
-    Progressive items set one bit per copy. Some story gates open for everyone;
-    the Slither gate (D-2 to D-4) once the goal requirements are met.
+    Progressive items set one bit per copy. Some story gates open for everyone,
+    except the `closed_gates` an item opens; the Slither gate (D-2 to D-4) once
+    the goal requirements are met.
     """
     bits: set[tuple[int, int]] = set()
     cardkeys: set[tuple[int, int]] = set()
@@ -59,8 +60,7 @@ def wanted_progress_bits(counts: dict[str, int], goal: "GoalRequirement", missio
             bits.update((addr, bit) for addr, bit in grant[1])
         elif kind == "transerver":
             bits.add((grant[1], grant[2]))
-    for fl in EVENT_GATES_OPEN:
-        bits.add(tuple(EVENT_GATES[fl]))
+    bits |= {tuple(EVENT_GATES[fl]) for fl in EVENT_GATES_OPEN} - closed_gates
     if goal.met(counts, missions):
         bits |= goal.gate_bits()
     return bits, cardkeys
@@ -191,7 +191,7 @@ async def grant_items(client: "MMZXClient", ctx, tick: Tick) -> None:
                    if net.item in ITEM_BY_ID and ITEM_BY_ID[net.item][1][0] in ("ecrystals", "oneup")]
     goal = client.goal
     missions = len(client.missions_cleared or ())
-    bits, cardkeys = wanted_progress_bits(counts, goal, missions)
+    bits, cardkeys = wanted_progress_bits(counts, goal, missions, client.closed_gates)
 
     writes = await weapon_energy_writes(ctx, counts)
     # idempotent bits go to live (effect now) and canonical (persistence)

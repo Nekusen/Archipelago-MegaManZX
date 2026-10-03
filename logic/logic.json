@@ -131,6 +131,17 @@
    },
    "unsure": false
   },
+  "A-3: Apple": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
   "A-4: Disk E-20": {
    "note": "A-4: top right of the tall structure (ladder + vertical column)",
    "req": {
@@ -156,6 +167,17 @@
    },
    "unsure": false
   },
+  "B-1: Computer Chip (2)": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
   "B-1: Disk E-24": {
    "note": "B-1: raised ledge at the far right",
    "req": {
@@ -168,6 +190,17 @@
    "unsure": false
   },
   "B-1: E-Crystal L": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "B-2: Computer Chip": {
    "note": "",
    "req": {
     "normal": [
@@ -299,6 +332,29 @@
    },
    "unsure": false
   },
+  "C-1: Bread": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "C-1: Cake": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU",
+      "SAVE_THE_PEOPLE"
+     ]
+    ]
+   },
+   "unsure": false
+  },
   "C-1: E-Crystal L": {
    "note": "",
    "req": {
@@ -378,6 +434,17 @@
    "unsure": false
   },
   "C-1: E-Crystal L (9)": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "C-1: Guardian Congre": {
    "note": "",
    "req": {
     "normal": [
@@ -472,6 +539,39 @@
     "normal": [
      [
       "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "C-2: Guardian Thon": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "C-2: Orange": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "C-2: Stuffed Animal": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU"
      ]
     ]
    },
@@ -588,6 +688,17 @@
    "unsure": false
   },
   "E-2: Weapon Energy L": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "E-3: Generator": {
    "note": "",
    "req": {
     "normal": [
@@ -801,6 +912,94 @@
    },
    "unsure": false
   },
+  "G-2: Civilian": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "G-2: Civilian (2)": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "G-2: Civilian (3)": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "G-2: Civilian (4)": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "G-2: Civilian (5)": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "G-2: Civilian (6)": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "G-2: Civilian (7)": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "G-2: Civilian (8)": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU"
+     ]
+    ]
+   },
+   "unsure": false
+  },
   "G-2: Disk E-16": {
    "note": "",
    "req": {
@@ -811,6 +1010,17 @@
      [
       "LX",
       "FIGHT_THE_MAVERICKS"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "G-3: Dog": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU"
      ]
     ]
    },
@@ -927,6 +1137,17 @@
    "unsure": false
   },
   "H-1: Weapon Energy L": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "H-3: Candy": {
    "note": "",
    "req": {
     "normal": [
@@ -1523,6 +1744,28 @@
     ]
    },
    "unsure": true
+  },
+  "X-1: Smelling Salts": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "TROOP_REINFORCEMENT"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "X-2: W Tank": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
   }
  },
  "edges": {
@@ -12755,6 +12998,52 @@
       ]
      ]
     },
+    "region-7": {
+     "color": "#78d9ec",
+     "name": "Lava Flow Room",
+     "note": "",
+     "poly": [
+      [
+       6600,
+       1155
+      ],
+      [
+       6617,
+       1404
+      ],
+      [
+       7037,
+       1389
+      ],
+      [
+       7033,
+       1144
+      ]
+     ]
+    },
+    "region-8": {
+     "color": "#fde293",
+     "name": "Sub Tank Room",
+     "note": "",
+     "poly": [
+      [
+       7132,
+       1134
+      ],
+      [
+       7151,
+       1405
+      ],
+      [
+       7835,
+       1410
+      ],
+      [
+       7825,
+       1128
+      ]
+     ]
+    },
     "right-area": {
      "color": "#ff8bcb",
      "name": "Right Area",
@@ -12974,24 +13263,12 @@
      "req": {
       "normal": [
        [
-        "FX"
+        "FX",
+        "SLOW_LAVA"
        ]
       ]
      },
      "to": "hidden-path",
-     "unsure": false
-    },
-    {
-     "from": "hidden-path",
-     "note": "",
-     "req": {
-      "normal": [
-       [
-        "FX"
-       ]
-      ]
-     },
-     "to": "lava-chase",
      "unsure": false
     },
     {

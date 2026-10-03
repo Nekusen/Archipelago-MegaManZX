@@ -17,7 +17,7 @@ from ..rom import pack_version, unpack_version
 from .addresses import (
     BOOT_FILL, DOM, GAME, INVENTORY_WAIT_SECONDS, NOTIFY_LEVELS, NOTIFY_STYLES, PICKUP_OPTION_KEYS,
     ROM_AP_MAGIC, ROM_AP_MAGIC_LEN, ROM_AP_MAGIC_OFF, ROM_AP_VERSION_OFF, ROM_GAME_CODE,
-    ROM_GAME_CODE_OFF, ROM_SLOT_NAME_LEN, ROM_SLOT_NAME_OFF, STARTUP_TICKS)
+    ROM_GAME_CODE_OFF, ROM_SLOT_NAME_LEN, ROM_SLOT_NAME_OFF, STARTUP_TICKS, STORY_GATE_BITS)
 from .ram import ProgressWindow, Tick
 from .notices import push_notices, sync_pickup_state
 from .startup import apply_start_state, resolve_start_state
@@ -28,7 +28,9 @@ from .seal import Seal, hold_seal_scene, track_biometals
 from .items import grant_items, received_counts, revert_unowned_models
 from .minibosses import MODE_OFF, parse_mode, skip_minibosses
 from .missions import auto_accept_mission, handle_ending, repair_missions, skip_boss_rush
+from .story import MODE_ITEMS as STORY_ITEMS, MODE_OFF as STORY_OFF, parse_mode as parse_story_mode, sync_story
 from .tracker import log_where, receive_death_link, report_death, send_position
+from .usables import sync_usables
 from .warps import handle_warps
 from .commands import COMMANDS
 
@@ -62,6 +64,8 @@ class MMZXClient(BizHawkClient):
         self.minibosses_requested = False
         self.minibosses_beaten: set[tuple[int, int]] | None = None
         self.mailbox_enabled = False       # some pickup category is a check
+        self.story_mode = STORY_OFF        # mission_objectives: off, checks or items
+        self.closed_gates: frozenset = frozenset()   # story gates an item opens, not the client
         # settings the player changes from the console; they outlive a reconnect
         self.notify_cfg = {"received": 2, "sent": 2}      # indices into NOTIFY_LEVELS
         self.notify_user_set = False     # /mmzx_notify used (wins over the YAML)
@@ -81,6 +85,7 @@ class MMZXClient(BizHawkClient):
         self.start_retries = 0
         # what the watcher remembers between ticks
         self.last_accept_sub = None        # subarea or hub floor whose mission was handled
+        self.manual_mission = False        # a mission taken from the Transerver list is under way
         self.lock_subarea: int | None = None   # subarea whose boss fight raised the lock bits
         self.last_legit_model = 1          # last owned active model seen, to revert to
         self.transport_wait = False        # Target Area list open: read the pick on return
@@ -118,6 +123,10 @@ class MMZXClient(BizHawkClient):
         self.goal_line_written: bytes | None = None
         self.missions_cleared: set[str] | None = None   # counted missions completed, from the game's flags
         self.ending_ticks = 0             # ticks with the stuck-ending signature
+        # ITEM A usables: the possession bits granted so far, and whether a console is in use
+        self.usables_granted = 0
+        self.console_busy = False
+        self.story_waiting: int | None = None   # mission state whose missing object was announced
 
     async def validate_rom(self, ctx: "BizHawkClientContext") -> bool:
         """Accept only a ROM patched by this apworld version; take the slot name from its header."""
@@ -211,6 +220,8 @@ class MMZXClient(BizHawkClient):
                 if self.skip_minibosses == "always" else
                 "a mini-boss stays beaten once you have beaten it"))
         self.mailbox_enabled = any(bool(opts.get(k, False)) for k in PICKUP_OPTION_KEYS)
+        self.story_mode = parse_story_mode(opts.get("mission_objectives"))
+        self.closed_gates = STORY_GATE_BITS if self.story_mode == STORY_ITEMS else frozenset()
         # notice thresholds from the YAML, unless /mmzx_notify already set them
         for key in ("received", "sent"):
             val = str(opts.get("notify_" + key, "")).lower()
@@ -284,6 +295,9 @@ class MMZXClient(BizHawkClient):
             if self.inventory_known():
                 await self._stage("starting state", apply_start_state(self, ctx, tick))
                 await self._stage("items", grant_items(self, ctx, tick))
+                await self._stage("usables", sync_usables(self, ctx, tick))
+                if self.story_mode == STORY_ITEMS:
+                    await self._stage("story items", sync_story(self, ctx, tick))
                 await self._stage("goal line", sync_goal_line(self, ctx, tick, received_counts(ctx)))
                 await self._stage("notifications", push_notices(self, ctx))
                 await self._stage("models", revert_unowned_models(self, ctx, tick))

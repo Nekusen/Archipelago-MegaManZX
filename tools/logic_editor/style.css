@@ -180,6 +180,7 @@ a.link { color: var(--accent); cursor: pointer; text-decoration: underline dotte
 .req .chip.g-life { background: #5a2f2f; border-color: #7f4040; }
 .req .chip.g-mission { background: #2f5138; border-color: #3f7a50; }
 .req .chip.g-transerver { background: #2b4360; border-color: #3b5f8c; }
+.req .chip.g-story { background: #5a3a2a; border-color: #8c5a3b; }
 .req .add-atom { padding: 0 3px; font-size: 11px; max-width: 110px; background: var(--bg4); }
 .req .alt .rm { color: var(--fg3); cursor: pointer; padding: 0 4px; }
 .req .alt .rm:hover { color: #fff; }

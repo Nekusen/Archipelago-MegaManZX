@@ -114,8 +114,8 @@ Locations:
   Area M and N-1 (which is reached through it) stay closed until it opens. The Transerver of Area M joins your
   Transport list when you reach it on foot, as in the original game. Nothing is placed between the door of A-4
   and the seal.
-- The STATUS tab of the pause menu and `/mmzx_goal` show the progress (`Passwords 2/6`, `Seal 3/5`), and a popup
-  announces the moment the seal opens. Its scene plays the next time you walk up to it.
+- The `/mmzx_goal` command of the client shows the progress towards the seal, and a popup announces the moment it
+  opens. Its scene plays the next time you walk up to it. The pause menu keeps showing the goal only.
 
 ### Cutscenes and menus
 

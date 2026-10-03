@@ -70,13 +70,6 @@ class Seal:
         """The progress bits to keep down: none once the seal is open."""
         return frozenset() if self.is_open(counts) else CLOSED_BITS
 
-    def progress_part(self, counts: dict[str, int]) -> str | None:
-        """The seal's share of the pause menu lines, or None when it counts nothing."""
-        if not self.gated:
-            return None
-        label = "Passwords" if self.mode == MODE_PASSWORDS else "Seal"
-        return "%s %d/%d" % (label, *self.progress(counts))
-
     def report(self, counts: dict[str, int]) -> list[str]:
         """Lines for the console."""
         if not self.gated:

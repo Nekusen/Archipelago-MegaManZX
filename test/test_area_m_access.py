@@ -8,7 +8,6 @@ from test.general import setup_multiworld
 from .bases import MMZXTestBase, WITNESS, window_with
 from .test_goal import collect_pool_but
 from .. import MMZXWorld
-from ..client.goal import GoalRequirement as ClientGoal
 from ..client.seal import BIOMETAL_CHECKS, CLOSED_BITS, GATE_BIT, Seal as ClientSeal
 from ..data import ITEMS, LOCATIONS
 from ..seal import BIOMETAL_EVENTS, BIOMETAL_LOCATIONS, PASSWORD_ITEM
@@ -184,13 +183,12 @@ class TestClientSeal(unittest.TestCase):
         seal = ClientSeal({})
         self.assertFalse(seal.gated)
         self.assertEqual(seal.closed_bits({}), frozenset())
-        self.assertIsNone(seal.progress_part({}))
         self.assertEqual(seal.report({}), [])
 
     def test_passwords(self) -> None:
         seal = ClientSeal({"area_m_access": {"mode": "passwords", "passwords": 4, "passwords_total": 6}})
         self.assertEqual(seal.closed_bits({PASSWORD_ITEM: 3}), CLOSED_BITS)
-        self.assertEqual(seal.progress_part({PASSWORD_ITEM: 3}), "Passwords 3/4")
+        self.assertEqual(seal.progress({PASSWORD_ITEM: 3}), (3, 4))
         self.assertEqual(seal.closed_bits({PASSWORD_ITEM: 4}), frozenset())
         self.assertIn("closed", seal.report({PASSWORD_ITEM: 3})[0])
         self.assertIn("open", seal.report({PASSWORD_ITEM: 5})[0])
@@ -201,7 +199,7 @@ class TestClientSeal(unittest.TestCase):
         self.assertEqual(seal.closed_bits({}), CLOSED_BITS)      # nothing read yet: closed
         second_of_each_pair = [(0x021045D1, bit) for bit in (1, 3, 5, 7)]
         seal.read_biometals(window_with(second_of_each_pair), set())
-        self.assertEqual(seal.progress_part({}), "Seal 4/5")
+        self.assertEqual(seal.progress({}), (4, 5))
         self.assertIn("missing: Z", seal.report({})[0])
         seal.read_biometals(window_with(second_of_each_pair + [(0x02104602, 1)]), set())
         self.assertEqual(seal.closed_bits({}), frozenset())
@@ -211,16 +209,6 @@ class TestClientSeal(unittest.TestCase):
         seal = ClientSeal({"area_m_access": {"mode": "biometals"}})
         seal.read_biometals(window_with([]), {LOCATIONS[n]["id"] for n in BIOMETAL_LOCATIONS})
         self.assertEqual(seal.progress({}), (5, 5))
-
-    def test_pause_menu_lines(self) -> None:
-        """The seal's part follows the goal requirements and moves to the second line when it does not fit."""
-        goal = ClientGoal({"goal_requirements": {"models": ["Model X"], "models_count": 1}})
-        self.assertEqual(goal.progress_lines({}, 0, ("Passwords 2/6",)), ("", "Models 0/1  Passwords 2/6"))
-        goal = ClientGoal({"goal_requirements": {
-            "models": ["Model X"], "models_count": 1, "secret_disks": 20, "secret_disks_total": 30,
-            "missions": 14}})
-        self.assertEqual(goal.progress_lines({}, 3, ("Passwords 6/6",)),
-                         ("Disks 00/20  Models 0/1", "Missions 03/14  Passwords 6/6"))
 
     def test_closed_bits(self) -> None:
         """The gate flag and the Transport destination of Area M, nothing else."""

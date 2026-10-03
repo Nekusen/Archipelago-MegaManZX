@@ -51,6 +51,7 @@ ICONS = [
     ("card_Yellow", ("frame", 180, 23)),
     ("card_White", ("frame", 180, 74)),
     ("secret_disk", ("frame", 58, 30)),      # the disk pickup, read before its tile becomes the logo
+    ("chip_Computer", ("frame", 180, 52)),   # the Computer Chip pickup of Locate Giro (quest item set)
 ]
 ICON_NAMES = [name for name, _ in ICONS]
 

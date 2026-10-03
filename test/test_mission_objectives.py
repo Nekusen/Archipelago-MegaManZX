@@ -11,7 +11,7 @@ from ..client.story import parse_mode, story_held
 from ..data import (DOORS, EVENT_GATES, ITEMS, LOCATIONS, STORY_CHAINS, STORY_COUNTS, STORY_GATE_ITEMS,
                     STORY_LAVA_ITEM, STORY_LAVA_LOCATION, STORY_REPORT_ITEMS)
 from ..goal import cleared_event
-from ..items import STORY_GRANTS
+from ..items import ITEM_GROUPS, STORY_GRANTS
 from ..locations import STORY_CATEGORY, STORY_GATE
 from ..regions import LAVA_EVENT
 
@@ -42,6 +42,11 @@ class TestOff(MMZXTestBase):
     def test_nothing_is_added(self) -> None:
         self.assertFalse(real_locations(self.multiworld) & STORY_LOCATIONS)
         self.assertFalse({item.name for item in self.multiworld.itempool} & set(STORY_ITEM_COUNTS))
+
+    def test_story_items_have_their_own_group(self) -> None:
+        """The Computer Chip is a mission objective, not one of the chips of the pool."""
+        self.assertEqual(ITEM_GROUPS["Mission Objectives"], set(STORY_ITEM_COUNTS))
+        self.assertFalse(ITEM_GROUPS["Chips"] & set(STORY_ITEM_COUNTS))
 
     def test_lava_is_the_event_of_its_control(self) -> None:
         self.assertIn(LAVA_EVENT, event_locations(self.multiworld))

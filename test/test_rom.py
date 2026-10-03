@@ -17,7 +17,7 @@ from ..data import (EVENT_GATES, GOAL_LINE_ADDR, ICON_CODES, ITEMS, LIVE_BLOCK, 
                     MISSION_COMPLETED_BIT,
                     MISSION_REPEAT_BITS, NOTIFY_ADDR, NOTIFY_BUF_MAX, PICKUP_TABLE_ADDR, STARTING_MODELS,
                     STARTING_TRANSERVERS, STORY_GATE_ITEMS, STORY_LAVA_ITEM, STORY_REPORT_STATES)
-from ..rom import arm9, blz, golden, missions, nds, pickups, sprites, story, table, ui
+from ..rom import arm9, blz, golden, icons, missions, nds, pickups, sprites, story, table, ui
 
 PATCH_MODULES = (pickups, sprites, ui, missions, story)     # the modules that hold patch tables and caves
 ARM9_RAM = (0x02000000, 0x02400000)
@@ -414,6 +414,14 @@ class TestPatchTables(unittest.TestCase):
         self.assertEqual(table.icon_code("Life Up", False, False, True), ICON_CODES["logo_useful"])
         self.assertEqual(table.icon_code("Something", False, True, True), ICON_CODES["logo_progression"])
         self.assertEqual(table.icon_code("Something", False, False, False), ICON_CODES["logo_filler"])
+        self.assertEqual(table.icon_code("Computer Chip", True, True, False), ICON_CODES["chip_Computer"])
+
+    def test_every_item_icon_exists(self) -> None:
+        """An item named like the ones with a sprite must have one in the set, or the table cannot be built."""
+        for item, icon in table.ICON_BY_ITEM.items():
+            with self.subTest(item=item):
+                self.assertIn(icon, ICON_CODES)
+        self.assertEqual(list(ICON_CODES), icons.ICON_NAMES)
 
     def test_marker_layout(self) -> None:
         """Magic, version, slot name and seed fit the marker, which sits in the ROM header padding."""

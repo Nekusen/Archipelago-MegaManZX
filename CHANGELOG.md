@@ -8,11 +8,12 @@ All notable changes to this project are documented in this file. The format is b
 
 ### Added
 
+- Added the location `Obtain Biometal Z`, sent when you beat Giro in D-2.
 - Added `area_m_access`: what opens the seal at the entrance of Area M.
   - `open`: the seal is open from the start, as before.
-  - `bosses`: beat the eight Pseudoroids and Giro.
+  - `biometals`: get the five `Obtain Biometal` checks of your game (Z, H, F, L and P).
   - `passwords`: collect `required_passwords` Passwords out of the `total_passwords` in the pool.
-  - With `bosses` or `passwords` the Transerver Access of Area M is not in the pool.
+  - With `biometals` or `passwords` the Transerver Access of Area M is not in the pool.
 
 ## [0.2.0] - 2026-09-26
 

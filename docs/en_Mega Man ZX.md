@@ -45,7 +45,7 @@ Locations:
 
 - The 95 Secret Disks.
 - The four Life Ups and the three Sub Tanks found in the world.
-- Obtaining each of the four biometals, from either Pseudoroid of its pair.
+- Obtaining each of the five biometals: Z from Giro, and H, F, L and P from either Pseudoroid of its pair.
 - Completing 14 story missions (Destroy Model W is the goal itself, and the initial mission "Catch the Maverick" is skipped).
 - Optionally, the 133 pickups (energy capsules, weapon energy, E-Crystals and 1-Ups). Only the "big" pickups are considered. Small pickups from drops do not count.
   - 7 1-Ups
@@ -106,15 +106,15 @@ Locations:
 
 - The seal a few steps into M-1 follows `area_m_access`:
   - `open` (default): it is open from the start.
-  - `bosses`: it opens once you have beaten the eight Pseudoroids and Giro, as in the original story. Giro counts when
-    Troop Reinforcement is completed, which the game reports by itself right after his fight.
+  - `biometals`: it opens once the five "Obtain Biometal" checks of your own game are done: Z from Giro, and H, F, L
+    and P from either Pseudoroid of each pair. Owning the biometals as items does not count.
   - `passwords`: it opens once you have received `required_passwords` Passwords out of the `total_passwords`
     shuffled into the multiworld.
-- With `bosses` or `passwords` the Transerver Access of Area M is not in the pool, so nothing gets around the seal:
+- With `biometals` or `passwords` the Transerver Access of Area M is not in the pool, so nothing gets around the seal:
   Area M and N-1 (which is reached through it) stay closed until it opens. The Transerver of Area M joins your
   Transport list when you reach it on foot, as in the original game. Nothing is placed between the door of A-4
   and the seal.
-- The STATUS tab of the pause menu and `/mmzx_goal` show the progress (`Passwords 2/6`, `Bosses 5/9`), and a popup
+- The STATUS tab of the pause menu and `/mmzx_goal` show the progress (`Passwords 2/6`, `Seal 3/5`), and a popup
   announces the moment the seal opens. Its scene plays the next time you walk up to it.
 
 ### Cutscenes and menus

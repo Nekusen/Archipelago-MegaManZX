@@ -121,14 +121,14 @@ class HuInPool(Toggle):
 class AreaMAccess(Choice):
     """What opens the seal at the entrance of Area M, the door of M-1 the rest of the area lies behind.
     - open: the seal is open from the start.
-    - bosses: beat the eight Pseudoroids and Giro, as the story asks. Giro counts once
-      Troop Reinforcement, the mission of his fight, is completed.
+    - biometals: get the five "Obtain Biometal" checks of your own game: Z from Giro, and
+      H, F, L and P from either Pseudoroid of each pair.
     - passwords: collect Passwords, items of the pool; required_passwords sets how many.
-    With bosses or passwords the Transerver Access of Area M is not in the pool: that Transerver
+    With biometals or passwords the Transerver Access of Area M is not in the pool: that Transerver
     registers when you reach it on foot, as in the original game."""
     display_name = "Area M Access"
     option_open = 0
-    option_bosses = 1
+    option_biometals = 1
     option_passwords = 2
     default = 0
 

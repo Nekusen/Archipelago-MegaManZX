@@ -4,24 +4,22 @@ import logging
 
 from Options import OptionError
 
-from .data import SEAL_BOSS_BITS, SEAL_GIRO_MISSION, SEAL_ROOMS, SEAL_TRANSERVER
-from .goal import MISSION_PREFIX, cleared_event
-from .logic import document as F
+from .data import LOCATIONS, SEAL_ROOMS, SEAL_TRANSERVER
 
-MODE_OPEN, MODE_BOSSES, MODE_PASSWORDS = "open", "bosses", "passwords"
+MODE_OPEN, MODE_BIOMETALS, MODE_PASSWORDS = "open", "biometals", "passwords"
 PASSWORD_ITEM = "Password"
 TRANSERVER_ITEM = SEAL_TRANSERVER     # out of the pool unless the seal starts open
-# Beating Giro ends in the mission's own Report, so its Cleared event stands for the fight.
-GIRO_EVENT = cleared_event(MISSION_PREFIX + SEAL_GIRO_MISSION)
+# What `biometals` asks for: the five "Obtain Biometal" locations checked.
+BIOMETAL_PREFIX = "Obtain "
+BIOMETAL_LOCATIONS = tuple(n for n, v in LOCATIONS.items() if v["category"] == "biometal")
 
 
-def defeated_event(boss: str) -> str:
-    """The event item of a Pseudoroid beaten in its own room."""
-    return "Defeated: " + F.BOSSES[boss]["name"]
+def obtained_event(location: str) -> str:
+    """The event item that mirrors a biometal location in the logic."""
+    return "Obtained: " + location[len(BIOMETAL_PREFIX):]
 
 
-PSEUDOROIDS = tuple(SEAL_BOSS_BITS)
-BOSS_EVENTS = (GIRO_EVENT, *(defeated_event(b) for b in PSEUDOROIDS))
+BIOMETAL_EVENTS = tuple(obtained_event(n) for n in BIOMETAL_LOCATIONS)
 
 
 class Seal:
@@ -65,8 +63,8 @@ def rule(seal: Seal, player: int):
     """The seal as a state rule, or None when it is open from the start."""
     if seal.mode == MODE_PASSWORDS:
         return lambda state: state.has(PASSWORD_ITEM, player, seal.passwords_required)
-    if seal.mode == MODE_BOSSES:
-        return lambda state: state.has_all(BOSS_EVENTS, player)
+    if seal.mode == MODE_BIOMETALS:
+        return lambda state: state.has_all(BIOMETAL_EVENTS, player)
     return None
 
 
@@ -79,8 +77,8 @@ def describe(seal: Seal) -> str:
     """One line for the spoiler."""
     if seal.mode == MODE_PASSWORDS:
         return "%d Passwords (%d in the pool)" % (seal.passwords_required, seal.passwords_total)
-    if seal.mode == MODE_BOSSES:
-        return "the eight Pseudoroids and Giro beaten"
+    if seal.mode == MODE_BIOMETALS:
+        return "the five Obtain Biometal locations checked"
     return "open"
 
 

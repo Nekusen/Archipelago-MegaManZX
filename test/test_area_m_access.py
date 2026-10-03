@@ -1,22 +1,22 @@
-"""area_m_access: the seal of Area M open, behind the bosses or behind the Passwords."""
+"""area_m_access: the seal of Area M open, behind the biometal checks or behind the Passwords."""
 import unittest
 from collections import Counter
 
 from Options import OptionError
 from test.general import setup_multiworld
 
-from .bases import MMZXTestBase, WITNESS
+from .bases import MMZXTestBase, WITNESS, window_with
 from .test_goal import collect_pool_but
 from .. import MMZXWorld
 from ..client.goal import GoalRequirement as ClientGoal
-from ..client.seal import BOSS_BITS, CLOSED_BITS, GATE_BIT, Seal as ClientSeal
-from ..data import ITEMS, SEAL_BOSS_BITS
-from ..logic import document as F, load_document
-from ..seal import BOSS_EVENTS, PASSWORD_ITEM, defeated_event
+from ..client.seal import BIOMETAL_CHECKS, CLOSED_BITS, GATE_BIT, Seal as ClientSeal
+from ..data import ITEMS, LOCATIONS
+from ..seal import BIOMETAL_EVENTS, BIOMETAL_LOCATIONS, PASSWORD_ITEM
 
 TRANSERVER = "Transerver Access - Area M"
+BIOMETAL_Z = "Obtain Biometal Z"
 PAST_THE_SEAL = ["m01/a-4-entrance", "m01/main-area", "m03/boss-room", "n01/main-area"]
-BOSSES = {"area_m_access": "bosses"}
+BIOMETALS = {"area_m_access": "biometals"}
 PASSWORDS = {"area_m_access": "passwords", "required_passwords": 4, "total_passwords": 6}
 
 
@@ -31,6 +31,23 @@ class TestOpen(MMZXTestBase):
 
     def test_slot_data(self) -> None:
         self.assertEqual(self.world.fill_slot_data()["area_m_access"]["mode"], "open")
+
+
+class TestBiometalZ(MMZXTestBase):
+    options = {"boss_logic": {"Model Z": WITNESS}}
+
+    def test_five_biometal_locations(self) -> None:
+        self.assertEqual(sorted(BIOMETAL_LOCATIONS), sorted("Obtain Biometal " + b for b in "FHLPZ"))
+        self.assertEqual(len({LOCATIONS[n]["id"] for n in BIOMETAL_LOCATIONS}), 5)
+
+    def test_sits_in_the_arena_of_giro(self) -> None:
+        """The check is beating Giro, so a requirement on his fight is a requirement on it."""
+        self.assertEqual(self.multiworld.get_location(BIOMETAL_Z, self.player).parent_region.name,
+                         "d02/boss-room")
+        collect_pool_but(self, [WITNESS])
+        self.assertFalse(self.can_reach_location(BIOMETAL_Z))
+        self.collect_by_name(WITNESS)
+        self.assertTrue(self.can_reach_location(BIOMETAL_Z))
 
 
 class TestPasswords(MMZXTestBase):
@@ -69,41 +86,53 @@ class TestPasswords(MMZXTestBase):
                          {"mode": "passwords", "passwords": 4, "passwords_total": 6})
 
 
-class TestBosses(MMZXTestBase):
-    options = BOSSES
+class TestBiometals(MMZXTestBase):
+    options = BIOMETALS
 
     def test_no_passwords_nor_transerver_in_the_pool(self) -> None:
         names = Counter(item.name for item in self.multiworld.itempool)
         self.assertEqual((names[PASSWORD_ITEM], names[TRANSERVER]), (0, 0))
 
-    def test_every_boss_has_its_event(self) -> None:
+    def test_every_biometal_has_its_event(self) -> None:
         events = {loc.name for loc in self.multiworld.get_locations(self.player) if loc.address is None}
-        self.assertLessEqual(set(BOSS_EVENTS), events)
+        self.assertLessEqual(set(BIOMETAL_EVENTS), events)
 
     def test_opens_with_the_whole_pool(self) -> None:
         self.collect(self.multiworld.itempool)
         for region in PAST_THE_SEAL:
             self.assertTrue(self.can_reach_region(region), region)
 
-    def test_one_boss_out_of_reach_keeps_it_closed(self) -> None:
-        """Leganchor sits behind the Blue Card Key: without it the seal stays closed."""
-        collect_pool_but(self, ["Blue Card Key"])
-        self.assertFalse(self.multiworld.state.has(defeated_event("leganchor"), self.player))
-        for region in PAST_THE_SEAL:
-            self.assertFalse(self.can_reach_region(region), region)
-        self.collect_by_name("Blue Card Key")
+    def test_slot_data(self) -> None:
+        self.assertEqual(self.world.fill_slot_data()["area_m_access"]["mode"], "biometals")
+
+
+class TestBiometalsOnePseudoroidIsEnough(MMZXTestBase):
+    options = {**BIOMETALS, "boss_logic": {"Lurerre": WITNESS}}
+
+    def test_the_other_of_the_pair_gives_the_check(self) -> None:
+        """Lurerre out of reach, Biometal L still comes from Leganchor and the seal opens."""
+        collect_pool_but(self, [WITNESS])
         for region in PAST_THE_SEAL:
             self.assertTrue(self.can_reach_region(region), region)
 
 
+class TestBiometalsNeedBothOutOfReach(MMZXTestBase):
+    options = {**BIOMETALS, "boss_logic": {"Lurerre": WITNESS, "Leganchor": WITNESS}}
 
-class TestBossesWithBossLogic(MMZXTestBase):
-    options = {"area_m_access": "bosses", "boss_logic": {"Model Z": WITNESS}}
-
-    def test_giro_counts(self) -> None:
-        """A requirement on Giro's fight is a requirement on the seal."""
+    def test_a_biometal_out_of_reach_keeps_it_closed(self) -> None:
         collect_pool_but(self, [WITNESS])
-        self.assertFalse(self.multiworld.state.has("Cleared: Troop Reinforcement", self.player))
+        for region in PAST_THE_SEAL:
+            self.assertFalse(self.can_reach_region(region), region)
+        self.collect_by_name(WITNESS)
+        for region in PAST_THE_SEAL:
+            self.assertTrue(self.can_reach_region(region), region)
+
+
+class TestBiometalsNeedGiro(MMZXTestBase):
+    options = {**BIOMETALS, "boss_logic": {"Model Z": WITNESS}}
+
+    def test_biometal_z_counts(self) -> None:
+        collect_pool_but(self, [WITNESS])
         self.assertFalse(self.can_reach_region("m01/main-area"))
         self.collect_by_name(WITNESS)
         self.assertTrue(self.can_reach_region("m01/main-area"))
@@ -121,14 +150,6 @@ class TestTranserverHeldAnyway(MMZXTestBase):
         self.collect(self.get_items_by_name(PASSWORD_ITEM))
         for region in PAST_THE_SEAL:
             self.assertTrue(self.can_reach_region(region), region)
-
-
-class TestDocument(unittest.TestCase):
-    def test_every_seal_boss_has_an_arena(self) -> None:
-        """`bosses` places one event in the arena of each Pseudoroid."""
-        arenas = set(F.boss_regions(load_document()).values())
-        self.assertLessEqual(set(SEAL_BOSS_BITS), arenas)
-        self.assertEqual(set(SEAL_BOSS_BITS), set(F.PSEUDOROIDS))
 
 
 class TestClamps(unittest.TestCase):
@@ -174,14 +195,22 @@ class TestClientSeal(unittest.TestCase):
         self.assertIn("closed", seal.report({PASSWORD_ITEM: 3})[0])
         self.assertIn("open", seal.report({PASSWORD_ITEM: 5})[0])
 
-    def test_bosses(self) -> None:
-        seal = ClientSeal({"area_m_access": {"mode": "bosses"}})
+    def test_biometals_from_the_flags(self) -> None:
+        """Either Pseudoroid of a pair gives its biometal; Z comes with the megamerge after Giro."""
+        seal = ClientSeal({"area_m_access": {"mode": "biometals"}})
         self.assertEqual(seal.closed_bits({}), CLOSED_BITS)      # nothing read yet: closed
-        seal.beaten = set(BOSS_BITS) - {"Giro"}
-        self.assertEqual(seal.progress_part({}), "Bosses 8/9")
-        self.assertIn("missing: Giro", seal.report({})[0])
-        seal.beaten = set(BOSS_BITS)
+        second_of_each_pair = [(0x021045D1, bit) for bit in (1, 3, 5, 7)]
+        seal.read_biometals(window_with(second_of_each_pair), set())
+        self.assertEqual(seal.progress_part({}), "Seal 4/5")
+        self.assertIn("missing: Z", seal.report({})[0])
+        seal.read_biometals(window_with(second_of_each_pair + [(0x02104602, 1)]), set())
         self.assertEqual(seal.closed_bits({}), frozenset())
+
+    def test_biometals_already_checked(self) -> None:
+        """A check the server already has counts, whatever the flags of this save say."""
+        seal = ClientSeal({"area_m_access": {"mode": "biometals"}})
+        seal.read_biometals(window_with([]), {LOCATIONS[n]["id"] for n in BIOMETAL_LOCATIONS})
+        self.assertEqual(seal.progress({}), (5, 5))
 
     def test_pause_menu_lines(self) -> None:
         """The seal's part follows the goal requirements and moves to the second line when it does not fit."""
@@ -197,4 +226,4 @@ class TestClientSeal(unittest.TestCase):
         """The gate flag and the Transport destination of Area M, nothing else."""
         grant = ITEMS[TRANSERVER]["grant"]
         self.assertEqual(CLOSED_BITS, {GATE_BIT, (grant[1], grant[2])})
-        self.assertEqual(len(BOSS_BITS), 9)
+        self.assertEqual(sorted(BIOMETAL_CHECKS), list("FHLPZ"))

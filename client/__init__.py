@@ -24,7 +24,7 @@ from .startup import apply_start_state, resolve_start_state
 from ..rom.ui import SKIP_COPY_CAVE, SKIP_COPY_CAVE_RAM
 from .checks import detect_checks, sync_taken_disks
 from .goal import GoalRequirement, missions_completed, sync_goal_line
-from .seal import Seal, hold_seal_scene
+from .seal import Seal, hold_seal_scene, track_biometals
 from .items import grant_items, received_counts, revert_unowned_models
 from .minibosses import MODE_OFF, parse_mode, skip_minibosses
 from .missions import auto_accept_mission, handle_ending, repair_missions, skip_boss_rush
@@ -275,7 +275,8 @@ class MMZXClient(BizHawkClient):
             await self._stage("position", send_position(self, ctx, tick))
             window = await ProgressWindow.read(ctx)
             self.missions_cleared = missions_completed(window)
-            self.seal.read_bosses(window)
+            if self.seal.gated:
+                await self._stage("seal progress", track_biometals(self, ctx, window))
             await self._stage("checks", detect_checks(self, ctx, window))
             await self._stage("taken disks", sync_taken_disks(self, ctx, window, tick))
             await self._stage("pickup state", sync_pickup_state(self, ctx))

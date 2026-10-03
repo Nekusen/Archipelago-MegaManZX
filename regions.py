@@ -106,13 +106,6 @@ def create_regions(world) -> None:
                  and_rules(rule(doc["rooms"][start].get("req")), arena_rule(start, "main")))
     menu.connect(field, "Field access")
 
-    if world.seal.mode == S.MODE_BOSSES:
-        arenas = {boss: F.region_name(room, rid) for (room, rid), boss in boss_of.items()}
-        for boss in S.PSEUDOROIDS:
-            ev = MMZXLocation(player, S.defeated_event(boss), None, regions[arenas[boss]])
-            ev.place_locked_item(world.create_event(S.defeated_event(boss)))
-            ev.parent_region.locations.append(ev)
-
     # drawn connections inside each room
     for room, rl in doc["rooms"].items():
         for c in rl.get("conns", []):
@@ -187,3 +180,11 @@ def create_regions(world) -> None:
         base = lambda state, _p=pname: state.can_reach_region(_p, player)  # noqa: E731
     victory.access_rule = and_rules(base, rule(checks.get(final, {}).get("req")), goal_rule)
     field.locations.append(victory)
+
+    if world.seal.mode == S.MODE_BIOMETALS:
+        for name in S.BIOMETAL_LOCATIONS:
+            loc = mw.get_location(name, player)
+            ev = MMZXLocation(player, S.obtained_event(name), None, loc.parent_region)
+            ev.place_locked_item(world.create_event(ev.name))
+            ev.access_rule = loc.access_rule
+            loc.parent_region.locations.append(ev)

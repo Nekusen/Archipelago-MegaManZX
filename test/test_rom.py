@@ -16,7 +16,7 @@ from ..apnds import lz
 from ..data import (EVENT_GATES, GOAL_LINE_ADDR, ICON_CODES, ITEMS, LIVE_BLOCK, LOCATIONS, MISSION_ACCEPT,
                     MISSION_COMPLETED_BIT,
                     MISSION_REPEAT_BITS, NOTIFY_ADDR, NOTIFY_BUF_MAX, PICKUP_TABLE_ADDR, STARTING_MODELS,
-                    STARTING_TRANSERVERS, STORY_GATE_ITEMS, STORY_LAVA_ITEM, STORY_REPORT_STATES)
+                    STARTING_TRANSERVERS, STORY_DONE_BITS, STORY_GATE_ITEMS, STORY_LAVA_ITEM, STORY_REPORT_STATES)
 from ..rom import arm9, blz, golden, icons, missions, nds, pickups, sprites, story, table, ui
 
 PATCH_MODULES = (pickups, sprites, ui, missions, story)     # the modules that hold patch tables and caves
@@ -659,6 +659,32 @@ class TestStorySection(unittest.TestCase):
                 self.assertEqual(int.from_bytes(as_bytes(orig), "little"), LIVE_BLOCK)
                 self.assertEqual(int.from_bytes(as_bytes(new), "little") + story.STORY_LAVA_OFF, gates)
         self.assertEqual(ITEMS[STORY_LAVA_ITEM]["grant"][1], [story.STORY_LAVA_BIT])
+
+    def test_giro_scene_literal(self) -> None:
+        """The scene asked for any of the four chips picked up; now three bits of the story byte, all chips."""
+        (_ram, orig, new), (_ram2, mask, no_mask) = story.STORY_OVERLAY_PATCH[49]
+        base = int.from_bytes(as_bytes(orig), "little")
+        chips = {tuple(v["detect"][1:]) for n, v in LOCATIONS.items() if n.endswith(story.STORY_CHIP_ITEM)
+                 or n.endswith(story.STORY_CHIP_ITEM + " (2)")}
+        first = (base + story.STORY_CHIPS_OFF - 1, 7)
+        self.assertEqual(chips, {first} | {(base + story.STORY_CHIPS_OFF, bit) for bit in story.STORY_CHIPS_BITS})
+        self.assertEqual((as_bytes(mask)[0], as_bytes(no_mask)[0]), (1 << first[1], 0))
+        self.assertEqual(int.from_bytes(as_bytes(new), "little") + story.STORY_CHIPS_OFF,
+                         PICKUP_TABLE_ADDR + table.STORY_OFF)
+        self.assertEqual(ITEMS[story.STORY_CHIP_ITEM]["grant"][1][:len(story.STORY_CHIPS_BITS)],
+                         story.STORY_CHIPS_BITS)
+
+    def test_generator_literals(self) -> None:
+        """The generator moves its bit, mask and all, from the area flag to the byte of events done."""
+        done = PICKUP_TABLE_ADDR + table.STORY_DONE_OFF
+        kind, addr, bit = LOCATIONS[story.STORY_GENERATOR]["detect"]
+        self.assertEqual((kind, STORY_DONE_BITS[story.STORY_GENERATOR]), ("bit", bit))
+        for ram, orig, new in story.STORY_OVERLAY_PATCH[65]:
+            with self.subTest(ram=hex(ram)):
+                self.assertEqual(int.from_bytes(as_bytes(orig), "little"), addr)
+                self.assertEqual(int.from_bytes(as_bytes(new), "little"), done)
+        self.assertGreater(table.STORY_DONE_OFF, table.STORY_GATES_OFF)
+        self.assertLess(table.STORY_DONE_OFF, table.INDEX_OFF)
 
     def test_only_with_the_items(self) -> None:
         """The other modes leave the ARM9 and the rooms alone."""

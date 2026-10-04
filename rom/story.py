@@ -1,13 +1,14 @@
-"""Mission objectives as items: a mission is reported only with its object, and two doors, the
-lava of Area K and the ITEM C list follow the items held instead of the game's own flags."""
+"""Mission objectives as items: a mission is reported only with its object, and Giro's scene, two
+doors, the lava of Area K and the ITEM C list follow the items held instead of the game's own flags."""
 
 import struct
 
-from ..data import ITEMS, STORY_GATE_ITEMS, STORY_LAVA_ITEM, STORY_REPORT_STATES
+from ..data import (
+    ITEMS, LIVE_BLOCK, LOCATIONS, STORY_DONE_BITS, STORY_GATE_ITEMS, STORY_LAVA_ITEM, STORY_REPORT_STATES)
 from .arm9 import Arm9, thumb_bl
 from .missions import MISSION_SECTION_LEN, MISSION_SECTION_RAM
 from .nds import patch_overlay
-from .table import story_flag, story_gate_flag, story_gates_addr
+from .table import story_addr, story_done_addr, story_flag, story_gate_flag, story_gates_addr
 from .ui import ROOM_OVERLAY_SLOT_RAM
 
 # Autoload section after the mission one: `report_gate`, then the table it reads.
@@ -33,17 +34,24 @@ STORY_DOOR_FLAGS_ORIG = bytes.fromhex("7d0100007e010000")
 STORY_DOOR_FLAGS_NEW = bytes.fromhex("ddb34600deb34600")
 # The ITEM C list of the pause menu shows the story objects held, not the ones picked up
 STORY_MENU_FLAGS_RAM = 0x020D97B0
-STORY_MENU_ITEMS = ("Computer Chip", "Stuffed Animal", "Data Disk 1", "Data Disk 2", "Data Disk 3")
+STORY_CHIP_ITEM = "Computer Chip"
+STORY_MENU_ITEMS = (STORY_CHIP_ITEM, "Stuffed Animal", "Data Disk 1", "Data Disk 2", "Data Disk 3")
 STORY_MENU_FLAGS_ORIG = bytes.fromhex("9702000098020000990200009a0200009b020000b5020000b6020000b7020000")
 STORY_MENU_FLAGS_NEW = bytes.fromhex("d0b34600d1b34600d2b34600d3b34600d4b34600d5b34600d6b34600d7b34600")
-# Room code that reads the gate flags by address: the door tiles of F-3 (bit 5 of the byte
-# 0x0F past its literal) and the two lava walls of K-4 (bit 0 of the byte after theirs).
+# Room code that reads the story flags by address: a new literal lands each read on an item's byte.
 STORY_OVERLAY_PATCH = {
     # overlay: [(RAM, vanilla, patched)]
-    73: [(0x021948EC, "ec451002", "381c1902")],
-    98: [(0x02195584, "cc451002", "461c1902"),
+    49: [(0x02194B40, "0c461002", "331c1902"),   # B-2, Giro's scene: any chip held, three bits of the story byte
+         (0x02194A50, "8020", "0020")],          # ... and its fourth test, on the byte before, masks nothing
+    65: [(0x02194748, "cc451002", "481c1902"),   # E-3, the generator: its bit, off the flag the machines read
+         (0x021947D0, "cc451002", "481c1902"),
+         (0x021949A4, "cc451002", "481c1902")],
+    73: [(0x021948EC, "ec451002", "381c1902")],  # F-3, the door tiles: bit 5 of the byte 0x0F past the literal
+    98: [(0x02195584, "cc451002", "461c1902"),   # K-4, the two lava walls: bit 0 of the byte after the literal
          (0x021956BC, "cc451002", "461c1902")],
 }
+STORY_CHIPS_OFF, STORY_CHIPS_BITS = 0x13, [0, 1, 2]
+STORY_GENERATOR = "E-3: Generator"
 STORY_F3_DOOR_OFF, STORY_F3_DOOR_BIT = 0x0F, 5
 STORY_LAVA_OFF, STORY_LAVA_BIT = 1, 0
 
@@ -104,9 +112,14 @@ def patch_story_items(arm9: Arm9, enabled: bool) -> None:
 
 
 def patch_story_rooms(rom: bytearray, enabled: bool) -> None:
-    """With mission_objectives: items, make the door of F-3 and the lava of K-4 follow their items."""
+    """With mission_objectives: items, make the rooms follow the items: Giro's scene, the generator of E-3,
+    the door of F-3 and the lava of K-4."""
     if not enabled:
         return
+    assert item_bits(STORY_CHIP_ITEM)[:len(STORY_CHIPS_BITS)] == STORY_CHIPS_BITS
+    assert STORY_OVERLAY_PATCH[49][0][2] == (story_addr() - STORY_CHIPS_OFF).to_bytes(4, "little").hex()
+    assert LOCATIONS[STORY_GENERATOR]["detect"] == ["bit", LIVE_BLOCK, STORY_DONE_BITS[STORY_GENERATOR]]
+    assert all(p[2] == story_done_addr().to_bytes(4, "little").hex() for p in STORY_OVERLAY_PATCH[65])
     assert item_bits(STORY_GATE_ITEMS[STORY_DOOR_FLAGS[0]]) == [STORY_F3_DOOR_BIT]
     assert item_bits(STORY_LAVA_ITEM) == [STORY_LAVA_BIT]
     assert STORY_OVERLAY_PATCH[73][0][2] == gate_literal(STORY_F3_DOOR_OFF)

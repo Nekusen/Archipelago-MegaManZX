@@ -7,9 +7,12 @@
 @ table section that only the items received fill (rom/table.py STORY_OFF and
 @ STORY_GATES_OFF), and everything that used to ask the game's flags asks those:
 @ the Report of the five missions, through `report_gate`; the two doors, through
-@ their entries in the table of door flags; the lava wall of K-4 and the door
-@ tiles of F-3, through the literal their code loads; and the ITEM C list of the
-@ pause menu. Nothing here is applied in the other two modes of the option.
+@ their entries in the table of door flags; the lava wall of K-4, the door tiles
+@ of F-3 and the scene of B-2 where Giro waits for a chip, through the literal
+@ their code loads; and the ITEM C list of the pause menu. The generator of E-3
+@ goes the other way round: what it does to the area is an item, so it marks its
+@ own destruction in a third byte of that section. Nothing here is applied in the
+@ other two modes of the option.
 
         .thumb
 
@@ -18,6 +21,7 @@
 .equ mission_state,         0x021046AC
 .equ story_byte,            0x02191C46  @ PICKUP_TABLE_ADDR + STORY_OFF
 .equ gates_byte,            0x02191C47  @ PICKUP_TABLE_ADDR + STORY_GATES_OFF
+.equ done_byte,             0x02191C48  @ PICKUP_TABLE_ADDR + STORY_DONE_OFF
 .equ story_flag_base,       (story_byte - progress_block) * 8
 .equ gates_flag_base,       (gates_byte - progress_block) * 8
 .equ section,               0x02193200  @ STORY_SECTION_RAM
@@ -95,7 +99,38 @@ lit_story:  .word story_byte
         .word   story_flag_base + 6
         .word   story_flag_base + 7
 
-@ Room overlays (rom/story.py STORY_OVERLAY_PATCH). Overlay 73 is F-3, overlay 98 is K-4.
+@ Room overlays (rom/story.py STORY_OVERLAY_PATCH). Overlay 49 is B-2, overlay 65 is E-3,
+@ overlay 73 is F-3, overlay 98 is K-4.
+
+        .org    0x02194B40
+@ rom: STORY_OVERLAY_PATCH[49][0][2]
+@ was: .word 0x0210460C   (STORY_OVERLAY_PATCH[49][0][1]): Giro's scene starts with any of the four chips, bit 7 of this address + 0x12 or bits 0 to 2 of the next byte
+        .word   story_byte - 0x13
+
+        .org    0x02194A50
+@ rom: STORY_OVERLAY_PATCH[49][1][2]
+@ was: movs r0, #0x80   (STORY_OVERLAY_PATCH[49][1][1]): the mask of the bit 7 test, which would now read the byte before the story one
+        movs    r0, #0
+
+@ The generator of E-3 sets, once destroyed, the area flag that stops every machine of
+@ Area E (bit 5 of the progress block's first byte). That flag is the item's now, set by the
+@ client while the player is in the area, so the generator keeps its own bit elsewhere:
+@ the same bit of the byte of events done, which is its location.
+
+        .org    0x02194748
+@ rom: STORY_OVERLAY_PATCH[65][0][2]
+@ was: .word 0x021045CC   (STORY_OVERLAY_PATCH[65][0][1]): the think tests the bit before the explosion and sets it after
+        .word   done_byte
+
+        .org    0x021947D0
+@ rom: STORY_OVERLAY_PATCH[65][1][2]
+@ was: .word 0x021045CC   (STORY_OVERLAY_PATCH[65][1][1]): the generator's second routine that sets the bit
+        .word   done_byte
+
+        .org    0x021949A4
+@ rom: STORY_OVERLAY_PATCH[65][2][2]
+@ was: .word 0x021045CC   (STORY_OVERLAY_PATCH[65][2][1]): the init draws the generator destroyed with the bit set
+        .word   done_byte
 
         .org    0x021948EC
 @ rom: STORY_OVERLAY_PATCH[73][0][2]

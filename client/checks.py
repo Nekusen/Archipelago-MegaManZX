@@ -25,7 +25,7 @@ async def detect_checks(client: "MMZXClient", ctx, window: ProgressWindow) -> No
     """
     detected = set()
     for v in LOCATIONS.values():
-        det = v.get("detect")
+        det = client.story_detect.get(v["id"]) or v.get("detect")
         if not det:
             continue
         if det[0] == "bit":

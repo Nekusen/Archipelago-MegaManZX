@@ -107,6 +107,17 @@ def unpack_version(word: int) -> tuple[int, int, int]:
     return word >> 16, (word >> 8) & 0xFF, word & 0xFF
 
 
+# Older versions whose patched ROM a version of this world still plays: nothing in the ROM, or
+# in what the client reads from it, changed between them.
+PLAYABLE_ROM_VERSIONS = {(0, 2, 1): ((0, 2, 0),)}
+
+
+def plays_rom(rom_version: int, world_version: tuple[int, int, int]) -> bool:
+    """Whether the world of world_version plays a ROM whose marker holds rom_version."""
+    patched_by = unpack_version(rom_version)
+    return patched_by == tuple(world_version) or patched_by in PLAYABLE_ROM_VERSIONS.get(tuple(world_version), ())
+
+
 def write_patch_tokens(patch: MMZXPatch, slot_name: str, seed_name: str,
                        world_version: tuple[int, int, int], golden_image: bytes,
                        pickup_table: bytes, hu_in_pool: bool = False) -> None:

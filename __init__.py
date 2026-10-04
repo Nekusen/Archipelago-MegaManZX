@@ -103,6 +103,8 @@ class MMZXWorld(World):
         "location_setting_key": "mmzx_pos_{player}",
         "location_icon_coords": tracker.location_icon_coords,
     }
+    # the slot data holds all the logic needs, so the tracker builds this world without the YAML
+    ut_can_gen_without_yaml = True
 
     @staticmethod
     def interpret_slot_data(slot_data: dict) -> dict:

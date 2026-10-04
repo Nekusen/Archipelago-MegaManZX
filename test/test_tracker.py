@@ -124,6 +124,11 @@ class TestTrackerRegeneration(unittest.TestCase):
         own = set(MMZXOptions.type_hints) - set(PerGameCommonOptions.type_hints)
         self.assertEqual(own, set(SLOT_DATA_OPTIONS) | GOAL_OPTIONS | UNSENT_OPTIONS)
 
+    def test_the_yaml_is_not_needed(self) -> None:
+        """Universal Tracker builds this world from an empty YAML, which a default one stands for."""
+        self.assertTrue(MMZXWorld.ut_can_gen_without_yaml)
+        self.assertIsInstance(MMZXWorld.__dict__["interpret_slot_data"], staticmethod)
+
     def test_slot_data_of_another_game_is_ignored(self) -> None:
         multiworld = setup_multiworld(MMZXWorld, steps=(), options={"starting_model": "model_ox"})
         multiworld.re_gen_passthrough = {"Another Game": {"starting_model": "none"}}

@@ -8,14 +8,13 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [0.2.1] - 2026-10-05
 
-### Changed
-
-- Universal Tracker no longer needs your YAML for this game.
-- This version plays the seeds generated with 0.2.0: update the apworld and keep playing with the ROM you already have.
-
 ### Fixed
 
-- Universal Tracker showed checks in logic that were not reachable yet when the YAML had random options, such as a random `starting_model` with `hu_in_pool`. It now reads the options of your seed from the server.
+- Universal Tracker showed checks in logic that were not reachable yet when the YAML had random options, such as a random `starting_model` with `hu_in_pool`. It now reads the options of your seed from the server, so it should always be consistent.
+
+### Changed
+
+- As a bonus due to the changes on this fix, Universal Tracker no longer needs your YAML for this game.
 
 ## [0.2.0] - 2026-09-26
 

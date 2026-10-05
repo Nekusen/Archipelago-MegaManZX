@@ -1730,6 +1730,10 @@
                 "item_count": 1
               },
               {
+                "name": "K-4: Door Switch",
+                "item_count": 1
+              },
+              {
                 "name": "K-4: Disk E-26",
                 "item_count": 1
               },
@@ -7696,6 +7700,27 @@
             "sections": [
               {
                 "name": "K-4: Disk B-12",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "K-4: Door Switch",
+            "map_locations": [
+              {
+                "map": "area_k",
+                "x": 516,
+                "y": 890
+              },
+              {
+                "map": "room_k04",
+                "x": 16,
+                "y": 870
+              }
+            ],
+            "sections": [
+              {
+                "name": "K-4: Door Switch",
                 "item_count": 1
               }
             ]

@@ -4,7 +4,7 @@ doors, the lava of Area K and the ITEM C list follow the items held instead of t
 import struct
 
 from ..data import (
-    ITEMS, LIVE_BLOCK, LOCATIONS, STORY_DONE_BITS, STORY_GATE_ITEMS, STORY_LAVA_ITEM, STORY_REPORT_STATES,
+    ITEMS, LIVE_BLOCK, LOCATIONS, STORY_BRIDGE_ITEM, STORY_DONE_BITS, STORY_GATE_ITEMS, STORY_LAVA_ITEM, STORY_REPORT_STATES,
     STORY_SWITCH_ITEM)
 from .arm9 import Arm9, thumb_bl
 from .missions import MISSION_SECTION_LEN, MISSION_SECTION_RAM
@@ -47,13 +47,29 @@ STORY_OVERLAY_PATCH = {
     65: [(0x02194748, "cc451002", "481c1902"),   # E-3, the generator: its bit, off the flag the machines read
          (0x021947D0, "cc451002", "481c1902"),
          (0x021949A4, "cc451002", "481c1902")],
-    73: [(0x021948EC, "ec451002", "381c1902")],  # F-3, the door tiles: bit 5 of the byte 0x0F past the literal
+    58: [(0x021944C8, "ec451002", "381c1902"),   # D-1, the bridge: bit 3 of the byte 0x0F past the literal,
+         (0x02194834, "ec451002", "381c1902")],  # for how far the room reaches and for the lift
+    73: [(0x021948EC, "ec451002", "381c1902")],  # F-3, the door tiles: bit 5 of that same byte
     95: [(0x02195DA8, "ec451002", "381c1902")],  # K-1, the door to the Sub Tank: bit 7 of that same byte
     98: [(0x02195584, "cc451002", "461c1902"),   # K-4, the two lava walls: bit 0 of the byte after the literal
          (0x021956BC, "cc451002", "461c1902")],
 }
+# D-1, the bridge, with mission_objectives on checks or on items: each side of the raised bridge
+# keeps whoever walks in on that side, and the switch answers a shot in any mission. On checks
+# the shot lowers the bridge; on items it only marks the switch, and the bridge is the item's.
+BRIDGE_OVERLAY = 58
+BRIDGE_REACH_AT = 0x02194614              # how far the room reaches for the player, set every frame
+BRIDGE_REACH_WAS = ("00b581b00b498968002809d00a480090081c00210a1c094bb0f6d2fd01b0"
+                    "00bd05480090081c00210a1c054bb0f6c8fd01b000bdd0f3140200003000")
+BRIDGE_REACH_NEW = ("00b581b00c49896801239b050022002807d0c86da1221203904202da0022"
+                    "09231b04032000050090081c111c0022b0f6c7fd01b000bdc046d0f31402")
+BRIDGE_SWITCH_AT = 0x021948D6             # what the switch does with a shot
+BRIDGE_SWITCH_WAS = "a22074f654fc002808d02748407d01210840002802d0201cc0300170"
+BRIDGE_SWITCH_LOWERS = "c046c046c046c046c046c046c046c046c046c046c046201cc0300170"
+BRIDGE_SWITCH_MARKS = "2748c17b08221143c173c046c046c046c046c046c046c046c046c046"
 STORY_CHIPS_OFF, STORY_CHIPS_BITS = 0x13, [0, 1, 2]
 STORY_GENERATOR = "E-3: Generator"
+STORY_BRIDGE_OFF, STORY_BRIDGE_BIT = 0x0F, 3
 STORY_F3_DOOR_OFF, STORY_F3_DOOR_BIT = 0x0F, 5
 STORY_K1_DOOR_OFF, STORY_K1_DOOR_BIT = 0x0F, 7
 STORY_LAVA_OFF, STORY_LAVA_BIT = 1, 0
@@ -126,8 +142,22 @@ def patch_story_rooms(rom: bytearray, enabled: bool) -> None:
     assert item_bits(STORY_GATE_ITEMS[STORY_DOOR_FLAGS[0]]) == [STORY_F3_DOOR_BIT]
     assert item_bits(STORY_LAVA_ITEM) == [STORY_LAVA_BIT]
     assert item_bits(STORY_SWITCH_ITEM) == [STORY_K1_DOOR_BIT]
+    assert item_bits(STORY_BRIDGE_ITEM) == [STORY_BRIDGE_BIT]
+    assert all(p[2] == gate_literal(STORY_BRIDGE_OFF) for p in STORY_OVERLAY_PATCH[BRIDGE_OVERLAY])
     assert STORY_OVERLAY_PATCH[73][0][2] == gate_literal(STORY_F3_DOOR_OFF)
     assert STORY_OVERLAY_PATCH[95][0][2] == gate_literal(STORY_K1_DOOR_OFF)
     assert all(p[2] == gate_literal(STORY_LAVA_OFF) for p in STORY_OVERLAY_PATCH[98])
     for ovl, patches in STORY_OVERLAY_PATCH.items():
         patch_overlay(rom, ovl, patches)
+
+
+def bridge_patches(by_item: bool) -> list[tuple[int, str, str]]:
+    """The two replacements in the room of the bridge: how far it reaches, and what its switch does."""
+    return [(BRIDGE_REACH_AT, BRIDGE_REACH_WAS, BRIDGE_REACH_NEW),
+            (BRIDGE_SWITCH_AT, BRIDGE_SWITCH_WAS, BRIDGE_SWITCH_MARKS if by_item else BRIDGE_SWITCH_LOWERS)]
+
+
+def patch_bridge(rom: bytearray, enabled: bool, by_item: bool) -> None:
+    """With mission_objectives on, leave the bridge of D-1 to its switch (checks) or to its item (items)."""
+    if enabled:
+        patch_overlay(rom, BRIDGE_OVERLAY, bridge_patches(by_item))

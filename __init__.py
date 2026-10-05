@@ -14,7 +14,7 @@ from . import seal as S
 from .logic import bosses
 from .data import LOCATIONS, ITEMS, STARTING_MODEL_ITEM, STARTING_MODELS
 from .items import MMZXItem, item_name_to_id, get_classification, ITEM_GROUPS, STORY_GRANTS
-from .locations import (active_locations, location_name_to_id, LOCATION_GROUPS, STORY_ITEMS,
+from .locations import (active_locations, location_name_to_id, LOCATION_GROUPS, STORY_ITEMS, STORY_OFF,
                         story_mode)
 from .options import MMZXOptions, OPTION_GROUPS
 from .logic import load_document
@@ -291,6 +291,7 @@ class MMZXWorld(World):
                            image, build_table(self.pickup_icons()),
                            hu_in_pool=bool(self.options.hu_in_pool.value),
                            story_items=story_mode(self.options) == STORY_ITEMS,
+                           story_on=story_mode(self.options) != STORY_OFF,
                            door_sites=self.door_sites)
         out_name = self.multiworld.get_out_file_name_base(self.player)
         patch.write(os.path.join(output_directory, out_name + patch.patch_file_ending))

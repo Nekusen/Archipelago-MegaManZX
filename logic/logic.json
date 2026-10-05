@@ -610,6 +610,17 @@
    },
    "unsure": false
   },
+  "D-1: Bridge Switch": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
   "D-1: Life Up": {
    "note": "\"any transformation\"",
    "req": {
@@ -4917,7 +4928,8 @@
      "req": {
       "normal": [
        [
-        "MODEL"
+        "MODEL",
+        "D_BRIDGE"
        ]
       ]
      },
@@ -4959,7 +4971,8 @@
      "req": {
       "normal": [
        [
-        "MODEL"
+        "MODEL",
+        "D_BRIDGE"
        ]
       ]
      },
@@ -5019,7 +5032,9 @@
      "note": "",
      "req": {
       "normal": [
-       []
+       [
+        "D_BRIDGE"
+       ]
       ]
      },
      "to": "bridge",
@@ -5127,12 +5142,12 @@
      "note": "",
      "poly": [
       [
-       2246,
-       193
+       2333,
+       196
       ],
       [
-       2242,
-       685
+       2355,
+       682
       ],
       [
        2707,
@@ -5158,12 +5173,12 @@
        714
       ],
       [
-       2203,
-       574
+       2329,
+       589
       ],
       [
-       2169,
-       394
+       2311,
+       401
       ]
      ]
     },

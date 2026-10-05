@@ -16,8 +16,8 @@ from ..apnds import lz
 from ..data import (EVENT_GATES, GOAL_LINE_ADDR, ICON_CODES, ITEMS, LIVE_BLOCK, LOCATIONS, MISSION_ACCEPT,
                     MISSION_COMPLETED_BIT,
                     MISSION_REPEAT_BITS, NOTIFY_ADDR, NOTIFY_BUF_MAX, PICKUP_TABLE_ADDR, STARTING_MODELS,
-                    STARTING_TRANSERVERS, STORY_DONE_BITS, STORY_GATE_ITEMS, STORY_LAVA_ITEM, STORY_REPORT_STATES,
-                    STORY_SWITCH_ITEM, STORY_SWITCH_LOCATION)
+                    STARTING_TRANSERVERS, STORY_BRIDGE_ITEM, STORY_BRIDGE_LOCATION, STORY_DONE_BITS, STORY_GATE_ITEMS,
+                    STORY_LAVA_ITEM, STORY_REPORT_STATES, STORY_SWITCH_ITEM, STORY_SWITCH_LOCATION)
 from ..rom import arm9, blz, golden, icons, missions, nds, pickups, sprites, story, table, ui
 
 PATCH_MODULES = (pickups, sprites, ui, missions, story)     # the modules that hold patch tables and caves
@@ -672,6 +672,13 @@ class TestStorySection(unittest.TestCase):
         self.assertEqual(int.from_bytes(as_bytes(new), "little") + story.STORY_K1_DOOR_OFF, gates)
         self.assertEqual(ITEMS[STORY_SWITCH_ITEM]["grant"][1], [story.STORY_K1_DOOR_BIT])
         self.assertEqual(switch_bit, story.STORY_K1_DOOR_BIT)
+        bridge_addr, bridge_bit = LOCATIONS[STORY_BRIDGE_LOCATION]["detect"][1:]
+        for ram, orig, new in story.STORY_OVERLAY_PATCH[story.BRIDGE_OVERLAY]:
+            with self.subTest(ram=hex(ram)):
+                self.assertEqual(int.from_bytes(as_bytes(orig), "little") + story.STORY_BRIDGE_OFF, bridge_addr)
+                self.assertEqual(int.from_bytes(as_bytes(new), "little") + story.STORY_BRIDGE_OFF, gates)
+        self.assertEqual(ITEMS[STORY_BRIDGE_ITEM]["grant"][1], [story.STORY_BRIDGE_BIT])
+        self.assertEqual(bridge_bit, story.STORY_BRIDGE_BIT)
         for ram, orig, new in story.STORY_OVERLAY_PATCH[98]:
             with self.subTest(ram=hex(ram)):
                 self.assertEqual(int.from_bytes(as_bytes(orig), "little"), LIVE_BLOCK)
@@ -703,6 +710,22 @@ class TestStorySection(unittest.TestCase):
                 self.assertEqual(int.from_bytes(as_bytes(new), "little"), done)
         self.assertGreater(table.STORY_DONE_OFF, table.STORY_GATES_OFF)
         self.assertLess(table.STORY_DONE_OFF, table.INDEX_OFF)
+
+    def test_bridge_patches(self) -> None:
+        """Both ways of the switch fill the same spot, and the switch marks the flag its location detects."""
+        for by_item in (False, True):
+            for site, orig, new in story.bridge_patches(by_item):
+                with self.subTest(by_item=by_item, site=hex(site)):
+                    self.assertEqual(len(as_bytes(orig)), len(as_bytes(new)))
+                    self.assertEqual(site % 2, 0)
+        addr, bit = LOCATIONS[STORY_BRIDGE_LOCATION]["detect"][1:]
+        literal = int.from_bytes(as_bytes(story.STORY_OVERLAY_PATCH[story.BRIDGE_OVERLAY][0][1]), "little")
+        self.assertEqual(literal + story.STORY_BRIDGE_OFF, addr)
+        marks = as_bytes(story.BRIDGE_SWITCH_MARKS)
+        self.assertEqual(marks[2:4], bytes([0xC1, 0x78 | story.STORY_BRIDGE_OFF >> 2]))   # ldrb r1, [r0, #off]
+        self.assertEqual(marks[4:6], bytes([1 << bit, 0x22]))                             # movs r2, #mask
+        story.patch_bridge(None, False, False)
+        story.patch_bridge(None, False, True)
 
     def test_only_with_the_items(self) -> None:
         """The other modes leave the ARM9 and the rooms alone."""
@@ -776,6 +799,22 @@ class TestVanillaBytes(unittest.TestCase):
             ram, code = nds.overlay_code(rom, ovl)
             for site, _orig, new in patches:
                 self.assertEqual(code[site - ram:site - ram + len(as_bytes(new))], as_bytes(new))
+
+    def test_bridge_patch_sites(self) -> None:
+        """The room of the bridge holds the vanilla bytes at both spots and takes either way of the switch."""
+        ram, code = nds.overlay_code(bytearray(self.rom), story.BRIDGE_OVERLAY)
+        for by_item in (False, True):
+            rom = bytearray(self.rom)
+            if by_item:
+                story.patch_story_rooms(rom, True)
+            for site, orig, _new in story.bridge_patches(by_item):
+                with self.subTest(by_item=by_item, site=hex(site)):
+                    self.assertEqual(code[site - ram:site - ram + len(as_bytes(orig))], as_bytes(orig))
+            story.patch_bridge(rom, True, by_item)
+            _ram, patched = nds.overlay_code(rom, story.BRIDGE_OVERLAY)
+            for site, _orig, new in story.bridge_patches(by_item):
+                self.assertEqual(patched[site - ram:site - ram + len(as_bytes(new))], as_bytes(new))
+            self.assertEqual(len(patched), len(code))
 
     def test_usable_texts_of_the_rom(self) -> None:
         """The system text file rebuilds with the eight popups replaced and the menu texts renamed."""

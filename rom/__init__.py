@@ -30,6 +30,7 @@ AP_MARKER_SEED_OFF = 0x50
 AP_MARKER_SEED_MAX = 31
 CFG_HU_IN_POOL = 0x01                     # mmzx_cfg.bin byte 0, bit 0
 CFG_STORY_ITEMS = 0x02                    # bit 1: mission_objectives is items
+CFG_STORY_ON = 0x04                       # bit 2: mission_objectives is checks or items
 
 
 class MMZXPatchExtension(APPatchExtension):
@@ -44,6 +45,7 @@ class MMZXPatchExtension(APPatchExtension):
         locks = doors.read_locks(caller.get_file(locks_file) if locks_file else None)
         hu_in_pool = bool(cfg[0] & CFG_HU_IN_POOL) if cfg else False
         story_items = bool(cfg[0] & CFG_STORY_ITEMS) if cfg else False
+        story_on = story_items or (bool(cfg[0] & CFG_STORY_ON) if cfg else False)
         d = bytearray(rom)
         arm9_off, _entry, arm9_ram, arm9_len = struct.unpack_from("<4I", d, nds.NDS_HDR_ARM9)
         arm9 = Arm9(bytes(d[arm9_off:arm9_off + arm9_len]), arm9_ram)
@@ -86,6 +88,7 @@ class MMZXPatchExtension(APPatchExtension):
         ui.install_mission_names(d)
         pickups.patch_usable_rooms(d)
         story.patch_story_rooms(d, story_items)
+        story.patch_bridge(d, story_on, story_items)
         sprites.patch_disk_logo(d, fnt_start)
         doors.patch_door_overlays(d, locks)
         nds.update_header_crc(d)
@@ -134,7 +137,7 @@ def plays_rom(rom_version: int, world_version: tuple[int, int, int]) -> bool:
 def write_patch_tokens(patch: MMZXPatch, slot_name: str, seed_name: str,
                        world_version: tuple[int, int, int], golden_image: bytes,
                        pickup_table: bytes, hu_in_pool: bool = False,
-                       story_items: bool = False,
+                       story_items: bool = False, story_on: bool = False,
                        door_sites: dict[str, str] | None = None) -> None:
     """Write the AP marker (magic, version, slot, seed), the option blob, the golden image, the pickup table and the door locks.
 
@@ -158,5 +161,6 @@ def write_patch_tokens(patch: MMZXPatch, slot_name: str, seed_name: str,
     patch.write_file("token_data.bin", patch.get_token_binary())
     # option flags for patch_arm9, which runs before apply_tokens
     cfg = bytearray(4)
-    cfg[0] = (CFG_HU_IN_POOL if hu_in_pool else 0) | (CFG_STORY_ITEMS if story_items else 0)
+    cfg[0] = ((CFG_HU_IN_POOL if hu_in_pool else 0) | (CFG_STORY_ITEMS if story_items else 0)
+              | (CFG_STORY_ON if story_on or story_items else 0))
     patch.write_file("mmzx_cfg.bin", bytes(cfg))

@@ -587,6 +587,10 @@
                 "item_count": 1
               },
               {
+                "name": "D-1: Bridge Switch",
+                "item_count": 1
+              },
+              {
                 "name": "D-1: Disk E-12",
                 "item_count": 1
               },
@@ -4301,6 +4305,27 @@
             "sections": [
               {
                 "name": "D-1: Life Up",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "D-1: Bridge Switch",
+            "map_locations": [
+              {
+                "map": "area_d",
+                "x": 488,
+                "y": 165
+              },
+              {
+                "map": "room_d01",
+                "x": 1007,
+                "y": 118
+              }
+            ],
+            "sections": [
+              {
+                "name": "D-1: Bridge Switch",
                 "item_count": 1
               }
             ]

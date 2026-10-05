@@ -41,8 +41,8 @@ Items:
 - The eight usable items of the pause menu (ITEM A): Cake, Orange, Candy, Bread, Apple, E Tank, W Tank and
   Smelling Salts.
 - With `mission_objectives: items`, the story objects (four Computer Chips, the Stuffed Animal and the Data Disks 1, 2
-  and 3) and what five story events do (Area F Lock Hack, Sprinkler Key, Lava Flow Control, Area K Door Switch and
-  Area E Power Shutdown).
+  and 3) and what six story events do (Area F Lock Hack, Sprinkler Key, Lava Flow Control, Area K Door Switch,
+  Area D Bridge and Area E Power Shutdown).
 - Passwords, with `area_m_access: passwords`.
 - E-Crystals and 1-Ups as filler.
 
@@ -58,8 +58,8 @@ Locations:
 - Optionally (`mission_objectives`), the objects and events of the story missions: the four Computer Chips of
   Area B, the four guardians of Pass The Test (Oeillet, Carrelet, Congre and Thon) and the Stuffed Animal, the Data
   Disk in the terminal of F-3 and the ones Leganchor and Protectos leave behind, the thirteen people trapped in Area G,
-  the generator of E-3, the Lava Flow Control of K-1 and the door switch of K-4 (28 locations). With `items`, the
-  terminal of F-3 and the sprinkler key of G-2 are two more.
+  the generator of E-3, the Lava Flow Control of K-1, the door switch of K-4 and the bridge switch of D-1 (29
+  locations). With `items`, the terminal of F-3 and the sprinkler key of G-2 are two more.
 - Optionally, the 133 pickups (energy capsules, weapon energy, E-Crystals and 1-Ups). Only the "big" pickups are considered. Small pickups from drops do not count.
   - 7 1-Ups
   - 45 Life Energy
@@ -119,6 +119,7 @@ Locations:
   - With `mission_objectives: items` the F-3 and G-2 doors are not open from the start: each opens with its item.
   - The M-1 seal (which normally requires all models), unless `area_m_access` closes it (see below)
   - The D-1 bridge
+    - With `mission_objectives` on `checks` or `items` it starts raised (see below).
   - The sand fall that hides the pit from K-1 to K-2
   - The D-3 ladder up to the walkway that leads to Area O.
 - Troop Reinforcement can be started from D-1, D-2 or D-3 without the base cutscene.
@@ -136,8 +137,8 @@ With `mission_objectives` the objects and events of the story missions become ch
 
 - `checks`: picking up a Computer Chip, talking to each guardian of Pass The Test, getting the Stuffed Animal, using the
   terminal of F-3, rescuing each person of Area G, destroying the generator of E-3, setting the lava control of K-1,
-  stepping on the door switch of K-4 and picking up the Data Disks of J-5 and L-4 each send a check. Nothing else
-  changes.
+  stepping on the door switch of K-4, shooting the bridge switch of D-1 and picking up the Data Disks of J-5 and L-4
+  each send a check. Nothing else changes, except that the bridge of D-1 starts raised until you shoot its switch.
 - `items`: the same, and what those things gave is now an item of the pool.
   - The Report of a mission needs its object: a Computer Chip for Locate Giro, the Stuffed Animal for Pass The Test and
     the Data Disk 1, 2 or 3 for Find The Survivors, Recover The Disk and Protect The Lab. The objective of the mission is
@@ -147,9 +148,12 @@ With `mission_objectives` the objects and events of the story missions become ch
     Sprinkler Key.
   - The lava of Area K is slow only while you hold the Lava Flow Control; the device in K-1 is a check.
   - The door of K-1 on the way to its Sub Tank opens with the Area K Door Switch; the switch in K-4 is a check.
+  - The bridge of D-1 is down only while you hold the Area D Bridge; shooting its switch is a check and lowers nothing.
   - The machines of Area E stop only while you hold the Area E Power Shutdown, a useful item; destroying the generator
     of E-3 is a check.
   - The ITEM C list of the pause menu shows the objects you hold.
+- While the bridge of D-1 is raised, each side of it is a dead end: coming in from D-2 you stay on its right side,
+  and the switch is on the left one. The switch answers a shot at any time, not only during Troop Reinforcement.
 - The guardians of Pass The Test answer in order, and Congre only in human form. The sprinkler key comes with eight
   people rescued, and the civilians of Area G only talk to you in human form.
 - The Computer Chips, the guardians and the people of Area G are in the world only while their mission is under way.

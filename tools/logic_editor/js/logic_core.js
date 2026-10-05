@@ -38,6 +38,7 @@ const DEFAULT_ATOMS = (() => {
   }
   out.push({ id: 'SLOW_LAVA', group: 'story', label: 'Lava of Area K set to slow (the control of K-1, or its item)' });
   out.push({ id: 'K_DOOR_SWITCH', group: 'story', label: 'Door of K-1 to its Sub Tank unlocked (the switch of K-4, or its item)' });
+  out.push({ id: 'D_BRIDGE', group: 'story', label: 'Bridge of D-1 lowered (its switch, or its item; always with mission_objectives off)' });
   return out;
 })();
 

@@ -17,7 +17,7 @@ from ..rom import plays_rom, unpack_version
 from .addresses import (
     BOOT_FILL, DOM, GAME, INVENTORY_WAIT_SECONDS, NOTIFY_LEVELS, NOTIFY_STYLES, PICKUP_OPTION_KEYS,
     ROM_AP_MAGIC, ROM_AP_MAGIC_LEN, ROM_AP_MAGIC_OFF, ROM_AP_VERSION_OFF, ROM_GAME_CODE,
-    ROM_GAME_CODE_OFF, ROM_SLOT_NAME_LEN, ROM_SLOT_NAME_OFF, STARTUP_TICKS, STORY_DONE_DETECT, STORY_GATE_BITS)
+    ROM_GAME_CODE_OFF, ROM_SLOT_NAME_LEN, ROM_SLOT_NAME_OFF, STARTUP_TICKS, STORY_DONE_DETECT, STORY_GATE_BITS, STORY_SWITCH_GATE_BITS)
 from .ram import ProgressWindow, Tick
 from .notices import push_notices, sync_pickup_state
 from .startup import apply_start_state, resolve_start_state
@@ -222,7 +222,9 @@ class MMZXClient(BizHawkClient):
                 "a mini-boss stays beaten once you have beaten it"))
         self.mailbox_enabled = any(bool(opts.get(k, False)) for k in PICKUP_OPTION_KEYS)
         self.story_mode = parse_story_mode(opts.get("mission_objectives"))
-        self.closed_gates = STORY_GATE_BITS if self.story_mode == STORY_ITEMS else frozenset()
+        self.closed_gates = frozenset()
+        if self.story_mode != STORY_OFF:
+            self.closed_gates = STORY_SWITCH_GATE_BITS | (STORY_GATE_BITS if self.story_mode == STORY_ITEMS else frozenset())
         self.story_detect = STORY_DONE_DETECT if self.story_mode == STORY_ITEMS else {}
         # notice thresholds from the YAML, unless /mmzx_notify already set them
         for key in ("received", "sent"):

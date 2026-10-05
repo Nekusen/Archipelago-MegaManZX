@@ -7,18 +7,19 @@ from BaseClasses import CollectionState
 
 from .bases import MMZXTestBase, reach
 from ..client.addresses import (DETECT_FAR, STORY_AREA_FLAGS, STORY_DONE_ADDR, STORY_DONE_DETECT, STORY_GATE_BITS,
-                                STORY_ITEM_BITS, STORY_LEN)
+                                STORY_ITEM_BITS, STORY_LEN, STORY_SWITCH_GATE_BITS)
 from ..client.items import wanted_progress_bits
 from ..client.story import parse_mode, story_held
-from ..data import (DOORS, EVENT_GATES, ITEMS, LOCATIONS, STORY_CHAINS, STORY_COUNTS, STORY_DONE_BITS,
-                    STORY_GATE_ITEMS, STORY_LAVA_ITEM, STORY_LAVA_LOCATION, STORY_REPORT_ITEMS, STORY_SWITCH_ITEM,
+from ..data import (DOORS, EVENT_GATES, EVENT_GATES_OPEN, EVENT_GATES_STORY, ITEMS, LOCATIONS, STORY_BRIDGE_ITEM,
+                    STORY_BRIDGE_LOCATION, STORY_CHAINS, STORY_COUNTS, STORY_DONE_BITS, STORY_GATE_ITEMS,
+                    STORY_LAVA_ITEM, STORY_LAVA_LOCATION, STORY_REPORT_ITEMS, STORY_SWITCH_ITEM,
                     STORY_SWITCH_LOCATION)
 from ..goal import cleared_event
 from ..items import ITEM_GROUPS, STORY_GRANTS
 from ..locations import STORY_CATEGORY, STORY_GATE
 from ..logic import document as F
 from ..logic import load_document
-from ..regions import LAVA_EVENT, SWITCH_EVENT, area_of
+from ..regions import BRIDGE_EVENT, LAVA_EVENT, SWITCH_EVENT, area_of
 
 STORY_LOCATIONS = {n for n, v in LOCATIONS.items() if v["category"] == STORY_CATEGORY}
 GATE_LOCATIONS = {n for n in STORY_LOCATIONS if LOCATIONS[n]["story"] == STORY_GATE}
@@ -57,6 +58,28 @@ def switch_locations(multiworld) -> list:
     asking = {name for name, check in load_document().get("checks", {}).items()
               if any(F.K_DOOR_SWITCH in clause for clauses in (check.get("req") or {}).values() for clause in clauses)}
     return [loc for loc in multiworld.get_locations(1) if loc.name in asking]
+
+
+def asks_for(atom: str) -> bool:
+    """Whether any connection or check of the document asks for the atom."""
+    doc = load_document()
+    reqs = [conn.get("req") for layout in doc["rooms"].values() for conn in layout.get("conns", [])]
+    reqs += [check.get("req") for check in doc.get("checks", {}).values()]
+    return any(atom in clause for req in reqs for clauses in (req or {}).values() for clause in clauses)
+
+
+def bridge_sides(multiworld) -> tuple[list, list, object]:
+    """The ways into the room of the bridge that land left of it, the ones that land right of it,
+    and a location of the room that lies right of it."""
+    switch = LOCATIONS[STORY_BRIDGE_LOCATION]
+    room, edge = switch["room"], switch["pos"][0]
+    entrances = {entrance.name: entrance for entrance in multiworld.get_entrances(1)}
+    doors = [d for d in DOORS if d["dst"] == room and d["src"] != room and d["name"] in entrances]
+    left = [entrances[d["name"]] for d in doors if d["dst_pos"][0] <= edge]
+    right = [entrances[d["name"]] for d in doors if d["dst_pos"][0] > edge]
+    beyond = next(loc for loc in multiworld.get_locations(1) if loc.address is not None
+                  and LOCATIONS[loc.name]["room"] == room and (LOCATIONS[loc.name]["pos"] or [0])[0] > edge)
+    return left, right, beyond
 
 
 def ways_in_from_its_area(multiworld, region) -> list:
@@ -140,6 +163,14 @@ class TestOff(LavaByItsControl, DoorByItsSwitch, MMZXTestBase):
     def test_lava_is_the_event_of_its_control(self) -> None:
         self.assertIn(LAVA_EVENT, event_locations(self.multiworld))
 
+    def test_bridge_is_down_from_the_start(self) -> None:
+        """The client lowers the bridge of D-1 itself: neither a location nor an event stands for it."""
+        self.assertNotIn(BRIDGE_EVENT, event_locations(self.multiworld))
+        self.assertNotIn(STORY_BRIDGE_LOCATION, real_locations(self.multiworld))
+        _left, right, beyond = bridge_sides(self.multiworld)
+        with shut(right):
+            self.assertTrue(beyond.can_reach(state_without(self.multiworld)))
+
 
 class TestChecks(LavaByItsControl, DoorByItsSwitch, MMZXTestBase):
     options = {"mission_objectives": "checks"}
@@ -149,6 +180,28 @@ class TestChecks(LavaByItsControl, DoorByItsSwitch, MMZXTestBase):
         self.assertEqual(real_locations(self.multiworld) & STORY_LOCATIONS, STORY_LOCATIONS - GATE_LOCATIONS)
         self.assertFalse({item.name for item in self.multiworld.itempool} & set(STORY_ITEM_COUNTS))
         self.assertEqual(len(self.multiworld.itempool), len(real_locations(self.multiworld)))
+
+    def test_bridge_is_the_event_of_its_switch(self) -> None:
+        self.assertIn(BRIDGE_EVENT, event_locations(self.multiworld))
+        self.assertIn(STORY_BRIDGE_LOCATION, real_locations(self.multiworld))
+        self.assertEqual(self.multiworld.get_location(BRIDGE_EVENT, 1).parent_region,
+                         self.multiworld.get_location(STORY_BRIDGE_LOCATION, 1).parent_region)
+
+    def test_bridge_is_lowered_from_its_left_side(self) -> None:
+        """The switch stands left of the bridge: from there it opens the way, and from the right nothing does."""
+        if not asks_for(F.D_BRIDGE):
+            self.skipTest("no rule of the document asks for the bridge")
+        left, right, beyond = bridge_sides(self.multiworld)
+        switch = self.multiworld.get_location(STORY_BRIDGE_LOCATION, 1)
+        with shut(right):
+            state = state_without(self.multiworld)
+            self.assertTrue(switch.can_reach(state))
+            self.assertTrue(beyond.can_reach(state))
+        with shut(left):
+            state = state_without(self.multiworld)
+            self.assertTrue(beyond.can_reach(state))
+            self.assertFalse(switch.can_reach(state))
+            self.assertFalse(state.has(BRIDGE_EVENT, 1))
 
     def test_everything_stays_open(self) -> None:
         """With the whole pool every location is in logic: nothing asks for an item that does not exist."""
@@ -233,6 +286,28 @@ class TestItems(MMZXTestBase):
                     self.assertTrue(entrance.access_rule(full))
                     self.assertFalse(entrance.access_rule(lacking))
 
+    def test_bridge_is_an_item(self) -> None:
+        self.assertNotIn(BRIDGE_EVENT, event_locations(self.multiworld))
+        self.assertIn(STORY_BRIDGE_ITEM, {item.name for item in self.multiworld.itempool})
+        self.assertIn(STORY_BRIDGE_LOCATION, real_locations(self.multiworld))
+
+    def test_bridge_needs_its_item_both_ways(self) -> None:
+        """Without the item neither side reaches the other, and the switch is a check from its own side."""
+        if not asks_for(F.D_BRIDGE):
+            self.skipTest("no rule of the document asks for the bridge")
+        left, right, beyond = bridge_sides(self.multiworld)
+        switch = self.multiworld.get_location(STORY_BRIDGE_LOCATION, 1)
+        with shut(right):
+            lacking = state_without(self.multiworld, STORY_BRIDGE_ITEM)
+            self.assertTrue(switch.can_reach(lacking))
+            self.assertFalse(beyond.can_reach(lacking))
+            self.assertTrue(beyond.can_reach(state_without(self.multiworld)))
+        with shut(left):
+            lacking = state_without(self.multiworld, STORY_BRIDGE_ITEM)
+            self.assertTrue(beyond.can_reach(lacking))
+            self.assertFalse(switch.can_reach(lacking))
+            self.assertTrue(switch.can_reach(state_without(self.multiworld)))
+
     def test_lava_is_an_item(self) -> None:
         self.assertNotIn(LAVA_EVENT, event_locations(self.multiworld))
         self.assertIn(STORY_LAVA_ITEM, {item.name for item in self.multiworld.itempool})
@@ -273,7 +348,7 @@ class TestClientState(unittest.TestCase):
         self.assertEqual(story_held({"Computer Chip": 1}), bytes([0x01, 0x00]))
         self.assertEqual(story_held({"Computer Chip": 3, "Data Disk 2": 1}), bytes([0x47, 0x00]))
         everything = story_held(dict(STORY_ITEM_COUNTS))
-        self.assertEqual(everything, bytes([0xFF, 0xE1]))
+        self.assertEqual(everything, bytes([0xFF, 0xE9]))
         seen: dict[int, int] = {}
         for byte, bits in STORY_ITEM_BITS.values():
             for bit in bits:
@@ -291,6 +366,19 @@ class TestClientState(unittest.TestCase):
         self.assertTrue(gates <= opened)
         closed, _keys = wanted_progress_bits({}, Goal(), 0, STORY_GATE_BITS)
         self.assertEqual(opened - closed, gates)
+
+    def test_switch_gates_are_left_to_the_player(self) -> None:
+        """On checks and on items the client stops lowering the bridge: its switch or its item does."""
+        class Goal:
+            def met(self, counts, missions):
+                return False
+        switches = {tuple(EVENT_GATES[flag]) for flag in EVENT_GATES_STORY}
+        self.assertEqual(STORY_SWITCH_GATE_BITS, switches)
+        self.assertTrue(set(EVENT_GATES_STORY) <= set(EVENT_GATES_OPEN))
+        self.assertEqual(LOCATIONS[STORY_BRIDGE_LOCATION]["detect"], ["bit", *EVENT_GATES[EVENT_GATES_STORY[0]]])
+        opened, _keys = wanted_progress_bits({}, Goal(), 0)
+        closed, _keys = wanted_progress_bits({}, Goal(), 0, STORY_SWITCH_GATE_BITS)
+        self.assertEqual(opened - closed, switches)
 
     def test_event_whose_effect_is_an_item(self) -> None:
         """The game marks the event in a byte of its own, and the item holds the area flag of that event."""

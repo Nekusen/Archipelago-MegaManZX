@@ -521,7 +521,7 @@ room D-1 [d01]
     conn -> Bottom Switch Door Area
       normal: free
     conn -> Bridge
-      normal: MODEL
+      normal: MODEL & D_BRIDGE
   region B-2 Entrance
     door -> B-2/D-1 Entrance
     <- B-2
@@ -534,7 +534,7 @@ room D-1 [d01]
     conn -> After Bridge
       normal: MODEL
     conn -> Bridge
-      normal: MODEL
+      normal: MODEL & D_BRIDGE
   region Bridge
     conn -> After Bridge
       normal: MODEL
@@ -544,12 +544,14 @@ room D-1 [d01]
     conn -> Bridge Left Side
       normal: free
   region Bridge Left Side
+    check D-1: Bridge Switch
+      normal: MODEL
     conn -> Hub Entrance
       normal: MODEL
     conn -> B-2 Entrance
       normal: free
     conn -> Bridge
-      normal: free
+      normal: D_BRIDGE
   region D-2 Entrance
     door -> D-2/D-1 Entrance
       ? normal: MODEL   # the highway bridge is lowered with a switch (Bridge switch (141,34)): it has to be hit

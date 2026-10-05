@@ -136,7 +136,7 @@
    "req": {
     "normal": [
      [
-      "MODEL"
+      "FX"
      ]
     ]
    },
@@ -434,6 +434,17 @@
    "unsure": false
   },
   "C-1: E-Crystal L (9)": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "C-1: Guardian Carrelet": {
    "note": "",
    "req": {
     "normal": [

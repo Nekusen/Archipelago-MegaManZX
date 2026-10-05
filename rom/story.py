@@ -1,10 +1,11 @@
-"""Mission objectives as items: a mission is reported only with its object, and Giro's scene, two
+"""Mission objectives as items: a mission is reported only with its object, and Giro's scene, three
 doors, the lava of Area K and the ITEM C list follow the items held instead of the game's own flags."""
 
 import struct
 
 from ..data import (
-    ITEMS, LIVE_BLOCK, LOCATIONS, STORY_DONE_BITS, STORY_GATE_ITEMS, STORY_LAVA_ITEM, STORY_REPORT_STATES)
+    ITEMS, LIVE_BLOCK, LOCATIONS, STORY_DONE_BITS, STORY_GATE_ITEMS, STORY_LAVA_ITEM, STORY_REPORT_STATES,
+    STORY_SWITCH_ITEM)
 from .arm9 import Arm9, thumb_bl
 from .missions import MISSION_SECTION_LEN, MISSION_SECTION_RAM
 from .nds import patch_overlay
@@ -47,12 +48,14 @@ STORY_OVERLAY_PATCH = {
          (0x021947D0, "cc451002", "481c1902"),
          (0x021949A4, "cc451002", "481c1902")],
     73: [(0x021948EC, "ec451002", "381c1902")],  # F-3, the door tiles: bit 5 of the byte 0x0F past the literal
+    95: [(0x02195DA8, "ec451002", "381c1902")],  # K-1, the door to the Sub Tank: bit 7 of that same byte
     98: [(0x02195584, "cc451002", "461c1902"),   # K-4, the two lava walls: bit 0 of the byte after the literal
          (0x021956BC, "cc451002", "461c1902")],
 }
 STORY_CHIPS_OFF, STORY_CHIPS_BITS = 0x13, [0, 1, 2]
 STORY_GENERATOR = "E-3: Generator"
 STORY_F3_DOOR_OFF, STORY_F3_DOOR_BIT = 0x0F, 5
+STORY_K1_DOOR_OFF, STORY_K1_DOOR_BIT = 0x0F, 7
 STORY_LAVA_OFF, STORY_LAVA_BIT = 1, 0
 
 
@@ -113,7 +116,7 @@ def patch_story_items(arm9: Arm9, enabled: bool) -> None:
 
 def patch_story_rooms(rom: bytearray, enabled: bool) -> None:
     """With mission_objectives: items, make the rooms follow the items: Giro's scene, the generator of E-3,
-    the door of F-3 and the lava of K-4."""
+    the doors of F-3 and K-1 and the lava of K-4."""
     if not enabled:
         return
     assert item_bits(STORY_CHIP_ITEM)[:len(STORY_CHIPS_BITS)] == STORY_CHIPS_BITS
@@ -122,7 +125,9 @@ def patch_story_rooms(rom: bytearray, enabled: bool) -> None:
     assert all(p[2] == story_done_addr().to_bytes(4, "little").hex() for p in STORY_OVERLAY_PATCH[65])
     assert item_bits(STORY_GATE_ITEMS[STORY_DOOR_FLAGS[0]]) == [STORY_F3_DOOR_BIT]
     assert item_bits(STORY_LAVA_ITEM) == [STORY_LAVA_BIT]
+    assert item_bits(STORY_SWITCH_ITEM) == [STORY_K1_DOOR_BIT]
     assert STORY_OVERLAY_PATCH[73][0][2] == gate_literal(STORY_F3_DOOR_OFF)
+    assert STORY_OVERLAY_PATCH[95][0][2] == gate_literal(STORY_K1_DOOR_OFF)
     assert all(p[2] == gate_literal(STORY_LAVA_OFF) for p in STORY_OVERLAY_PATCH[98])
     for ovl, patches in STORY_OVERLAY_PATCH.items():
         patch_overlay(rom, ovl, patches)

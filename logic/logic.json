@@ -1363,14 +1363,12 @@
    "unsure": false
   },
   "K-1: Sub Tank": {
-   "note": "the longest one (ceilings, blocks, hidden button, swimming)",
+   "note": "the door on the way opens with the switch of K-4; then swimming",
    "req": {
     "normal": [
      [
-      "HX",
-      "FX",
       "LX",
-      "PX"
+      "K_DOOR_SWITCH"
      ]
     ]
    },

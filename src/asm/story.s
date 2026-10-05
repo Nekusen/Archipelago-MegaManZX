@@ -1,18 +1,19 @@
 @ Mission objectives as items (mission_objectives: items).
 @ The story objects (the Computer Chips, the Stuffed Animal, the three Data Disks)
-@ and what three story events unlock (the door past the terminal of F-3, the door
-@ the sprinkler key of G-2 opens, the slow lava of Area K) are items of the pool.
+@ and what four story events unlock (the door past the terminal of F-3, the door
+@ the sprinkler key of G-2 opens, the slow lava of Area K, the door of K-1 that the
+@ switch of K-4 unlocks) are items of the pool.
 @ The game's own flags keep meaning "picked up here" or "done here", which is what
 @ the locations detect; what the player holds lives in two bytes of the pickup
 @ table section that only the items received fill (rom/table.py STORY_OFF and
 @ STORY_GATES_OFF), and everything that used to ask the game's flags asks those:
 @ the Report of the five missions, through `report_gate`; the two doors, through
 @ their entries in the table of door flags; the lava wall of K-4, the door tiles
-@ of F-3 and the scene of B-2 where Giro waits for a chip, through the literal
-@ their code loads; and the ITEM C list of the pause menu. The generator of E-3
-@ goes the other way round: what it does to the area is an item, so it marks its
-@ own destruction in a third byte of that section. Nothing here is applied in the
-@ other two modes of the option.
+@ of F-3, the door of K-1 and the scene of B-2 where Giro waits for a chip, through
+@ the literal their code loads; and the ITEM C list of the pause menu. The generator
+@ of E-3 goes the other way round: what it does to the area is an item, so it marks
+@ its own destruction in a third byte of that section. Nothing here is applied in
+@ the other two modes of the option.
 
         .thumb
 
@@ -100,7 +101,7 @@ lit_story:  .word story_byte
         .word   story_flag_base + 7
 
 @ Room overlays (rom/story.py STORY_OVERLAY_PATCH). Overlay 49 is B-2, overlay 65 is E-3,
-@ overlay 73 is F-3, overlay 98 is K-4.
+@ overlay 73 is F-3, overlay 95 is K-1, overlay 98 is K-4.
 
         .org    0x02194B40
 @ rom: STORY_OVERLAY_PATCH[49][0][2]
@@ -146,3 +147,8 @@ lit_story:  .word story_byte
 @ rom: STORY_OVERLAY_PATCH[98][1][2]
 @ was: .word 0x021045CC   (STORY_OVERLAY_PATCH[98][1][1]): the same test in the second lava wall
         .word   gates_byte - 1
+
+        .org    0x02195DA8
+@ rom: STORY_OVERLAY_PATCH[95][0][2]
+@ was: .word 0x021045EC   (STORY_OVERLAY_PATCH[95][0][1]): the door opens at a touch with bit 7 of this address + 0x0F
+        .word   gates_byte - 0x0F

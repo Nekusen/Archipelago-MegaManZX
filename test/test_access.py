@@ -130,13 +130,15 @@ class BiometalTests:
                                     [["Progressive Model FX"], ["Model OX"]], only_check_listed=True)
 
     def test_model_lx(self) -> None:
-        """Model LX (swimming) gates the flooded rooms of F-4 and J."""
-        self.assertAccessDependency(["F-4: Disk B-15", "J-5: Disk B-16", "Mission - Recover The Disk"],
+        """Model LX (swimming) gates the flooded rooms of F-4 and J and the Sub Tank of K-1."""
+        self.assertAccessDependency(["F-4: Disk B-15", "J-5: Disk B-16", "Mission - Recover The Disk",
+                                     "K-1: Sub Tank"],
                                     [["Progressive Model LX"]], only_check_listed=True)
 
     def test_model_px(self) -> None:
-        """Model PX is one of the four biometals K-1's Sub Tank asks for."""
-        self.assertAccessDependency(["K-1: Sub Tank"], [["Progressive Model PX"]], only_check_listed=True)
+        """Model PX gates three disks of Area I."""
+        self.assertAccessDependency(["I-2: Disk E-34", "I-4: Disk E-14", "I-4: Disk M-1"],
+                                    [["Progressive Model PX"]], only_check_listed=True)
 
     def test_six_biometals_open_the_tower(self) -> None:
         """The D-4 tower needs all six biometals: any missing one closes D-4 and D-5."""

@@ -122,15 +122,16 @@ class HuInPool(Toggle):
 class MissionObjectives(Choice):
     """What the objects and events of the story missions are: the Computer Chips, the guardians of
     Pass The Test and their Stuffed Animal, the terminal of Area F and the three Data Disks, the
-    people trapped in Area G, the generator of Area E and the lava control of Area K.
+    people trapped in Area G, the generator of Area E, and the lava control and the door switch of
+    Area K.
     - off: nothing changes.
     - checks: each one is a location. The game itself plays as before.
     - items: each one is a location, and the objects and what the events do are items of
       the pool. A mission is reported only with its object (a Computer Chip for Locate Giro,
       the Stuffed Animal for Pass The Test, each Data Disk for its mission), and Rayfly waits
-      for that Computer Chip too. The doors the terminal of Area F and the sprinkler key of
-      Area G open need their items, and so do the slow lava of Area K and the power cut of
-      Area E, which is a useful item rather than a required one."""
+      for that Computer Chip too. The doors the terminal of Area F, the sprinkler key of Area G
+      and the switch of Area K open need their items, and so do the slow lava of Area K and the
+      power cut of Area E, which is a useful item rather than a required one."""
     display_name = "Mission Objectives"
     option_off = 0
     option_checks = 1

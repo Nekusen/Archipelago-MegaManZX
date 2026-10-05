@@ -1840,7 +1840,7 @@ room K-1 [k01]
   region Sub Tank Room
     internal -> Right Area
     check K-1: Sub Tank
-      normal: HX & FX & LX & PX   # the longest one (ceilings, blocks, hidden button, swimming)
+      normal: LX & K_DOOR_SWITCH   # the door on the way opens with the switch of K-4; then swimming
   region Right Area
     internal -> Sub Tank Room
     internal -> Lava Flow Room
@@ -1940,6 +1940,7 @@ room K-4 [k04]
       normal: MODEL
   region Switch Room
     internal -> Hidden Path 2
+    check K-4: Door Switch
 
 room K-5 [k05]
   region K-1 Entrance

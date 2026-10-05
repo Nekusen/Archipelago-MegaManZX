@@ -162,3 +162,18 @@ def slot_data(goal: GoalRequirement, disk_order: list) -> dict:
         "secret_disk_order": list(disk_order),
         "missions": goal.missions_required,
     }
+
+
+def from_slot_data(data: dict | None) -> tuple[GoalRequirement, list]:
+    """The resolved requirement and the disk order back from their slot data.
+
+    A seed from before the goal requirements sends none: it asked for the six main models.
+    """
+    if data is None:
+        models = tuple(MODEL_ITEM_BY_KEY[k] for k in SIX_MODEL_KEYS)
+        return GoalRequirement(models, len(models), 0, 0), list(range(DISK_ENTRIES))
+    models = tuple(data.get("models", ()))
+    copies = dict(zip(models, data.get("models_copies", ())))
+    goal = GoalRequirement(models, int(data.get("models_count", 0)), int(data.get("secret_disks", 0)),
+                           int(data.get("secret_disks_total", 0)), copies, int(data.get("missions", 0)))
+    return goal, list(data.get("secret_disk_order", range(DISK_ENTRIES)))

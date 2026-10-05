@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING
 import worlds._bizhawk as bizhawk
 from worlds._bizhawk.client import BizHawkClient
 
-from ..rom import pack_version, unpack_version
+from ..rom import plays_rom, unpack_version
 from .addresses import (
     BOOT_FILL, DOM, GAME, INVENTORY_WAIT_SECONDS, NOTIFY_LEVELS, NOTIFY_STYLES, PICKUP_OPTION_KEYS,
     ROM_AP_MAGIC, ROM_AP_MAGIC_LEN, ROM_AP_MAGIC_OFF, ROM_AP_VERSION_OFF, ROM_GAME_CODE,
@@ -130,7 +130,7 @@ class MMZXClient(BizHawkClient):
         self.console_busy = False
 
     async def validate_rom(self, ctx: "BizHawkClientContext") -> bool:
-        """Accept only a ROM patched by this apworld version; take the slot name from its header."""
+        """Accept only a ROM this apworld version plays; take the slot name from its header."""
         from .. import MMZXWorld
         try:
             reads = await bizhawk.read(ctx.bizhawk_ctx, [
@@ -149,7 +149,7 @@ class MMZXClient(BizHawkClient):
                         "with the launcher to create the patched ROM.")
             return False
         rom_version = int.from_bytes(reads[2], "little")
-        if rom_version != pack_version(MMZXWorld.world_version):
+        if not plays_rom(rom_version, MMZXWorld.world_version):
             logger.info("ERROR: this ROM was patched by the Mega Man ZX apworld %d.%d.%d and "
                         "this client is %d.%d.%d. Open the .apmmzx again with the apworld that "
                         "generated the seed, or generate the seed again with this one."

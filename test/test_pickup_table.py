@@ -3,7 +3,10 @@ from Fill import distribute_items_restrictive
 
 from .bases import MMZXTestBase
 from ..data import ICON_CODES, LOCATIONS
-from ..rom.table import ENTRY_RESPAWNS, ICON_BY_ITEM, PICKUP_SLOTS, build_table, table_entries
+from ..rom.table import (ENTRY_OWN_EFFECT, ENTRY_RESPAWNS, ICON_BY_ITEM, MADE_INDEX, PICKUP_SLOTS, build_table,
+                         table_entries)
+
+STORY_OBJECTS = {n for n in PICKUP_SLOTS if LOCATIONS[n]["category"] == "story"}
 
 
 class FilledTestBase(MMZXTestBase):
@@ -48,10 +51,31 @@ class TestPickupTableFilled(FilledTestBase):
         for name, (slot, _code, flags) in entries.items():
             self.assertEqual(slot, PICKUP_SLOTS[name])
             self.assertEqual(bool(flags & ENTRY_RESPAWNS), LOCATIONS[name]["detect"][0] == "mailbox")
+            self.assertEqual(bool(flags & ENTRY_OWN_EFFECT), name in STORY_OBJECTS)
 
 
 class TestPickupTableWithStoryItems(TestPickupTableFilled):
     options = {"pickup_checks_energy": True, "mission_objectives": "items"}
+
+    def test_story_objects_show_their_item(self) -> None:
+        """The chips and the disks the bosses leave are in the table, after every other pickup."""
+        self.assertTrue(STORY_OBJECTS)
+        self.assertTrue(STORY_OBJECTS <= set(self.world.pickup_icons()))
+        first = min(PICKUP_SLOTS[n] for n in STORY_OBJECTS)
+        self.assertEqual({n for n, slot in PICKUP_SLOTS.items() if slot >= first}, STORY_OBJECTS)
+
+    def test_objects_made_by_the_game(self) -> None:
+        """A pickup with no place in its room's layout takes an index past every real one of that room."""
+        made = {n for n in STORY_OBJECTS if LOCATIONS[n]["icon"][1] >= MADE_INDEX}
+        self.assertTrue(made)
+        for name in made:
+            room = LOCATIONS[name]["icon"][0]
+            others = [v["icon"][1] for n, v in LOCATIONS.items() if n not in made and v.get("icon", [None])[0] == room]
+            self.assertTrue(all(idx < MADE_INDEX for idx in others), name)
+
+
+class TestPickupTableWithStoryChecks(TestPickupTableWithStoryItems):
+    options = {"pickup_checks_energy": True, "mission_objectives": "checks"}
 
 
 class TestPickupTableWithoutRefills(FilledTestBase):

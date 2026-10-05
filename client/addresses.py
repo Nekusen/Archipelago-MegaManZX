@@ -5,10 +5,10 @@ Everything the client reads or writes is named here.
 
 from ..data import (
     CANON_BLOCK, EVENT_GATES, GOAL_BITS, GOAL_BITS_SERPENT, ITEMS, LIVE_BLOCK, LOCATIONS, PICKUP_TABLE_ADDR,
-    ROOM_SUBAREA, STORY_GATE_ITEMS, WARP_DESTINATIONS)
+    ROOM_SUBAREA, STORY_DONE_BITS, STORY_GATE_ITEMS, WARP_DESTINATIONS)
 from ..goal import DISK_ITEM
 from ..rom.table import (
-    BITMAP_LEN, CHECKED_OFF, COLLECTED_OFF, FLAGS_OFF, PICKUP_SLOTS, STORY_GATES_OFF, STORY_OFF,
+    BITMAP_LEN, CHECKED_OFF, COLLECTED_OFF, FLAGS_OFF, PICKUP_SLOTS, STORY_DONE_OFF, STORY_GATES_OFF, STORY_OFF,
     USABLES_MARK, USABLES_MARK_OFF, USABLES_OFF)
 
 
@@ -67,6 +67,11 @@ for _v in LOCATIONS.values():
         _detect_addrs.append(_det[1])
     elif _det and _det[0] in ("all", "any"):
         _detect_addrs += [a for a, _ in _det[1]]
+# Events whose effect is an item of the pool: the game marks them in a byte of the pickup
+# table section instead, and with mission_objectives: items that bit is their detection.
+STORY_DONE_ADDR = PICKUP_TABLE_ADDR + STORY_DONE_OFF
+STORY_DONE_DETECT = {LOCATIONS[n]["id"]: ["bit", STORY_DONE_ADDR, bit] for n, bit in STORY_DONE_BITS.items()}
+_detect_addrs.append(STORY_DONE_ADDR)
 _near = [a for a in _detect_addrs if abs(a - LIVE_BLOCK) < DETECT_WINDOW_RADIUS]
 DETECT_WINDOW = (min(_near), max(_near) + 1)             # [lo, hi)
 DETECT_FAR = sorted({a for a in _detect_addrs if abs(a - LIVE_BLOCK) >= DETECT_WINDOW_RADIUS})
@@ -257,6 +262,11 @@ STORY_ITEM_BITS = {n: (0 if v["grant"][0] == "story" else STORY_GATES_OFF - STOR
                        [int(b) for b in v["grant"][1]])
                    for n, v in ITEMS.items() if v["grant"][0] in ("story", "story_gate")}
 STORY_GATE_BITS = frozenset(tuple(EVENT_GATES[flag]) for flag in STORY_GATE_ITEMS)
+# Items that do to an area what an event of it did: item -> (area letter, the area flags
+# the client keeps set while the player is there)
+STORY_AREA_FLAGS = {n: (v["grant"][1], [tuple(b) for b in v["grant"][2]])
+                    for n, v in ITEMS.items() if v["grant"][0] == "story_area"}
+AREA_OF_SUBAREA = {sub: room[0].upper() for room, sub in ROOM_SUBAREA.items()}
 # Find The Survivors: the terminal of F-3 answers only once the story handler has seen
 # the entrance scenes of F-1 and F-3; from any other way in the client moves it along.
 SURVIVORS_STATE = 0xAE             # mission state "Find The Survivors accepted"

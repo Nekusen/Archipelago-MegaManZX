@@ -1,26 +1,22 @@
-"""Mission objectives: the story items held, and the terminal of F-3 reachable from any entrance."""
+"""Mission objectives: the story items held, what one of them does to its area, and the
+terminal of F-3 reachable from any entrance."""
 
-import logging
 from typing import TYPE_CHECKING
 import worlds._bizhawk as bizhawk
 
-from ..data import MISSION_ACCEPT, MISSION_STATE_ADDR, STORY_REPORT_STATES
+from ..data import MISSION_STATE_ADDR
 from .addresses import (
-    CUTSCENE_FLAG, DOM, MISSION_ACCEPTED_MASK, MISSION_ACTIVE_BYTE, STORY_ADDR, STORY_BLOCK,
-    STORY_BLOCK_CANON, STORY_BLOCK_LEN, STORY_HANDLER_ID, STORY_HANDLER_STATE, STORY_ITEM_BITS, STORY_LEN,
-    SURVIVORS_HANDLER_ID, SURVIVORS_HANDLER_TERMINAL, SURVIVORS_HANDLER_WAITS, SURVIVORS_STATE,
-    SURVIVORS_SUBAREA)
+    AREA_OF_SUBAREA, CUTSCENE_FLAG, DOM, MISSION_ACCEPTED_MASK, MISSION_ACTIVE_BYTE, STORY_ADDR,
+    STORY_AREA_FLAGS, STORY_BLOCK, STORY_BLOCK_CANON, STORY_BLOCK_LEN, STORY_HANDLER_ID, STORY_HANDLER_STATE,
+    STORY_ITEM_BITS, STORY_LEN, SURVIVORS_HANDLER_ID, SURVIVORS_HANDLER_TERMINAL, SURVIVORS_HANDLER_WAITS,
+    SURVIVORS_STATE, SURVIVORS_SUBAREA)
 from .items import received_counts
-from .notices import notify_bytes
-from .ram import Tick, story_handler_writes
+from .ram import Tick, bits_by_byte, copies_writes, read_copies, story_handler_writes
 
 if TYPE_CHECKING:
     from . import MMZXClient
 
-logger = logging.getLogger("Client")
-
 MODE_OFF, MODE_CHECKS, MODE_ITEMS = "off", "checks", "items"
-REPORT_NOTICE_HEAD = "Report needs "
 
 
 def parse_mode(value) -> str:
@@ -39,28 +35,30 @@ def story_held(counts: dict[str, int]) -> bytes:
 
 async def sync_story(client: "MMZXClient", ctx, tick: Tick) -> None:
     """Keep the story items the ROM reads equal to the items received."""
-    counts = received_counts(ctx)
-    want = story_held(counts)
-    r = await bizhawk.read(ctx.bizhawk_ctx, [
-        (STORY_ADDR, STORY_LEN, DOM), (MISSION_STATE_ADDR, 4, DOM), (MISSION_ACTIVE_BYTE, 1, DOM)])
-    if r[0] != want:
+    want = story_held(received_counts(ctx))
+    held = (await bizhawk.read(ctx.bizhawk_ctx, [(STORY_ADDR, STORY_LEN, DOM)]))[0]
+    if held != want:
         await bizhawk.guarded_write(ctx.bizhawk_ctx, [(STORY_ADDR, want, DOM)], [tick.guard])
-    state = int.from_bytes(r[1], "little") if r[2][0] & MISSION_ACCEPTED_MASK else None
-    announce_report_item(client, state, counts)
 
 
-def announce_report_item(client: "MMZXClient", state: int | None, counts: dict[str, int]) -> None:
-    """Tell the player, once per mission, which object its Report is waiting for."""
-    item = STORY_REPORT_STATES.get(state)
-    if not item or counts.get(item, 0):
-        client.story_waiting = None
+async def hold_area_flags(client: "MMZXClient", ctx, tick: Tick) -> None:
+    """Keep set the area flags of the items held, while the player is in their area.
+
+    The game clears them on every change of area, as it did after the event
+    each of these items stands in for.
+    """
+    area = AREA_OF_SUBAREA.get(tick.subarea, "")
+    counts = received_counts(ctx)
+    bits = [bit for item, (letter, flags) in STORY_AREA_FLAGS.items()
+            if letter == area and counts.get(item, 0) for bit in flags]
+    if not bits:
         return
-    if client.story_waiting == state:
-        return
-    client.story_waiting = state
-    name = next((v["name"] for v in MISSION_ACCEPT.values() if v["state"] == state), "The mission")
-    logger.info("[mmzx] %s can be reported once you have %s" % (name, item))
-    client.notify_queue.append(notify_bytes(REPORT_NOTICE_HEAD, item, "", client.notify_style))
+    masks = bits_by_byte(bits)
+    addrs = list(masks)
+    live, canon = await read_copies(ctx, addrs)
+    writes = copies_writes(addrs, live, canon, set_masks=masks)
+    if writes:
+        await bizhawk.guarded_write(ctx.bizhawk_ctx, writes, [tick.guard])
 
 
 async def survivors_unstick(client: "MMZXClient", ctx, tick: Tick) -> None:

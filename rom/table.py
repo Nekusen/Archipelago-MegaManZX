@@ -25,11 +25,14 @@ USABLES_MARK_OFF = 0x145    # u8: USABLES_MARK once the client has granted the u
 USABLES_MARK = 0xA5
 STORY_OFF = 0x146           # u8: story objects held with mission_objectives: items; the client sets
 STORY_GATES_OFF = 0x147     # u8: what the story events unlock, held as items; bits as in the game's flags
+STORY_DONE_OFF = 0x148      # u8: events done since boot whose flag is left to an item, written by the game
 INDEX_OFF = 0x160           # u16[INDEX_SUBAREAS + 1]: first entry of each subarea
 INDEX_SUBAREAS = 128
 ENTRIES_OFF = 0x264         # entries of ENTRY_LEN bytes, sorted by subarea then coords index
 ENTRY_LEN = 4               # coords index, slot, icon code, flags
 ENTRY_RESPAWNS = 0x01       # flags bit 0: a refill, back on every visit
+ENTRY_OWN_EFFECT = 0x02     # flags bit 1: only the look changes; what the game does on pickup is the location
+MADE_INDEX = 0x80           # a pickup the game makes by code has no coords index: this plus its role stands for one
 BITMAP_LEN = 32
 MAX_SLOTS = 8 * BITMAP_LEN
 
@@ -37,20 +40,22 @@ MAX_SLOTS = 8 * BITMAP_LEN
 # location, collect(entity) -> sets the entity's bit in `collected`. The icon, PICKUP_AP and
 # mailbox caves jump here.
 PICKUP_TABLE_CODE = bytes.fromhex(
-    "10b500f03df800280cd0040007480078002807d1607800f05df8002802d1a078"
-    "013810bd0020c04310bdc046001c190210b500f025f800280bd00400e0784008"
-    "05d3607800f046f80121484010bd012010bd002010bdc04610b500f011f80028"
+    "10b500f03df800280cd0040007480078002807d1607800f061f8002802d1a078"
+    "013810bd0020c04310bdc046001c190210b500f025f800280cd00400e1780020"
+    "8a0807d20120490804d3607800f046f80121484010bdc04610b500f011f80028"
     "0ad04178054acb08d21807230b400121994013780b43137010bdc046241c1902"
-    "30b51049096800291ad04a68824201d00968f8e70a890c4b1b78802b10d20b4c"
-    "5b00e05a0233e55a094c80000019ad002d19a84204d20378934202d00430f8e7"
-    "002030bdf481100228821002601c1902641d1902044ac308d25c07230340da40"
-    "012010407047c046041c1902")
+    "30b512490968002904d04a68824204d00968f8e7027d803200e00a890c4b1b78"
+    "802b10d20b4c5b00e05a0233e55a0a4c80000019ad002d19a84204d203789342"
+    "02d00430f8e7002030bdc046f481100228821002601c1902641d1902044ac308"
+    "d25c07230340da40012010407047c046041c1902")
 PICKUP_TABLE_ENTRIES = {"lookup": 0x00, "gate": 0x30, "collect": 0x58}
 
-# Every physical location in id order; its slot numbers the two bitmaps.
+# Every physical location in id order; its slot numbers the two bitmaps. The mission objectives
+# go last, so the slot of every other pickup is the same whether or not a ROM knows about them.
 PICKUP_SLOTS: dict[str, int] = {
     name: slot for slot, name in enumerate(
-        sorted((n for n, v in LOCATIONS.items() if v.get("icon")), key=lambda n: LOCATIONS[n]["id"]))}
+        sorted((n for n, v in LOCATIONS.items() if v.get("icon")),
+               key=lambda n: (LOCATIONS[n]["category"] == "story", LOCATIONS[n]["id"])))}
 
 # Items with their own sprite in the AP graphics set (ICON_CODES); anything else
 # is drawn as the Archipelago logo of its classification.
@@ -78,14 +83,24 @@ def usable_flag(bit: int) -> int:
     return (PICKUP_TABLE_ADDR + USABLES_OFF - LIVE_BLOCK) * 8 + bit
 
 
+def story_addr() -> int:
+    """RAM address of the byte that holds the story objects."""
+    return PICKUP_TABLE_ADDR + STORY_OFF
+
+
 def story_flag(bit: int) -> int:
     """Flag index of a story object's possession bit, counted from the progress block."""
-    return (PICKUP_TABLE_ADDR + STORY_OFF - LIVE_BLOCK) * 8 + bit
+    return (story_addr() - LIVE_BLOCK) * 8 + bit
 
 
 def story_gates_addr() -> int:
     """RAM address of the byte that holds what the story events unlock."""
     return PICKUP_TABLE_ADDR + STORY_GATES_OFF
+
+
+def story_done_addr() -> int:
+    """RAM address of the byte where the game marks the events whose flag is an item's."""
+    return PICKUP_TABLE_ADDR + STORY_DONE_OFF
 
 
 def story_gate_flag(bit: int) -> int:
@@ -117,6 +132,8 @@ def build_table(codes: dict[str, int]) -> bytes:
         if not (0 <= sub < INDEX_SUBAREAS and 0 <= idx < 256 and 0 <= code < 256):
             raise ValueError("MMZX: pickup table entry out of range for %r" % name)
         flags = ENTRY_RESPAWNS if v["detect"][0] == "mailbox" else 0
+        if v["category"] == "story":
+            flags |= ENTRY_OWN_EFFECT
         entries.append((sub, idx, PICKUP_SLOTS[name], code, flags))
     entries.sort()
     starts = [sum(1 for e in entries if e[0] < sub) for sub in range(INDEX_SUBAREAS + 1)]

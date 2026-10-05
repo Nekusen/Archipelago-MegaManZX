@@ -6,11 +6,12 @@ from contextlib import contextmanager
 from BaseClasses import CollectionState
 
 from .bases import MMZXTestBase, reach
-from ..client.addresses import STORY_GATE_BITS, STORY_ITEM_BITS, STORY_LEN
+from ..client.addresses import (DETECT_FAR, STORY_AREA_FLAGS, STORY_DONE_ADDR, STORY_DONE_DETECT, STORY_GATE_BITS,
+                                STORY_ITEM_BITS, STORY_LEN)
 from ..client.items import wanted_progress_bits
 from ..client.story import parse_mode, story_held
-from ..data import (DOORS, EVENT_GATES, ITEMS, LOCATIONS, STORY_CHAINS, STORY_COUNTS, STORY_GATE_ITEMS,
-                    STORY_LAVA_ITEM, STORY_LAVA_LOCATION, STORY_REPORT_ITEMS, STORY_SWITCH_ITEM,
+from ..data import (DOORS, EVENT_GATES, ITEMS, LOCATIONS, STORY_CHAINS, STORY_COUNTS, STORY_DONE_BITS,
+                    STORY_GATE_ITEMS, STORY_LAVA_ITEM, STORY_LAVA_LOCATION, STORY_REPORT_ITEMS, STORY_SWITCH_ITEM,
                     STORY_SWITCH_LOCATION)
 from ..goal import cleared_event
 from ..items import ITEM_GROUPS, STORY_GRANTS
@@ -201,7 +202,9 @@ class TestItems(MMZXTestBase):
         for name, n in STORY_ITEM_COUNTS.items():
             with self.subTest(item=name):
                 self.assertEqual(counts[name], n)
-                self.assertTrue(all(item.advancement for item in self.multiworld.itempool if item.name == name))
+                progression = ITEMS[name]["classification"] == "progression"
+                self.assertTrue(all(item.advancement == progression
+                                    for item in self.multiworld.itempool if item.name == name))
         self.assertEqual(len(self.multiworld.itempool), len(real_locations(self.multiworld)))
 
     def test_seed_is_beatable(self) -> None:
@@ -288,6 +291,20 @@ class TestClientState(unittest.TestCase):
         self.assertTrue(gates <= opened)
         closed, _keys = wanted_progress_bits({}, Goal(), 0, STORY_GATE_BITS)
         self.assertEqual(opened - closed, gates)
+
+    def test_event_whose_effect_is_an_item(self) -> None:
+        """The game marks the event in a byte of its own, and the item holds the area flag of that event."""
+        for name, bit in STORY_DONE_BITS.items():
+            with self.subTest(location=name):
+                flag = tuple(LOCATIONS[name]["detect"][1:])
+                self.assertEqual(STORY_DONE_DETECT[LOCATIONS[name]["id"]], ["bit", STORY_DONE_ADDR, bit])
+                held = [(item, area) for item, (area, flags) in STORY_AREA_FLAGS.items() if flags == [flag]]
+                self.assertEqual(len(held), 1)
+                item, area = held[0]
+                self.assertEqual(area, name[0])
+                self.assertEqual(ITEMS[item]["classification"], "useful")
+        self.assertIn(STORY_DONE_ADDR, DETECT_FAR)
+        self.assertEqual(len(STORY_AREA_FLAGS), len(STORY_DONE_BITS))
 
     def test_mode_from_slot_data(self) -> None:
         self.assertEqual(parse_mode(None), "off")

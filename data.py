@@ -91,10 +91,10 @@ LOCATIONS = {
     'A-3: Apple': {'id': 13632773, 'category': 'usable', 'detect': ['bit', 34620957, 1], 'room': 'a03', 'pos': [2264, 392], 'status': 'verified'},
     'X-1: Smelling Salts': {'id': 13632774, 'category': 'usable', 'detect': ['bit', 34620957, 2], 'room': 'x01', 'pos': [1296, 1112], 'status': 'verified'},
     'C-1: Cake': {'id': 13632775, 'category': 'usable', 'detect': ['bit', 34620957, 3], 'room': 'c01', 'pos': [2260, 856], 'status': 'verified'},
-    'B-1: Computer Chip': {'id': 13633024, 'category': 'story', 'detect': ['bit', 34620958, 7], 'room': 'b01', 'pos': [1578, 904], 'status': 'verified', 'story': 'object'},
-    'B-1: Computer Chip (2)': {'id': 13633025, 'category': 'story', 'detect': ['bit', 34620959, 0], 'room': 'b01', 'pos': [3705, 839], 'status': 'verified', 'story': 'object'},
-    'B-2: Computer Chip': {'id': 13633026, 'category': 'story', 'detect': ['bit', 34620959, 1], 'room': 'b02', 'pos': [1124, 713], 'status': 'verified', 'story': 'object'},
-    'B-2: Computer Chip (2)': {'id': 13633027, 'category': 'story', 'detect': ['bit', 34620959, 2], 'room': 'b02', 'pos': [2197, 666], 'status': 'verified', 'story': 'object'},
+    'B-1: Computer Chip': {'id': 13633024, 'category': 'story', 'detect': ['bit', 34620958, 7], 'room': 'b01', 'pos': [1578, 904], 'status': 'verified', 'story': 'object', 'icon': [5, 7]},
+    'B-1: Computer Chip (2)': {'id': 13633025, 'category': 'story', 'detect': ['bit', 34620959, 0], 'room': 'b01', 'pos': [3705, 839], 'status': 'verified', 'story': 'object', 'icon': [5, 22]},
+    'B-2: Computer Chip': {'id': 13633026, 'category': 'story', 'detect': ['bit', 34620959, 1], 'room': 'b02', 'pos': [1124, 713], 'status': 'verified', 'story': 'object', 'icon': [6, 7]},
+    'B-2: Computer Chip (2)': {'id': 13633027, 'category': 'story', 'detect': ['bit', 34620959, 2], 'room': 'b02', 'pos': [2197, 666], 'status': 'verified', 'story': 'object', 'icon': [6, 14]},
     'C-2: Stuffed Animal': {'id': 13633028, 'category': 'story', 'detect': ['any', [[34620959, 3], [34620896, 0]]], 'room': 'c02', 'pos': [3976, 920], 'status': 'verified', 'story': 'object'},
     'C-1: Guardian Oeillet': {'id': 13633029, 'category': 'story', 'detect': ['bit', 34620895, 3], 'room': 'c01', 'pos': [4808, 1288], 'status': 'verified', 'story': 'event'},
     'C-1: Guardian Carrelet': {'id': 13633030, 'category': 'story', 'detect': ['bit', 34620895, 4], 'room': 'c01', 'pos': [7896, 312], 'status': 'verified', 'story': 'event'},
@@ -117,9 +117,9 @@ LOCATIONS = {
     'G-2: Civilian (8)': {'id': 13633047, 'category': 'story', 'detect': ['bit', 34620899, 5], 'room': 'g02', 'pos': [688, 6296], 'status': 'verified', 'story': 'event'},
     'G-3: Dog': {'id': 13633048, 'category': 'story', 'detect': ['bit', 34620899, 6], 'room': 'g03', 'pos': [1768, 536], 'status': 'verified', 'story': 'event'},
     'G-2: Sprinkler Key': {'id': 13633049, 'category': 'story', 'detect': ['bit', 34620923, 6], 'room': 'g02', 'pos': [656, 432], 'status': 'verified', 'story': 'gate'},
-    'J-5: Data Disk 2': {'id': 13633050, 'category': 'story', 'detect': ['any', [[34620962, 6], [34620870, 5]]], 'room': 'j05', 'pos': [736, 751], 'status': 'verified', 'story': 'object'},
+    'J-5: Data Disk 2': {'id': 13633050, 'category': 'story', 'detect': ['any', [[34620962, 6], [34620870, 5]]], 'room': 'j05', 'pos': [736, 751], 'status': 'verified', 'story': 'object', 'icon': [51, 154]},
     'K-1: Lava Flow Control': {'id': 13633051, 'category': 'story', 'detect': ['bit', 34620877, 0], 'room': 'k01', 'pos': [6872, 1304], 'status': 'verified', 'story': 'event'},
-    'L-4: Data Disk 3': {'id': 13633052, 'category': 'story', 'detect': ['any', [[34620962, 7], [34620871, 4]]], 'room': 'l04', 'pos': [2928, 751], 'status': 'verified', 'story': 'object'},
+    'L-4: Data Disk 3': {'id': 13633052, 'category': 'story', 'detect': ['any', [[34620962, 7], [34620871, 4]]], 'room': 'l04', 'pos': [2928, 751], 'status': 'verified', 'story': 'object', 'icon': [60, 155]},
     'K-4: Door Switch': {'id': 13633053, 'category': 'story', 'detect': ['bit', 34620923, 7], 'room': 'k04', 'pos': [288, 1864], 'status': 'verified', 'story': 'event'},
     'A-1: Disk E-1': {'id': 13633488, 'category': 'disk', 'detect': ['bit', 34620947, 4], 'room': 'a01', 'pos': [7632, 344], 'status': 'verified', 'icon': [1, 51]},
     'F-3: Disk E-2': {'id': 13633489, 'category': 'disk', 'detect': ['bit', 34620947, 5], 'room': 'f03', 'pos': [1984, 628], 'status': 'verified', 'icon': [30, 85]},
@@ -386,6 +386,7 @@ ITEMS = {
     'Area F Lock Hack': {'id': 13664614, 'classification': 'progression', 'grant': ['story_gate', [5]], 'pooled': False},
     'Sprinkler Key': {'id': 13664615, 'classification': 'progression', 'grant': ['story_gate', [6]], 'pooled': False},
     'Area K Door Switch': {'id': 13664616, 'classification': 'progression', 'grant': ['story_gate', [7]], 'pooled': False},
+    'Area E Power Shutdown': {'id': 13664617, 'classification': 'useful', 'grant': ['story_area', 'E', [[34620876, 5]]], 'pooled': False},
     'E-Crystals': {'id': 13664768, 'classification': 'filler', 'grant': ['ecrystals'], 'pooled': True},
     '1-Up': {'id': 13664769, 'classification': 'filler', 'grant': ['oneup'], 'pooled': True},
     'Secret Disk': {'id': 13665024, 'classification': 'progression', 'grant': ['secret_disk'], 'pooled': False},
@@ -628,6 +629,9 @@ STORY_LAVA_LOCATION = 'K-1: Lava Flow Control'
 STORY_LAVA_ITEM = 'Lava Flow Control'
 STORY_SWITCH_LOCATION = 'K-4: Door Switch'
 STORY_SWITCH_ITEM = 'Area K Door Switch'
+# mission_objectives: items. An event whose effect became an item marks, instead of its
+# flag, a bit of the byte of the pickup table section that the game fills (location -> bit).
+STORY_DONE_BITS = {'E-3: Generator': 5}
 # The game hands these out in order: each location also needs the one before it.
 STORY_CHAINS = [['C-1: Guardian Oeillet', 'C-1: Guardian Carrelet', 'C-1: Guardian Congre', 'C-2: Guardian Thon', 'C-2: Stuffed Animal']]
 # location -> [how many, of these locations] it needs within reach.

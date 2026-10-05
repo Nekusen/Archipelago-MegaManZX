@@ -41,8 +41,8 @@ Items:
 - The eight usable items of the pause menu (ITEM A): Cake, Orange, Candy, Bread, Apple, E Tank, W Tank and
   Smelling Salts.
 - With `mission_objectives: items`, the story objects (four Computer Chips, the Stuffed Animal and the Data Disks 1, 2
-  and 3) and what four story events unlock (Area F Lock Hack, Sprinkler Key, Lava Flow Control and Area K Door
-  Switch).
+  and 3) and what five story events do (Area F Lock Hack, Sprinkler Key, Lava Flow Control, Area K Door Switch and
+  Area E Power Shutdown).
 - Passwords, with `area_m_access: passwords`.
 - E-Crystals and 1-Ups as filler.
 
@@ -78,6 +78,7 @@ Locations:
 - Pickups in the world show the item they hold: the game's own icon for a Life Up, Sub Tank, chip, biometal or Card
   Key, and the Archipelago logo for anything else (an arrow for progression, a cross for useful, grey for filler).
   The icons are part of the patched ROM, so they show even while the client is disconnected.
+  With `mission_objectives` the Computer Chips and the Data Disks of J-5 and L-4 show theirs too.
 - A pickup that holds a multiworld item cannot be sliced into small pieces with a weapon; once its check is sent
   and it is back to a normal refill, it breaks as usual.
 - Items you receive and items you send are announced in the game's own popup without stopping play. The `notify_*`
@@ -103,6 +104,7 @@ Locations:
 - All bosses are spawned from the beginning, and you can start the fight with them from both sides.
   - The exception for this rule are Rayfly (B-2) and Giro (D-2).
     - Rayfly requires you to get the nearest "Computer Chip" to the boss area to spawn the boss.
+      With `mission_objectives: items` it is the Computer Chip item that spawns it, not the ones lying in Area B.
     - Giro requires beating both mini-bosses in the area to spawn
 - The MISSION tab of the pause menu gains a fast travel function by pressing "Y". It lets you travel to Transerver locations you've unlocked.
 - About Area X:
@@ -139,11 +141,14 @@ With `mission_objectives` the objects and events of the story missions become ch
 - `items`: the same, and what those things gave is now an item of the pool.
   - The Report of a mission needs its object: a Computer Chip for Locate Giro, the Stuffed Animal for Pass The Test and
     the Data Disk 1, 2 or 3 for Find The Survivors, Recover The Disk and Protect The Lab. The objective of the mission is
-    still needed; the client tells you which object a mission is waiting for.
+    still needed. The object stays with you after the Report, so a mission played again can be reported again.
+  - Rayfly appears in B-2 once you hold a Computer Chip.
   - The terminal of F-3 and the sprinkler key of G-2 are checks, and their doors open with the Area F Lock Hack and the
     Sprinkler Key.
   - The lava of Area K is slow only while you hold the Lava Flow Control; the device in K-1 is a check.
   - The door of K-1 on the way to its Sub Tank opens with the Area K Door Switch; the switch in K-4 is a check.
+  - The machines of Area E stop only while you hold the Area E Power Shutdown, a useful item; destroying the generator
+    of E-3 is a check.
   - The ITEM C list of the pause menu shows the objects you hold.
 - The guardians of Pass The Test answer in order, and Congre only in human form. The sprinkler key comes with eight
   people rescued, and the civilians of Area G only talk to you in human form.
@@ -151,6 +156,7 @@ With `mission_objectives` the objects and events of the story missions become ch
   If you reported it first, take the mission again from the "Mission Requests" list to bring them back. The same goes for
   the terminal of F-3.
 - The generator of E-3 and the lava control of K-1 go back to normal when you leave their area, as in the original game.
+  With `items` the generator stays broken until the game is reset.
 
 ### The seal of Area M
 

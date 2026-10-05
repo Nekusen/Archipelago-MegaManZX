@@ -9,8 +9,8 @@ CLASSIFICATION = {
 }
 
 
-# Grant kinds of the mission_objectives items: the story objects and what the story events open
-STORY_GRANTS = ("story", "story_gate")
+# Grant kinds of the mission_objectives items: story objects, what an event opens, what one does to its area
+STORY_GRANTS = ("story", "story_gate", "story_area")
 
 
 class MMZXItem(Item):

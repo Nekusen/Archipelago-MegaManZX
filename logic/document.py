@@ -59,12 +59,13 @@ MACRO_ATOMS = ("MODEL", "ALL6", "GOAL")
 CONST_TRUE = ("TRUE", "ANY", "FREE")
 CONST_FALSE = ("FALSE", "NEVER", "IMPOSSIBLE")
 
-# The lava of Area K set to slow, and the door of K-1 unlocked: an item with
-# mission_objectives: items, else the event of the Lava Flow Control of K-1 and of the switch
-# of K-4. The world resolves them; alone, each means its item.
+# The lava of Area K set to slow, the door of K-1 unlocked and the bridge of D-1 lowered: an
+# item with mission_objectives: items, else the event of the Lava Flow Control of K-1, of the
+# switch of K-4 and of the switch of D-1. The world resolves them; alone, each means its item.
 SLOW_LAVA = "SLOW_LAVA"
 K_DOOR_SWITCH = "K_DOOR_SWITCH"
-STORY_ATOMS = {SLOW_LAVA: "Lava Flow Control", K_DOOR_SWITCH: "Area K Door Switch"}
+D_BRIDGE = "D_BRIDGE"
+STORY_ATOMS = {SLOW_LAVA: "Lava Flow Control", K_DOOR_SWITCH: "Area K Door Switch", D_BRIDGE: "Area D Bridge"}
 
 # Useful items; progression_items() promotes them when a requirement uses them.
 CHIP_ATOMS = {
@@ -194,6 +195,8 @@ def atom_catalog(exclude=()):
                 "label": "Lava of Area K set to slow (the control of K-1, or its item)"})
     out.append({"id": K_DOOR_SWITCH, "group": "story",
                 "label": "Door of K-1 to its Sub Tank unlocked (the switch of K-4, or its item)"})
+    out.append({"id": D_BRIDGE, "group": "story",
+                "label": "Bridge of D-1 lowered (its switch, or its item; always with mission_objectives off)"})
     for atom, bid in BOSS_ATOMS.items():
         b = BOSSES[bid]
         out.append({"id": atom, "group": "boss",

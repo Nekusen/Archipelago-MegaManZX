@@ -121,6 +121,7 @@ LOCATIONS = {
     'K-1: Lava Flow Control': {'id': 13633051, 'category': 'story', 'detect': ['bit', 34620877, 0], 'room': 'k01', 'pos': [6872, 1304], 'status': 'verified', 'story': 'event'},
     'L-4: Data Disk 3': {'id': 13633052, 'category': 'story', 'detect': ['any', [[34620962, 7], [34620871, 4]]], 'room': 'l04', 'pos': [2928, 751], 'status': 'verified', 'story': 'object', 'icon': [60, 155]},
     'K-4: Door Switch': {'id': 13633053, 'category': 'story', 'detect': ['bit', 34620923, 7], 'room': 'k04', 'pos': [288, 1864], 'status': 'verified', 'story': 'event'},
+    'D-1: Bridge Switch': {'id': 13633054, 'category': 'story', 'detect': ['bit', 34620923, 3], 'room': 'd01', 'pos': [2270, 552], 'status': 'verified', 'story': 'event'},
     'A-1: Disk E-1': {'id': 13633488, 'category': 'disk', 'detect': ['bit', 34620947, 4], 'room': 'a01', 'pos': [7632, 344], 'status': 'verified', 'icon': [1, 51]},
     'F-3: Disk E-2': {'id': 13633489, 'category': 'disk', 'detect': ['bit', 34620947, 5], 'room': 'f03', 'pos': [1984, 628], 'status': 'verified', 'icon': [30, 85]},
     'I-1: Disk E-3': {'id': 13633490, 'category': 'disk', 'detect': ['bit', 34620947, 6], 'room': 'i01', 'pos': [2592, 632], 'status': 'verified', 'icon': [42, 27]},
@@ -387,6 +388,7 @@ ITEMS = {
     'Sprinkler Key': {'id': 13664615, 'classification': 'progression', 'grant': ['story_gate', [6]], 'pooled': False},
     'Area K Door Switch': {'id': 13664616, 'classification': 'progression', 'grant': ['story_gate', [7]], 'pooled': False},
     'Area E Power Shutdown': {'id': 13664617, 'classification': 'useful', 'grant': ['story_area', 'E', [[34620876, 5]]], 'pooled': False},
+    'Area D Bridge': {'id': 13664618, 'classification': 'progression', 'grant': ['story_gate', [3]], 'pooled': False},
     'E-Crystals': {'id': 13664768, 'classification': 'filler', 'grant': ['ecrystals'], 'pooled': True},
     '1-Up': {'id': 13664769, 'classification': 'filler', 'grant': ['oneup'], 'pooled': True},
     'Secret Disk': {'id': 13665024, 'classification': 'progression', 'grant': ['secret_disk'], 'pooled': False},
@@ -620,8 +622,9 @@ MISSION_REPEAT_BITS = {
 # mission_objectives: items. The Report of these missions also asks for the item
 # (mission state -> item); these event gates open with an item instead of with
 # their event (flag -> item); the item that slows the lava of Area K, whose location
-# stands for the SLOW_LAVA atom of the logic in the other modes; and the same pair
-# for the K_DOOR_SWITCH atom, the door of K-1 that the switch of K-4 unlocks.
+# stands for the SLOW_LAVA atom of the logic in the other modes; the same pair for the
+# K_DOOR_SWITCH atom, the door of K-1 that the switch of K-4 unlocks; and for the
+# D_BRIDGE atom, the bridge of D-1, which is down from the start with the option off.
 STORY_REPORT_STATES = {0x95: 'Computer Chip', 0x99: 'Stuffed Animal', 0xAE: 'Data Disk 1', 0xC9: 'Data Disk 2', 0xD0: 'Data Disk 3'}
 STORY_REPORT_ITEMS = {'Locate Giro': 'Computer Chip', 'Pass The Test': 'Stuffed Animal', 'Find The Survivors': 'Data Disk 1', 'Recover The Disk': 'Data Disk 2', 'Protect The Lab': 'Data Disk 3'}
 STORY_GATE_ITEMS = {381: 'Area F Lock Hack', 382: 'Sprinkler Key'}
@@ -629,6 +632,8 @@ STORY_LAVA_LOCATION = 'K-1: Lava Flow Control'
 STORY_LAVA_ITEM = 'Lava Flow Control'
 STORY_SWITCH_LOCATION = 'K-4: Door Switch'
 STORY_SWITCH_ITEM = 'Area K Door Switch'
+STORY_BRIDGE_LOCATION = 'D-1: Bridge Switch'
+STORY_BRIDGE_ITEM = 'Area D Bridge'
 # mission_objectives: items. An event whose effect became an item marks, instead of its
 # flag, a bit of the byte of the pickup table section that the game fills (location -> bit).
 STORY_DONE_BITS = {'E-3: Generator': 5}
@@ -877,6 +882,8 @@ EVENT_GATES = {
     769: [0x0210462C, 1],
 }
 EVENT_GATES_OPEN = [205, 221, 379, 381, 382, 395]
+# With mission_objectives on, these gates of EVENT_GATES_OPEN are the player's to open.
+EVENT_GATES_STORY = [379]
 EVENT_GATES_GOAL = [225, 378]
 # The seal of Area M (area_m_access): its gate flag, the Transerver item held back with
 # it, and the rooms it closes off (the seal stands a few steps inside M-1, with

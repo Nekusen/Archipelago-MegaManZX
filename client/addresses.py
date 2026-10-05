@@ -4,7 +4,7 @@ Everything the client reads or writes is named here.
 """
 
 from ..data import (
-    CANON_BLOCK, EVENT_GATES, GOAL_BITS, GOAL_BITS_SERPENT, ITEMS, LIVE_BLOCK, LOCATIONS, PICKUP_TABLE_ADDR,
+    CANON_BLOCK, EVENT_GATES, EVENT_GATES_STORY, GOAL_BITS, GOAL_BITS_SERPENT, ITEMS, LIVE_BLOCK, LOCATIONS, PICKUP_TABLE_ADDR,
     ROOM_SUBAREA, STORY_DONE_BITS, STORY_GATE_ITEMS, WARP_DESTINATIONS)
 from ..goal import DISK_ITEM
 from ..rom.table import (
@@ -262,6 +262,8 @@ STORY_ITEM_BITS = {n: (0 if v["grant"][0] == "story" else STORY_GATES_OFF - STOR
                        [int(b) for b in v["grant"][1]])
                    for n, v in ITEMS.items() if v["grant"][0] in ("story", "story_gate")}
 STORY_GATE_BITS = frozenset(tuple(EVENT_GATES[flag]) for flag in STORY_GATE_ITEMS)
+# ... and the ones a switch of the player opens, with mission_objectives on checks or on items
+STORY_SWITCH_GATE_BITS = frozenset(tuple(EVENT_GATES[flag]) for flag in EVENT_GATES_STORY)
 # Items that do to an area what an event of it did: item -> (area letter, the area flags
 # the client keeps set while the player is there)
 STORY_AREA_FLAGS = {n: (v["grant"][1], [tuple(b) for b in v["grant"][2]])

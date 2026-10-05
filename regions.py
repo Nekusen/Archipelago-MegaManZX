@@ -7,20 +7,25 @@ from . import seal as S
 from .logic import bosses as B
 from .logic import document as F
 from .logic import load_document
-from .data import (DOORS, LOCATIONS, STORY_CHAINS, STORY_COUNTS, STORY_GATE_ITEMS, STORY_LAVA_ITEM,
-                   STORY_LAVA_LOCATION, STORY_REPORT_ITEMS, STORY_SWITCH_ITEM, STORY_SWITCH_LOCATION)
-from .locations import MMZXLocation, STORY_ITEMS, active_locations, story_mode
+from .data import (DOORS, LOCATIONS, STORY_BRIDGE_ITEM, STORY_BRIDGE_LOCATION, STORY_CHAINS, STORY_COUNTS,
+                   STORY_GATE_ITEMS, STORY_LAVA_ITEM, STORY_LAVA_LOCATION, STORY_REPORT_ITEMS, STORY_SWITCH_ITEM,
+                   STORY_SWITCH_LOCATION)
+from .locations import MMZXLocation, STORY_ITEMS, STORY_OFF, active_locations, story_mode
 from .logic.rules import (TIER, WORLD, and_rules, door_rule, label_rule, starting_room,
                           transerver_rule)
 
 MISSION_PREFIX = "Mission - "
 LAVA_EVENT = "Lava Flow Slowed"   # what SLOW_LAVA tests while no item slows the lava
 SWITCH_EVENT = "K-1 Door Unlocked"
+BRIDGE_EVENT = "D-1 Bridge Lowered"
 # story atom -> (event at its location that stands for it while no item does, location, item)
 STORY_EVENTS = {
     F.SLOW_LAVA: (LAVA_EVENT, STORY_LAVA_LOCATION, STORY_LAVA_ITEM),
     F.K_DOOR_SWITCH: (SWITCH_EVENT, STORY_SWITCH_LOCATION, STORY_SWITCH_ITEM),
+    F.D_BRIDGE: (BRIDGE_EVENT, STORY_BRIDGE_LOCATION, STORY_BRIDGE_ITEM),
 }
+# with mission_objectives off the client does these itself from the start: free, and no event
+STORY_DONE_WHEN_OFF = {F.D_BRIDGE}
 
 
 def boss_requirements(world) -> dict:
@@ -64,8 +69,11 @@ def create_regions(world) -> None:
     host_atoms["GOAL"] = goal_rule or (lambda state: True)
     # with mission_objectives: items a Report, a story gate and each story atom ask for an item
     story_items = story_mode(world.options) == STORY_ITEMS
+    story_done = STORY_DONE_WHEN_OFF if story_mode(world.options) == STORY_OFF else set()
     for atom, (event, _location, item) in STORY_EVENTS.items():
         host_atoms[atom] = lambda state, _held=item if story_items else event: state.has(_held, player)
+    for atom in story_done:
+        host_atoms[atom] = lambda state: True
 
     def has(item):
         return (lambda state: state.has(item, player)) if item and story_items else None
@@ -258,8 +266,9 @@ def create_regions(world) -> None:
             continue
         add_event(G.cleared_event(name), name, v)
     if not story_items:
-        for event, location, _item in STORY_EVENTS.values():
-            add_event(event, location, LOCATIONS[location])
+        for atom, (event, location, _item) in STORY_EVENTS.items():
+            if atom not in story_done:
+                add_event(event, location, LOCATIONS[location])
 
     # goal: Victory event anchored to the final mission
     victory = MMZXLocation(player, "Defeat Serpent", None, field)

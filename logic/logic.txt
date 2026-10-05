@@ -536,6 +536,7 @@ room D-1 [d01]
     conn -> Bridge
       normal: MODEL
   region Bridge
+    check D-1: Bridge Switch
     conn -> After Bridge
       normal: MODEL
     conn -> Bottom Switch Door Area

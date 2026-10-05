@@ -143,7 +143,7 @@ room A-3 [a03]
     <- A-1
     <- H-1
     check A-3: Apple
-      normal: MODEL
+      normal: FX
     check A-3: Disk E-46
     conn -> H-4 Entrance
       normal: FX
@@ -366,6 +366,7 @@ room C-1 [c01]
     check C-1: E-Crystal L (8)
       normal: HU
     check C-1: Guardian Carrelet
+      normal: HU
     check C-1: Guardian Congre
       normal: HU
     check C-1: Guardian Oeillet

@@ -6,6 +6,16 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-10-05
+
+### Fixed
+
+- Universal Tracker showed checks in logic that were not reachable yet when the YAML had random options, such as a random `starting_model` with `hu_in_pool`. It now reads the options of your seed from the server, so it should always be consistent.
+
+### Changed
+
+- As a bonus due to the changes on this fix, Universal Tracker no longer needs your YAML for this game.
+
 ## [0.2.0] - 2026-09-26
 
 ### Added
@@ -38,6 +48,7 @@ All notable changes to this project are documented in this file. The format is b
 The first release of this project: Mega Man ZX (USA).
 See the [game page](docs/en_Mega%20Man%20ZX.md) for what the randomizer does and the [setup guide](docs/setup_en.md) to get playing. 
 
-[Unreleased]: https://github.com/Nekusen/Archipelago-MegaManZX/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/Nekusen/Archipelago-MegaManZX/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/Nekusen/Archipelago-MegaManZX/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/Nekusen/Archipelago-MegaManZX/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/Nekusen/Archipelago-MegaManZX/releases/tag/v0.1.0

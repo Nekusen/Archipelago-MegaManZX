@@ -30,9 +30,9 @@ from . import tracker  # auto-tab / position icon for Universal Tracker
 # Options the slot data carries under their own name: a world rebuilt from it takes these.
 SLOT_DATA_OPTIONS = ("character", "goal", "death_link", "starting_model", "starting_transerver",
                      "progressive_models", "hu_in_pool", "boss_logic", "skip_boss_rush",
-                     "skip_minibosses", "pickup_checks_1up", "pickup_checks_energy",
-                     "pickup_checks_weapon", "pickup_checks_crystals", "notify_received",
-                     "notify_sent", "notify_style")
+                     "skip_minibosses", "mission_objectives", "pickup_checks_1up",
+                     "pickup_checks_energy", "pickup_checks_weapon", "pickup_checks_crystals",
+                     "notify_received", "notify_sent", "notify_style")
 
 
 class MMZXSettings(settings.Group):
@@ -135,14 +135,18 @@ class MMZXWorld(World):
         # rather than rejected, so a random starting_model may land on none
         if self.options.starting_model.current_key == "none":
             self.options.hu_in_pool.value = 0
-        active = active_locations(self.options)
-        room = len(active) - len(self.fixed_items()[0])
-        reserve = len(set(self.options.exclude_locations.value) & set(active))
-        self.seal = S.resolve(self.options, room, reserve, self.player_name)
         if slot_data:
-            # the seed resolved its goal already: the goal options are neither sent nor asked again
+            # the seed resolved its goal and its seal already: their options are neither sent
+            # nor asked again
             self.goal, self.disk_order = G.from_slot_data(slot_data.get("goal_requirements"))
+            self.seal = S.from_slot_data(slot_data.get("area_m_access"))
+            # the pool reads the option itself to hold the Transerver Access of Area M back
+            self.options.area_m_access = type(self.options.area_m_access).from_any(self.seal.mode)
         else:
+            active = active_locations(self.options)
+            room = len(active) - len(self.fixed_items()[0])
+            reserve = len(set(self.options.exclude_locations.value) & set(active))
+            self.seal = S.resolve(self.options, room, reserve, self.player_name)
             self.goal = G.resolve(self.options, room - self.seal.passwords_total, reserve, self.player_name)
             # the order the disks received light the database entries in
             self.disk_order = self.random.sample(range(G.DISK_ENTRIES), G.DISK_ENTRIES)

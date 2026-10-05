@@ -59,6 +59,12 @@ def resolve(options, room: int, reserve: int, player_name: str) -> Seal:
     return Seal(mode, required, total)
 
 
+def from_slot_data(data: dict | None) -> Seal:
+    """The resolved seal back from its slot data; a seed from before the option had it open."""
+    data = data or {}
+    return Seal(data.get("mode", MODE_OPEN), int(data.get("passwords", 0)), int(data.get("passwords_total", 0)))
+
+
 def rule(seal: Seal, player: int):
     """The seal as a state rule, or None when it is open from the start."""
     if seal.mode == MODE_PASSWORDS:

@@ -27,6 +27,13 @@ from .rom.table import PICKUP_SLOTS, build_table, icon_code
 from . import client  # registers the BizHawkClient  # noqa: F401
 from . import tracker  # auto-tab / position icon for Universal Tracker
 
+# Options the slot data carries under their own name: a world rebuilt from it takes these.
+SLOT_DATA_OPTIONS = ("character", "goal", "death_link", "starting_model", "starting_transerver",
+                     "progressive_models", "hu_in_pool", "boss_logic", "skip_boss_rush",
+                     "skip_minibosses", "mission_objectives", "pickup_checks_1up",
+                     "pickup_checks_energy", "pickup_checks_weapon", "pickup_checks_crystals",
+                     "notify_received", "notify_sent", "notify_style")
+
 
 class MMZXSettings(settings.Group):
     class RomFile(settings.UserFilePath):
@@ -102,21 +109,47 @@ class MMZXWorld(World):
         "location_setting_key": "mmzx_pos_{player}",
         "location_icon_coords": tracker.location_icon_coords,
     }
+    # the slot data holds all the logic needs, so the tracker builds this world without the YAML
+    ut_can_gen_without_yaml = True
+
+    @staticmethod
+    def interpret_slot_data(slot_data: dict) -> dict:
+        """Universal Tracker hook: the slot data goes back into the regeneration as it is."""
+        return slot_data
+
+    def restore_options(self, slot_data: dict) -> None:
+        """Sets every option the slot data carries to the seed's value, or to its default when a
+        seed from before the option existed says nothing about it."""
+        for key in SLOT_DATA_OPTIONS:
+            option = getattr(self.options, key)
+            setattr(self.options, key, type(option).from_any(slot_data.get(key, option.default)))
 
     def generate_early(self) -> None:
         """Checks the option combinations and parses boss_logic first, so a YAML mistake fails
         with a clear message."""
+        # Universal Tracker rebuilds the world without the seed's rolls; the slot data has them
+        slot_data = getattr(self.multiworld, "re_gen_passthrough", {}).get(self.game)
+        if slot_data:
+            self.restore_options(slot_data)
         # with no starting biometal Hu is the only form, so it cannot be an item; ignored
         # rather than rejected, so a random starting_model may land on none
         if self.options.starting_model.current_key == "none":
             self.options.hu_in_pool.value = 0
-        active = active_locations(self.options)
-        room = len(active) - len(self.fixed_items()[0])
-        reserve = len(set(self.options.exclude_locations.value) & set(active))
-        self.seal = S.resolve(self.options, room, reserve, self.player_name)
-        self.goal = G.resolve(self.options, room - self.seal.passwords_total, reserve, self.player_name)
-        # the order the disks received light the database entries in
-        self.disk_order = self.random.sample(range(G.DISK_ENTRIES), G.DISK_ENTRIES)
+        if slot_data:
+            # the seed resolved its goal and its seal already: their options are neither sent
+            # nor asked again
+            self.goal, self.disk_order = G.from_slot_data(slot_data.get("goal_requirements"))
+            self.seal = S.from_slot_data(slot_data.get("area_m_access"))
+            # the pool reads the option itself to hold the Transerver Access of Area M back
+            self.options.area_m_access = type(self.options.area_m_access).from_any(self.seal.mode)
+        else:
+            active = active_locations(self.options)
+            room = len(active) - len(self.fixed_items()[0])
+            reserve = len(set(self.options.exclude_locations.value) & set(active))
+            self.seal = S.resolve(self.options, room, reserve, self.player_name)
+            self.goal = G.resolve(self.options, room - self.seal.passwords_total, reserve, self.player_name)
+            # the order the disks received light the database entries in
+            self.disk_order = self.random.sample(range(G.DISK_ENTRIES), G.DISK_ENTRIES)
         try:
             reqs = boss_requirements(self)
         except ValueError as e:
@@ -139,11 +172,6 @@ class MMZXWorld(World):
             self.door_keys = door_constraints.door_keys(self.door_sites)
         else:
             door_constraints.choose(self)
-
-    @staticmethod
-    def interpret_slot_data(slot_data: dict) -> dict:
-        """Universal Tracker hook: the slot data goes back into the regeneration as it is."""
-        return slot_data
 
     def create_item(self, name: str) -> MMZXItem:
         """Creates an item, promoting a useful one to progression when a rule needs it."""

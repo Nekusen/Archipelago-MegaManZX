@@ -443,6 +443,17 @@ class TestPatchTables(unittest.TestCase):
         for version in ((0, 1, 0), (1, 12, 255)):
             self.assertEqual(rom.unpack_version(rom.pack_version(version)), version)
 
+    def test_rom_versions_a_client_plays(self) -> None:
+        """A version plays its own ROMs and those of the versions it lists, nothing else."""
+        played = {((0, 2, 1), (0, 2, 1)): True, ((0, 2, 0), (0, 2, 1)): True,
+                  ((0, 1, 0), (0, 2, 1)): False, ((0, 2, 1), (0, 2, 0)): False,
+                  ((0, 2, 0), (0, 3, 0)): False}
+        for (patched_by, client), expected in played.items():
+            with self.subTest(rom=patched_by, client=client):
+                self.assertEqual(rom.plays_rom(rom.pack_version(patched_by), client), expected)
+        for client, older in rom.PLAYABLE_ROM_VERSIONS.items():
+            self.assertTrue(all(version < client for version in older))
+
     def test_patch_tokens(self) -> None:
         """write_patch_tokens stores the marker with the slot name, the option blob, the golden image and the pickup table."""
         image = golden.build_image("model_zx", 0, STARTING_MODELS, STARTING_TRANSERVERS["area_a"])

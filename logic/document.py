@@ -1,4 +1,5 @@
-"""Shared core of the logic document: atoms, requirements, regions, validation, text export.
+"""Shared core of the logic document: atoms, requirements, regions, validation and the generated
+logic module.
 
 Imports nothing from Archipelago, so the editor and the tools load it on their own.
 """
@@ -54,14 +55,14 @@ AREA_MISSION_EVENTS = ["Cleared: Search The Plant", "Cleared: Find The Survivors
                        "Cleared: Save The People", "Cleared: Recover The Disk",
                        "Cleared: Attack The Excavators", "Cleared: Protect The Lab"]
 LIST_COUNT_ATOMS = {"MISSIONS": (AREA_MISSION_EVENTS, 8)}
-# GOAL is the player's goal requirements (the world resolves it); alone, it means ALL6.
+# GOAL is the player's goal requirements, resolved per player from the YAML.
 MACRO_ATOMS = ("MODEL", "ALL6", "GOAL")
 CONST_TRUE = ("TRUE", "ANY", "FREE")
 CONST_FALSE = ("FALSE", "NEVER", "IMPOSSIBLE")
 
 # The lava of Area K set to slow, the door of K-1 unlocked and the bridge of D-1 lowered: an
 # item with mission_objectives: items, else the event of the Lava Flow Control of K-1, of the
-# switch of K-4 and of the switch of D-1. The world resolves them; alone, each means its item.
+# switch of K-4 and of the switch of D-1; the bridge is down from the start with the option off.
 SLOW_LAVA = "SLOW_LAVA"
 K_DOOR_SWITCH = "K_DOOR_SWITCH"
 D_BRIDGE = "D_BRIDGE"
@@ -79,6 +80,27 @@ CHIP_ATOMS = {
     "CHIP_ERASER": "Eraser Chip",
 }
 ATOM_ITEM.update(CHIP_ATOMS)
+
+# The events that stand for the story atoms while no item does, and the ones the missions, the
+# biometal checks and the goal leave behind.
+LAVA_EVENT = "Lava Flow Slowed"
+SWITCH_EVENT = "K-1 Door Unlocked"
+BRIDGE_EVENT = "D-1 Bridge Lowered"
+STORY_EVENT = {SLOW_LAVA: LAVA_EVENT, K_DOOR_SWITCH: SWITCH_EVENT, D_BRIDGE: BRIDGE_EVENT}
+MISSION_PREFIX = "Mission - "
+CLEARED_PREFIX = "Cleared: "
+BIOMETAL_PREFIX = "Obtain "
+OBTAINED_PREFIX = "Obtained: "
+FINAL_MISSION = "Mission - Destroy Model W"
+VICTORY_LOCATION = "Defeat Serpent"
+VICTORY = "Victory"
+# The option classes of the world's options.py the rules filter on, and where the serialized
+# rules find them
+PROGRESSIVE_OPTION, HU_OPTION, STORY_OPTION = "ProgressiveModels", "HuInPool", "MissionObjectives"
+RUSH_OPTION, SEAL_OPTION = "SkipBossRush", "AreaMAccess"
+STORY_OFF, STORY_CHECKS, STORY_ITEMS = 0, 1, 2
+SEAL_BIOMETALS = 1
+OPTIONS_MODULE = "worlds.mmzx.options"
 
 _COUNT_RE = re.compile(r"^([A-Z_]+)>=(\d+)$")
 
@@ -371,21 +393,6 @@ def req_is_never(req, tier="expert"):
     return len(req_alternatives(req, tier)) == 0
 
 
-def req_to_lines(req):
-    """One 'tier: atoms' line per alternative, or ['never'] when there is none."""
-    lines = []
-    if req is None:
-        return ["free"]
-    total = 0
-    for t in TIERS:
-        for alt in req.get(t) or []:
-            total += 1
-            lines.append("%s: %s" % (t, " & ".join(alt) if alt else "free"))
-    if total == 0:
-        lines.append("never")
-    return lines
-
-
 def req_atoms(req):
     out = set()
     for t in TIERS:
@@ -430,83 +437,142 @@ def count_items_used(doc):
     return progression_items(document_atoms(doc))
 
 
-# Compilation to Archipelago rules
+# Intermediate representation (IR) of the rules
 
-def compile_req(req, tier, player, hu_in_pool=False, extra_atoms=None, full_models=False):
-    """Compiles a requirement at tier into a rule callable; None means no rule.
-
-    extra_atoms maps atom names to callables for the atoms the host resolves, such as BOSS_*.
-    full_models: the biometals are single items instead of progressive halves.
-    """
-    alts = req_alternatives(req, tier)
-    if any(len(a) == 0 for a in alts):
-        return None
-    if not alts:
-        return lambda state: False
-    compiled = []
-    for alt in alts:
-        preds = [p for p in (atom_predicate(a, player, hu_in_pool, extra_atoms, full_models) for a in alt)
-                 if p is not None]
-        compiled.append(preds)
-    if any(len(p) == 0 for p in compiled):
-        return None
-
-    def rule(state):
-        for preds in compiled:
-            ok = True
-            for p in preds:
-                if not p(state):
-                    ok = False
-                    break
-            if ok:
-                return True
-        return False
-    return rule
+# A requirement becomes a tree of plain tuples, (kind, ...), that the compiler to Archipelago rules
+# and the exporters of the generated files all consume, so what is read is what is evaluated.
+# The node kinds are the cases of ir_to_dict; the named constants expand through MACRO_IR.
+IR_TRUE, IR_FALSE = ("true",), ("false",)
 
 
-def atom_predicate(atom, player, hu_in_pool=False, extra_atoms=None, full_models=False):
-    """Callable for one atom, or None when the atom resolves to nothing."""
-    if extra_atoms and atom in extra_atoms:
-        return extra_atoms[atom]
+def _has_if(item, option, value, count=1, op="eq"):
+    """An item held, which counts for nothing unless the option filter holds (an alternative of an OR)."""
+    return ("has_if", item, count, option, value, op)
 
-    def item_of(name):
-        return FULL_MODEL_ITEMS.get(name, name) if full_models else name
 
-    if atom == "HU":
-        if not hu_in_pool:
-            return None
-        return lambda state: state.has("Model Hu", player)
-    if atom == "MODEL":
-        items = [item_of(ATOM_ITEM[m]) for m in MODELS_NONHU]
-        return lambda state: state.has_any(items, player)
-    if atom in ("ALL6", "GOAL"):
-        items = [item_of(ATOM_ITEM[m]) for m in ALL6]
-        return lambda state: state.has_all(items, player)
+def _needs_if(item, option, value, count=1, op="eq"):
+    """An item held, asked for only while the option filter holds (a condition of an AND)."""
+    return ("needs_if", item, count, option, value, op)
+
+
+def _model_ir(half, count=1):
+    """A biometal with halves: `count` progressive halves, or the single full item without progressive models."""
+    return ("or", (_has_if(half, PROGRESSIVE_OPTION, 1, count), _has_if(FULL_MODEL_ITEMS[half], PROGRESSIVE_OPTION, 0)))
+
+
+MACRO_IR = {
+    "HU": ("or", (_has_if(ATOM_ITEM["HU"], HU_OPTION, 1), ("option_true", HU_OPTION, 0, "eq"))),
+}
+for _m in ("HX", "FX", "LX", "PX"):
+    MACRO_IR[_m] = _model_ir(ATOM_ITEM[_m])
+for _m, _half in FULL_MODEL_ATOMS.items():
+    MACRO_IR[_m] = _model_ir(_half, 2)
+MACRO_IR["MODEL"] = ("or", (("has_any", tuple(ATOM_ITEM[m] for m in ("X", "ZX", "OX"))),
+                            *(("macro", m) for m in ("HX", "FX", "LX", "PX"))))
+MACRO_IR["ALL6"] = ("and", (("has", ATOM_ITEM["X"], 1), ("has", ATOM_ITEM["ZX"], 1),
+                            *(("macro", m) for m in ("HX", "FX", "LX", "PX"))))
+MACRO_IR["GOAL"] = ("goal",)
+MACRO_IR["LAVA_ITEM"] = _has_if(STORY_ATOMS[SLOW_LAVA], STORY_OPTION, STORY_ITEMS)
+MACRO_IR[SLOW_LAVA] = ("or", (("macro", "LAVA_ITEM"), _has_if(LAVA_EVENT, STORY_OPTION, STORY_ITEMS, op="ne")))
+MACRO_IR[K_DOOR_SWITCH] = ("or", (_has_if(STORY_ATOMS[K_DOOR_SWITCH], STORY_OPTION, STORY_ITEMS),
+                                  _has_if(SWITCH_EVENT, STORY_OPTION, STORY_ITEMS, op="ne")))
+MACRO_IR[D_BRIDGE] = ("or", (_has_if(STORY_ATOMS[D_BRIDGE], STORY_OPTION, STORY_ITEMS),
+                             _has_if(BRIDGE_EVENT, STORY_OPTION, STORY_CHECKS),
+                             ("option_true", STORY_OPTION, STORY_OFF, "eq")))
+MACRO_IR["SEAL"] = ("seal",)
+
+
+def ir_and(nodes):
+    """AND of IR nodes, flattened: a false child wins, true children and repeats drop out."""
+    out = []
+    for n in nodes:
+        if n[0] == "false":
+            return IR_FALSE
+        for c in (n[1] if n[0] == "and" else (n,)):
+            if c[0] != "true" and c not in out:
+                out.append(c)
+    if not out:
+        return IR_TRUE
+    return out[0] if len(out) == 1 else ("and", tuple(out))
+
+
+def ir_or(nodes):
+    """OR of IR nodes, flattened: a true child wins, false children and repeats drop out."""
+    out = []
+    for n in nodes:
+        if n[0] == "true":
+            return IR_TRUE
+        for c in (n[1] if n[0] == "or" else (n,)):
+            if c[0] != "false" and c not in out:
+                out.append(c)
+    if not out:
+        return IR_FALSE
+    return out[0] if len(out) == 1 else ("or", tuple(out))
+
+
+def atom_ir(atom, site=None):
+    """IR of one atom; `site` is where the rule is asked ({"at": region, "control": region of
+    the lava control}), which the slow lava depends on."""
+    if atom == SLOW_LAVA and site and site.get("at"):
+        return ("or", (("macro", "LAVA_ITEM"), ("lava", site["at"], site["control"])))
+    if atom in MACRO_IR:
+        return ("macro", atom)
     if atom in BOSS_ATOMS:
-        # no YAML requirement: the boss asks for nothing
-        return None
+        return ("boss", BOSS_ATOMS[atom])
     if atom in ATOM_ITEM:
-        name = item_of(ATOM_ITEM[atom])
-        return lambda state: state.has(name, player)
-    if atom in FULL_MODEL_ATOMS:
-        # the single full item is both halves at once
-        name = item_of(FULL_MODEL_ATOMS[atom])
-        copies = 1 if full_models else 2
-        return lambda state: state.has(name, player, copies)
+        return ("has", ATOM_ITEM[atom], 1)
     if atom in MISSION_EVENT:
-        name = MISSION_EVENT[atom]
-        return lambda state: state.has(name, player)
-    if atom in STORY_ATOMS:
-        name = STORY_ATOMS[atom]
-        return lambda state: state.has(name, player)
+        return ("has", MISSION_EVENT[atom], 1)
     m = _COUNT_RE.match(atom)
     if m and m.group(1) in COUNT_ATOMS:
-        name, n = COUNT_ATOMS[m.group(1)][0], int(m.group(2))
-        return lambda state: state.has(name, player, n)
+        return ("has", COUNT_ATOMS[m.group(1)][0], int(m.group(2)))
     if m and m.group(1) in LIST_COUNT_ATOMS:
-        names, n = list(LIST_COUNT_ATOMS[m.group(1)][0]), int(m.group(2))
-        return lambda state: state.has_from_list(names, player, n)
+        return ("has_from_list", tuple(LIST_COUNT_ATOMS[m.group(1)][0]), int(m.group(2)))
     raise ValueError("unknown atom %r" % atom)
+
+
+def req_ir(req, tier, site=None):
+    """IR of a requirement at tier: the OR of its alternatives, each the AND of its atoms."""
+    return ir_or([ir_and([atom_ir(a, site) for a in alt]) for alt in req_alternatives(req, tier)])
+
+
+def gate_table(doc, tier) -> dict:
+    """{flag: IR} of the event gates the document gives a requirement; the others are open."""
+    return {int(flag): req_ir(g["req"], tier) for flag, g in doc.get("gates", {}).items() if g.get("req") is not None}
+
+
+def ir_expand_gates(ir, table):
+    """The IR with every gate replaced by its expansion from table."""
+    if ir[0] == "gate":
+        return table[ir[1]]
+    if ir[0] == "and":
+        return ir_and([ir_expand_gates(c, table) for c in ir[1]])
+    if ir[0] == "or":
+        return ir_or([ir_expand_gates(c, table) for c in ir[1]])
+    return ir
+
+
+def ir_prune(ir, present):
+    """The IR with every region outside `present` unreachable: the world leaves out the regions
+    nothing leads to."""
+    if ir[0] == "reach":
+        return ir if ir[1] in present else IR_FALSE
+    if ir[0] == "and":
+        return ir_and([ir_prune(c, present) for c in ir[1]])
+    if ir[0] == "or":
+        return ir_or([ir_prune(c, present) for c in ir[1]])
+    return ir
+
+
+def ir_regions(ir) -> set:
+    """Regions the IR asks to reach, through its macros."""
+    if ir[0] == "reach":
+        return {ir[1]}
+    if ir[0] in ("and", "or"):
+        return set().union(*(ir_regions(c) for c in ir[1]))
+    if ir[0] == "macro":
+        return ir_regions(MACRO_IR[ir[1]])
+    return set()
 
 
 # Geometry
@@ -570,8 +636,9 @@ def room_label(code: str) -> str:
     return "%s-%d" % (letter.upper(), num)
 
 
-def build_world(D):
-    """Neutral view of data.py for this module: rooms, labels, locations, edges, hub."""
+def build_world(D, sites=None):
+    """Neutral view of data.py for this module: rooms, labels, locations, edges, hub, the start,
+    the seal, the story objects and the door constraint sites (door_data.SITES)."""
     edges = list(D.DOORS)
     rooms = sorted({e["src"] for e in edges} | {e["dst"] for e in edges})
     locs = {}
@@ -579,16 +646,31 @@ def build_world(D):
         locs[name] = {"category": v.get("category"), "room": v.get("room"),
                       "pos": list(v["pos"]) if v.get("pos") else None,
                       "detect": v.get("detect") is not None}
+    starts = list(dict.fromkeys(rec["room"] for rec in getattr(D, "STARTING_TRANSERVERS", {}).values()))
+    if len(starts) > 1:
+        raise ValueError("the starting points are in several rooms (%s); the logic expects one" % ", ".join(starts))
     return {
         "rooms": rooms,
         "room_label": {r: room_label(r) for r in rooms},
         "locations": locs,
         "edges": edges,
         "hub": D.HUB_ROOM,
+        "start_room": starts[0] if starts else D.HUB_ROOM,
         "transerver_access": dict(D.TRANSERVER_ACCESS),
         "transerver_always": list(D.TRANSERVER_ALWAYS),
         "event_gates_open": list(getattr(D, "EVENT_GATES_OPEN", [])),
         "hub_floor_y": dict(getattr(D, "HUB_FLOOR_Y", {})),
+        "seal_rooms": list(getattr(D, "SEAL_ROOMS", [])),
+        "site_doors": sorted(door for site in (sites or {}).values() for door in site["doors"]),
+        "story": {
+            "report_items": dict(getattr(D, "STORY_REPORT_ITEMS", {})),
+            "gate_items": {int(flag): item for flag, item in getattr(D, "STORY_GATE_ITEMS", {}).items()},
+            "lava_location": getattr(D, "STORY_LAVA_LOCATION", None),
+            "switch_location": getattr(D, "STORY_SWITCH_LOCATION", None),
+            "bridge_location": getattr(D, "STORY_BRIDGE_LOCATION", None),
+            "chains": [list(chain) for chain in getattr(D, "STORY_CHAINS", [])],
+            "counts": {name: (int(count), list(group)) for name, (count, group) in getattr(D, "STORY_COUNTS", {}).items()},
+        },
     }
 
 
@@ -991,160 +1073,719 @@ def _check_req(req, where, errors, allow_none=False):
                     errors.append("%s: unknown atom %r" % (where, a))
 
 
-# Text twin
+# The rules of the world: entrances and locations
 
-def _req_block(L, req, unsure, note, indent="      "):
-    for rq in req_to_lines(req):
-        L.append("%s%s%s" % (indent, "? " if unsure else "", rq))
-    if note:
-        L[-1] += "   # " + note
-
-
-def _emit_counted(L, blocks):
-    """Append the blocks (lists of lines) in order, alike ones once with a count."""
-    counts = {}
-    order = []
-    for b in blocks:
-        key = tuple(b)
-        if key not in counts:
-            counts[key] = 0
-            order.append(key)
-        counts[key] += 1
-    for key in order:
-        lines = list(key)
-        if counts[key] > 1:
-            first = lines[0]
-            at = first.find("   #")
-            tag = "  (x%d)" % counts[key]
-            lines[0] = first[:at] + tag + first[at:] if at >= 0 else first + tag
-        L.extend(lines)
+# Logic level the world ships. The document also carries expert alternatives (tricks, tight
+# jumps); they are not offered as an option yet.
+TIER = "normal"
+MENU, FIELD = "Menu", "Field"
+START_ENTRANCE = "Start"
+FIELD_ACCESS = "Field access"
 
 
-def export_txt(world, doc, start_room=None):
-    """Renders the document and world as the readable logic.txt: the logic, without geometry."""
-    L = []
+def area_of(region_name: str) -> str:
+    """Area letter of a region: the rooms are named after their area, k04 being K-4."""
+    return region_name[0]
+
+
+def label_room_groups(label, rooms) -> list:
+    """Room groups of an area label: OR between groups, AND inside each group."""
+    groups = []
+    for part in str(label).split("/"):
+        pairs = re.findall(r"([A-Za-z])-?(\d+)", part)
+        if pairs:
+            g = ["%s%02d" % (letter.lower(), int(num)) for letter, num in pairs]
+        else:  # bare letter: every room of the area
+            letter = part.strip()[:1].lower()
+            g = [r for r in rooms if r.startswith(letter)]
+        g = [r for r in g if r in rooms]
+        if g:
+            groups.append(g)
+    return groups
+
+
+def location_events(world) -> dict:
+    """{anchor location: [(event location, event item, extra IR)]}: the events placed and ruled
+    like their anchor, each with what it adds. The missions leave a Cleared event; the biometal
+    checks an Obtained event the seal of Area M counts; the lava control, the door switch and the
+    bridge switch stand in for their item while the options give none; the final mission holds
+    the Victory event behind the goal requirements."""
+    out = {}
+    for name, v in world["locations"].items():
+        if v.get("category") == "mission":
+            event = CLEARED_PREFIX + name[len(MISSION_PREFIX):]
+            out.setdefault(name, []).append((event, event, IR_TRUE))
+        elif v.get("category") == "biometal":
+            event = OBTAINED_PREFIX + name[len(BIOMETAL_PREFIX):]
+            out.setdefault(name, []).append((event, event, ("option_true", SEAL_OPTION, SEAL_BIOMETALS, "eq")))
+    story = world["story"]
+    no_item = ("option_true", STORY_OPTION, STORY_ITEMS, "ne")
+    for atom, location, guard in ((SLOW_LAVA, story["lava_location"], no_item),
+                                  (K_DOOR_SWITCH, story["switch_location"], no_item),
+                                  (D_BRIDGE, story["bridge_location"], ("option_true", STORY_OPTION, STORY_CHECKS, "eq"))):
+        if location in world["locations"]:
+            out.setdefault(location, []).append((STORY_EVENT[atom], STORY_EVENT[atom], guard))
+    out.setdefault(FINAL_MISSION, []).append((VICTORY_LOCATION, VICTORY, ("macro", "GOAL")))
+    return out
+
+
+def _arena_ir(boss_of, room, rid):
+    bid = boss_of.get((room, rid))
+    return ("boss", bid) if bid else IR_TRUE
+
+
+def transerver_ir(world, edge) -> tuple:
+    """IR of a warp leaving the hub: the Transerver Access item of the destination's floor; a
+    floor with no Transport destination is never warped to. Any other edge is free here."""
+    if edge["kind"] != "warp" or edge["src"] != world["hub"]:
+        return IR_TRUE
+    if edge["dst"] in world["transerver_always"]:
+        return IR_TRUE
+    item = world["transerver_access"].get(edge["dst"])
+    return ("has", item, 1) if item else IR_FALSE
+
+
+def lava_control_region(world, doc, members):
+    """The region of the lava control of Area K, or None while the data has no such location."""
+    placed = check_placements(world, doc, world["story"]["lava_location"])
+    if not placed:
+        return None
+    room = placed[0][0]
+    return region_name(room, members[room].get(world["story"]["lava_location"], "main"))
+
+
+def entrance_rules(world, doc, members, tier, faults=None, control=None) -> list:
+    """[(name, source region, destination region, IR)] of every entrance: the start, the drawn connections, the edges.
+
+    An edge ANDs its key, the destination room's entry requirement, its extra cost, the Transerver rule, its
+    event gate and that gate's item, the landing arena's boss and the seal of Area M. What the document makes
+    impossible is left out; a rule that cannot be built reads as never, its error in `faults`.
+    """
+    gates = gate_table(doc, tier)
+    boss_of = boss_regions(doc)
+    edge_ov, story = doc.get("edges", {}), world["story"]
+    seal_rooms, site_doors = set(world["seal_rooms"]), set(world["site_doors"])
+    start_room = world["start_room"]
+
+    def guarded(name, build):
+        try:
+            return build()
+        except (ValueError, KeyError, TypeError) as e:
+            if faults is None:
+                raise
+            faults[name] = str(e)
+            return IR_FALSE
+
+    def site(at):
+        return {"at": at, "control": control}
+
+    def key_ir(d):
+        if d["name"] in site_doors:
+            return ("door_key", d["name"])
+        return ("has", d["key"], 1) if d.get("key") else IR_TRUE
+
+    def door_ir(d, src, dst_rid):
+        gate = d.get("gate")
+        cost = req_ir(edge_ov.get(d["name"], {}).get("req"), tier, site(src))
+        if d["name"] == BOSS_RUSH_EXIT:
+            cost = ir_or([cost, ("option_true", RUSH_OPTION, 1, "eq")])
+        return ir_and([key_ir(d),
+                       req_ir(doc["rooms"][d["dst"]].get("req"), tier, site(src)) if d["src"] != d["dst"] else IR_TRUE,
+                       cost,
+                       transerver_ir(world, d),
+                       ("gate", gate) if gate in gates else IR_TRUE,
+                       _needs_if(story["gate_items"][gate], STORY_OPTION, STORY_ITEMS) if gate in story["gate_items"] else IR_TRUE,
+                       _arena_ir(boss_of, d["dst"], dst_rid),
+                       ("macro", "SEAL") if d["dst"] in seal_rooms and d["src"] not in seal_rooms else IR_TRUE,
+                       ("option_true", RUSH_OPTION, 0, "eq") if d["name"] in BOSS_RUSH_DOORS else IR_TRUE])
+
+    start = region_name(start_room, "main")
+    out = [(START_ENTRANCE, MENU, start, guarded(START_ENTRANCE, lambda: ir_and(
+        [req_ir(doc["rooms"][start_room].get("req"), tier, site(start)), _arena_ir(boss_of, start_room, "main")])))]
+    for room, rl in doc["rooms"].items():
+        for c in rl.get("conns", []):
+            name, src = connection_name(room, c), region_name(room, c["from"])
+            ir = guarded(name, lambda: ir_and([req_ir(c.get("req"), tier, site(src)), _arena_ir(boss_of, room, c["to"])]))
+            if ir != IR_FALSE or name in (faults or {}):
+                out.append((name, src, region_name(room, c["to"]), ir))
+        for d in world["edges"]:
+            if d["src"] != room or d["kind"] in NON_TRANSITION_KINDS:
+                continue
+            src_rid = members[d["src"]].get(d["name"], "main")
+            dst_rid = members[d["dst"]].get(d["name"] + "@in", "main")
+            if d["src"] == d["dst"] and src_rid == dst_rid:
+                continue                   # a door within one region
+            src = region_name(d["src"], src_rid)
+            ir = guarded(d["name"], lambda: door_ir(d, src, dst_rid))
+            if ir != IR_FALSE or d["name"] in (faults or {}):
+                out.append((d["name"], src, region_name(d["dst"], dst_rid), ir))
+    return out
+
+
+def connection_name(room, conn) -> str:
+    return "%s: %s -> %s" % (room, conn["from"], conn["to"])
+
+
+def room_regions(room, needed) -> list:
+    """The regions of a room the start can lead to: its main region alone when it is one of them."""
+    names = sorted(n for n in needed if n == room or n.startswith(room + "/"))
+    return [room] if room in names else names
+
+
+def location_place(world, doc, members, needed, name) -> tuple:
+    """(parent region, IR of getting there) of a location.
+
+    One placement: the region of its point. Several: Field, reaching any of them. None: Field with
+    the area label of the data, a room being reached through its main region or, when it has been
+    carved up, any of its regions.
+    """
+    placed = [region_name(room, members[room].get(name, "main")) for room, _ in check_placements(world, doc, name)]
+    if len(placed) == 1:
+        return placed[0], IR_TRUE
+    if placed:
+        return FIELD, ir_or([("reach", r) for r in placed])
+    groups = label_room_groups(world["locations"][name].get("room"), world["rooms"])
+    base = ir_or([ir_and([ir_or([("reach", r) for r in room_regions(room, needed)]) for room in group])
+                  for group in groups]) if groups else IR_TRUE
+    return FIELD, base
+
+
+def location_rule(world, doc, members, needed, name, tier, faults=None, control=None) -> tuple:
+    """(parent region, IR) of a location: its place, the check requirement of the document, the
+    object a mission's Report asks for, and the story locations the game hands out in order or
+    after some others. A requirement that cannot be built reads as never and its error goes into
+    `faults`.
+    """
+    parent, base = location_place(world, doc, members, needed, name)
+    site = {"at": None if parent == FIELD else parent, "control": control}
+    story = world["story"]
+    extras = []
+    if name.startswith(MISSION_PREFIX) and story["report_items"].get(name[len(MISSION_PREFIX):]):
+        extras.append(_needs_if(story["report_items"][name[len(MISSION_PREFIX):]], STORY_OPTION, STORY_ITEMS))
+    for chain in story["chains"]:
+        extras.extend(("reach_location", earlier, location_place(world, doc, members, needed, earlier)[0])
+                      for earlier, later in zip(chain, chain[1:]) if later == name)
+    if name in story["counts"]:
+        count, group = story["counts"][name]
+        extras.append(("reached_at_least", count, tuple(group)))
+    try:
+        req = req_ir(doc.get("checks", {}).get(name, {}).get("req"), tier, site)
+    except (ValueError, KeyError, TypeError) as e:
+        if faults is None:
+            raise
+        faults[name], req = str(e), IR_FALSE
+    return parent, ir_and([base, req, *extras])
+
+
+def global_reachability(world, doc, members, tier="expert"):
+    """Regions a new game can ever lead to: connections and room edges whose requirement is not
+    never and the warps of the hub with a Transerver Access item. What the world prunes."""
+    links = {}
+    for room, rl in doc["rooms"].items():
+        for c in rl.get("conns", []):
+            if not req_is_never(c.get("req"), tier):
+                links.setdefault(region_name(room, c["from"]), set()).add(region_name(room, c["to"]))
+    edge_ov, gates = doc.get("edges", {}), doc.get("gates", {})
+    for d in world["edges"]:
+        if d["kind"] in NON_TRANSITION_KINDS:
+            continue
+        src_rid = members[d["src"]].get(d["name"], "main")
+        dst_rid = members[d["dst"]].get(d["name"] + "@in", "main")
+        if d["src"] == d["dst"] and src_rid == dst_rid:
+            continue
+        if transerver_ir(world, d) == IR_FALSE:
+            continue
+        reqs = (edge_ov.get(d["name"], {}).get("req"),
+                gates.get(str(d["gate"]), {}).get("req") if d.get("gate") is not None else None,
+                doc["rooms"][d["dst"]].get("req") if d["src"] != d["dst"] else None)
+        if any(req is not None and req_is_never(req, tier) for req in reqs):
+            continue
+        links.setdefault(region_name(d["src"], src_rid), set()).add(region_name(d["dst"], dst_rid))
+    seen, frontier = set(), [region_name(world["start_room"], "main")]
+    while frontier:
+        name = frontier.pop()
+        if name not in seen:
+            seen.add(name)
+            frontier.extend(links.get(name, ()))
+    return seen
+
+
+# Generated files: logic/rules.py (the module the world imports) and logic/rules.json (for trackers)
+
+GAME = "Mega Man ZX"
+GENERATED_HEADER = (
+    "The access logic of Mega Man ZX: the region graph and the rule of every entrance, location and event,\n"
+    "room by room, in the syntax of the Archipelago Rule Builder. Generated from logic/logic.json, drawn in the\n"
+    "editor under tools/logic_editor/. Do not edit this file by hand: change the logic in the editor, which\n"
+    "rewrites it on every save, or run tools/check_logic.py; the tests fail when it falls behind the document.")
+JSON_NOTICE = ("Generated from logic/logic.json by the logic editor or tools/check_logic.py: the rules of "
+               "logic/rules.py serialized as the Archipelago Rule Builder does (Rule.to_dict). Do not edit by hand; "
+               "the tests fail when it falls behind the document.")
+EDGE_WORDS = {"door": "door", "internal": "internal", "warp": "warp", "curated": "path", "save": "pad"}
+# The rule classes of the Rule Builder and of logic/builder.py the generated module may import, in import order
+RULE_CLASSES = ("CanReachLocation", "CanReachRegion", "False_", "Has", "HasAny", "HasFromList", "True_")
+BUILDER_CLASSES = ("BossRequirement", "DoorKey", "GoalRequirement", "LavaCarriedTo", "ReachedAtLeast", "SealRequirement")
+MACRO_NOTES = {
+    "HU": "the human form: an item with hu_in_pool, always at hand without it",
+    "HX": "one half of the biometal, or the whole item without progressive models",
+    "FX": "one half of the biometal, or the whole item without progressive models",
+    "LX": "one half of the biometal, or the whole item without progressive models",
+    "PX": "one half of the biometal, or the whole item without progressive models",
+    "HX2": "both halves, the level 2 charge, or the whole item without progressive models",
+    "FX2": "both halves, the level 2 charge, or the whole item without progressive models",
+    "LX2": "both halves, the level 2 charge, or the whole item without progressive models",
+    "PX2": "both halves, the level 2 charge, or the whole item without progressive models",
+    "MODEL": "any model but the human form",
+    "ALL6": "the six main biometals",
+    "GOAL": "the goal requirements of the YAML, resolved per player",
+    "LAVA_ITEM": "the item that slows the lava of Area K, with mission_objectives: items",
+    SLOW_LAVA: "the slow lava asked at no place in particular: its item, or the event of its control",
+    K_DOOR_SWITCH: "the door of K-1 to its Sub Tank: its item, or the event of the switch of K-4",
+    D_BRIDGE: "the bridge of D-1: its item, the event of its switch with checks, down from the start when off",
+    "SEAL": "the seal of Area M: what area_m_access asks for, resolved per player",
+}
+WIDTH = 120
+
+
+def _option_dict(option, value, operator="eq") -> dict:
+    return {"option": "%s.%s" % (OPTIONS_MODULE, option), "value": value, "operator": operator}
+
+
+def _rule_dict(name, args=None, options=(), filtered=False, children=None) -> dict:
+    out = {"rule": name, "options": list(options), "filtered_resolution": filtered}
+    if children is None:
+        out["args"] = args or {}
+    else:
+        out["children"] = children
+    return out
+
+
+def ir_to_dict(ir, gates=None) -> dict:
+    """The IR as the Rule Builder serializes the rule it compiles to (Rule.to_dict), gates and
+    macros expanded."""
+    kind = ir[0]
+    if kind == "true":
+        return _rule_dict("True_")
+    if kind == "false":
+        return _rule_dict("False_")
+    if kind in ("and", "or"):
+        return _rule_dict("And" if kind == "and" else "Or", children=[ir_to_dict(c, gates) for c in ir[1]])
+    if kind == "has":
+        return _rule_dict("Has", {"item_name": ir[1], "count": ir[2]})
+    if kind in ("has_if", "needs_if"):
+        return _rule_dict("Has", {"item_name": ir[1], "count": ir[2]}, [_option_dict(ir[3], ir[4], ir[5])],
+                          filtered=kind == "needs_if")
+    if kind == "has_any":
+        return _rule_dict("HasAny", {"item_names": sorted(set(ir[1]))})
+    if kind == "has_from_list":
+        return _rule_dict("HasFromList", {"item_names": sorted(set(ir[1])), "count": ir[2]})
+    if kind == "reach":
+        return _rule_dict("CanReachRegion", {"region_name": ir[1]})
+    if kind == "reach_location":
+        return _rule_dict("CanReachLocation", {"location_name": ir[1], "parent_region_name": ir[2],
+                                               "skip_indirect_connection": False})
+    if kind == "reached_at_least":
+        return _rule_dict("ReachedAtLeast", {"count": ir[1], "locations": list(ir[2])})
+    if kind == "option_true":
+        return _rule_dict("True_", options=[_option_dict(ir[1], ir[2], ir[3])])
+    if kind == "goal":
+        return _rule_dict("GoalRequirement")
+    if kind == "seal":
+        return _rule_dict("SealRequirement")
+    if kind == "boss":
+        return _rule_dict("BossRequirement", {"boss_id": ir[1]})
+    if kind == "door_key":
+        return _rule_dict("DoorKey", {"door": ir[1]})
+    if kind == "lava":
+        return _rule_dict("LavaCarriedTo", {"region": ir[1], "control": ir[2]},
+                          [_option_dict(STORY_OPTION, STORY_ITEMS, "ne")])
+    if kind == "gate":
+        return ir_to_dict(gates[ir[1]], gates)
+    if kind == "macro":
+        return ir_to_dict(MACRO_IR[ir[1]], gates)
+    raise ValueError("unknown IR node %r" % (ir,))
+
+
+def _py_str(s) -> str:
+    """A Python string literal, double-quoted."""
+    return json.dumps(s, ensure_ascii=False)
+
+
+def _filter(option, value, operator="eq") -> str:
+    tail = "" if operator == "eq" else ', operator="%s"' % operator
+    return "options=[OptionFilter(%s, %r%s)]" % (option, value, tail)
+
+
+def _leaf(ir) -> str:
+    """A leaf of the IR as a Rule Builder expression; macros and gates by their name."""
+    kind = ir[0]
+    if kind == "true":
+        return "True_()"
+    if kind == "false":
+        return "False_()"
+    if kind == "has":
+        return "Has(%s)" % _py_str(ir[1]) if ir[2] == 1 else "Has(%s, %d)" % (_py_str(ir[1]), ir[2])
+    if kind in ("has_if", "needs_if"):
+        count = "" if ir[2] == 1 else ", %d" % ir[2]
+        lifted = ", filtered_resolution=True" if kind == "needs_if" else ""
+        return "Has(%s%s, %s%s)" % (_py_str(ir[1]), count, _filter(ir[3], ir[4], ir[5]), lifted)
+    if kind == "reach":
+        return "CanReachRegion(%s)" % _py_str(ir[1])
+    if kind == "reach_location":
+        return "CanReachLocation(%s, %s)" % (_py_str(ir[1]), _py_str(ir[2]))
+    if kind == "option_true":
+        return "True_(%s)" % _filter(ir[1], ir[2], ir[3])
+    if kind == "goal":
+        return "GoalRequirement()"
+    if kind == "seal":
+        return "SealRequirement()"
+    if kind == "boss":
+        return "BossRequirement(%s)" % _py_str(ir[1])
+    if kind == "door_key":
+        return "DoorKey(%s)" % _py_str(ir[1])
+    if kind == "lava":
+        return "LavaCarriedTo(%s, %s, %s)" % (_py_str(ir[1]), _py_str(ir[2]), _filter(STORY_OPTION, STORY_ITEMS, "ne"))
+    if kind == "gate":
+        return "GATE_%d" % ir[1]
+    if kind == "macro":
+        return ir[1]
+    raise ValueError("unknown IR node %r" % (ir,))
+
+
+def _chunks(ir, depth=0) -> list:
+    """The expression of an IR node as [[text, depth]] pieces that a line may only break between;
+    the depth indents a continuation line."""
+    kind = ir[0]
+    if kind in ("and", "or"):
+        op = "&" if kind == "and" else "|"
+        out = []
+        for i, c in enumerate(ir[1]):
+            paren = kind == "and" and c[0] == "or"
+            sub = _chunks(c, depth + 1 if paren else depth)
+            if paren:
+                sub[0][0] = "(" + sub[0][0]
+                sub[-1][0] += ")"
+            if i:
+                sub[0] = [op + " " + sub[0][0], depth]
+            out.extend(sub)
+        return out
+    if kind in ("has_any", "has_from_list", "reached_at_least"):
+        if kind == "reached_at_least":
+            head, items, tail = "ReachedAtLeast(%d, [" % ir[1], [_py_str(i) for i in ir[2]], "])"
+        else:
+            name = "HasAny" if kind == "has_any" else "HasFromList"
+            head, items = name + "(", [_py_str(i) for i in sorted(set(ir[1]))]
+            tail = ")" if kind == "has_any" else ", count=%d)" % ir[2]
+        if len(items) == 1:
+            return [[head + items[0] + tail, depth]]
+        return ([[head + items[0] + ",", depth]] + [[it + ",", depth + 1] for it in items[1:-1]]
+                + [[items[-1] + tail, depth + 1]])
+    return [[_leaf(ir), depth]]
+
+
+def ir_to_py(ir) -> str:
+    """The IR as a one-line Rule Builder expression."""
+    return " ".join(text for text, _depth in _chunks(ir))
+
+
+def _statement(head, args, ir, close="", comment="", wrap=False) -> str:
+    """`head` + `args` + the expression + `close` on one line when it fits in WIDTH; otherwise the
+    head alone, then the rest indented and broken before an operator or an argument. `wrap` adds
+    the parentheses a bare assignment needs to continue on the next line."""
+    chunks = _chunks(ir)
+    expr = " ".join(text for text, _depth in chunks)
+    if len(head + args + expr + close) <= WIDTH:
+        return head + args + expr + close + comment
+    lines, cur = [head + ("(" if wrap else "")], "    " + args
+    for i, (text, depth) in enumerate(chunks):
+        if i and len(cur) + 1 + len(text) > WIDTH:
+            lines.append(cur)
+            cur = " " * (4 + 4 * depth) + text
+        else:
+            cur = cur + text if i == 0 else cur + " " + text
+    lines.append(cur + close + (")" if wrap else "") + comment)
+    return "\n".join(lines)
+
+
+def _expert_note(req) -> str:
+    """The alternatives the expert tier adds, as text, or ''."""
+    extra = list((req or {}).get("expert") or [])
+    return "expert adds: " + dnf_to_text(extra) if extra else ""
+
+
+def _comment(*parts) -> str:
+    """A trailing comment out of the parts that are not empty, on one line."""
+    text = "   ".join(" ".join(str(p).split()) for p in parts if p)
+    return "   # " + text if text else ""
+
+
+def _bosses_in(ir, gates) -> set:
+    """Boss ids the IR names, through its gates and macros."""
+    if ir[0] == "boss":
+        return {ir[1]}
+    if ir[0] in ("and", "or"):
+        return set().union(*(_bosses_in(c, gates) for c in ir[1]))
+    if ir[0] == "gate":
+        return _bosses_in(gates[ir[1]], gates)
+    if ir[0] == "macro":
+        return _bosses_in(MACRO_IR[ir[1]], gates)
+    return set()
+
+
+def _rules_index(world, doc, tier, errors) -> dict:
+    """Everything both exporters write, computed once: regions, entrances, locations, events, arenas,
+    counted items and the errors; a rule that cannot be built reads as never and is reported."""
+    faults = {}
     members = resolve_members(world, doc)
-    L.append("# Mega Man ZX logic - GENERATED by tools/logic_editor (do not edit by hand:")
-    L.append("#   edit with the editor; this file is the readable view of logic.json).")
-    L.append("# Requirements: one line per alternative and tier; 'free' = no requirement,")
-    L.append("#   'never' = impossible. expert EXTENDS normal (in expert the alternatives")
-    L.append("#   of both tiers apply). '?' = not confirmed in-game.")
-    L.append("# Atoms: HU X ZX HX FX LX PX OX MODEL ALL6 ; YELLOW GREEN RED BLUE WHITE PURPLE ;")
-    L.append("#   LIFEUP>=n SUBTANK>=n ; <MISSION> (cleared) ; ACCESS_<area> ; CHIP_<chip> ;")
-    L.append("#   BOSS_<BOSS> (requirement set by the player in their YAML; free if unset) ;")
-    L.append("#   GOAL (the goal requirements of the YAML; the six biometals by default).")
-    L.append("# Doors: one line each, no positions; (xN) = N alike. Not listed: a plain door back")
-    L.append("#   into its own region, and a region with nothing in it.")
-    L.append("")
-    gates = doc.get("gates", {})
-    if gates:
-        L.append("gates:  # event gates (flag): requirement or 'free' (the client opens it)")
-        for flag in sorted(gates, key=lambda f: int(f)):
-            g = gates[flag]
-            req = g.get("req")
-            line = "  %s: %s" % (flag, "free" if req is None else " | ".join(req_to_lines(req)))
-            if g.get("note"):
-                line += "   # " + g["note"]
-            L.append(line)
-        L.append("")
-    by_room_checks = {}
-    n_places = {}
+    try:
+        gates = gate_table(doc, tier)
+    except (ValueError, KeyError) as e:
+        gates, faults["gates"] = {}, str(e)
+    control = lava_control_region(world, doc, members)
+    needed = global_reachability(world, doc, members, tier)
+    regions = [MENU, FIELD] + [region_name(room, rid) for room, rl in doc["rooms"].items()
+                               for rid in ["main"] + sorted(r for r in rl["regions"] if r != "main")
+                               if region_name(room, rid) in needed]
+    # an entrance out of or into a region the start never leads to would join nothing
+    present = set(regions)
+    entrances = [e for e in entrance_rules(world, doc, members, tier, faults, control)
+                 if e[1] in present and e[2] in present]
+    locations = {}
     for name in world["locations"]:
-        pl = check_placements(world, doc, name)
-        n_places[name] = [r for r, _ in pl]
-        for room, _ in pl:
-            by_room_checks.setdefault(room, []).append(name)
+        try:
+            locations[name] = location_rule(world, doc, members, needed, name, tier, faults, control)
+        except (ValueError, KeyError, TypeError) as e:
+            locations[name], faults[name] = (FIELD, IR_FALSE), str(e)
+    arenas = {}
+    for name, src, dst, ir in entrances:
+        for bid in _bosses_in(ir, gates):
+            arenas.setdefault(bid, dst)
+    for name, (parent, ir) in locations.items():
+        for bid in _bosses_in(ir, gates):
+            arenas.setdefault(bid, parent)
+    for (room, rid), bid in boss_regions(doc).items():
+        arenas[bid] = region_name(room, rid)
+    events = location_events(world)
+    return {"members": members, "gates": gates, "entrances": entrances, "needed": needed, "regions": regions,
+            "locations": locations, "events": events, "faults": faults, "control": control,
+            "arenas": {bid: arenas[bid] for bid in sorted(arenas)}, "counted": sorted(count_items_used(doc)),
+            "errors": list(errors) + ["%s: %s" % (name, msg) for name, msg in faults.items()],
+            "start": region_name(world["start_room"], "main")}
 
-    def reg_title(room, rid):
-        return doc["rooms"][room]["regions"].get(rid, {}).get("name", rid)
 
+def _region_title(doc, room, rid) -> str:
+    return doc["rooms"][room]["regions"].get(rid, {}).get("name", rid)
+
+
+def _edge_comment(world, doc, d, dst_rid) -> str:
+    """What an edge of the room graph is, for the reader: kind, destination, gate, transport, site."""
+    dst = world["room_label"].get(d["dst"], d["dst"])
+    if d["dst"] == d["src"]:
+        dst = _region_title(doc, d["dst"], dst_rid)
+    elif dst_rid != "main":
+        dst += "/" + _region_title(doc, d["dst"], dst_rid)
+    text = "%s -> %s" % (EDGE_WORDS.get(d["kind"], d["kind"]), dst)
+    if d.get("gate") is not None:
+        text += "  gate %d" % d["gate"]
+        item = world["story"]["gate_items"].get(d["gate"])
+        if item:
+            text += " (%s with mission_objectives: items)" % item
+    if d["kind"] == "warp" and d["src"] == world["hub"]:
+        item = world["transerver_access"].get(d["dst"])
+        text += "  needs %s" % item if item else "  no Transport destination: never"
+    if d["name"] in world["site_doors"]:
+        text += "  door constraint site"
+    return text
+
+
+def _event_lines(events, name) -> list:
+    """The events anchored to a location, which share its region and rule plus what each adds."""
+    out = []
+    for event_name, item, extra in events.get(name, []):
+        comment = _comment("event" if item == event_name else "the %s event" % item)
+        head = "LOCATIONS[%s] = LOCATIONS[%s]" % (_py_str(event_name), _py_str(name))
+        if extra == IR_TRUE:
+            out.append(head + comment)
+        else:
+            out.append(_statement(head + ".also(", "", extra, ")", comment))
+    return out
+
+
+def _fault_comment(faults, name) -> str:
+    return "ERROR: " + faults[name] if name in faults else ""
+
+
+def _constants(index, doc) -> list:
+    """The module constants: aliases, gates and the tables the world reads besides the rules."""
+    L = ["# The atoms the world answers, the model aliases and the seal"]
+    for name, ir in MACRO_IR.items():
+        L.append(_statement("%s = " % name, "", ir, "", _comment(MACRO_NOTES.get(name)), wrap=True))
+    gates = index["gates"]
+    if gates:
+        L.append("")
+        L.append("# Event gates (flag): what the story needs before the game opens them")
+        for flag in sorted(gates):
+            note = doc.get("gates", {}).get(str(flag), {}).get("note")
+            L.append(_statement("GATE_%d = " % flag, "", gates[flag], "", _comment(note), wrap=True))
+    L.append("")
+    L.append("# Errors of the document the rules were generated from; the world refuses to generate while there are any")
+    L.append("ERRORS = [%s]" % ("" if not index["errors"] else "\n    " + ",\n    ".join(_py_str(e) for e in index["errors"]) + ",\n"))
+    L.append("# Useful items the rules count, which the world promotes to progression")
+    L.append("COUNTED_ITEMS = [%s]" % ", ".join(_py_str(i) for i in index["counted"]))
+    L.append("# Boss id -> the region its requirement guards: its tagged arena, or where its atom sits")
+    L.append("BOSS_ARENAS = {\n    %s,\n}" % ",\n    ".join("%s: %s" % (_py_str(b), _py_str(r)) for b, r in index["arenas"].items()))
+    L.append("# The region a new game begins in, and every region the start can lead to")
+    L.append("START = %s" % _py_str(index["start"]))
+    L.append("REGIONS = [\n    %s,\n]" % ",\n    ".join(_py_str(r) for r in index["regions"]))
+    L.append("# Event location -> the item it holds; each sits where its anchor location does")
+    items = [(event_name, item) for anchored in index["events"].values() for event_name, item, _extra in anchored]
+    L.append("EVENTS = {\n    %s,\n}" % ",\n    ".join("%s: %s" % (_py_str(e), _py_str(i)) for e, i in items))
+    return L
+
+
+def export_rules_py(world, doc, tier=TIER, errors=()) -> str:
+    """The generated logic/rules.py: the region graph and every rule, room by room.
+
+    `errors` are the validation errors of the document; they go into ERRORS so the world refuses
+    to generate from a broken document instead of playing an old logic.
+    """
+    try:
+        index = _rules_index(world, doc, tier, errors)
+    except Exception as e:  # noqa: BLE001  a document the exporter cannot walk still yields a module that says so
+        return _stub_module(list(errors) + ["the exporter failed: %s: %s" % (type(e).__name__, e)])
+    members, gates, events, faults = index["members"], index["gates"], index["events"], index["faults"]
+    by_src = {}
+    for name, src, dst, ir in index["entrances"]:
+        by_src.setdefault(src, []).append((name, dst, ir))
+    edges = {e["name"]: e for e in world["edges"]}
+    start_room = world["start_room"]
+    placed_rooms = {}
+    for name in world["locations"]:
+        for room, _ in check_placements(world, doc, name):
+            placed_rooms.setdefault(name, []).append(room)
+
+    def entrance(name, src, dst, ir, comment):
+        return _statement("ENTRANCES[%s] = Edge(" % _py_str(name), "%s, %s, " % (_py_str(src), _py_str(dst)), ir, ")", comment)
+
+    def location(name, comment):
+        parent, ir = index["locations"][name]
+        lines = [_statement("LOCATIONS[%s] = Spot(" % _py_str(name), "%s, " % _py_str(parent), ir, ")", comment)]
+        return lines + _event_lines(events, name)
+
+    body = ["", "# Start of the game",
+            entrance(START_ENTRANCE, MENU, index["start"], index["entrances"][0][3], _comment(_fault_comment(faults, START_ENTRANCE))),
+            "ENTRANCES[%s] = Edge(%s, %s, True_())" % (_py_str(FIELD_ACCESS), _py_str(MENU), _py_str(FIELD))
+            + _comment("the locations that stand for more than one region")]
     for room in world["rooms"]:
         rl = doc["rooms"][room]
-        head = "room %s [%s]" % (world["room_label"][room], room)
+        head = "# --- %s [%s]" % (world["room_label"][room], room)
         if rl.get("req"):
-            head += "   entry: " + " | ".join(req_to_lines(rl["req"]))
-        if rl.get("note"):
-            head += "   # " + rl["note"]
-        L.append(head)
+            head += "   entry: " + dnf_to_text(req_alternatives(rl["req"], "expert"))
+        if not any(region_name(room, rid) in index["needed"] for rid in rl["regions"]):
+            head += "   (nothing leads here from the start: not in the world)"
+        body.extend(["", head + _comment(rl.get("note"))])
         regs = rl["regions"]
-        order = ["main"] + sorted(r for r in regs if r != "main")
-        for rid in order:
+        for rid in ["main"] + sorted(r for r in regs if r != "main"):
             reg = regs[rid]
-            title = "  region %s" % reg.get("name", rid)
+            region = region_name(room, rid)
+            lines = []
+            for name, dst, ir in by_src.get(region, []):
+                if name in edges:
+                    d, ov = edges[name], doc.get("edges", {}).get(name, {})
+                    dst_rid = members[d["dst"]].get(name + "@in", "main")
+                    comment = _comment(_fault_comment(faults, name), "?" if ov.get("unsure") else "",
+                                       _edge_comment(world, doc, d, dst_rid), _expert_note(ov.get("req")), ov.get("note"))
+                else:
+                    c = next(c for c in rl.get("conns", []) if connection_name(room, c) == name)
+                    comment = _comment(_fault_comment(faults, name), "?" if c.get("unsure") else "",
+                                       "conn -> " + _region_title(doc, room, c["to"]), _expert_note(c.get("req")), c.get("note"))
+                lines.append(entrance(name, region, dst, ir, comment))
+            landings = [world["room_label"].get(e["src"], e["src"]) for e in world["edges"]
+                        if e["dst"] == room and e["src"] != room and e["kind"] not in NON_TRANSITION_KINDS
+                        and members[room].get(e["name"] + "@in", "main") == rid]
+            if landings:
+                lines.append("#   <- " + ", ".join(dict.fromkeys(landings)))
+            here = sorted(n for n, rooms in placed_rooms.items() if rooms[0] == room and members[room].get(n, "main") == rid)
+            for name in here:
+                ch = doc.get("checks", {}).get(name, {})
+                others = [world["room_label"].get(r, r) for r in placed_rooms[name][1:]]
+                comment = _comment(_fault_comment(faults, name), "?" if ch.get("unsure") else "",
+                                   "also in %s: any of them counts" % ", ".join(others) if others else "",
+                                   _expert_note(ch.get("req")), ch.get("note"))
+                lines.extend(location(name, comment))
+            title = "# region %s" % reg.get("name", rid)
             if reg.get("boss"):
                 title += "   [ARENA: %s]" % BOSSES.get(reg["boss"], {}).get("name", reg["boss"])
-            if reg.get("note"):
-                title += "   # " + reg["note"]
-            body = []
-            # edges leaving this region; a plain door back into the same region says nothing
-            blocks = []
-            for e in world["edges"]:
-                if e["src"] != room or members[room].get(e["name"], "main") != rid:
-                    continue
-                dst_rid = members.get(e["dst"], {}).get(e["name"] + "@in", "main")
-                dst = world["room_label"].get(e["dst"], e["dst"])
-                if e["dst"] == room:
-                    kind, dst = "internal", reg_title(room, dst_rid)
-                else:
-                    kind = {"warp": "warp", "save": "pad(save)", "curated": "path"}.get(e["kind"], "door")
-                    if dst_rid != "main":
-                        dst += "/" + reg_title(e["dst"], dst_rid)
-                line = "    %s -> %s" % (kind, dst)
-                if e.get("key"):
-                    line += "  key " + e["key"]
-                if e.get("gate") is not None:
-                    line += "  gate %d" % e["gate"]
-                if e["kind"] == "warp" and e["src"] == world["hub"]:
-                    acc = world["transerver_access"].get(e["dst"])
-                    line += "  needs %s" % (acc or "NOTHING (no Transport destination)")
-                ov = doc.get("edges", {}).get(e["name"], {})
-                block = [line]
-                if ov.get("req") and not req_is_free(ov["req"]):
-                    _req_block(block, ov["req"], ov.get("unsure"), ov.get("note"))
-                elif ov.get("note"):
-                    block[-1] += "   # " + ov["note"]
-                plain = len(block) == 1 and not (e.get("key") or e.get("gate") is not None or ov.get("note"))
-                if e["dst"] == room and dst_rid == rid and plain:
-                    continue
-                blocks.append(block)
-            # landings from other rooms
-            for e in world["edges"]:
-                if e["dst"] != room or e["src"] == room or e["kind"] in NON_TRANSITION_KINDS:
-                    continue
-                if members[room].get(e["name"] + "@in", "main") != rid:
-                    continue
-                blocks.append(["    <- %s" % world["room_label"].get(e["src"], e["src"])])
-            _emit_counted(body, blocks)
-            # checks
-            for name in sorted(by_room_checks.get(room, [])):
-                if members[room].get(name, "main") != rid:
-                    continue
-                ch = doc.get("checks", {}).get(name, {})
-                req = ch.get("req")
-                others = [world["room_label"].get(r, r) for r in n_places.get(name, []) if r != room]
-                body.append("    check %s%s" % (name, ("   (also in %s: any of them counts)" % ", ".join(others)) if others else ""))
-                if req is not None and not (req_is_free(req) and len(req_alternatives(req)) == 1):
-                    _req_block(body, req, ch.get("unsure"), ch.get("note"))
-                elif ch.get("note"):
-                    body[-1] += "   # " + ch["note"]
-            # connections
-            for c in rl.get("conns", []):
-                if c["from"] != rid:
-                    continue
-                body.append("    conn -> %s" % reg_title(room, c["to"]))
-                _req_block(body, c.get("req"), c.get("unsure"), c.get("note"))
-            if body or reg.get("boss") or reg.get("note"):
-                L.append(title)
-                L.extend(body)
-        L.append("")
-    unplaced = sorted(n for n in world["locations"] if check_position(world, doc, n)[0] is None)
+            if room == start_room and rid == "main":
+                title += "   [START]"
+            if lines or reg.get("boss") or reg.get("note") or (room == start_room and rid == "main"):
+                body.append(title + _comment(reg.get("note")))
+                body.extend(lines)
+    unplaced = sorted(n for n in world["locations"] if not placed_rooms.get(n))
     if unplaced:
-        L.append("unplaced:  # no room: they use the area-label rule (data.room)")
-        for n in unplaced:
-            ch = doc.get("checks", {}).get(n, {})
-            line = "  %s  [%s]" % (n, world["locations"][n].get("room"))
-            if ch.get("req") and not req_is_free(ch["req"]):
-                line += "  " + " | ".join(req_to_lines(ch["req"]))
-            L.append(line)
-        L.append("")
-    return "\n".join(L)
+        body.extend(["", "# --- Unplaced locations: they stand for the rooms of their area label in the data"])
+        for name in unplaced:
+            v, ch = world["locations"][name], doc.get("checks", {}).get(name, {})
+            comment = _comment(_fault_comment(faults, name), "label %s" % v.get("room"),
+                               _expert_note(ch.get("req")), ch.get("note"))
+            body.extend(location(name, comment))
+    constants = "\n".join(_constants(index, doc))
+    text = constants + "\n" + "\n".join(body)
+    used = [c for c in RULE_CLASSES if re.search(r"\b%s\(" % c, text)]
+    custom = [c for c in BUILDER_CLASSES if re.search(r"\b%s\(" % c, text)]
+    options = sorted(set(re.findall(r"OptionFilter\((\w+),", text)))
+    L = ['"""%s' % GENERATED_HEADER, '"""',
+         "from rule_builder.options import OptionFilter",
+         "from rule_builder.rules import %s" % ", ".join(used), "",
+         "from ..options import %s" % ", ".join(options),
+         "from .builder import %s" % ", ".join(custom + ["Edge", "Spot"]), "",
+         constants, "",
+         "ENTRANCES = {}", "LOCATIONS = {}"]
+    L.extend(body)
+    return "\n".join(L) + "\n"
+
+
+def _stub_module(errors) -> str:
+    """A rules.py with nothing but its errors, for a document the exporter cannot walk."""
+    L = ['"""%s' % GENERATED_HEADER, '"""', "from .builder import Edge, Spot  # noqa: F401", "",
+         "ERRORS = [\n    %s,\n]" % ",\n    ".join(_py_str(e) for e in errors),
+         "COUNTED_ITEMS = []", "BOSS_ARENAS = {}", 'START = ""', "REGIONS = []", "EVENTS = {}",
+         "ENTRANCES = {}", "LOCATIONS = {}"]
+    return "\n".join(L) + "\n"
+
+
+def export_rules_json(world, doc, tier=TIER, errors=()) -> dict:
+    """The generated logic/rules.json: the rules serialized as the Rule Builder does, by room."""
+    try:
+        index = _rules_index(world, doc, tier, errors)
+    except Exception as e:  # noqa: BLE001
+        return {"generated": JSON_NOTICE, "game": GAME, "tier": tier,
+                "errors": list(errors) + ["the exporter failed: %s: %s" % (type(e).__name__, e)], "rooms": {}}
+    gates, events = index["gates"], index["events"]
+    out = {"generated": JSON_NOTICE, "game": GAME, "tier": tier, "errors": index["errors"], "start": index["start"],
+           "regions": index["regions"], "events": {e: i for anchored in events.values() for e, i, _x in anchored},
+           "boss_arenas": index["arenas"], "counted_items": index["counted"], "lava_control": index["control"],
+           "rooms": {}, "unplaced": {}}
+    for room in world["rooms"]:
+        out["rooms"][room] = {"label": world["room_label"][room], "entrances": {}, "locations": {}}
+    for name, src, dst, ir in index["entrances"]:
+        room = (dst if src == MENU else src).split("/")[0]
+        out["rooms"][room]["entrances"][name] = {"from": src, "to": dst, "rule": ir_to_dict(ir, gates)}
+    for name, (parent, ir) in index["locations"].items():
+        placed = [room for room, _ in check_placements(world, doc, name)]
+        target = out["rooms"][placed[0]]["locations"] if placed else out["unplaced"]
+        target[name] = {"region": parent, "rule": ir_to_dict(ir, gates)}
+        for event_name, item, extra in events.get(name, []):
+            target[event_name] = {"region": parent, "rule": ir_to_dict(ir_and([ir, extra]), gates), "event": item}
+    return out
+
+
+def write_generated(world, doc, folder, errors=()) -> None:
+    """Writes logic/rules.py and logic/rules.json next to the document, errors of the document
+    included; a module that would not even compile is not written (SyntaxError)."""
+    text = export_rules_py(world, doc, errors=errors)
+    compile(text, "rules.py", "exec")
+    (folder / "rules.py").write_text(text, encoding="utf-8", newline="\n")
+    with open(folder / "rules.json", "w", encoding="utf-8", newline="\n") as f:
+        json.dump(export_rules_json(world, doc, errors=errors), f, ensure_ascii=False, indent=1)
+        f.write("\n")

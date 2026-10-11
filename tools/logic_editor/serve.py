@@ -2,7 +2,8 @@
 """Local server of the visual logic editor.
 
 Serves the interface in this folder, the room renders, the world data and the
-document logic/logic.json; every save regenerates logic.txt and returns the
+document logic/logic.json; every save regenerates logic/rules.py and logic/rules.json,
+errors included (the world refuses to generate while there are any), and returns the
 validation report. Standard library only.
 
 Usage (from the apworld root):
@@ -11,7 +12,7 @@ Usage (from the apworld root):
 API (JSON):
     GET  /api/world      rooms, locations, edges, gimmicks, atoms, boss roster
     GET  /api/logic      current document, or an empty skeleton
-    GET  /api/txt        the text twin
+    GET  /api/rules      the generated rules.py
     POST /api/logic      save; the response is the validation report
     POST /api/validate   validate without saving
     POST /api/reload     reread data.py and the gimmicks
@@ -34,8 +35,7 @@ RENDERS = STATIC / "local" / "renders"              # 1:1 renders, not in git; -
 GIMMICKS = STATIC / "data" / "gimmicks.json"        # named gimmicks; --gimmicks
 LOGIC_DIR = ROOT / "logic"
 LOGIC_JSON = LOGIC_DIR / "logic.json"
-LOGIC_TXT = LOGIC_DIR / "logic.txt"
-
+RULES_PY = LOGIC_DIR / "rules.py"
 
 
 def _load_logic_format():
@@ -51,11 +51,21 @@ def _load_logic_format():
 
 F = _load_logic_format()
 
-def load_data():
-    spec = importlib.util.spec_from_file_location("mmzx_data_editor", ROOT / "data.py")
+
+def _load_by_path(name, path):
+    spec = importlib.util.spec_from_file_location(name, path)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)  # type: ignore[union-attr]
     return mod
+
+
+def load_data():
+    return _load_by_path("mmzx_data_editor", ROOT / "data.py")
+
+
+def load_sites():
+    """The door constraint sites, whose doors the rules ask the key of the seed for."""
+    return _load_by_path("mmzx_door_data_editor", ROOT / "door_data.py").SITES
 
 
 def png_size(path: Path):
@@ -98,7 +108,7 @@ class WorldCache:
 
     def build(self):
         D = load_data()
-        world = F.build_world(D)
+        world = F.build_world(D, load_sites())
         rooms = {}
         for r in world["rooms"]:
             p = RENDERS / (r + ".png")
@@ -150,10 +160,13 @@ def save_document(doc):
     with SAVE_LOCK:
         LOGIC_DIR.mkdir(parents=True, exist_ok=True)
         F.save_logic(LOGIC_JSON, doc)
-        if not report["errors"]:
-            LOGIC_TXT.write_text(F.export_txt(world, doc, payload["start_rooms"]), encoding="utf-8", newline="\n")
+        try:
+            F.write_generated(world, doc, LOGIC_DIR, report["errors"])
+            report["generated"] = True
+        except SyntaxError as e:
+            report["errors"].append("the generated rules.py does not compile and was not written: %s" % e)
+            report["generated"] = False
     report["saved"] = True
-    report["txt"] = not report["errors"]
     return report
 
 
@@ -194,8 +207,8 @@ class Handler(BaseHTTPRequestHandler):
             if path == "/api/logic":
                 _, world, _ = CACHE.get()
                 return self._send(200, F.load_logic(LOGIC_JSON, world))
-            if path == "/api/txt":
-                return self._send(200, LOGIC_TXT.read_text(encoding="utf-8") if LOGIC_TXT.exists() else "",
+            if path == "/api/rules":
+                return self._send(200, RULES_PY.read_text(encoding="utf-8") if RULES_PY.exists() else "",
                                   "text/plain; charset=utf-8")
             if path.startswith("/renders/"):
                 name = path[len("/renders/"):]

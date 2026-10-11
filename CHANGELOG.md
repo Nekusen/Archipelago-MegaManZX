@@ -27,6 +27,8 @@ All notable changes to this project are documented in this file. The format is b
 - Added "door constraints": each seed can lock some of the doors between rooms behind a Card Key, so the map opens in smaller steps instead of most of it at once. A locked door shows the colour of its key.
   - `door_constraints_min` and `door_constraints_max`: how many doors a seed locks (0 to 15, both 0 by default).
 
+- Universal Tracker explains the logic: `/explain <location>` says which models, Card Keys, Transerver Access, events or boss requirements a check or a door still needs, with your `boss_logic`, goal and door constraints spelled out for your seed.
+
 ### Changed
 
 - The Transerver consoles show their normal menu during Troop Reinforcement and Protect HQ instead of the reduced one.

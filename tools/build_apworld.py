@@ -2,8 +2,8 @@
 """Pack this package into mmzx.apworld, a zip with the package under mmzx/.
 
 Everything goes in except what .apignore also leaves out: tools/, test/, src/, build/,
-tracker/images/, README, CHANGELOG and the git metadata. Other files ignored by
-git, such as local renders, are packed when they are on disk.
+tracker/images/, the logic document and its JSON twin, README, CHANGELOG and the git
+metadata. Other files ignored by git, such as local renders, are packed when they are on disk.
 
 Usage: python tools/build_apworld.py [--out build/mmzx.apworld]
 """
@@ -15,6 +15,8 @@ from pathlib import Path
 PKG = Path(__file__).resolve().parents[1]
 EXCLUDE_DIRS = {"tools", "test", "src", "build", ".git", ".github", "__pycache__", "tracker/images"}
 EXCLUDE_FILES = {"README.md", "CHANGELOG.md", ".gitignore", ".apignore", ".gitmodules", ".git"}
+# the logic document and its JSON twin: nothing reads them at run time (the world imports logic/rules.py)
+EXCLUDE_PATHS = {"logic/logic.json", "logic/rules.json"}
 
 
 def wanted(p: Path) -> bool:
@@ -28,7 +30,7 @@ def wanted(p: Path) -> bool:
         return False
     if len(rel.parts) == 1 and rel.name in EXCLUDE_FILES:
         return False
-    return True
+    return rel.as_posix() not in EXCLUDE_PATHS
 
 
 def main():

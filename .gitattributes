@@ -1,5 +1,9 @@
-# Line endings: LF everywhere (the generated logic.txt / JSON files are written with LF).
+# Line endings: LF everywhere (the generated logic files are written with LF).
 * text=auto eol=lf
+# Generated from logic/logic.json by the logic editor: regenerate, never edit or merge by hand
+logic/rules.py linguist-generated=true
+logic/rules.json linguist-generated=true
+logic/logic.json linguist-generated=true
 *.png binary
 *.bin binary
 *.apworld binary

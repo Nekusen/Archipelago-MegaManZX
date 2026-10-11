@@ -19,7 +19,7 @@ from ..items import ITEM_GROUPS, STORY_GRANTS
 from ..locations import STORY_CATEGORY, STORY_GATE
 from ..logic import document as F
 from ..logic import load_document
-from ..regions import BRIDGE_EVENT, LAVA_EVENT, SWITCH_EVENT, area_of
+from ..logic.document import BRIDGE_EVENT, LAVA_EVENT, SWITCH_EVENT, area_of
 
 STORY_LOCATIONS = {n for n, v in LOCATIONS.items() if v["category"] == STORY_CATEGORY}
 GATE_LOCATIONS = {n for n in STORY_LOCATIONS if LOCATIONS[n]["story"] == STORY_GATE}

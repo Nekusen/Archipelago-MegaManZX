@@ -1,291 +1,49 @@
-"""Archipelago regions, entrances, locations and events built from the logic document."""
+"""Archipelago regions, entrances, locations and events, from the generated logic module."""
 
 from BaseClasses import Region
+from rule_builder.rules import Has
 
-from . import goal as G
-from . import seal as S
+from .locations import MMZXLocation, active_locations
 from .logic import bosses as B
 from .logic import document as F
-from .logic import load_document
-from .data import (DOORS, LOCATIONS, STORY_BRIDGE_ITEM, STORY_BRIDGE_LOCATION, STORY_CHAINS, STORY_COUNTS,
-                   STORY_GATE_ITEMS, STORY_LAVA_ITEM, STORY_LAVA_LOCATION, STORY_REPORT_ITEMS, STORY_SWITCH_ITEM,
-                   STORY_SWITCH_LOCATION)
-from .locations import MMZXLocation, STORY_ITEMS, STORY_OFF, active_locations, story_mode
-from .logic.rules import (TIER, WORLD, and_rules, door_rule, label_rule, starting_room,
-                          transerver_rule)
-
-MISSION_PREFIX = "Mission - "
-LAVA_EVENT = "Lava Flow Slowed"   # what SLOW_LAVA tests while no item slows the lava
-SWITCH_EVENT = "K-1 Door Unlocked"
-BRIDGE_EVENT = "D-1 Bridge Lowered"
-# story atom -> (event at its location that stands for it while no item does, location, item)
-STORY_EVENTS = {
-    F.SLOW_LAVA: (LAVA_EVENT, STORY_LAVA_LOCATION, STORY_LAVA_ITEM),
-    F.K_DOOR_SWITCH: (SWITCH_EVENT, STORY_SWITCH_LOCATION, STORY_SWITCH_ITEM),
-    F.D_BRIDGE: (BRIDGE_EVENT, STORY_BRIDGE_LOCATION, STORY_BRIDGE_ITEM),
-}
-# with mission_objectives off the client does these itself from the start: free, and no event
-STORY_DONE_WHEN_OFF = {F.D_BRIDGE}
-
-
-def boss_requirements(world) -> dict:
-    """{boss id: REQ} from the boss_logic option, cached on the world for the other hooks."""
-    reqs = getattr(world, "_mmzx_boss_reqs", None)
-    if reqs is None:
-        reqs = B.parse_boss_logic(world.options.boss_logic.value)
-        world._mmzx_boss_reqs = reqs
-    return reqs
-
-
-def area_of(region_name: str) -> str:
-    """Area letter of a region: the rooms are named after their area, k04 being K-4."""
-    return region_name[0]
+from .logic import rules as R
+from .logic.builder import boss_requirements
 
 
 def progression_overrides(world) -> set:
-    """Useful items that the document or the player's boss YAML turn into progression."""
-    return F.count_items_used(load_document()) | B.items_used(boss_requirements(world))
+    """Useful items that the logic or the player's boss YAML turn into progression."""
+    return set(R.COUNTED_ITEMS) | B.items_used(boss_requirements(world))
 
 
 def create_regions(world) -> None:
-    """Creates the regions, entrances, locations and events of one player.
+    """Creates the regions, entrances, locations and events of one player from logic/rules.py.
 
-    A door's rule is the AND of its key, the destination room's entry requirement when the
-    door changes room, its extra cost, the Transerver rule, its event gate and the landing arena.
+    An entrance whose rule resolves to False for this slot's options is not created: the boss rush
+    teleporters with skip_boss_rush, the connections drawn as never. Nor is an event that could
+    never hold with them: the ones that stand for a story object another mode makes an item, or
+    for the seal of a mode not played.
     """
+    if R.ERRORS:
+        raise ValueError("logic/rules.py was generated from a document with errors; fix them in the logic editor "
+                         "(it rewrites the module on save) or run tools/check_logic.py:\n  " + "\n  ".join(R.ERRORS))
     player, mw = world.player, world.multiworld
-    hu_in_pool = bool(world.options.hu_in_pool.value)
-    full_models = not world.options.progressive_models.value
-    tier = TIER
-    doc = load_document()
-    members = F.resolve_members(WORLD, doc)
+    regions = {name: Region(name, player, mw) for name in R.REGIONS}
+    mw.regions += list(regions.values())
+    for name, edge in R.ENTRANCES.items():
+        world.create_entrance(regions[edge.src], regions[edge.dst], edge.rule, name,
+                              force_creation=name == F.START_ENTRANCE)
 
-    # Boss rules are injected as BOSS_* atoms and added to every edge landing in the boss's arena;
-    # the goal requirements of the YAML are the GOAL atom.
-    boss_reqs = boss_requirements(world)
-    host_atoms = B.compile_rules(boss_reqs, tier, player, hu_in_pool, full_models)
-    boss_of = F.boss_regions(doc)
-    goal_rule = G.rule(world.goal, player)
-    host_atoms["GOAL"] = goal_rule or (lambda state: True)
-    # with mission_objectives: items a Report, a story gate and each story atom ask for an item
-    story_items = story_mode(world.options) == STORY_ITEMS
-    story_done = STORY_DONE_WHEN_OFF if story_mode(world.options) == STORY_OFF else set()
-    for atom, (event, _location, item) in STORY_EVENTS.items():
-        host_atoms[atom] = lambda state, _held=item if story_items else event: state.has(_held, player)
-    for atom in story_done:
-        host_atoms[atom] = lambda state: True
-
-    def has(item):
-        return (lambda state: state.has(item, player)) if item and story_items else None
-
-    def report_rule(name):
-        """Rule of the object a mission's Report asks for, or None."""
-        if not name.startswith(MISSION_PREFIX):
-            return None
-        return has(STORY_REPORT_ITEMS.get(name[len(MISSION_PREFIX):]))
-
-    carrying = []   # not empty while a walk from the lava control is being followed
-
-    def lava_carried_to(target):
-        """SLOW_LAVA at one region while no item slows the lava.
-
-        The game forgets the control's setting on leaving its area, so the lava is slow at a
-        region only after a walk there from the control through the regions of that area.
-        """
-        def carried(state):
-            if carrying:
-                return True     # an edge of the walk itself: the lava is already slow there
-            if not state.has(LAVA_EVENT, player):
-                return False
-            control = mw.get_location(LAVA_EVENT, player).parent_region
-            if control is field:
-                return True
-            carrying.append(target)
-            try:
-                seen, todo = {control}, [control]
-                while todo:
-                    region = todo.pop()
-                    if region.name == target:
-                        return True
-                    for way in region.exits:
-                        nxt = way.connected_region
-                        inside = area_of(nxt.name) == area_of(control.name)
-                        if inside and nxt not in seen and way.access_rule(state):
-                            seen.add(nxt)
-                            todo.append(nxt)
-                return False
-            finally:
-                carrying.pop()
-        return carried
-
-    def rule(req, at=None):
-        """Rule of a requirement; `at` is the region it is asked at, for what depends on the place."""
-        atoms = host_atoms
-        if at and not story_items and any(F.SLOW_LAVA in alt for alt in F.req_alternatives(req, tier)):
-            atoms = {**host_atoms, F.SLOW_LAVA: lava_carried_to(at)}
-        return F.compile_req(req, tier, player, hu_in_pool, atoms, full_models)
-
-    def arena_rule(room, rid):
-        """Rule of the boss whose arena is this region, or None."""
-        bid = boss_of.get((room, rid))
-        return host_atoms.get(F.boss_atom(bid)) if bid else None
-
-    start = starting_room(world)
-    # skip_boss_rush drops the eight rush teleporters and the extra cost of the exit to D-5;
-    # the client marks the pairs as beaten while the player climbs the tower.
-    skip_rush = bool(world.options.skip_boss_rush.value)
-    active = active_locations(world.options)
-    final = G.FINAL_MISSION
-
-    def door_edges():
-        """Doors that join two different regions, as (source region, destination region, door, destination region id)."""
-        for d in DOORS:
-            if d["kind"] in F.NON_TRANSITION_KINDS:
-                continue
-            if skip_rush and d["name"] in F.BOSS_RUSH_DOORS:
-                continue
-            src_rid = members[d["src"]].get(d["name"], "main")
-            dst_rid = members[d["dst"]].get(d["name"] + "@in", "main")
-            if d["src"] == d["dst"] and src_rid == dst_rid:
-                continue                   # internal door within the same region
-            yield F.region_name(d["src"], src_rid), F.region_name(d["dst"], dst_rid), d, dst_rid
-
-    def placed_regions(name):
-        return [F.region_name(room, members[room].get(name, "main"))
-                for room, _ in F.check_placements(WORLD, doc, name)]
-
-    # A room's "main" region exists only when a door, a connection, a location or the start
-    # uses it; an empty region nothing leads to would be unreachable by construction.
-    needed = {F.region_name(start, "main")}
-    for room, rl in doc["rooms"].items():
-        needed.update(F.region_name(room, rid) for rid in rl["regions"] if rid != "main")
-        for c in rl.get("conns", []):
-            needed.update((F.region_name(room, c["from"]), F.region_name(room, c["to"])))
-    for src_name, dst_name, _d, _rid in door_edges():
-        needed.update((src_name, dst_name))
-    missions = [n for n, v in LOCATIONS.items() if v.get("category") == "mission"]
-    for name in [*active, *missions, final, *(location for _e, location, _i in STORY_EVENTS.values())]:
-        needed.update(placed_regions(name))
-
-    menu = Region("Menu", player, mw)
-    field = Region("Field", player, mw)   # unplaced missions/quests
-    regions = {}
-    for room, rl in doc["rooms"].items():
-        for rid in rl["regions"]:
-            name = F.region_name(room, rid)
-            if name in needed:
-                regions[name] = Region(name, player, mw)
-    mw.regions += [menu, field, *regions.values()]
-
-    menu.connect(regions[start], "Start",
-                 and_rules(rule(doc["rooms"][start].get("req")), arena_rule(start, "main")))
-    menu.connect(field, "Field access")
-
-    # drawn connections inside each room
-    for room, rl in doc["rooms"].items():
-        for c in rl.get("conns", []):
-            src = regions[F.region_name(room, c["from"])]
-            dst = regions[F.region_name(room, c["to"])]
-            src.connect(dst, "%s: %s -> %s" % (room, c["from"], c["to"]),
-                        and_rules(rule(c.get("req"), src.name), arena_rule(room, c["to"])))
-
-    # door table edges
-    gates = doc.get("gates", {})
-    edge_ov = doc.get("edges", {})
-    seal_rule = S.rule(world.seal, player)
-    for src_name, dst_name, d, dst_rid in door_edges():
-        gate_req = gates.get(str(d["gate"]), {}).get("req") if d.get("gate") is not None else None
-        entry_req = doc["rooms"][d["dst"]].get("req") if d["src"] != d["dst"] else None
-        edge_req = edge_ov.get(d["name"], {}).get("req")
-        if skip_rush and d["name"] == F.BOSS_RUSH_EXIT:
-            edge_req = None
-        r = and_rules(door_rule(d, world), rule(entry_req, src_name), rule(edge_req, src_name),
-                      transerver_rule(d, player), rule(gate_req, src_name), has(STORY_GATE_ITEMS.get(d.get("gate"))),
-                      arena_rule(d["dst"], dst_rid))
-        regions[src_name].connect(regions[dst_name], d["name"],
-                                  and_rules(r, seal_rule if S.behind(d) else None))
-
-    # locations
-    checks = doc.get("checks", {})
-
-    def place(name, v):
-        """(parent region, base rule) of a location.
-
-        One placement: the region of its point. Two: Field with "reach either region".
-        None: Field with the area-label rule.
-        """
-        pl = F.check_placements(WORLD, doc, name)
-        if len(pl) == 1:
-            room = pl[0][0]
-            return regions[F.region_name(room, members[room].get(name, "main"))], None
-        if len(pl) > 1:
-            names = tuple(F.region_name(room, members[room].get(name, "main")) for room, _ in pl)
-            return field, (lambda state, _n=names: any(state.can_reach_region(x, player) for x in _n))
-        return field, label_rule(v.get("room"), player)
-
-    def check_rule(name, parent):
-        """Rule the document gives a location, asked at its region when it has one of its own."""
-        return rule(checks.get(name, {}).get("req"), None if parent is field else parent.name)
-
-    for name, v in active.items():
-        parent, base = place(name, v)
-        loc = MMZXLocation(player, name, v["id"], parent)
-        r = and_rules(base, check_rule(name, parent), report_rule(name))
-        if r:
-            loc.access_rule = r
-        parent.locations.append(loc)
-
-    # the story locations the game gives in order, or after some others, also need those
-    def after(name, earlier, count):
-        loc = mw.get_location(name, player)
-        own = loc.access_rule
-        loc.access_rule = lambda state: (
-            own(state) and sum(state.can_reach_location(n, player) for n in earlier) >= count)
-
-    for chain in STORY_CHAINS:
-        for earlier, name in zip(chain, chain[1:]):
-            if earlier in active and name in active:
-                after(name, [earlier], 1)
-    for name, (count, group) in STORY_COUNTS.items():
-        if name in active:
-            after(name, [n for n in group if n in active], count)
-
-    def add_event(ev_name, name, v):
-        """An event at a location's place, with its rule, whether the location is a check or not."""
-        parent, base = place(name, v)
-        ev = MMZXLocation(player, ev_name, None, parent)
-        ev.place_locked_item(world.create_event(ev_name))
-        r = and_rules(base, check_rule(name, parent), report_rule(name))
-        if r:
-            ev.access_rule = r
-        parent.locations.append(ev)
-
-    # one "Cleared" event per mission, active check or not; the mission atoms test these
-    for name, v in LOCATIONS.items():
-        if v.get("category") != "mission":
+    spots = {}
+    for name, v in active_locations(world.options).items():
+        spots[name] = MMZXLocation(player, name, v["id"], regions[R.LOCATIONS[name].region])
+    for name, item in R.EVENTS.items():
+        if R.LOCATIONS[name].rule.resolve(world).always_false:
             continue
-        add_event(G.cleared_event(name), name, v)
-    if not story_items:
-        for atom, (event, location, _item) in STORY_EVENTS.items():
-            if atom not in story_done:
-                add_event(event, location, LOCATIONS[location])
-
-    # goal: Victory event anchored to the final mission
-    victory = MMZXLocation(player, "Defeat Serpent", None, field)
-    victory.place_locked_item(world.create_event("Victory"))
-    parent, base = place(final, LOCATIONS.get(final, {"room": "D-4D-5"}))
-    # Nothing in the game gates Serpent beyond the Green Card Key door into D-4; the goal
-    # requirements stand in for the vanilla six-biometal seal, here and on the gate.
-    if base is None:
-        pname = parent.name
-        base = lambda state, _p=pname: state.can_reach_region(_p, player)  # noqa: E731
-    victory.access_rule = and_rules(base, rule(checks.get(final, {}).get("req")), goal_rule)
-    field.locations.append(victory)
-
-    if world.seal.mode == S.MODE_BIOMETALS:
-        for name in S.BIOMETAL_LOCATIONS:
-            loc = mw.get_location(name, player)
-            ev = MMZXLocation(player, S.obtained_event(name), None, loc.parent_region)
-            ev.place_locked_item(world.create_event(ev.name))
-            ev.access_rule = loc.access_rule
-            loc.parent_region.locations.append(ev)
+        spots[name] = MMZXLocation(player, name, None, regions[R.LOCATIONS[name].region])
+        spots[name].place_locked_item(world.create_event(item))
+    # every location exists before any rule is set: a rule may name another location
+    for location in spots.values():
+        location.parent_region.locations.append(location)
+    for name, location in spots.items():
+        world.set_rule(location, R.LOCATIONS[name].rule)
+    world.set_completion_rule(Has(F.VICTORY))

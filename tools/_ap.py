@@ -9,6 +9,7 @@ at all. The rest wraps the one-player multiworld the logic tools evaluate.
 import contextlib
 import importlib.util
 import io
+import json
 import logging
 import os
 import sys
@@ -43,9 +44,10 @@ def _module_from_path(name: str, path: Path):
 
 
 def standalone_modules():
-    """(logic.document, data) loaded by path; neither imports anything from Archipelago."""
+    """(logic.document, data, door_data) loaded by path; none of them imports anything from Archipelago."""
     return (_module_from_path("mmzx_logic_document", ROOT / "logic" / "document.py"),
-            _module_from_path("mmzx_data", ROOT / "data.py"))
+            _module_from_path("mmzx_data", ROOT / "data.py"),
+            _module_from_path("mmzx_door_data", ROOT / "door_data.py"))
 
 
 def load_core(ap_src: str, world_dir=None):
@@ -90,7 +92,15 @@ def load_core(ap_src: str, world_dir=None):
         os.scandir = real_scandir
         os.chdir(prev_cwd)   # never leave the process inside the AP checkout
     logging.disable(logging.NOTSET)
-    return AutoWorldRegister.world_types[GAME]
+    world_type = AutoWorldRegister.world_types[GAME]
+    # a world loaded by path misses what the loader takes from the manifest
+    manifest = json.loads((wdir / "archipelago.json").read_text(encoding="utf-8"))
+    from Utils import tuplize_version
+    world_type.world_version = tuplize_version(manifest["world_version"])
+    # the network data package is computed when `worlds` is imported, before this world exists
+    import worlds
+    worlds.network_data_package["games"][GAME] = world_type.get_data_package_data()
+    return world_type
 
 
 def solo_multiworld(world_type, options=None):

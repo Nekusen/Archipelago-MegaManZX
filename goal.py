@@ -5,13 +5,12 @@ import logging
 from Options import OptionError
 
 from .data import LOCATIONS, SECRET_DISK_ENTRIES
+from .logic.document import CLEARED_PREFIX, FINAL_MISSION, MISSION_PREFIX
 
 REQ_BIOMETALS = "Biometals"
 REQ_DISKS = "Secret Disks"
 REQ_MISSIONS = "Missions"
 DISK_ITEM = "Secret Disk"
-MISSION_PREFIX = "Mission - "
-FINAL_MISSION = "Mission - Destroy Model W"
 # The story missions that count: every check of the category, so neither the skipped
 # intro nor the final mission, which is the goal itself.
 COUNTED_MISSIONS = tuple(n for n, v in LOCATIONS.items()
@@ -41,7 +40,7 @@ def model_item(name: str, progressive: bool) -> str:
 
 def cleared_event(mission: str) -> str:
     """The event item of a mission location: its Cleared atom in the logic and the count test."""
-    return "Cleared: " + mission[len(MISSION_PREFIX):]
+    return CLEARED_PREFIX + mission[len(MISSION_PREFIX):]
 
 
 class GoalRequirement:
@@ -116,26 +115,6 @@ def resolve(options, room: int, reserve: int, player_name: str) -> GoalRequireme
     if REQ_MISSIONS in reqs:
         missions = min(int(options.required_missions.value), MISSION_COUNT)
     return GoalRequirement(models, count, required, total, copies, missions)
-
-
-def rule(goal: GoalRequirement, player: int):
-    """The requirement as a state rule, or None when nothing is required."""
-    parts = []
-    if goal.wants_models:
-        needs = [(m, goal.copies.get(m, 1)) for m in goal.models]
-        parts.append(lambda state, _needs=needs, _n=goal.models_count:
-                     sum(1 for m, c in _needs if state.has(m, player, c)) >= _n)
-    if goal.wants_disks:
-        parts.append(lambda state, _n=goal.disks_required: state.has(DISK_ITEM, player, _n))
-    if goal.wants_missions:
-        events = [cleared_event(m) for m in COUNTED_MISSIONS]
-        parts.append(lambda state, _ev=events, _n=goal.missions_required:
-                     state.has_from_list_unique(_ev, player, _n))
-    if not parts:
-        return None
-    if len(parts) == 1:
-        return parts[0]
-    return lambda state: all(p(state) for p in parts)
 
 
 def describe(goal: GoalRequirement) -> str:

@@ -17,10 +17,11 @@ from .items import MMZXItem, item_name_to_id, get_classification, ITEM_GROUPS, S
 from .locations import (active_locations, location_name_to_id, LOCATION_GROUPS, STORY_ITEMS, STORY_OFF,
                         story_mode)
 from .options import MMZXOptions, OPTION_GROUPS
-from .logic import load_document
-from .logic.document import room_label
-from .logic.rules import TIER, starting_point
-from .regions import boss_requirements, create_regions, progression_overrides
+from .logic import document as F
+from .logic import rules as R
+from .logic import starting_point
+from .logic.builder import BossRequirement, boss_requirements
+from .regions import create_regions, progression_overrides
 from .rom import MMZXPatch, write_patch_tokens, MMZX_US_MD5
 from .rom.golden import build_image
 from .rom.table import PICKUP_SLOTS, build_table, icon_code
@@ -154,7 +155,7 @@ class MMZXWorld(World):
             reqs = boss_requirements(self)
         except ValueError as e:
             raise OptionError("[%s] boss_logic: %s" % (self.player_name, e)) from None
-        loose = bosses.unanchored(load_document(), reqs)
+        loose = bosses.unanchored(R.BOSS_ARENAS, reqs)
         if loose:
             # failing beats applying the requirement to nothing
             raise OptionError(
@@ -250,11 +251,6 @@ class MMZXWorld(World):
 
         self.multiworld.itempool += pool
 
-    def set_rules(self) -> None:
-        """Only the completion condition; the access rules live on the entrances."""
-        self.multiworld.completion_condition[self.player] = \
-            lambda state: state.has("Victory", self.player)
-
     def pre_fill(self) -> None:
         """Fails early when boss_logic makes the goal unreachable even with the whole pool."""
         reqs = boss_requirements(self)
@@ -263,11 +259,7 @@ class MMZXWorld(World):
         state = self.multiworld.get_all_state()
         if self.multiworld.completion_condition[self.player](state):
             return
-        rules = bosses.compile_rules(reqs, TIER, self.player, bool(self.options.hu_in_pool.value),
-                                     not self.options.progressive_models.value)
-        from .logic import document as F
-        blocked = [F.BOSSES[b]["name"] for b in sorted(reqs)
-                   if not rules.get(F.boss_atom(b), lambda s: True)(state)]
+        blocked = [F.BOSSES[b]["name"] for b in sorted(reqs) if not BossRequirement(b).resolve(self)(state)]
         raise OptionError(
             "[%s] boss_logic: the seed cannot be completed even with every item. "
             "Bosses whose requirement is still unmet: %s. Check that you do not ask for more "
@@ -302,7 +294,7 @@ class MMZXWorld(World):
         pre = [name for name in (STARTING_MODEL_ITEM.get(self.options.starting_model.current_key),
                                  start.get("access")) if name]
         spoiler_handle.write("Start: %s (%s), pre-granted: %s\n" % (
-            self.options.starting_transerver.current_key, room_label(start["room"]),
+            self.options.starting_transerver.current_key, F.room_label(start["room"]),
             ", ".join(pre) or "nothing"))
         spoiler_handle.write("Goal: %s; requirements: %s\n" % (
             self.options.goal.current_key, G.describe(self.goal)))

@@ -4,19 +4,19 @@ import logging
 
 from Options import OptionError
 
-from .data import LOCATIONS, SEAL_ROOMS, SEAL_TRANSERVER
+from .data import LOCATIONS, SEAL_TRANSERVER
+from .logic.document import BIOMETAL_PREFIX, OBTAINED_PREFIX
 
 MODE_OPEN, MODE_BIOMETALS, MODE_PASSWORDS = "open", "biometals", "passwords"
 PASSWORD_ITEM = "Password"
 TRANSERVER_ITEM = SEAL_TRANSERVER     # out of the pool unless the seal starts open
 # What `biometals` asks for: the five "Obtain Biometal" locations checked.
-BIOMETAL_PREFIX = "Obtain "
 BIOMETAL_LOCATIONS = tuple(n for n, v in LOCATIONS.items() if v["category"] == "biometal")
 
 
 def obtained_event(location: str) -> str:
     """The event item that mirrors a biometal location in the logic."""
-    return "Obtained: " + location[len(BIOMETAL_PREFIX):]
+    return OBTAINED_PREFIX + location[len(BIOMETAL_PREFIX):]
 
 
 BIOMETAL_EVENTS = tuple(obtained_event(n) for n in BIOMETAL_LOCATIONS)
@@ -63,20 +63,6 @@ def from_slot_data(data: dict | None) -> Seal:
     """The resolved seal back from its slot data; a seed from before the option had it open."""
     data = data or {}
     return Seal(data.get("mode", MODE_OPEN), int(data.get("passwords", 0)), int(data.get("passwords_total", 0)))
-
-
-def rule(seal: Seal, player: int):
-    """The seal as a state rule, or None when it is open from the start."""
-    if seal.mode == MODE_PASSWORDS:
-        return lambda state: state.has(PASSWORD_ITEM, player, seal.passwords_required)
-    if seal.mode == MODE_BIOMETALS:
-        return lambda state: state.has_all(BIOMETAL_EVENTS, player)
-    return None
-
-
-def behind(edge: dict) -> bool:
-    """Whether an edge leads into the rooms the seal closes off, on foot or by Transerver."""
-    return edge["dst"] in SEAL_ROOMS and edge["src"] not in SEAL_ROOMS
 
 
 def describe(seal: Seal) -> str:

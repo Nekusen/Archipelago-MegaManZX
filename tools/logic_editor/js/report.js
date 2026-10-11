@@ -17,7 +17,7 @@ function renderReport() {
   const parts = ['Report: ', h('span', { class: 'e' }, errs.length + ' errors'), ' · ',
     h('span', { class: 'w' }, warns.length + ' warnings'),
     ' · ' + (rep.unsure || 0) + ' unconfirmed · ' + (rep.unplaced || 0) + ' unplaced'];
-  if (rep.txt === false) parts.push(h('span', { class: 'e' }, ' · logic.txt NOT regenerated (there are errors)'));
+  if (rep.generated === false) parts.push(h('span', { class: 'e' }, ' · rules.py / rules.json NOT regenerated (there are errors)'));
   $('#report-summary').replaceChildren(...parts);
   const body = $('#report-body');
   body.replaceChildren();

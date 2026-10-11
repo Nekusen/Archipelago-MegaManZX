@@ -8,7 +8,7 @@ from .test_regions import RegionsReachable
 from ..rom.golden import (BLOCK_MIRROR, BLOCK_OFF, OFF_SCENE_WORD, OFF_SPAWN_X, OFF_SPAWN_Y,
                           PLAYER_MIRROR, TRANSERVER_BITS, build_image)
 from ..data import ITEMS, LIVE_BLOCK, ROOM_SUBAREA, SCENE_WORDS, STARTING_MODELS, STARTING_TRANSERVERS
-from ..logic.rules import ROOM_NAMES
+from ..logic import ROOM_NAMES
 from ..options import StartingTranserver
 
 

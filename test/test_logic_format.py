@@ -1,6 +1,6 @@
-"""The logic document format: parser, requirements, validator and text twin.
+"""The logic document format: parser, requirements, intermediate representation, validator and exporters.
 
-logic/document.py and data.py import nothing from Archipelago, so they are loaded
+logic/document.py, data.py and door_data.py import nothing from Archipelago, so they are loaded
 by path and these tests run without a checkout.
 """
 import copy
@@ -20,27 +20,9 @@ def _load(name):
 
 F = _load("logic/document")
 D = _load("data")
-WORLD = F.build_world(D)
+S = _load("door_data")
+WORLD = F.build_world(D, S.SITES)
 DOC = F.load_logic(PKG / "logic" / "logic.json", WORLD)
-
-
-class FakeState:
-    """Enough of CollectionState for compiled rules: item counts of one player."""
-
-    def __init__(self, **counts):
-        self.counts = counts
-
-    def has(self, name, player, count=1):
-        return self.counts.get(name, 0) >= count
-
-    def has_any(self, names, player):
-        return any(self.has(n, player) for n in names)
-
-    def has_all(self, names, player):
-        return all(self.has(n, player) for n in names)
-
-    def has_from_list(self, names, player, count):
-        return sum(1 for n in names if self.has(n, player)) >= count
 
 
 class TestParser(unittest.TestCase):
@@ -106,42 +88,53 @@ class TestRequirements(unittest.TestCase):
         self.assertTrue(F.req_is_never({"normal": []}))
         self.assertFalse(F.req_is_never(self.REQ))
 
-    def test_lines(self) -> None:
-        """One text line per alternative, tagged with its tier."""
-        self.assertEqual(F.req_to_lines(self.REQ), ["normal: LX", "expert: MODEL"])
-        self.assertEqual(F.req_to_lines({"normal": []}), ["never"])
-        self.assertEqual(F.req_to_lines(None), ["free"])
-
     def test_atoms_and_promotion(self) -> None:
         """Chips and count atoms name useful items that a rule turns into progression."""
         self.assertEqual(F.req_atoms(self.REQ), {"LX", "MODEL"})
         self.assertEqual(F.progression_items({"CHIP_ABSORBER", "LIFEUP>=2", "HX"}), {"Absorber Chip", "Life Up"})
 
-    def test_compiled_rules(self) -> None:
-        """Compiled rules read item counts: any model, both halves, mission counts."""
-        rule = F.compile_req({"normal": [["MODEL"]]}, "normal", 1)
-        self.assertFalse(rule(FakeState(**{"Model Hu": 1})))
-        self.assertTrue(rule(FakeState(**{"Model FX": 1})) or rule(FakeState(**{"Progressive Model FX": 1})))
-        rule = F.compile_req({"normal": [["HX2"]]}, "normal", 1)
-        self.assertFalse(rule(FakeState(**{"Progressive Model HX": 1})))
-        self.assertTrue(rule(FakeState(**{"Progressive Model HX": 2})))
-        rule = F.compile_req({"normal": [["MISSIONS>=2"]]}, "normal", 1)
-        self.assertFalse(rule(FakeState(**{"Cleared: Search The Plant": 1})))
-        self.assertTrue(rule(FakeState(**{"Cleared: Search The Plant": 1, "Cleared: Save The People": 1})))
+    def test_intermediate_representation(self) -> None:
+        """A requirement is the OR of its alternatives, each the AND of its atoms; the host atoms are macros."""
+        self.assertEqual(F.req_ir({"normal": [["HX", "LX"], ["FX"]]}, "normal"),
+                         ("or", (("and", (("macro", "HX"), ("macro", "LX"))), ("macro", "FX"))))
+        self.assertEqual(F.req_ir({"normal": [["MODEL"]]}, "normal"), ("macro", "MODEL"))
+        self.assertEqual(F.req_ir({"normal": [["HX2"]]}, "normal"), ("macro", "HX2"))
+        self.assertEqual(F.req_ir({"normal": [["MISSIONS>=2"]]}, "normal"),
+                         ("has_from_list", tuple(F.AREA_MISSION_EVENTS), 2))
+        self.assertEqual(F.req_ir({"normal": [["LIFEUP>=3"]]}, "normal"), ("has", "Life Up", 3))
+        self.assertEqual(F.req_ir({"normal": [["BOSS_HIVOLT"]]}, "normal"), ("boss", "hivolt"))
+        self.assertEqual(F.req_ir(self.REQ, "normal"), ("macro", "LX"))
+        self.assertEqual(F.req_ir(self.REQ, "expert"), ("or", (("macro", "LX"), ("macro", "MODEL"))))
+        self.assertEqual(F.req_ir(None, "normal"), F.IR_TRUE)
+        self.assertEqual(F.req_ir({"normal": []}, "normal"), F.IR_FALSE)
+        self.assertRaises(ValueError, F.atom_ir, "FOO")
 
-    def test_hu_and_bosses_are_free_unless_configured(self) -> None:
-        """HU without hu_in_pool and a BOSS_* atom without a YAML rule compile to no rule."""
-        self.assertIsNone(F.compile_req({"normal": [["HU"]]}, "normal", 1))
-        self.assertIsNotNone(F.compile_req({"normal": [["HU"]]}, "normal", 1, hu_in_pool=True))
-        self.assertIsNone(F.compile_req({"normal": [["BOSS_HIVOLT"]]}, "normal", 1))
-        rule = F.compile_req({"normal": [["BOSS_HIVOLT"]]}, "normal", 1,
-                             extra_atoms={"BOSS_HIVOLT": lambda state: state.has("Absorber Chip", 1)})
-        self.assertFalse(rule(FakeState()))
-        self.assertTrue(rule(FakeState(**{"Absorber Chip": 1})))
-        # an unconfigured boss alternative frees the whole requirement at the tier that has it
-        req = {"normal": [["LX"]], "expert": [["BOSS_HIVOLT"]]}
-        self.assertIsNotNone(F.compile_req(req, "normal", 1))
-        self.assertIsNone(F.compile_req(req, "expert", 1))
+    def test_macros_follow_the_options(self) -> None:
+        """The model halves, the human form, the story atoms and the seal expand to option-filtered rules."""
+        half, full = F.MACRO_IR["HX"][1]
+        self.assertEqual(half, ("has_if", "Progressive Model HX", 1, "ProgressiveModels", 1, "eq"))
+        self.assertEqual(full, ("has_if", "Model HX", 1, "ProgressiveModels", 0, "eq"))
+        self.assertEqual(F.MACRO_IR["HX2"][1][0], ("has_if", "Progressive Model HX", 2, "ProgressiveModels", 1, "eq"))
+        self.assertEqual(F.MACRO_IR["HU"][1][1], ("option_true", "HuInPool", 0, "eq"))
+        self.assertEqual(F.MACRO_IR["GOAL"], ("goal",))
+        self.assertEqual(F.MACRO_IR["SEAL"], ("seal",))
+        self.assertIn(("has_if", F.BRIDGE_EVENT, 1, "MissionObjectives", 1, "eq"), F.MACRO_IR[F.D_BRIDGE][1])
+        self.assertIn(("option_true", "MissionObjectives", 0, "eq"), F.MACRO_IR[F.D_BRIDGE][1])
+        # the slow lava depends on the place it is asked at; nowhere in particular, on its event
+        site = {"at": "k04/lava-chase", "control": "k01/region-7"}
+        self.assertEqual(F.atom_ir(F.SLOW_LAVA, site), ("or", (("macro", "LAVA_ITEM"), ("lava", "k04/lava-chase", "k01/region-7"))))
+        self.assertEqual(F.atom_ir(F.SLOW_LAVA), ("macro", F.SLOW_LAVA))
+
+    def test_ir_serializes_as_the_rule_builder_does(self) -> None:
+        """The dict of a node is Rule.to_dict: rule, options, filtered_resolution and args."""
+        self.assertEqual(F.ir_to_dict(("has_if", "Model HX", 1, "ProgressiveModels", 0, "eq")), {
+            "rule": "Has", "filtered_resolution": False, "args": {"item_name": "Model HX", "count": 1},
+            "options": [{"option": "worlds.mmzx.options.ProgressiveModels", "value": 0, "operator": "eq"}]})
+        self.assertTrue(F.ir_to_dict(("needs_if", "Computer Chip", 1, "MissionObjectives", 2, "eq"))["filtered_resolution"])
+        self.assertEqual(F.ir_to_dict(("macro", "GOAL")), {"rule": "GoalRequirement", "options": [],
+                                                           "filtered_resolution": False, "args": {}})
+        self.assertEqual(F.ir_to_py(("and", (("macro", "LX"), ("or", (("macro", "HX"), ("has", "Model X", 1)))))),
+                         'LX & (HX | Has("Model X"))')
 
 
 class TestWorldData(unittest.TestCase):
@@ -170,10 +163,15 @@ class TestDocument(unittest.TestCase):
         report = F.validate(WORLD, DOC, D.HUB_ROOM, F.unavailable_atoms(D))
         self.assertEqual(report["errors"], [])
 
-    def test_text_twin_is_current(self) -> None:
-        """logic.txt is exactly what the document exports; run tools/check_logic.py otherwise."""
-        expected = (PKG / "logic" / "logic.txt").read_text(encoding="utf-8")
-        self.assertEqual(F.export_txt(WORLD, DOC, D.HUB_ROOM), expected)
+    def test_exporters_need_no_archipelago(self) -> None:
+        """The generated module and its JSON come out of the document alone, and the module compiles."""
+        text = F.export_rules_py(WORLD, DOC)
+        compile(text, "rules.py", "exec")
+        self.assertIn('ENTRANCES["Start"] = Edge("Menu", "z01", True_())', text)
+        exported = F.export_rules_json(WORLD, DOC)
+        self.assertEqual(exported["errors"], [])
+        self.assertEqual(exported["start"], "z01")
+        self.assertIn("K-1: Sub Tank", exported["rooms"]["k01"]["locations"])
 
     def test_every_room_is_drawn(self) -> None:
         """Every room of the door table has an entry with a main region."""

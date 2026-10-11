@@ -7,7 +7,7 @@ same from the apworld folder: it loads the checkout given by --ap or $AP_SRC
 (default: an Archipelago checkout beside the parent repository), registers
 this package as worlds.mmzx and runs every test/test_*.py.
 
-Usage (from the apworld root): python tools/run_tests.py [--ap PATH] [-v] [-k PATTERN]
+Usage (from the apworld root): python tools/run_tests.py [--ap PATH] [-v] [-k PATTERN] [--general]
 """
 import argparse
 import importlib
@@ -20,11 +20,24 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import _ap  # noqa: E402
 
 
+# general tests about the other worlds of the checkout, which a world loaded by path hides
+NEEDS_THE_WORLDS_FOLDER = ("test_world_manifest", "test_item_links_name_groups", "test_packages")
+
+
+def flatten(suite):
+    for t in suite:
+        if isinstance(t, unittest.TestSuite):
+            yield from flatten(t)
+        else:
+            yield t
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--ap", default=_ap.DEFAULT_AP, help="Archipelago source checkout (0.6.7)")
     ap.add_argument("-v", "--verbose", action="store_true")
     ap.add_argument("-k", "--pattern", default="test_*", help="glob of test modules to run (default: test_*)")
+    ap.add_argument("--general", action="store_true", help="also run the general tests of the checkout on this world")
     a = ap.parse_args()
 
     _ap.load_core(a.ap)
@@ -34,6 +47,10 @@ def main():
     for info in sorted(pkgutil.iter_modules(package.__path__), key=lambda m: m.name):
         if info.name.startswith("test_") and Path(info.name).match(a.pattern):
             suite.addTests(loader.loadTestsFromModule(importlib.import_module("worlds.mmzx.test." + info.name)))
+    if a.general:
+        # the core's own checks of a world: reachability, item and location tables, options, fill
+        general = loader.discover(str(Path(a.ap) / "test" / "general"), top_level_dir=str(Path(a.ap)))
+        suite.addTests(t for t in flatten(general) if not any(name in t.id() for name in NEEDS_THE_WORLDS_FOLDER))
     result = unittest.TextTestRunner(verbosity=2 if a.verbose else 1).run(suite)
     sys.exit(0 if result.wasSuccessful() else 1)
 

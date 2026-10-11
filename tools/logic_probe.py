@@ -63,7 +63,7 @@ def main():
     # raw data to describe the rules
     mm = sys.modules["worlds.mmzx"]
     data = mm.data
-    logic = mm.logic.rules
+    logic = mm.logic
     F = mm.logic.document
     doc = mm.logic.load_document()
     tier = logic.TIER
@@ -189,7 +189,7 @@ def main():
                 F.region_name(room, rid), "reachable" if F.region_name(room, rid) in reach else "NOT reachable"))
         else:
             label = v.get("room")
-            for g in logic.label_room_groups(label):
+            for g in F.label_room_groups(label, logic.ROOM_NAMES):
                 lack = [r for r in g if r not in reach]
                 print("   UNPLACED; label %r -> rooms %s; missing: %s" % (label, g, lack or "none"))
 

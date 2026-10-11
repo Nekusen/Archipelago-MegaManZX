@@ -89,16 +89,6 @@ def parse_boss_logic(value) -> dict:
     return out
 
 
-def compile_rules(reqs, tier, player, hu_in_pool=False, full_models=False) -> dict:
-    """{BOSS_<ID> atom: rule} for the bosses with a real requirement."""
-    rules = {}
-    for bid, req in (reqs or {}).items():
-        r = F.compile_req(req, tier, player, hu_in_pool, full_models=full_models)
-        if r is not None:
-            rules[F.boss_atom(bid)] = r
-    return rules
-
-
 def items_used(reqs) -> set:
     """Useful items that these requirements turn into progression."""
     atoms = set()
@@ -113,7 +103,6 @@ def describe(reqs) -> dict:
             for b, r in sorted((reqs or {}).items())}
 
 
-def unanchored(doc, reqs) -> list:
-    """Names of the bosses that have a requirement but no anchor in the document."""
-    anchored = F.bosses_anchored(doc)
-    return [F.BOSSES[b]["name"] for b in sorted(reqs or {}) if b not in anchored]
+def unanchored(anchored, reqs) -> list:
+    """Names of the bosses that have a requirement but are not among the `anchored` boss ids."""
+    return [F.BOSSES[b]["name"] for b in sorted(reqs or {}) if b not in set(anchored)]

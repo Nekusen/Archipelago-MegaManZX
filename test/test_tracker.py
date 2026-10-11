@@ -11,8 +11,8 @@ from .bases import WITNESS
 from .. import MMZXWorld, SLOT_DATA_OPTIONS
 from ..goal import MODEL_ITEM_BY_KEY, SIX_MODEL_KEYS
 from ..logic import bosses
+from ..logic.builder import boss_requirements
 from ..options import MMZXOptions
-from ..regions import boss_requirements
 
 # the stages Universal Tracker runs, of those this Archipelago has
 TRACKER_STEPS = tuple(step for step in ("generate_early", "create_regions", "create_items", "set_rules",

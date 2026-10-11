@@ -14,7 +14,7 @@ from .test_rom import ROM_PATH
 from .. import MMZXWorld, door_constraints
 from ..data import DOORS
 from ..door_data import ROOMS, SITES
-from ..logic.rules import SITE_DOORS
+from ..logic import WORLD
 from ..options import DoorConstraintsMax, DoorConstraintsMin
 from ..rom import arm9, doors, nds
 from ..rom.ui import ROOM_OVERLAY_SLOT_RAM
@@ -47,7 +47,8 @@ class TestSites(unittest.TestCase):
                 self.assertEqual([f["room"] for f in site["faces"]], [there["src"], back["src"]])
 
     def test_a_door_belongs_to_one_site(self) -> None:
-        self.assertEqual(len(SITE_DOORS), 2 * len(SITES))
+        self.assertEqual(len(door_constraints.site_doors()), 2 * len(SITES))
+        self.assertEqual(set(WORLD["site_doors"]), set(door_constraints.site_doors()))
 
     def test_faces_are_plain_doors(self) -> None:
         for name, site in SITES.items():

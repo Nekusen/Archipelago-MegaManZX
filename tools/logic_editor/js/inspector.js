@@ -34,7 +34,7 @@ function unsureField(getObj, opts = {}) {
     edit(() => { getObj().unsure = cb.checked; if (opts.after) opts.after(); }, { keepInspector: true });
   };
   const cb = h('input', { type: 'checkbox', checked: !!cur.unsure, onchange });
-  const label = h('label', { title: 'Rule not confirmed in-game ("?" in logic.txt)' }, cb, 'Unconfirmed in-game (?)');
+  const label = h('label', { title: 'Rule not confirmed in-game ("?" in rules.py)' }, cb, 'Unconfirmed in-game (?)');
   return h('div', { class: 'field' }, label);
 }
 function regionSelectField(node) {

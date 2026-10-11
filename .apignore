@@ -9,6 +9,9 @@ tools/
 test/
 src/
 tracker/images/
+logic/logic.json
+logic/rules.json
+
 build/
 __pycache__/
 *.pyc

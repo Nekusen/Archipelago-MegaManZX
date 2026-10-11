@@ -221,4 +221,6 @@ This randomizer is designed to be used with Universal Tracker. UT shows a map ta
 room you are in and marks your position. The world ships the map layout; the images come from the separate
 [Mega Man ZX tracker pack](https://github.com/Nekusen/MegaManZX-Tracker/releases) (`mmzx_tracker.zip`, kept zipped).
 UT asks for the file the first time it needs it; the [setup guide](setup_en.md) says where to set its path.
-UT does not need your YAML for this game: it reads the options of your seed from the server.
+UT does not need your YAML for this game: it reads the options of your seed from the server. Its
+`/explain <location>` command tells you what a check still needs: the models, Card Keys, Transerver Access,
+events or bosses behind it, and your own `boss_logic`, goal and door constraints when they apply.

@@ -128,7 +128,7 @@ function bindTop() {
     S.tier = e.target.value; CV.dirty = true; LE.renderInspector(); LE.renderTree();
   });
   $('#btn-validate').addEventListener('click', doValidate);
-  $('#btn-txt').addEventListener('click', () => window.open('/api/txt', '_blank'));
+  $('#btn-rules').addEventListener('click', () => window.open('/api/rules', '_blank'));
   $('#btn-gates').addEventListener('click', () => { S.gatesTarget = null; togglePanel('gates-panel'); });
   $('#btn-help').addEventListener('click', () => togglePanel('help-panel'));
   $('#counter').addEventListener('click', toggleReport);

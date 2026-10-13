@@ -9,13 +9,22 @@
 @ that the game asks for stay required: the child who gives the cake moves to
 @ town once Save The People is reported (flag 199), and the salts are on sale
 @ once Troop Reinforcement is reported (flag 169); the game only ever sets those
-@ two flags, so neither source goes away afterwards. No cave.
+@ two flags, so neither source goes away afterwards.
+@ The "You got X" popup of a hand-over would name an object the player does not
+@ get, and the client's notice already says what was sent, so the popup routine
+@ returns at once for the eight messages of the usables (USABLE_POPUP_CAVE); every
+@ other popup goes through its displaced prologue and on.
 
         .thumb
 
 .equ progress_block,        0x021045CC
 .equ usables_byte,          0x02191C44  @ PICKUP_TABLE_ADDR + USABLES_OFF
 .equ usable_flag_base,      (usables_byte - progress_block) * 8
+.equ show_pickup_msg,       0x020122D4  @ (message id, frames): opens the small popup with a message
+.equ show_pickup_msg_body,  0x020122DC  @ its first instruction after the prologue the hook displaces
+.equ popup_object,          0x027E02CC  @ the popup the routine fills, its literal at 0x02012348
+.equ first_usable_popup,    0x448       @ "You got Cake!", then the other seven in menu order
+.equ usable_popup_cave,     0x020CB910  @ USABLE_POPUP_CAVE_RAM
 
         .org    0x020D96DC
 @ rom: USABLE_TABLE_NEW
@@ -34,6 +43,33 @@
 @ rom: CAKE_BIRTHDAY_PATCH[0][2]
 @ was: beq 0x0209C606   (CAKE_BIRTHDAY_PATCH[0][1]): no cake unless today is the console owner's birthday
         mov     r8, r8                  @ the cake dialogue whenever the flag is clear
+
+        .org    0x020122D4
+@ rom: USABLE_POPUP_ENTRY_NEW
+@ was: push {r4, r5, r6, lr}; adds r5, r0, #0; adds r6, r1, #0; ldr r4, [pc, #0x6c]   (USABLE_POPUP_ENTRY_ORIG): the prologue of show_pickup_msg
+        ldr     r3, lit_popup_cave
+        bx      r3
+lit_popup_cave: .word usable_popup_cave + 1
+
+        .org    0x020CB910
+@ rom: USABLE_POPUP_CAVE
+usable_popup:                           @ r0 = message id, r1 = frames, as show_pickup_msg takes them
+        ldr     r3, lit_first_popup
+        subs    r3, r0, r3
+        cmp     r3, #8
+        blo     usable_popup_quiet      @ one of the eight usables: no popup
+        push    {r4, r5, r6, lr}        @ the prologue the hook displaced
+        adds    r5, r0, #0
+        adds    r6, r1, #0
+        ldr     r4, lit_popup_object
+        ldr     r3, lit_popup_body
+        bx      r3
+usable_popup_quiet:
+        bx      lr
+        .align  2
+lit_first_popup:  .word first_usable_popup
+lit_popup_object: .word popup_object
+lit_popup_body:   .word show_pickup_msg_body + 1
 
         .org    0x0209C40C
 @ rom: GUARDIAN_KEEP_PATCH[0][2]

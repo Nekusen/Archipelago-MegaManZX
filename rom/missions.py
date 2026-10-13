@@ -10,25 +10,30 @@ from .table import ENTRIES_OFF, ENTRY_LEN, MAX_SLOTS
 from .ui import ROOM_OVERLAY_SLOT_RAM
 
 # Autoload section after the pickup table: `count` (entries of the list), `take` (accept the chosen
-# id, then clear its repeat flags), `pending` (zero when what is under way came from the list), tables.
+# id, then leave it as the client's accept would: story handler state, flags cleared and set),
+# `pending` (zero when what is under way came from the list), tables.
 MISSION_SECTION_RAM = 0x02193000
-MISSION_SECTION_LEN = 0x200
-MISSION_SECTION_ENTRIES = {"count": 0x00, "take": 0x30, "pending": 0x70}
+MISSION_SECTION_LEN = 0x400
+MISSION_SECTION_ENTRIES = {"count": 0x00, "take": 0x30, "pending": 0x90}
 MISSION_SECTION_CODE = bytes.fromhex(
     "70b4094c0949002027252368da108a5c0726334001269e40324200d001300434"
-    "013df2d170bc7047c0301902cc45100270b5040001f7baff023c0d2c11d8094d"
-    "2c5d094d2d19094e2b881a0409d4da08b05c07210b40012199408843b0540235"
-    "f2e770bd7031190280311902cc45100230b40f4b5f21585c400716d4e0215c58"
+    "013df2d170bc704700311902cc45100270b5040001f7baff023c0d2c1cd8124d"
+    "285d002801d0114908700c4d2c5d0c4d2d190c4e2b885a1c12040dd05a04120d"
+    "b05c0721194001248c40a043db0b8b401843b0540235ede770bd00bfc0311902"
+    "d0311902cc451002b0311902cff6140230b40f4b5f21585c400716d4e0215c58"
     "0c4a0025505da04204d001350e2df9d301200be0084aad005159ca089a5c0720"
-    "0140ca400120904300e0002030bc7047cc45100260311902c0301902")
-MISSION_LIST_OFF = 0xC0            # u32[39]: the flag that lists each id 2 to 40
+    "0140ca400120904300e0002030bc7047cc451002a031190200311902")
+MISSION_LIST_OFF = 0x100           # u32[39]: the flag that lists each id 2 to 40
 MISSION_LIST_IDS = range(2, 41)
 MISSION_LAST_STORY = 16            # ids above it are quests, listed as in vanilla
-MISSION_NEVER_OFF = 0x15C          # a zero word: the "flag" of a story mission the list never shows
-MISSION_STATES_OFF = 0x160         # u8[14]: the state value of ids 2 to 15
+MISSION_NEVER_OFF = 0x19C          # a zero word: the "flag" of a story mission the list never shows
+MISSION_STATES_OFF = 0x1A0         # u8[14]: the state value of ids 2 to 15
 MISSION_REPEAT_IDS = range(2, 16)
-MISSION_REPEAT_INDEX_OFF = 0x170   # u8[14]: where each id's row starts inside the rows
-MISSION_REPEAT_OFF = 0x180         # u16 flags to clear, 0xFFFF ends each id's row
+MISSION_HANDLER_OFF = 0x1B0        # u8[14]: the story handler state `take` leaves, 0 = as the accept installs it
+MISSION_HANDLER_STATE_RAM = 0x0214F6CF
+MISSION_REPEAT_INDEX_OFF = 0x1C0   # u8[14]: where each id's row starts inside the rows
+MISSION_REPEAT_OFF = 0x1D0         # u16 flags to clear, or to set with MISSION_REPEAT_SET; 0xFFFF ends each id's row
+MISSION_REPEAT_SET = 0x8000
 MISSION_REPEAT_END = 0xFFFF
 
 # Entries of the quests (ids 17 to 40) in the vanilla table of offered flags, kept as they are
@@ -39,7 +44,7 @@ MISSION_QUEST_FLAGS_ORIG = bytes.fromhex(
     "04e010000540100005c010000600100006501000069010000")
 # The list builder reads its table through this literal
 MISSION_LIST_LITERAL_PATCH = [
-    (0x02027FEC, bytes.fromhex("7cae0d02"), bytes.fromhex("c0301902")),    # .word table
+    (0x02027FEC, bytes.fromhex("7cae0d02"), bytes.fromhex("00311902")),    # .word table
 ]
 # The two consoles count the offered flags before their menu, and accept the id chosen in the list
 MISSION_COUNT_HOOKS = [(0x02093496, bytes.fromhex("75f76df9")), (0x02093C28, bytes.fromhex("74f7a4fd"))]
@@ -79,12 +84,20 @@ def mission_states() -> bytes:
     return bytes(states[mid] for mid in MISSION_REPEAT_IDS)
 
 
+def mission_handler_states() -> bytes:
+    """The story handler state `take` leaves for each mission, in id order; zero keeps the accept's."""
+    states = {rec["id"]: rec.get("hstate", 0) for rec in MISSION_ACCEPT.values()}
+    return bytes(states.get(mid, 0) for mid in MISSION_REPEAT_IDS)
+
+
 def mission_repeat_table() -> tuple[bytes, bytes]:
-    """(index, rows): where each mission's row starts, and the rows of flags `take` clears."""
+    """(index, rows): where each mission's row starts, and the rows of flags `take` clears, then sets."""
+    extras = {rec["id"]: rec.get("extra", []) for rec in MISSION_ACCEPT.values()}
     index, rows = bytearray(), bytearray()
     for mid in MISSION_REPEAT_IDS:
         index.append(len(rows))
         flags = [flag_index(a, b) for a, b in MISSION_REPEAT_BITS.get(mid, [])]
+        flags += [MISSION_REPEAT_SET | flag_index(a, b) for a, b in extras.get(mid, [])]
         rows += struct.pack("<%dH" % (len(flags) + 1), *flags, MISSION_REPEAT_END)
     if len(rows) > 0xFF:
         raise ValueError("MMZX: the repeat rows do not fit a byte index")
@@ -92,14 +105,15 @@ def mission_repeat_table() -> tuple[bytes, bytes]:
 
 
 def build_section() -> bytes:
-    """The autoload section: the routines, the list table, the zero word, the states and the rows."""
-    listing, states = mission_list_table(), mission_states()
+    """The autoload section: the routines, the list table, the zero word, the three state tables and the rows."""
+    listing, states, handlers = mission_list_table(), mission_states(), mission_handler_states()
     index, rows = mission_repeat_table()
     pieces = [(0, MISSION_SECTION_CODE), (MISSION_LIST_OFF, listing), (MISSION_STATES_OFF, states),
-              (MISSION_REPEAT_INDEX_OFF, index), (MISSION_REPEAT_OFF, rows)]
+              (MISSION_HANDLER_OFF, handlers), (MISSION_REPEAT_INDEX_OFF, index), (MISSION_REPEAT_OFF, rows)]
     ends = [off + len(data) for off, data in pieces]
     assert ends[0] <= MISSION_LIST_OFF and ends[1] <= MISSION_NEVER_OFF < MISSION_NEVER_OFF + 4 <= MISSION_STATES_OFF
-    assert ends[2] <= MISSION_REPEAT_INDEX_OFF and ends[3] <= MISSION_REPEAT_OFF and ends[4] <= MISSION_SECTION_LEN
+    assert ends[2] <= MISSION_HANDLER_OFF and ends[3] <= MISSION_REPEAT_INDEX_OFF
+    assert ends[4] <= MISSION_REPEAT_OFF and ends[5] <= MISSION_SECTION_LEN
     out = bytearray(MISSION_SECTION_LEN)
     for off, data in pieces:
         out[off:off + len(data)] = data

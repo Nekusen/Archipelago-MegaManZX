@@ -148,6 +148,17 @@ CAKE_BIRTHDAY_PATCH = [
     # (RAM, vanilla, patched)
     (0x0209C5F2, bytes.fromhex("08d0"), bytes.fromhex("c046")),   # beq past the offer -> nop
 ]
+# A hand-over's "You got X" popup would name an object the player does not get, and the
+# client's notice says what was sent: the popup routine returns at once for the eight
+# messages of the usables, through a cave that holds its displaced prologue.
+USABLE_POPUP_ENTRY_RAM = 0x020122D4
+USABLE_POPUP_ENTRY_ORIG = bytes.fromhex("70b5051c0e1c1b4c")
+USABLE_POPUP_ENTRY_NEW = bytes.fromhex("004b184711b90c02")   # jump to USABLE_POPUP_CAVE_RAM
+USABLE_POPUP_CAVE_RAM = 0x020CB910
+USABLE_POPUP_CAVE = bytes.fromhex(
+    "054bc31a082b05d370b5051c0e1c034c034b1847704700bf48040000cc027e02"
+    "dd220102")
+USABLE_POPUP_FIRST = 0x448        # "You got Cake!", then the other seven in menu order
 # Room code hands out two usables: the tree of A-3 shakes for the punch class alone and
 # drops the apple one time in sixteen, the doll of X-2 frees the W Tank once its thousand
 # hit points are gone. Both answer any attack now, and the tree's first fruit is the apple.
@@ -250,6 +261,8 @@ def patch_usables(arm9: Arm9) -> None:
     arm9.write(USABLE_TABLE_RAM, USABLE_TABLE_NEW, USABLE_TABLE_ORIG)
     for ram, orig, new in CAKE_BIRTHDAY_PATCH + GUARDIAN_KEEP_PATCH:
         arm9.write(ram, new, orig)
+    arm9.write(USABLE_POPUP_CAVE_RAM, USABLE_POPUP_CAVE)
+    arm9.write(USABLE_POPUP_ENTRY_RAM, USABLE_POPUP_ENTRY_NEW, USABLE_POPUP_ENTRY_ORIG)
 
 
 def patch_usable_rooms(rom: bytearray) -> None:

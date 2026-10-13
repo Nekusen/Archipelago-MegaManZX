@@ -25,11 +25,11 @@
 .equ done_byte,             0x02191C48  @ PICKUP_TABLE_ADDR + STORY_DONE_OFF
 .equ story_flag_base,       (story_byte - progress_block) * 8
 .equ gates_flag_base,       (gates_byte - progress_block) * 8
-.equ section,               0x02193200  @ STORY_SECTION_RAM
+.equ section,               0x02193400  @ STORY_SECTION_RAM
 .equ report_table,          section + 0x40   @ rows of u16 mission state, u8 mask of story_byte, u8 0
 .equ report_gate_routine,   section + 0x00
 
-        .org    0x02193200
+        .org    0x02193400
 @ rom: STORY_SECTION_CODE
 report_gate:                            @ r0 = objective met and the mission's object held
         push    {r4, lr}

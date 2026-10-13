@@ -13,12 +13,12 @@ from .table import story_addr, story_done_addr, story_flag, story_gate_flag, sto
 from .ui import ROOM_OVERLAY_SLOT_RAM
 
 # Autoload section after the mission one: `report_gate`, then the table it reads.
-STORY_SECTION_RAM = 0x02193200
+STORY_SECTION_RAM = 0x02193400
 STORY_SECTION_LEN = 0x80
 STORY_SECTION_ENTRIES = {"report_gate": 0x00}
 STORY_SECTION_CODE = bytes.fromhex(
-    "10b59ef673fb00280fd008490968084a1388002b09d08b4201d00432f8e79378"
-    "04490978194200d1002010bdac46100240321902461c1902")
+    "10b59ef673fa00280fd008490968084a1388002b09d08b4201d00432f8e79378"
+    "04490978194200d1002010bdac46100240341902461c1902")
 STORY_REPORT_OFF = 0x40            # rows: u16 mission state, u8 mask of the story byte, u8 0; a zero state ends
 STORY_REPORT_ROW = "<HBB"
 # Who asks whether the objective is met: both consoles, the MISSION page, the HUD. (site, vanilla bl)

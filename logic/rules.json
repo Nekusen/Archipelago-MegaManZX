@@ -2952,32 +2952,57 @@
       "filtered_resolution": false,
       "children": [
        {
-        "rule": "Has",
-        "options": [
+        "rule": "Or",
+        "options": [],
+        "filtered_resolution": false,
+        "children": [
          {
-          "option": "worlds.mmzx.options.ProgressiveModels",
-          "value": 1,
-          "operator": "eq"
+          "rule": "Has",
+          "options": [
+           {
+            "option": "worlds.mmzx.options.ProgressiveModels",
+            "value": 1,
+            "operator": "eq"
+           }
+          ],
+          "filtered_resolution": false,
+          "args": {
+           "item_name": "Progressive Model FX",
+           "count": 1
+          }
+         },
+         {
+          "rule": "Has",
+          "options": [
+           {
+            "option": "worlds.mmzx.options.ProgressiveModels",
+            "value": 0,
+            "operator": "eq"
+           }
+          ],
+          "filtered_resolution": false,
+          "args": {
+           "item_name": "Model FX",
+           "count": 1
+          }
          }
-        ],
+        ]
+       },
+       {
+        "rule": "Has",
+        "options": [],
         "filtered_resolution": false,
         "args": {
-         "item_name": "Progressive Model FX",
+         "item_name": "Model X",
          "count": 1
         }
        },
        {
         "rule": "Has",
-        "options": [
-         {
-          "option": "worlds.mmzx.options.ProgressiveModels",
-          "value": 0,
-          "operator": "eq"
-         }
-        ],
+        "options": [],
         "filtered_resolution": false,
         "args": {
-         "item_name": "Model FX",
+         "item_name": "Model ZX",
          "count": 1
         }
        }
@@ -46999,32 +47024,138 @@
      "from": "i01/tower-interior",
      "to": "i01/dark-room-1",
      "rule": {
-      "rule": "True_",
+      "rule": "Or",
       "options": [],
       "filtered_resolution": false,
-      "args": {}
+      "children": [
+       {
+        "rule": "Has",
+        "options": [
+         {
+          "option": "worlds.mmzx.options.ProgressiveModels",
+          "value": 1,
+          "operator": "eq"
+         }
+        ],
+        "filtered_resolution": false,
+        "args": {
+         "item_name": "Progressive Model PX",
+         "count": 1
+        }
+       },
+       {
+        "rule": "Has",
+        "options": [
+         {
+          "option": "worlds.mmzx.options.ProgressiveModels",
+          "value": 0,
+          "operator": "eq"
+         }
+        ],
+        "filtered_resolution": false,
+        "args": {
+         "item_name": "Model PX",
+         "count": 1
+        }
+       }
+      ]
      }
     },
     "i01 door (3488,352)": {
      "from": "i01/dark-room-1",
      "to": "i01/dark-room-2",
      "rule": {
-      "rule": "True_",
+      "rule": "Or",
       "options": [],
       "filtered_resolution": false,
-      "args": {}
+      "children": [
+       {
+        "rule": "Has",
+        "options": [
+         {
+          "option": "worlds.mmzx.options.ProgressiveModels",
+          "value": 1,
+          "operator": "eq"
+         }
+        ],
+        "filtered_resolution": false,
+        "args": {
+         "item_name": "Progressive Model PX",
+         "count": 1
+        }
+       },
+       {
+        "rule": "Has",
+        "options": [
+         {
+          "option": "worlds.mmzx.options.ProgressiveModels",
+          "value": 0,
+          "operator": "eq"
+         }
+        ],
+        "filtered_resolution": false,
+        "args": {
+         "item_name": "Model PX",
+         "count": 1
+        }
+       }
+      ]
      }
     },
     "i01 door (3488,736)": {
      "from": "i01/i-3-entrance",
      "to": "i03/i-1-entrance",
      "rule": {
-      "rule": "DoorKey",
+      "rule": "And",
       "options": [],
       "filtered_resolution": false,
-      "args": {
-       "door": "i01 door (3488,736)"
-      }
+      "children": [
+       {
+        "rule": "DoorKey",
+        "options": [],
+        "filtered_resolution": false,
+        "args": {
+         "door": "i01 door (3488,736)"
+        }
+       },
+       {
+        "rule": "Or",
+        "options": [],
+        "filtered_resolution": false,
+        "children": [
+         {
+          "rule": "Has",
+          "options": [
+           {
+            "option": "worlds.mmzx.options.ProgressiveModels",
+            "value": 1,
+            "operator": "eq"
+           }
+          ],
+          "filtered_resolution": false,
+          "args": {
+           "item_name": "Progressive Model PX",
+           "count": 1
+          }
+         },
+         {
+          "rule": "Has",
+          "options": [
+           {
+            "option": "worlds.mmzx.options.ProgressiveModels",
+            "value": 0,
+            "operator": "eq"
+           }
+          ],
+          "filtered_resolution": false,
+          "args": {
+           "item_name": "Model PX",
+           "count": 1
+          }
+         }
+        ]
+       }
+      ]
      }
     },
     "i01 door (2592,352)": {

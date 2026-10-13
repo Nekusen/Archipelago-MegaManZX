@@ -137,6 +137,12 @@
     "normal": [
      [
       "FX"
+     ],
+     [
+      "X"
+     ],
+     [
+      "ZX"
      ]
     ]
    },
@@ -2167,6 +2173,60 @@
     ]
    },
    "unsure": true
+  },
+  "i01 door (1920,928)": {
+   "dst_pos": null,
+   "note": "",
+   "pos": null,
+   "req": {
+    "expert": [
+     [
+      "MODEL"
+     ]
+    ],
+    "normal": [
+     [
+      "PX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "i01 door (3488,352)": {
+   "dst_pos": null,
+   "note": "",
+   "pos": null,
+   "req": {
+    "expert": [
+     [
+      "MODEL"
+     ]
+    ],
+    "normal": [
+     [
+      "PX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "i01 door (3488,736)": {
+   "dst_pos": null,
+   "note": "",
+   "pos": null,
+   "req": {
+    "expert": [
+     [
+      "MODEL"
+     ]
+    ],
+    "normal": [
+     [
+      "PX"
+     ]
+    ]
+   },
+   "unsure": false
   },
   "i02 door (2208,1120)": {
    "dst_pos": null,

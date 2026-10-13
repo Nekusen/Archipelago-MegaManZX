@@ -505,7 +505,7 @@ ENTRANCES["a03: main -> h-4-entrance"] = Edge("a03", "a03/h-4-entrance", FX | Ha
 ENTRANCES["a03 door (1632,576)"] = Edge("a03", "h01", DoorKey("a03 door (1632,576)"))   # door -> H-1 door constraint site
 ENTRANCES["a03 door (288,912)"] = Edge("a03", "a01/a-3-entrance", Has("Yellow Card Key"))   # door -> A-1/A-3 Entrance
 #   <- A-1, H-1
-LOCATIONS["A-3: Apple"] = Spot("a03", FX)
+LOCATIONS["A-3: Apple"] = Spot("a03", FX | Has("Model X") | Has("Model ZX"))
 LOCATIONS["A-3: Disk E-46"] = Spot("a03", True_())
 # region H-4 Entrance
 ENTRANCES["a03: h-4-entrance -> main"] = Edge("a03/h-4-entrance", "a03", FX | Has("Model OX"))   # conn -> Main
@@ -1466,7 +1466,7 @@ LOCATIONS["H-4: Energy Capsule L"] = Spot("h04/upper-right-area", True_())
 # region Dark Room 1
 ENTRANCES["i01: dark-room-1 -> tower-interior"] = Edge("i01/dark-room-1", "i01/tower-interior", PX)   # conn -> Tower Interior   expert adds: MODEL
 ENTRANCES["i01: dark-room-1 -> dark-room-2"] = Edge("i01/dark-room-1", "i01/dark-room-2", PX)   # conn -> Dark Room 2   expert adds: MODEL
-ENTRANCES["i01 door (3488,352)"] = Edge("i01/dark-room-1", "i01/dark-room-2", True_())   # internal -> Dark Room 2
+ENTRANCES["i01 door (3488,352)"] = Edge("i01/dark-room-1", "i01/dark-room-2", PX)   # internal -> Dark Room 2   expert adds: MODEL
 ENTRANCES["i01 door (2592,352)"] = Edge("i01/dark-room-1", "i01/tower-interior", True_())   # internal -> Tower Interior
 LOCATIONS["I-1: E-Crystal L (2)"] = Spot("i01/dark-room-1", MODEL)
 LOCATIONS["I-1: Energy Capsule L"] = Spot("i01/dark-room-1", MODEL)
@@ -1488,7 +1488,7 @@ ENTRANCES["i01 door (1920,544)"] = Edge("i01/i-2-entrance", "i02/i-1-entrance", 
 #   <- I-2
 # region I-3 Entrance
 ENTRANCES["i01: i-3-entrance -> dark-room-2"] = Edge("i01/i-3-entrance", "i01/dark-room-2", PX)   # conn -> Dark Room 2   expert adds: MODEL
-ENTRANCES["i01 door (3488,736)"] = Edge("i01/i-3-entrance", "i03/i-1-entrance", DoorKey("i01 door (3488,736)"))   # door -> I-3/I-1 Entrance door constraint site
+ENTRANCES["i01 door (3488,736)"] = Edge("i01/i-3-entrance", "i03/i-1-entrance", DoorKey("i01 door (3488,736)") & PX)   # door -> I-3/I-1 Entrance door constraint site   expert adds: MODEL
 #   <- I-3
 LOCATIONS["I-1: Weapon Energy L (2)"] = Spot("i01/i-3-entrance", MODEL)
 # region Left Area
@@ -1503,7 +1503,7 @@ LOCATIONS["I-1: E-Crystal L"] = Spot("i01/platform", True_())
 ENTRANCES["i01: tower-interior -> left-area"] = Edge("i01/tower-interior", "i01/left-area", HU)   # conn -> Left Area
 ENTRANCES["i01: tower-interior -> i-2-entrance"] = Edge("i01/tower-interior", "i01/i-2-entrance", FX)   # conn -> I-2 Entrance
 ENTRANCES["i01: tower-interior -> dark-room-1"] = Edge("i01/tower-interior", "i01/dark-room-1", PX)   # conn -> Dark Room 1   expert adds: MODEL
-ENTRANCES["i01 door (1920,928)"] = Edge("i01/tower-interior", "i01/dark-room-1", True_())   # internal -> Dark Room 1
+ENTRANCES["i01 door (1920,928)"] = Edge("i01/tower-interior", "i01/dark-room-1", PX)   # internal -> Dark Room 1   expert adds: MODEL
 LOCATIONS["I-1: Weapon Energy L"] = Spot("i01/tower-interior", True_())
 
 # --- I-2 [i02]

@@ -38,7 +38,7 @@ PX2 = (
 MODEL = HasAny("Model OX", "Model X", "Model ZX") | HX | FX | LX | PX   # any model but the human form
 ALL6 = Has("Model X") & Has("Model ZX") & HX & FX & LX & PX   # the six main biometals
 GOAL = GoalRequirement()   # the goal requirements of the YAML, resolved per player
-LAVA_ITEM = Has("Lava Flow Control", options=[OptionFilter(MissionObjectives, 2)])   # the item that slows the lava of Area K, with mission_objectives: items
+LAVA_ITEM = Has("Lava Flow Control", options=[OptionFilter(MissionObjectives, 2)])   # the item that slows the lava of Area K, with mission_objectives: locations_and_items
 SLOW_LAVA = LAVA_ITEM | Has("Lava Flow Slowed", options=[OptionFilter(MissionObjectives, 2, operator="ne")])   # the slow lava asked at no place in particular: its item, or the event of its control
 K_DOOR_SWITCH = (
     Has("Area K Door Switch", options=[OptionFilter(MissionObjectives, 2)])
@@ -391,11 +391,11 @@ REGIONS = [
 ]
 # Event location -> the item it holds; each sits where its anchor location does
 EVENTS = {
+    "Obtained: Biometal Z": "Obtained: Biometal Z",
     "Obtained: Biometal H": "Obtained: Biometal H",
     "Obtained: Biometal L": "Obtained: Biometal L",
     "Obtained: Biometal F": "Obtained: Biometal F",
     "Obtained: Biometal P": "Obtained: Biometal P",
-    "Obtained: Biometal Z": "Obtained: Biometal Z",
     "Cleared: Locate Giro": "Cleared: Locate Giro",
     "Cleared: Pass The Test": "Cleared: Pass The Test",
     "Cleared: Troop Reinforcement": "Cleared: Troop Reinforcement",
@@ -1112,7 +1112,7 @@ ENTRANCES["f03 door (288,1696)"] = Edge("f03/f-2-entrance", "f02/f-3-entrance", 
 ENTRANCES["f03: f-4-entrance -> lower-area"] = Edge("f03/f-4-entrance", "f03/lower-area", True_())   # conn -> Lower Area
 ENTRANCES["f03 door (384,1600)"] = Edge(
     "f03/f-4-entrance", "f04/f-3-entrance", MODEL
-    & Has("Area F Lock Hack", options=[OptionFilter(MissionObjectives, 2)], filtered_resolution=True))   # ?   door -> F-4/F-3 Entrance gate 381 (Area F Lock Hack with mission_objectives: items)   ice cubes next to the event GATE (flag 381, the client opens it; NOT a Blue door)
+    & Has("Area F Lock Hack", options=[OptionFilter(MissionObjectives, 2)], filtered_resolution=True))   # ?   door -> F-4/F-3 Entrance gate 381 (Area F Lock Hack with mission_objectives: locations_and_items)   ice cubes next to the event GATE (flag 381, the client opens it; NOT a Blue door)
 #   <- F-4
 # region Ice Cube Room
 ENTRANCES["f03: ice-cube-room -> upper-area"] = Edge("f03/ice-cube-room", "f03/upper-area", FX)   # conn -> Upper Area
@@ -1305,7 +1305,7 @@ LOCATIONS["G-2: Civilian (2)"] = Spot("g02/7th-floor-room-r-7th-floor-room", HU)
 # region 8th Floor
 ENTRANCES["g02: 8th-floor -> 7th-floor"] = Edge("g02/8th-floor", "g02/7th-floor", True_())   # conn -> 7th Floor
 ENTRANCES["g02 door (656,432)"] = Edge(
-    "g02/8th-floor", "g04/g-2-entrance", Has("Sprinkler Key", options=[OptionFilter(MissionObjectives, 2)], filtered_resolution=True))   # door -> G-4/G-2 Entrance gate 382 (Sprinkler Key with mission_objectives: items)
+    "g02/8th-floor", "g04/g-2-entrance", Has("Sprinkler Key", options=[OptionFilter(MissionObjectives, 2)], filtered_resolution=True))   # door -> G-4/G-2 Entrance gate 382 (Sprinkler Key with mission_objectives: locations_and_items)
 #   <- G-4
 LOCATIONS["G-2: Disk E-16"] = Spot("g02/8th-floor", HX | LX & Has("Cleared: Fight The Mavericks"))
 LOCATIONS["G-2: Sprinkler Key"] = Spot(

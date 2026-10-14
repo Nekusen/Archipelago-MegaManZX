@@ -61,7 +61,7 @@ CONST_TRUE = ("TRUE", "ANY", "FREE")
 CONST_FALSE = ("FALSE", "NEVER", "IMPOSSIBLE")
 
 # The lava of Area K set to slow, the door of K-1 unlocked and the bridge of D-1 lowered: an
-# item with mission_objectives: items, else the event of the Lava Flow Control of K-1, of the
+# item with mission_objectives: locations_and_items, else the event of the Lava Flow Control of K-1, of the
 # switch of K-4 and of the switch of D-1; the bridge is down from the start with the option off.
 SLOW_LAVA = "SLOW_LAVA"
 K_DOOR_SWITCH = "K_DOOR_SWITCH"
@@ -1338,7 +1338,7 @@ MACRO_NOTES = {
     "MODEL": "any model but the human form",
     "ALL6": "the six main biometals",
     "GOAL": "the goal requirements of the YAML, resolved per player",
-    "LAVA_ITEM": "the item that slows the lava of Area K, with mission_objectives: items",
+    "LAVA_ITEM": "the item that slows the lava of Area K, with mission_objectives: locations_and_items",
     SLOW_LAVA: "the slow lava asked at no place in particular: its item, or the event of its control",
     K_DOOR_SWITCH: "the door of K-1 to its Sub Tank: its item, or the event of the switch of K-4",
     D_BRIDGE: "the bridge of D-1: its item, the event of its switch with checks, down from the start when off",
@@ -1589,7 +1589,7 @@ def _edge_comment(world, doc, d, dst_rid) -> str:
         text += "  gate %d" % d["gate"]
         item = world["story"]["gate_items"].get(d["gate"])
         if item:
-            text += " (%s with mission_objectives: items)" % item
+            text += " (%s with mission_objectives: locations_and_items)" % item
     if d["kind"] == "warp" and d["src"] == world["hub"]:
         item = world["transerver_access"].get(d["dst"])
         text += "  needs %s" % item if item else "  no Transport destination: never"

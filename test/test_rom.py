@@ -640,7 +640,7 @@ class TestMissionSection(unittest.TestCase):
 
 
 class TestStorySection(unittest.TestCase):
-    """mission_objectives: items. The Report gate, the door and menu flags, and the room literals."""
+    """mission_objectives: locations_and_items. The Report gate, the door and menu flags, and the room literals."""
 
     def test_layout(self) -> None:
         section = story.build_section()
@@ -763,7 +763,7 @@ class TestStorySection(unittest.TestCase):
         """The other modes leave the ARM9 and the rooms alone."""
         class Untouched:
             def __getattr__(self, name):
-                raise AssertionError("patched without mission_objectives: items")
+                raise AssertionError("patched without mission_objectives: locations_and_items")
         story.patch_story_items(Untouched(), False)
         story.patch_story_rooms(Untouched(), False)
 

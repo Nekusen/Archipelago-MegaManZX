@@ -68,7 +68,7 @@ for _v in LOCATIONS.values():
     elif _det and _det[0] in ("all", "any"):
         _detect_addrs += [a for a, _ in _det[1]]
 # Events whose effect is an item of the pool: the game marks them in a byte of the pickup
-# table section instead, and with mission_objectives: items that bit is their detection.
+# table section instead, and with mission_objectives: locations_and_items that bit is their detection.
 STORY_DONE_ADDR = PICKUP_TABLE_ADDR + STORY_DONE_OFF
 STORY_DONE_DETECT = {LOCATIONS[n]["id"]: ["bit", STORY_DONE_ADDR, bit] for n, bit in STORY_DONE_BITS.items()}
 _detect_addrs.append(STORY_DONE_ADDR)
@@ -262,7 +262,7 @@ STORY_ITEM_BITS = {n: (0 if v["grant"][0] == "story" else STORY_GATES_OFF - STOR
                        [int(b) for b in v["grant"][1]])
                    for n, v in ITEMS.items() if v["grant"][0] in ("story", "story_gate")}
 STORY_GATE_BITS = frozenset(tuple(EVENT_GATES[flag]) for flag in STORY_GATE_ITEMS)
-# ... and the ones a switch of the player opens, with mission_objectives on checks or on items
+# ... and the ones a switch of the player opens, with mission_objectives on, in either mode
 STORY_SWITCH_GATE_BITS = frozenset(tuple(EVENT_GATES[flag]) for flag in EVENT_GATES_STORY)
 # Items that do to an area what an event of it did: item -> (area letter, the area flags
 # the client keeps set while the player is there)

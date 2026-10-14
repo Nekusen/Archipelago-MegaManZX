@@ -31,13 +31,13 @@ DEFERRED_CATEGORIES = ("quest", "level4")
 
 # mission_objectives: the story objects and events are locations in both modes; the events
 # that open a gate only when an item opens it instead.
-STORY_OFF, STORY_CHECKS, STORY_ITEMS = "off", "checks", "items"
+STORY_OFF, STORY_CHECKS, STORY_ITEMS = "off", "locations_only", "locations_and_items"
 STORY_CATEGORY = "story"
 STORY_GATE = "gate"
 
 
 def story_mode(options) -> str:
-    """The mission_objectives option as a key: off, checks or items."""
+    """The mission_objectives option as a key: off, locations_only or locations_and_items."""
     return options.mission_objectives.current_key
 
 

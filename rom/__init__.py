@@ -29,8 +29,8 @@ AP_MARKER_SLOT_MAX = 63                   # bytes of UTF-8, then a NUL
 AP_MARKER_SEED_OFF = 0x50
 AP_MARKER_SEED_MAX = 31
 CFG_HU_IN_POOL = 0x01                     # mmzx_cfg.bin byte 0, bit 0
-CFG_STORY_ITEMS = 0x02                    # bit 1: mission_objectives is items
-CFG_STORY_ON = 0x04                       # bit 2: mission_objectives is checks or items
+CFG_STORY_ITEMS = 0x02                    # bit 1: mission_objectives is locations_and_items
+CFG_STORY_ON = 0x04                       # bit 2: mission_objectives is on, in either mode
 
 
 class MMZXPatchExtension(APPatchExtension):

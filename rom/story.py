@@ -54,7 +54,7 @@ STORY_OVERLAY_PATCH = {
     98: [(0x02195584, "cc451002", "461c1902"),   # K-4, the two lava walls: bit 0 of the byte after the literal
          (0x021956BC, "cc451002", "461c1902")],
 }
-# D-1, the bridge, with mission_objectives on checks or on items: each side of the raised bridge
+# D-1, the bridge, with mission_objectives on, in either mode: each side of the raised bridge
 # keeps whoever walks in on that side, and the switch answers a shot in any mission. On checks
 # the shot lowers the bridge; on items it only marks the switch, and the bridge is the item's.
 BRIDGE_OVERLAY = 58
@@ -116,7 +116,7 @@ def gate_literal(off: int) -> str:
 
 
 def patch_story_items(arm9: Arm9, enabled: bool) -> None:
-    """With mission_objectives: items, gate the Reports and point the doors and the menu at the items held."""
+    """With mission_objectives: locations_and_items, gate the Reports and point the doors and the menu at the items held."""
     if not enabled:
         return
     assert MISSION_SECTION_RAM + MISSION_SECTION_LEN <= STORY_SECTION_RAM
@@ -131,7 +131,7 @@ def patch_story_items(arm9: Arm9, enabled: bool) -> None:
 
 
 def patch_story_rooms(rom: bytearray, enabled: bool) -> None:
-    """With mission_objectives: items, make the rooms follow the items: Giro's scene, the generator of E-3,
+    """With mission_objectives: locations_and_items, make the rooms follow the items: Giro's scene, the generator of E-3,
     the doors of F-3 and K-1 and the lava of K-4."""
     if not enabled:
         return
@@ -158,6 +158,6 @@ def bridge_patches(by_item: bool) -> list[tuple[int, str, str]]:
 
 
 def patch_bridge(rom: bytearray, enabled: bool, by_item: bool) -> None:
-    """With mission_objectives on, leave the bridge of D-1 to its switch (checks) or to its item (items)."""
+    """With mission_objectives on, leave the bridge of D-1 to its switch (locations_only) or to its item (locations_and_items)."""
     if enabled:
         patch_overlay(rom, BRIDGE_OVERLAY, bridge_patches(by_item))

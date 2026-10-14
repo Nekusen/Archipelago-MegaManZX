@@ -40,7 +40,7 @@ Items:
 - Four Life Ups, four Sub Tanks and the eight ITEM B chips.
 - The eight usable items of the pause menu (ITEM A): Cake, Orange, Candy, Bread, Apple, E Tank, W Tank and
   Smelling Salts.
-- With `mission_objectives: items`, the story objects (four Computer Chips, the Stuffed Animal and the Data Disks 1, 2
+- With `mission_objectives: locations_and_items`, the story objects (four Computer Chips, the Stuffed Animal and the Data Disks 1, 2
   and 3) and what six story events do (Area F Lock Hack, Sprinkler Key, Lava Flow Control, Area K Door Switch,
   Area D Bridge and Area E Power Shutdown).
 - Passwords, with `area_m_access: passwords`.
@@ -104,7 +104,7 @@ Locations:
 - All bosses are spawned from the beginning, and you can start the fight with them from both sides.
   - The exception for this rule are Rayfly (B-2) and Giro (D-2).
     - Rayfly requires you to get the nearest "Computer Chip" to the boss area to spawn the boss.
-      With `mission_objectives: items` it is the Computer Chip item that spawns it, not the ones lying in Area B.
+      With `mission_objectives: locations_and_items` it is the Computer Chip item that spawns it, not the ones lying in Area B.
     - Giro requires beating both mini-bosses in the area to spawn
 - The MISSION tab of the pause menu gains a fast travel function by pressing "Y". It lets you travel to Transerver locations you've unlocked.
 - About Area X:
@@ -116,10 +116,10 @@ Locations:
     - This means you don't need to beat the mini-boss in this area 
   - The G-2 door to G-4
     - These changes mean you don't have to rescue anyone in area G 
-  - With `mission_objectives: items` the F-3 and G-2 doors are not open from the start: each opens with its item.
+  - With `mission_objectives: locations_and_items` the F-3 and G-2 doors are not open from the start: each opens with its item.
   - The M-1 seal (which normally requires all models), unless `area_m_access` closes it (see below)
   - The D-1 bridge
-    - With `mission_objectives` on `checks` or `items` it starts raised (see below).
+    - With `mission_objectives` on `locations_only` or `locations_and_items` it starts raised (see below).
   - The sand fall that hides the pit from K-1 to K-2
   - The D-3 ladder up to the walkway that leads to Area O.
 - Troop Reinforcement can be started from D-1, D-2 or D-3 without the base cutscene.
@@ -135,11 +135,11 @@ Locations:
 
 With `mission_objectives` the objects and events of the story missions become checks.
 
-- `checks`: picking up a Computer Chip, talking to each guardian of Pass The Test, getting the Stuffed Animal, using the
+- `locations_only`: picking up a Computer Chip, talking to each guardian of Pass The Test, getting the Stuffed Animal, using the
   terminal of F-3, rescuing each person of Area G, destroying the generator of E-3, setting the lava control of K-1,
   stepping on the door switch of K-4, shooting the bridge switch of D-1 and picking up the Data Disks of J-5 and L-4
   each send a check. Nothing else changes, except that the bridge of D-1 starts raised until you shoot its switch.
-- `items`: the same, and what those things gave is now an item of the pool.
+- `locations_and_items`: the same, and what those things gave is now an item of the pool.
   - The Report of a mission needs its object: a Computer Chip for Locate Giro, the Stuffed Animal for Pass The Test and
     the Data Disk 1, 2 or 3 for Find The Survivors, Recover The Disk and Protect The Lab. The objective of the mission is
     still needed. The object stays with you after the Report, so a mission played again can be reported again.

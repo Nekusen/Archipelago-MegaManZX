@@ -2952,6 +2952,55 @@
       "filtered_resolution": false,
       "children": [
        {
+        "rule": "HasAny",
+        "options": [],
+        "filtered_resolution": false,
+        "args": {
+         "item_names": [
+          "Model OX",
+          "Model X",
+          "Model ZX"
+         ]
+        }
+       },
+       {
+        "rule": "Or",
+        "options": [],
+        "filtered_resolution": false,
+        "children": [
+         {
+          "rule": "Has",
+          "options": [
+           {
+            "option": "worlds.mmzx.options.ProgressiveModels",
+            "value": 1,
+            "operator": "eq"
+           }
+          ],
+          "filtered_resolution": false,
+          "args": {
+           "item_name": "Progressive Model HX",
+           "count": 1
+          }
+         },
+         {
+          "rule": "Has",
+          "options": [
+           {
+            "option": "worlds.mmzx.options.ProgressiveModels",
+            "value": 0,
+            "operator": "eq"
+           }
+          ],
+          "filtered_resolution": false,
+          "args": {
+           "item_name": "Model HX",
+           "count": 1
+          }
+         }
+        ]
+       },
+       {
         "rule": "Or",
         "options": [],
         "filtered_resolution": false,
@@ -2989,22 +3038,78 @@
         ]
        },
        {
-        "rule": "Has",
+        "rule": "Or",
         "options": [],
         "filtered_resolution": false,
-        "args": {
-         "item_name": "Model X",
-         "count": 1
-        }
+        "children": [
+         {
+          "rule": "Has",
+          "options": [
+           {
+            "option": "worlds.mmzx.options.ProgressiveModels",
+            "value": 1,
+            "operator": "eq"
+           }
+          ],
+          "filtered_resolution": false,
+          "args": {
+           "item_name": "Progressive Model LX",
+           "count": 1
+          }
+         },
+         {
+          "rule": "Has",
+          "options": [
+           {
+            "option": "worlds.mmzx.options.ProgressiveModels",
+            "value": 0,
+            "operator": "eq"
+           }
+          ],
+          "filtered_resolution": false,
+          "args": {
+           "item_name": "Model LX",
+           "count": 1
+          }
+         }
+        ]
        },
        {
-        "rule": "Has",
+        "rule": "Or",
         "options": [],
         "filtered_resolution": false,
-        "args": {
-         "item_name": "Model ZX",
-         "count": 1
-        }
+        "children": [
+         {
+          "rule": "Has",
+          "options": [
+           {
+            "option": "worlds.mmzx.options.ProgressiveModels",
+            "value": 1,
+            "operator": "eq"
+           }
+          ],
+          "filtered_resolution": false,
+          "args": {
+           "item_name": "Progressive Model PX",
+           "count": 1
+          }
+         },
+         {
+          "rule": "Has",
+          "options": [
+           {
+            "option": "worlds.mmzx.options.ProgressiveModels",
+            "value": 0,
+            "operator": "eq"
+           }
+          ],
+          "filtered_resolution": false,
+          "args": {
+           "item_name": "Model PX",
+           "count": 1
+          }
+         }
+        ]
        }
       ]
      }
@@ -17341,6 +17446,38 @@
       "options": [],
       "filtered_resolution": false,
       "args": {}
+     }
+    },
+    "d02 warp after Troop Reinforcement": {
+     "from": "d02/boss-room",
+     "to": "x02",
+     "rule": {
+      "rule": "And",
+      "options": [],
+      "filtered_resolution": false,
+      "children": [
+       {
+        "rule": "True_",
+        "options": [
+         {
+          "option": "worlds.mmzx.options.IncludeWarpsInLogic",
+          "value": 1,
+          "operator": "eq"
+         }
+        ],
+        "filtered_resolution": false,
+        "args": {}
+       },
+       {
+        "rule": "Has",
+        "options": [],
+        "filtered_resolution": false,
+        "args": {
+         "item_name": "Cleared: Troop Reinforcement",
+         "count": 1
+        }
+       }
+      ]
      }
     }
    },
@@ -75843,6 +75980,38 @@
       "options": [],
       "filtered_resolution": false,
       "args": {}
+     }
+    },
+    "o02 warp after Repel The Army": {
+     "from": "o02/boss-room",
+     "to": "x02",
+     "rule": {
+      "rule": "And",
+      "options": [],
+      "filtered_resolution": false,
+      "children": [
+       {
+        "rule": "True_",
+        "options": [
+         {
+          "option": "worlds.mmzx.options.IncludeWarpsInLogic",
+          "value": 1,
+          "operator": "eq"
+         }
+        ],
+        "filtered_resolution": false,
+        "args": {}
+       },
+       {
+        "rule": "Has",
+        "options": [],
+        "filtered_resolution": false,
+        "args": {
+         "item_name": "Cleared: Repel The Army",
+         "count": 1
+        }
+       }
+      ]
      }
     }
    },

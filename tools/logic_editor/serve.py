@@ -139,6 +139,7 @@ class WorldCache:
             "start_rooms": sorted(set(start_rooms)),
             "hub_floor_y": world["hub_floor_y"],
             "transerver_access": world["transerver_access"],
+            "mission_warps": world["story"]["warps"],
             "event_gates_open": world["event_gates_open"],
             "gate_edges": gate_edges,
             # boss roster for the arena tag; the requirement comes from the YAML

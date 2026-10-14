@@ -6,7 +6,7 @@ rewrites it on every save, or run tools/check_logic.py; the tests fail when it f
 from rule_builder.options import OptionFilter
 from rule_builder.rules import CanReachLocation, CanReachRegion, Has, HasAny, HasFromList, True_
 
-from ..options import AreaMAccess, HuInPool, MissionObjectives, ProgressiveModels, SkipBossRush
+from ..options import AreaMAccess, HuInPool, IncludeWarpsInLogic, MissionObjectives, ProgressiveModels, SkipBossRush
 from .builder import BossRequirement, DoorKey, GoalRequirement, LavaCarriedTo, ReachedAtLeast, SealRequirement, Edge, Spot
 
 # The atoms the world answers, the model aliases and the seal
@@ -501,14 +501,14 @@ LOCATIONS["A-2: Sub Tank"] = Spot("a02/upper-area", HX | PX)   # expert adds: LX
 
 # --- A-3 [a03]
 # region Main
-ENTRANCES["a03: main -> h-4-entrance"] = Edge("a03", "a03/h-4-entrance", FX | Has("Model OX"))   # conn -> H-4 Entrance
+ENTRANCES["a03: main -> h-4-entrance"] = Edge("a03", "a03/h-4-entrance", FX | Has("Model OX"))   # conn -> H-4 Entrance   expert adds: HX
 ENTRANCES["a03 door (1632,576)"] = Edge("a03", "h01", DoorKey("a03 door (1632,576)"))   # door -> H-1 door constraint site
 ENTRANCES["a03 door (288,912)"] = Edge("a03", "a01/a-3-entrance", Has("Yellow Card Key"))   # door -> A-1/A-3 Entrance
 #   <- A-1, H-1
-LOCATIONS["A-3: Apple"] = Spot("a03", FX | Has("Model X") | Has("Model ZX"))
+LOCATIONS["A-3: Apple"] = Spot("a03", MODEL)
 LOCATIONS["A-3: Disk E-46"] = Spot("a03", True_())
 # region H-4 Entrance
-ENTRANCES["a03: h-4-entrance -> main"] = Edge("a03/h-4-entrance", "a03", FX | Has("Model OX"))   # conn -> Main
+ENTRANCES["a03: h-4-entrance -> main"] = Edge("a03/h-4-entrance", "a03", FX | Has("Model OX"))   # conn -> Main   expert adds: HX
 ENTRANCES["a03 door (2096,880)"] = Edge("a03/h-4-entrance", "h04/a-3-entrance", Has("Purple Card Key") & FX)   # ?   door -> H-4/A-3 Entrance   Fire thorns (118,55) in the corridor to the Purple door (131,55): burn them. a04->m01: the "seal of the 6 biometals" of M-1 was a myth: a Stop The Dig cutscene opens it and the client sets its flag (395); the ovl104 layers are cosmetic. No ALL6 here (the goal requires it at D-2 -> D-4).
 #   <- H-4
 LOCATIONS["A-3: Weapon Energy L"] = Spot("a03/h-4-entrance", True_())
@@ -817,6 +817,8 @@ LOCATIONS["D-1: Life Up"] = Spot("d01/inside-switch-door", MODEL)   # "any trans
 ENTRANCES["d02: boss-room -> middle-area"] = Edge("d02/boss-room", "d02/middle-area", MODEL)   # conn -> Middle Area
 ENTRANCES["d02: boss-room -> hub-entrance"] = Edge("d02/boss-room", "d02/hub-entrance", True_())   # conn -> Hub Entrance
 ENTRANCES["d02 door (7808,544)"] = Edge("d02/boss-room", "d04/d-2-entrance", GATE_225)   # door -> D-4/D-2 Entrance gate 225
+ENTRANCES["d02 warp after Troop Reinforcement"] = Edge(
+    "d02/boss-room", "x02", True_(options=[OptionFilter(IncludeWarpsInLogic, 1)]) & Has("Cleared: Troop Reinforcement"))   # mission warp -> X-2 with include_warps_in_logic
 #   <- D-4
 LOCATIONS["Mission - Troop Reinforcement"] = Spot("d02/boss-room", MODEL)
 LOCATIONS["Cleared: Troop Reinforcement"] = LOCATIONS["Mission - Troop Reinforcement"]   # event
@@ -2056,6 +2058,8 @@ ENTRANCES["o01 door (4320,736)"] = Edge("o01/o-2-entrance", "o02/o-1-entrance", 
 # --- O-2 [o02]
 # region Boss Room   [ARENA: Prometheus & Pandora]
 ENTRANCES["o02: boss-room -> east-segment"] = Edge("o02/boss-room", "o02/east-segment", MODEL)   # conn -> East Segment
+ENTRANCES["o02 warp after Repel The Army"] = Edge(
+    "o02/boss-room", "x02", True_(options=[OptionFilter(IncludeWarpsInLogic, 1)]) & Has("Cleared: Repel The Army"))   # mission warp -> X-2 with include_warps_in_logic
 LOCATIONS["Mission - Repel The Army"] = Spot("o02/boss-room", MODEL)
 LOCATIONS["Cleared: Repel The Army"] = LOCATIONS["Mission - Repel The Army"]   # event
 # region East Segment
@@ -2098,7 +2102,7 @@ LOCATIONS["X-1: Smelling Salts"] = Spot("x01", Has("Cleared: Troop Reinforcement
 # --- X-2 [x02]
 # region Main
 ENTRANCES["x02 door (736,512)"] = Edge("x02", "x01", True_())   # door -> X-1
-#   <- X-1
+#   <- X-1, O-2 (mission warp), D-2 (mission warp)
 LOCATIONS["X-2: Disk O-16"] = Spot("x02", True_())
 LOCATIONS["X-2: Disk O-3"] = Spot("x02", True_())
 LOCATIONS["X-2: W Tank"] = Spot("x02", MODEL)

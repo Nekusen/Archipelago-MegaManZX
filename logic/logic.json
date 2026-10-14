@@ -136,13 +136,7 @@
    "req": {
     "normal": [
      [
-      "FX"
-     ],
-     [
-      "X"
-     ],
-     [
-      "ZX"
+      "MODEL"
      ]
     ]
    },
@@ -3218,6 +3212,11 @@
      "from": "h-4-entrance",
      "note": "",
      "req": {
+      "expert": [
+       [
+        "HX"
+       ]
+      ],
       "normal": [
        [
         "FX"
@@ -3234,6 +3233,11 @@
      "from": "main",
      "note": "",
      "req": {
+      "expert": [
+       [
+        "HX"
+       ]
+      ],
       "normal": [
        [
         "FX"

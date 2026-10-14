@@ -270,9 +270,11 @@ function inspectCheckNode(el, n) {
   const kind = catLabel(n.cat) + (n.placed ? ' · placed by hand' : '') + (loc.detect ? '' : ' · no detection');
   el.append(h('h2', null, n.full), h('div', { class: 'kind' }, swatch(n.color), kind));
   const others = n.placed ? placementsOf(n.id).filter(q => q.room !== S.room).map(q => roomLabel(q.room)) : [];
+  const warp = (W.mission_warps || {})[n.id.replace(/^Mission - /, '')];
   el.append(kv([
     ['Room', roomLabel(S.room)], ['Position', n.pos[0] + ', ' + n.pos[1]], ['Area tag', n.placed ? loc.room : null],
     ['Also in', others.length ? others.join(', ') + ' (any of them counts: OR)' : null],
+    ['Warps to', warp ? roomLabel(warp) + ' on completion: an entrance from this region with include_warps_in_logic' : null],
   ]));
   el.append(regionSelectField(n));
   checkReqFields(el, n.id, 'No requirement (being in the region is enough)');

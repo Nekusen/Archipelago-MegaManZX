@@ -80,10 +80,37 @@ def room_edits(locks: dict[str, str]) -> dict[str, dict]:
     return rooms
 
 
-def grown_table_ram(room: str) -> int:
+def grown_table_ram(info: dict) -> int:
     """RAM address of a room's longer template table: after its code and bss, on a word."""
-    info = ROOMS[room]
     return ROOM_OVERLAY_SLOT_RAM + ((info["size"] + info["bss"] + 3) & ~3)
+
+
+def grow_template_table(rom: bytearray, info: dict, writes, templates, moves) -> None:
+    """Store a room's overlay with its template table copied to its end and `templates` after it.
+
+    `writes` are (RAM, old, new) templates rewritten in place, `moves` the (RAM of the slot
+    field, old slot, new slot) of the coordinates entries that take the new templates. The old
+    bss becomes zeros of the file, so what the code keeps there still starts clear.
+    """
+    ram, code = nds.overlay_code(rom, info["overlay"])
+    if len(code) != info["size"] or nds.overlay_bss_size(rom, info["overlay"]) != info["bss"]:
+        raise ValueError("MMZX: overlay %d is not the one of the original ROM. Wrong ROM?" % info["overlay"])
+    buf = bytearray(code)
+    for addr, old, new in writes:
+        off = addr - ram
+        if bytes(buf[off:off + TEMPLATE_LEN]) != old:
+            raise ValueError("MMZX: unexpected door template at 0x%08X. Wrong ROM?" % addr)
+        buf[off:off + TEMPLATE_LEN] = new
+    table = info["slots"] - ram
+    table = bytes(buf[table:table + info["slot_count"] * TEMPLATE_LEN])
+    buf += bytes(grown_table_ram(info) - ram - len(buf))
+    buf += table + b"".join(templates)
+    for addr, old_slot, new_slot in moves:
+        off = addr - ram
+        if struct.unpack_from("<H", buf, off)[0] != old_slot:
+            raise ValueError("MMZX: unexpected door entry at 0x%08X. Wrong ROM?" % addr)
+        struct.pack_into("<H", buf, off, new_slot)
+    nds.store_overlay(rom, info["overlay"], bytes(buf), bss_size=0)
 
 
 def has_up_door(locks: dict[str, str]) -> bool:
@@ -97,7 +124,7 @@ def patch_door_tables(arm9: Arm9, locks: dict[str, str]) -> None:
     for room, edit in room_edits(locks).items():
         if edit["templates"]:
             info = ROOMS[room]
-            arm9.write(info["slots_pointer"], struct.pack("<I", grown_table_ram(room)),
+            arm9.write(info["slots_pointer"], struct.pack("<I", grown_table_ram(info)),
                        struct.pack("<I", info["slots"]))
     if has_up_door(locks):
         assert DOOR_CLOSED_CAVE_RAM % 4 == 0 and len(DOOR_CAVES) % 4 == 0
@@ -117,23 +144,4 @@ def patch_door_overlays(rom: bytearray, locks: dict[str, str]) -> None:
         if not edit["templates"]:
             nds.patch_overlay(rom, info["overlay"], edit["writes"])
             continue
-        ram, code = nds.overlay_code(rom, info["overlay"])
-        if len(code) != info["size"] or nds.overlay_bss_size(rom, info["overlay"]) != info["bss"]:
-            raise ValueError("MMZX: overlay %d is not the one of the original ROM. Wrong ROM?" % info["overlay"])
-        buf = bytearray(code)
-        for addr, old, new in edit["writes"]:
-            off = addr - ram
-            if bytes(buf[off:off + TEMPLATE_LEN]) != old:
-                raise ValueError("MMZX: unexpected door template at 0x%08X. Wrong ROM?" % addr)
-            buf[off:off + TEMPLATE_LEN] = new
-        table = info["slots"] - ram
-        table = bytes(buf[table:table + info["slot_count"] * TEMPLATE_LEN])
-        # the old bss becomes zeros of the file, so what the code keeps there still starts clear
-        buf += bytes(grown_table_ram(room) - ram - len(buf))
-        buf += table + b"".join(edit["templates"])
-        for addr, old_slot, new_slot in edit["moves"]:
-            off = addr - ram
-            if struct.unpack_from("<H", buf, off)[0] != old_slot:
-                raise ValueError("MMZX: unexpected door entry at 0x%08X. Wrong ROM?" % addr)
-            struct.pack_into("<H", buf, off, new_slot)
-        nds.store_overlay(rom, info["overlay"], bytes(buf), bss_size=0)
+        grow_template_table(rom, info, edit["writes"], edit["templates"], edit["moves"])

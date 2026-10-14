@@ -1,11 +1,12 @@
-"""The goal requirements in game: the gate to the final area, the disks' database entries,
+"""The goal requirements in game: the door of the final boss, the disks' database entries,
 the progress lines of the pause menu and the /mmzx_goal report."""
 
 from typing import TYPE_CHECKING
 import worlds._bizhawk as bizhawk
 
-from ..data import EVENT_GATES, EVENT_GATES_GOAL, GOAL_LINE_ADDR, GOAL_LINE_GLYPHS, SECRET_DISK_ENTRIES
-from ..goal import COUNTED_MISSIONS, MISSION_PREFIX
+from ..data import (EVENT_GATES, EVENT_GATES_GOAL, GOAL_LINE_ADDR, GOAL_LINE_GLYPHS, OMEGA_GATE,
+                    SECRET_DISK_ENTRIES, ZERO_BOSSES)
+from ..goal import COUNTED_MISSIONS, GOAL_OMEGA, MISSION_PREFIX
 from ..rom.ui import GOAL_LINE_BUF_LEN, PAUSE_TEXT_LINE_BREAK
 from .addresses import DISK_ITEM, DOM, SIX_MODELS
 from .notices import encode_text
@@ -15,6 +16,9 @@ if TYPE_CHECKING:
     from . import MMZXClient
 
 PART_GAP = "  "     # between two requirements sharing a line
+# What the goal opens, by goal: the Slither gate of D-2, or the door of Omega Zero's arena
+OPEN_NOTICES = {False: "final area open", True: "Omega Zero door open"}
+DOOR_NAMES = {False: "Gate to the final area", True: "Door of Omega Zero's arena"}
 
 
 def mission_label(name: str) -> str:
@@ -32,6 +36,11 @@ def missions_completed(window: ProgressWindow) -> set[str]:
     return done
 
 
+def mutos_beaten(window: ProgressWindow) -> set[str]:
+    """The Mega Man Zero bosses whose beaten flag is set, by name."""
+    return {v["name"] for v in ZERO_BOSSES.values() if window.bit(*v["flag"])}
+
+
 class GoalRequirement:
     """The requirement resolved by the generator, read from slot_data."""
 
@@ -39,6 +48,7 @@ class GoalRequirement:
         g = slot_data.get("goal_requirements")
         if g is None:      # a seed from before the option: the six models
             g = {"models": list(SIX_MODELS), "models_count": len(SIX_MODELS)}
+        self.omega = int(slot_data.get("goal", 0)) == GOAL_OMEGA
         self.models = tuple(str(m) for m in g.get("models", ()))
         copies = [int(c) for c in g.get("models_copies", ())]
         self.copies = {m: copies[i] if i < len(copies) else 1 for i, m in enumerate(self.models)}
@@ -49,6 +59,7 @@ class GoalRequirement:
         n = len(SECRET_DISK_ENTRIES)
         self.disk_order = order if sorted(order) == list(range(n)) else list(range(n))
         self.missions_required = int(g.get("missions", 0))
+        self.mutos_required = int(g.get("mutos", 0))
 
     @property
     def wants_models(self) -> bool:
@@ -62,20 +73,29 @@ class GoalRequirement:
     def wants_missions(self) -> bool:
         return self.missions_required > 0
 
+    @property
+    def wants_mutos(self) -> bool:
+        return self.mutos_required > 0
+
     def models_owned(self, counts: dict[str, int]) -> int:
         return sum(1 for m in self.models if counts.get(m, 0) >= self.copies.get(m, 1))
 
     def disks_owned(self, counts: dict[str, int]) -> int:
         return counts.get(DISK_ITEM, 0)
 
-    def met(self, counts: dict[str, int], missions: int) -> bool:
+    def met(self, counts: dict[str, int], missions: int, mutos: int = 0) -> bool:
         return ((not self.wants_models or self.models_owned(counts) >= self.models_count)
                 and (not self.wants_disks or self.disks_owned(counts) >= self.disks_required)
-                and (not self.wants_missions or missions >= self.missions_required))
+                and (not self.wants_missions or missions >= self.missions_required)
+                and (not self.wants_mutos or mutos >= self.mutos_required))
 
     def gate_bits(self) -> set[tuple[int, int]]:
-        """The two flags of the Slither gate, D-2 to D-4."""
-        return {tuple(EVENT_GATES[fl]) for fl in EVENT_GATES_GOAL}
+        """The flags of the door the goal opens: the Slither gate, or Omega Zero's door."""
+        flags = [OMEGA_GATE] if self.omega else EVENT_GATES_GOAL
+        return {tuple(EVENT_GATES[fl]) for fl in flags}
+
+    def open_notice(self) -> tuple[str, str, str]:
+        return ("Goal: ", OPEN_NOTICES[self.omega], "")
 
     def disk_bits(self, counts: dict[str, int]) -> tuple[set[tuple[int, int]], set[tuple[int, int]]]:
         """(entries to light, every entry): the first disks received, in the seed's order."""
@@ -83,7 +103,7 @@ class GoalRequirement:
         wanted = {tuple(SECRET_DISK_ENTRIES[i]) for i in self.disk_order[:n]}
         return wanted, {tuple(e) for e in SECRET_DISK_ENTRIES}
 
-    def progress_lines(self, counts: dict[str, int], missions: int) -> tuple[str, str]:
+    def progress_lines(self, counts: dict[str, int], missions: int, mutos: int = 0) -> tuple[str, str]:
         """(first line, second line) of the pause menu, each at most GOAL_LINE_GLYPHS glyphs.
 
         Requirements share a line while they fit. A blank first line keeps the vanilla help.
@@ -91,13 +111,15 @@ class GoalRequirement:
         parts = []
         if self.wants_disks:
             width = len(str(self.disks_required))
-            label = "Disks" if (self.wants_models or self.wants_missions) else "Secret Disks"
+            label = "Disks" if (self.wants_models or self.wants_missions or self.wants_mutos) else "Secret Disks"
             parts.append("%s %0*d/%d" % (label, width, self.disks_owned(counts), self.disks_required))
         if self.wants_models:
             parts.append("Models %d/%d" % (self.models_owned(counts), self.models_count))
         if self.wants_missions:
             width = len(str(self.missions_required))
             parts.append("Missions %0*d/%d" % (width, missions, self.missions_required))
+        if self.wants_mutos:
+            parts.append("Mutos %d/%d" % (mutos, self.mutos_required))
         lines: list[str] = []
         for part in parts:
             if lines and len(lines[-1]) + len(PART_GAP) + len(part) <= GOAL_LINE_GLYPHS:
@@ -108,8 +130,8 @@ class GoalRequirement:
             return "", (lines[0] if lines else "")[:GOAL_LINE_GLYPHS]
         return lines[0][:GOAL_LINE_GLYPHS], lines[1][:GOAL_LINE_GLYPHS]
 
-    def report(self, counts: dict[str, int], cleared: set[str] | None) -> list[str]:
-        """Lines for the console; `cleared` is None until the game's flags have been read."""
+    def report(self, counts: dict[str, int], cleared: set[str] | None, beaten: set[str] | None = None) -> list[str]:
+        """Lines for the console; `cleared` and `beaten` are None until the game's flags have been read."""
         out = []
         if self.wants_disks:
             out.append("Secret Disks: %d of %d received (%d in the multiworld)"
@@ -129,11 +151,18 @@ class GoalRequirement:
                 miss = [mission_label(m) for m in COUNTED_MISSIONS if mission_label(m) not in cleared]
                 out.append("Missions: %d of %d completed (missing: %s)" % (
                     len(cleared), self.missions_required, ", ".join(miss) or "none"))
+        if self.wants_mutos:
+            if beaten is None:
+                out.append("Mutos Reploids: %d of the Mega Man Zero bosses required (progress is read in game)"
+                           % self.mutos_required)
+            else:
+                out.append("Mutos Reploids: %d of %d beaten (%s)" % (
+                    len(beaten), self.mutos_required, ", ".join(sorted(beaten)) or "none yet"))
         if not out:
-            out.append("No goal requirement: the gate to the final area is open")
+            out.append("No goal requirement: the %s is open" % DOOR_NAMES[self.omega].lower())
         else:
-            gate = self.met(counts, len(cleared) if cleared is not None else 0)
-            out.append("Gate to the final area: %s" % ("open" if gate else "closed"))
+            gate = self.met(counts, len(cleared) if cleared is not None else 0, len(beaten) if beaten is not None else 0)
+            out.append("%s: %s" % (DOOR_NAMES[self.omega], "open" if gate else "closed"))
         return out
 
 
@@ -153,7 +182,7 @@ def goal_line_bytes(first: str, second: str) -> bytes:
 
 async def sync_goal_line(client: "MMZXClient", ctx, tick: Tick, counts: dict[str, int]) -> None:
     """Keep the pause menu lines equal to the progress; written only when they change."""
-    first, second = client.goal.progress_lines(counts, len(client.missions_cleared or ()))
+    first, second = client.goal.progress_lines(counts, len(client.missions_cleared or ()), len(client.mutos_beaten or ()))
     data = goal_line_bytes(first, second)
     if data == client.goal_line_written:
         return

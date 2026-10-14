@@ -122,6 +122,14 @@ LOCATIONS = {
     'L-4: Data Disk 3': {'id': 13633052, 'category': 'story', 'detect': ['any', [[34620962, 7], [34620871, 4]]], 'room': 'l04', 'pos': [2928, 751], 'status': 'verified', 'story': 'object', 'icon': [60, 155]},
     'K-4: Door Switch': {'id': 13633053, 'category': 'story', 'detect': ['bit', 34620923, 7], 'room': 'k04', 'pos': [288, 1864], 'status': 'verified', 'story': 'event'},
     'D-1: Bridge Switch': {'id': 13633054, 'category': 'story', 'detect': ['bit', 34620923, 3], 'room': 'd01', 'pos': [2270, 552], 'status': 'verified', 'story': 'event'},
+    'N-1: Hellbat Schilt': {'id': 13633280, 'category': 'zero3_boss', 'detect': ['bit', 34620930, 4], 'room': 'n01', 'pos': [3248, 1120], 'status': 'verified', 'boss': 'hellbat_schilt'},
+    "N-1: Blazin' Flizard": {'id': 13633281, 'category': 'zero3_boss', 'detect': ['bit', 34620930, 5], 'room': 'n01', 'pos': [2608, 1136], 'status': 'verified', 'boss': 'blazin_flizard'},
+    'N-1: Fenri Lunaedge': {'id': 13633282, 'category': 'zero4_boss', 'detect': ['bit', 34620930, 6], 'room': 'n01', 'pos': [2352, 1680], 'status': 'verified', 'boss': 'fenri_lunaedge'},
+    'N-1: Noble Mandrago': {'id': 13633283, 'category': 'zero4_boss', 'detect': ['bit', 34620930, 7], 'room': 'n01', 'pos': [3376, 1680], 'status': 'verified', 'boss': 'noble_mandrago'},
+    'N-1: Deathtanz Mantisk': {'id': 13633284, 'category': 'zero3_boss', 'detect': ['bit', 34620931, 0], 'room': 'n01', 'pos': [1584, 1328], 'status': 'verified', 'boss': 'deathtanz_mantisk'},
+    'N-1: Childre Inarabitta': {'id': 13633285, 'category': 'zero3_boss', 'detect': ['bit', 34620931, 1], 'room': 'n01', 'pos': [2096, 1328], 'status': 'verified', 'boss': 'childre_inarabitta'},
+    'N-1: Sol Titanion': {'id': 13633286, 'category': 'zero4_boss', 'detect': ['bit', 34620931, 2], 'room': 'n01', 'pos': [2864, 1712], 'status': 'verified', 'boss': 'sol_titanion'},
+    'N-1: Pegasolta Eclair': {'id': 13633287, 'category': 'zero4_boss', 'detect': ['bit', 34620931, 3], 'room': 'n01', 'pos': [656, 2240], 'status': 'verified', 'boss': 'pegasolta_eclair'},
     'A-1: Disk E-1': {'id': 13633488, 'category': 'disk', 'detect': ['bit', 34620947, 4], 'room': 'a01', 'pos': [7632, 344], 'status': 'verified', 'icon': [1, 51]},
     'F-3: Disk E-2': {'id': 13633489, 'category': 'disk', 'detect': ['bit', 34620947, 5], 'room': 'f03', 'pos': [1984, 628], 'status': 'verified', 'icon': [30, 85]},
     'I-1: Disk E-3': {'id': 13633490, 'category': 'disk', 'detect': ['bit', 34620947, 6], 'room': 'i01', 'pos': [2592, 632], 'status': 'verified', 'icon': [42, 27]},
@@ -399,6 +407,10 @@ ITEMS = {
 # and the D-5 script flags of Serpent's two forms as the alternative.
 GOAL_BITS = [(0x021045CA, 5)]
 GOAL_BITS_SERPENT = [(0x02104602, 2), (0x02104602, 3)]
+# The N-1 script flag of Omega Zero beaten, the goal of defeat_omega_zero, which drops
+# the rooms of the final area and its mission.
+GOAL_BITS_OMEGA = [(0x02104603, 4)]
+FINAL_AREA_ROOMS = ['d04', 'd05']
 
 # The game's own 'disk collected' bits, one per database entry (series B, M, E, O).
 # The ROM patch stops the world's disks from writing them: the client lights one
@@ -872,6 +884,7 @@ TRANSERVER_ACCESS = {
 }
 TRANSERVER_ALWAYS = []
 EVENT_GATES = {
+    63: [0x021045D3, 7],
     191: [0x021045E3, 7],
     205: [0x021045E5, 5],
     221: [0x021045E7, 5],
@@ -884,6 +897,9 @@ EVENT_GATES = {
     768: [0x0210462C, 0],
     769: [0x0210462C, 1],
 }
+# The flag of the arena door of Omega Zero: raised by the client with the goal requirements
+# met under defeat_omega_zero (the patch keys the door to it).
+OMEGA_GATE = 63
 EVENT_GATES_OPEN = [205, 221, 379, 381, 382, 395]
 # With mission_objectives on, these gates of EVENT_GATES_OPEN are the player's to open.
 EVENT_GATES_STORY = [379]
@@ -894,6 +910,18 @@ EVENT_GATES_GOAL = [225, 378]
 SEAL_GATE = 395
 SEAL_TRANSERVER = 'Transerver Access - Area M'
 SEAL_ROOMS = ['m01', 'm02', 'm03', 'n01']
+# The eight Mega Man Zero 3/4 bosses of N-1 (zero3_bosses, zero4_bosses), by boss id:
+# their game, their location, the flag the room script sets when they die and their capsule.
+ZERO_BOSSES = {
+    'hellbat_schilt': {'name': 'Hellbat Schilt', 'game': 3, 'location': 'N-1: Hellbat Schilt', 'flag': [34620930, 4], 'capsule': [1480, 1608]},
+    'blazin_flizard': {'name': "Blazin' Flizard", 'game': 3, 'location': "N-1: Blazin' Flizard", 'flag': [34620930, 5], 'capsule': [1480, 1704]},
+    'fenri_lunaedge': {'name': 'Fenri Lunaedge', 'game': 4, 'location': 'N-1: Fenri Lunaedge', 'flag': [34620930, 6], 'capsule': [1848, 1704]},
+    'noble_mandrago': {'name': 'Noble Mandrago', 'game': 4, 'location': 'N-1: Noble Mandrago', 'flag': [34620930, 7], 'capsule': [1992, 1704]},
+    'deathtanz_mantisk': {'name': 'Deathtanz Mantisk', 'game': 3, 'location': 'N-1: Deathtanz Mantisk', 'flag': [34620931, 0], 'capsule': [1336, 1608]},
+    'childre_inarabitta': {'name': 'Childre Inarabitta', 'game': 3, 'location': 'N-1: Childre Inarabitta', 'flag': [34620931, 1], 'capsule': [1336, 1704]},
+    'sol_titanion': {'name': 'Sol Titanion', 'game': 4, 'location': 'N-1: Sol Titanion', 'flag': [34620931, 2], 'capsule': [1992, 1608]},
+    'pegasolta_eclair': {'name': 'Pegasolta Eclair', 'game': 4, 'location': 'N-1: Pegasolta Eclair', 'flag': [34620931, 3], 'capsule': [1848, 1608]},
+}
 # Warp menu destinations (map badges) and save-only pads (DATA rooms).
 WARP_DESTINATIONS = ['a02', 'b02', 'c02', 'd02', 'e07', 'f05', 'g05', 'i03', 'k04', 'l04', 'm03', 'o02']
 DOORS = [

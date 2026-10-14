@@ -17,7 +17,9 @@ def _norm(s) -> str:
 
 BOSS_BY_KEY = {}
 for _bid, _v in F.BOSSES.items():
-    for _alias in (_bid, _v["name"], _v["room"], F.room_label(_v["room"])):
+    # the Mega Man Zero bosses share N-1 with Omega Zero: the room names him alone
+    _aliases = (_bid, _v["name"]) if _v.get("game") else (_bid, _v["name"], _v["room"], F.room_label(_v["room"]))
+    for _alias in _aliases:
         BOSS_BY_KEY[_norm(_alias)] = _bid
 BOSS_NAMES = [v["name"] for v in F.BOSSES.values()]
 

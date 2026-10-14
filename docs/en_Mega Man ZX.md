@@ -14,8 +14,15 @@ Missions are accepted automatically when you enter their area, and they can be d
 
 ## What is the goal?
 
-Defeat Serpent at the top of Slither Inc. (D-5). The gate from D-2 into the tower opens once you meet all your chosen
-`goal_requirements`. You can pick any number of goal requirements from this list:
+The `goal` option picks the final boss:
+
+- `defeat_serpent` (default): defeat Serpent at the top of Slither Inc. (D-5). The gate from D-2 into the tower opens
+  once you meet all your chosen `goal_requirements`.
+- `defeat_omega_zero`: defeat Omega Zero in N-1. The door of his arena opens once you meet your `goal_requirements`;
+  the rest of Area N is open as always. Slither Inc. stays closed for good and the checks of D-4 and D-5 are not in
+  the game. Area N lies past Area M, so whatever `area_m_access` asks for applies too.
+
+You can pick any number of goal requirements from this list:
 
 - `Biometals`: own `required_models_count` models from the models listed in `required_models`. With `require_full_models` a progressive model
   counts only once you hold both halves.
@@ -23,9 +30,24 @@ Defeat Serpent at the top of Slither Inc. (D-5). The gate from D-2 into the towe
   (30) shuffled into the multiworld. 
 - `Missions`: complete a number `required_missions` out of the 14 story missions available, in any
   order. The skipped intro mission and the final mission do not count.
+- `Mutos Reploid Hunting`: beat `required_mutos_reploids` of the eight Mega Man Zero 3/4 bosses of N-1 (see below).
+  Up to 4 needs one of `zero3_bosses` and `zero4_bosses` on; 5 or more needs both. It needs your Mega Man Zero 3 and/or
+  Zero 4 ROM when you open the patch, like those options.
 
-The STATUS tab of the pause menu shows your progress, and a popup announces the moment the gate opens (you can also check your goal progress using the command `/mmzx_goal` in the
+The STATUS tab of the pause menu shows your progress, and a popup announces the moment the door opens (you can also check your goal progress using the command `/mmzx_goal` in the
 client). `goal_requirements` must list at least one requirement.
+
+## The Mega Man Zero 3 and Zero 4 bosses
+
+In the original game, N-1 holds eight capsules that lead to the bosses of Mega Man Zero 3 (Hellbat Schilt, Blazin'
+Flizard, Deathtanz Mantisk, Childre Inarabitta) and Mega Man Zero 4 (Fenri Lunaedge, Noble Mandrago, Sol Titanion,
+Pegasolta Eclair), open only with that Game Pak in the second slot. With `zero3_bosses` and/or `zero4_bosses` on,
+those capsules are open from the start, no Game Pak needed, and beating each boss is a check (`N-1: Hellbat Schilt`
+and so on). A beaten boss stays beaten, even after the Mysterious Rock. They can be named in `boss_logic`.
+
+**These options need your own Mega Man Zero 3 or Zero 4 (GBA) ROM**, USA, Europe or Japan: the game keeps the sprites
+of those bosses in the cartridge, so the launcher asks for the ROM the first time you open an `.apmmzx` with the
+option on and converts them from it. Only the ROM of a game whose option is on is ever asked for.
 
 ## What items and locations get randomized?
 

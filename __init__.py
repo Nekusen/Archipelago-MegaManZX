@@ -25,13 +25,15 @@ from .regions import create_regions, progression_overrides
 from .rom import MMZXPatch, write_patch_tokens, MMZX_US_MD5
 from .rom.golden import build_image
 from .rom.table import PICKUP_SLOTS, build_table, icon_code
+from .rom.zero import ROM_MD5S as ZERO_ROM_MD5S, ZERO3, ZERO4
 from . import client  # registers the BizHawkClient  # noqa: F401
 from . import tracker  # auto-tab / position icon for Universal Tracker
 
 # Options the slot data carries under their own name: a world rebuilt from it takes these.
 SLOT_DATA_OPTIONS = ("character", "goal", "death_link", "starting_model", "starting_transerver",
                      "progressive_models", "hu_in_pool", "boss_logic", "skip_boss_rush",
-                     "skip_minibosses", "mission_objectives", "include_warps_in_logic", "pickup_checks_1up",
+                     "skip_minibosses", "mission_objectives", "include_warps_in_logic", "zero3_bosses",
+                     "zero4_bosses", "pickup_checks_1up",
                      "pickup_checks_energy", "pickup_checks_weapon", "pickup_checks_crystals",
                      "notify_received", "notify_sent", "notify_style")
 
@@ -44,6 +46,26 @@ class MMZXSettings(settings.Group):
         md5s = [MMZX_US_MD5]
 
     rom_file: RomFile = RomFile(RomFile.copy_to)
+
+    # The two GBA ROMs are read only when a seed has zero3_bosses or zero4_bosses on: the
+    # patcher asks for the missing one then, and never otherwise.
+    class Zero3RomFile(settings.UserFilePath):
+        """Path to the Mega Man Zero 3 (GBA) ROM, USA, Europe or Japan. Asked for only when a
+        seed has zero3_bosses on."""
+        description = "Mega Man Zero 3 (GBA) ROM File"
+        copy_to = "mmz3.gba"
+        md5s = ZERO_ROM_MD5S[ZERO3]
+
+    zero3_rom_file: Zero3RomFile = Zero3RomFile(Zero3RomFile.copy_to)
+
+    class Zero4RomFile(settings.UserFilePath):
+        """Path to the Mega Man Zero 4 (GBA) ROM, USA, Europe or Japan. Asked for only when a
+        seed has zero4_bosses on."""
+        description = "Mega Man Zero 4 (GBA) ROM File"
+        copy_to = "mmz4.gba"
+        md5s = ZERO_ROM_MD5S[ZERO4]
+
+    zero4_rom_file: Zero4RomFile = Zero4RomFile(Zero4RomFile.copy_to)
 
     class UTPackPath(settings.FilePath):
         """Path to the Mega Man ZX tracker pack (mmzx_tracker.zip): Universal
@@ -284,7 +306,8 @@ class MMZXWorld(World):
                            hu_in_pool=bool(self.options.hu_in_pool.value),
                            story_items=story_mode(self.options) == STORY_ITEMS,
                            story_on=story_mode(self.options) != STORY_OFF,
-                           door_sites=self.door_sites)
+                           door_sites=self.door_sites, zero_games=sorted(G.zero_games(self.options)),
+                           omega_goal=G.goal_is_omega(self.options))
         out_name = self.multiworld.get_out_file_name_base(self.player)
         patch.write(os.path.join(output_directory, out_name + patch.patch_file_ending))
 
@@ -323,6 +346,9 @@ class MMZXWorld(World):
             "mission_objectives": story_mode(self.options),
             # logic only: the tracker rebuilds the graph from it, the client does nothing with it
             "include_warps_in_logic": bool(self.options.include_warps_in_logic.value),
+            # the Mega Man Zero bosses in the game: their checks and the hunt the client counts
+            "zero3_bosses": bool(self.options.zero3_bosses.value),
+            "zero4_bosses": bool(self.options.zero4_bosses.value),
             "boss_logic": bosses.describe(boss_requirements(self)),
             # the doors locked in this seed, by site: the tracker rebuilds its logic from them
             door_constraints.SLOT_DATA_KEY: dict(self.door_sites),

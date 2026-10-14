@@ -6,7 +6,7 @@ rewrites it on every save, or run tools/check_logic.py; the tests fail when it f
 from rule_builder.options import OptionFilter
 from rule_builder.rules import CanReachLocation, CanReachRegion, Has, HasAny, HasFromList, True_
 
-from ..options import AreaMAccess, HuInPool, IncludeWarpsInLogic, MissionObjectives, ProgressiveModels, SkipBossRush
+from ..options import AreaMAccess, Goal, HuInPool, IncludeWarpsInLogic, MissionObjectives, ProgressiveModels, SkipBossRush, Zero3Bosses, Zero4Bosses
 from .builder import BossRequirement, DoorKey, GoalRequirement, LavaCarriedTo, ReachedAtLeast, SealRequirement, Edge, Spot
 
 # The atoms the world answers, the model aliases and the seal
@@ -59,21 +59,29 @@ ERRORS = []
 COUNTED_ITEMS = []
 # Boss id -> the region its requirement guards: its tagged arena, or where its atom sits
 BOSS_ARENAS = {
+    "blazin_flizard": "n01/flizard-arena",
+    "childre_inarabitta": "n01/inarabitta-arena",
+    "deathtanz_mantisk": "n01/mantisk-arena",
+    "fenri_lunaedge": "n01/lunaedge-arena",
     "fistleo": "g05/boss-area",
     "flammole": "k04/boss-room",
+    "hellbat_schilt": "n01/hellbat-arena",
     "hivolt": "e07/boss-room",
     "hurricaune": "i03/boss-room",
     "leganchor": "j05/boss-room",
     "lurerre": "f05/boss-arena",
     "model_z": "d02/boss-room",
+    "noble_mandrago": "n01/mandrago-arena",
     "omega_zero": "n01/omega-zero-arena",
     "pandora": "m03/boss-room",
+    "pegasolta_eclair": "n01/eclair-arena",
     "prometheus": "x03/boss-room",
     "prometheus_pandora": "o02/boss-room",
     "protectos": "l04/boss-room",
     "purprill": "h04/boss-room",
     "rayfly": "b02/boss-arena",
     "serpent": "d05/boss-room",
+    "sol_titanion": "n01/titanion-arena",
 }
 # The region a new game begins in, and every region the start can lead to
 START = "z01"
@@ -370,11 +378,21 @@ REGIONS = [
     "m03/hub-entrance",
     "m03/m-2-entrance",
     "n01",
+    "n01/eclair-arena",
     "n01/first-platforms",
+    "n01/flizard-arena",
+    "n01/hellbat-arena",
     "n01/hub-entrance",
+    "n01/inarabitta-arena",
+    "n01/lunaedge-arena",
     "n01/main-area",
+    "n01/mandrago-arena",
+    "n01/mantisk-arena",
     "n01/omega-zero-arena",
     "n01/omega-zero-door",
+    "n01/titanion-arena",
+    "n01/zero3-capsules",
+    "n01/zero4-capsules",
     "o01",
     "o01/d-3-entrance",
     "o01/o-2-entrance",
@@ -389,7 +407,7 @@ REGIONS = [
     "z01",
     "z02",
 ]
-# Event location -> the item it holds; each sits where its anchor location does
+# Event location -> the item it holds; each sits where its anchor location does, or in its region
 EVENTS = {
     "Obtained: Biometal Z": "Obtained: Biometal Z",
     "Obtained: Biometal H": "Obtained: Biometal H",
@@ -412,9 +430,18 @@ EVENTS = {
     "Cleared: Repel The Army": "Cleared: Repel The Army",
     "Cleared: Destroy Model W": "Cleared: Destroy Model W",
     "Defeat Serpent": "Victory",
+    "Defeated: Hellbat Schilt": "Defeated: Hellbat Schilt",
+    "Defeated: Blazin' Flizard": "Defeated: Blazin' Flizard",
+    "Defeated: Fenri Lunaedge": "Defeated: Fenri Lunaedge",
+    "Defeated: Noble Mandrago": "Defeated: Noble Mandrago",
+    "Defeated: Deathtanz Mantisk": "Defeated: Deathtanz Mantisk",
+    "Defeated: Childre Inarabitta": "Defeated: Childre Inarabitta",
+    "Defeated: Sol Titanion": "Defeated: Sol Titanion",
+    "Defeated: Pegasolta Eclair": "Defeated: Pegasolta Eclair",
     "Lava Flow Slowed": "Lava Flow Slowed",
     "K-1 Door Unlocked": "K-1 Door Unlocked",
     "D-1 Bridge Lowered": "D-1 Bridge Lowered",
+    "Defeat Omega Zero": "Victory",
 }
 
 ENTRANCES = {}
@@ -816,7 +843,8 @@ LOCATIONS["D-1: Life Up"] = Spot("d01/inside-switch-door", MODEL)   # "any trans
 # region Boss Room   [ARENA: Model Z]
 ENTRANCES["d02: boss-room -> middle-area"] = Edge("d02/boss-room", "d02/middle-area", MODEL)   # conn -> Middle Area
 ENTRANCES["d02: boss-room -> hub-entrance"] = Edge("d02/boss-room", "d02/hub-entrance", True_())   # conn -> Hub Entrance
-ENTRANCES["d02 door (7808,544)"] = Edge("d02/boss-room", "d04/d-2-entrance", GATE_225)   # door -> D-4/D-2 Entrance gate 225
+ENTRANCES["d02 door (7808,544)"] = Edge(
+    "d02/boss-room", "d04/d-2-entrance", GATE_225 & True_(options=[OptionFilter(Goal, 0)]))   # door -> D-4/D-2 Entrance gate 225
 ENTRANCES["d02 warp after Troop Reinforcement"] = Edge(
     "d02/boss-room", "x02", True_(options=[OptionFilter(IncludeWarpsInLogic, 1)]) & Has("Cleared: Troop Reinforcement"))   # mission warp -> X-2 with include_warps_in_logic
 #   <- D-4
@@ -921,7 +949,7 @@ LOCATIONS["D-4: Energy Capsule L (2)"] = Spot("d04/elevator-2", MODEL)
 ENTRANCES["d05 door (4128,560)"] = Edge("d05/boss-room", "d05/right-entrance", True_())   # internal -> Right Entrance
 LOCATIONS["Mission - Destroy Model W"] = Spot("d05/boss-room", MODEL)
 LOCATIONS["Cleared: Destroy Model W"] = LOCATIONS["Mission - Destroy Model W"]   # event
-LOCATIONS["Defeat Serpent"] = LOCATIONS["Mission - Destroy Model W"].also(GOAL)   # the Victory event
+LOCATIONS["Defeat Serpent"] = LOCATIONS["Mission - Destroy Model W"].also(GOAL & True_(options=[OptionFilter(Goal, 0)]))   # the Victory event
 # region D-4 Entrance
 ENTRANCES["d05: d-4-entrance -> middle-area"] = Edge("d05/d-4-entrance", "d05/middle-area", PX | HX)   # conn -> Middle Area
 ENTRANCES["d05 door (288,544)"] = Edge("d05/d-4-entrance", "d04/boss-rush", True_())   # door -> D-4/Boss Rush
@@ -2016,16 +2044,43 @@ ENTRANCES["m03 door (288,320)"] = Edge("m03/m-2-entrance", "m02/m-3-entrance", D
 
 # --- N-1 [n01]
 # region Main
+ENTRANCES["n01 door (400,1712)"] = Edge("n01", "n01/zero3-capsules", True_(options=[OptionFilter(Zero3Bosses, 1)]))   # internal -> Zero 3 Capsule Room gate 768
+ENTRANCES["n01 door (624,1712)"] = Edge("n01", "n01/zero4-capsules", True_(options=[OptionFilter(Zero4Bosses, 1)]))   # internal -> Zero 4 Capsule Room gate 769
 ENTRANCES["n01 door (288,1680)"] = Edge("n01", "n01/main-area", True_())   # internal -> Main Area
+# region Pegasolta Eclair Arena   [ARENA: Pegasolta Eclair]
+ENTRANCES["n01: eclair-arena -> zero4-capsules"] = Edge("n01/eclair-arena", "n01/zero4-capsules", True_())   # conn -> Zero 4 Capsule Room   the game sends you back to the capsule room after the fight
+LOCATIONS["N-1: Pegasolta Eclair"] = Spot("n01/eclair-arena", True_())
+LOCATIONS["Defeated: Pegasolta Eclair"] = LOCATIONS["N-1: Pegasolta Eclair"].also(
+    True_(options=[OptionFilter(Zero4Bosses, 1)]))   # event
 # region First Platforms
 ENTRANCES["n01: first-platforms -> omega-zero-door"] = Edge("n01/first-platforms", "n01/omega-zero-door", PX | HX)   # conn -> Omega Zero Door   expert adds: MODEL
 ENTRANCES["n01: first-platforms -> main-area"] = Edge("n01/first-platforms", "n01/main-area", MODEL)   # conn -> Main Area
 LOCATIONS["N-1: E-Crystal L"] = Spot("n01/first-platforms", True_())
+# region Blazin' Flizard Arena   [ARENA: Blazin' Flizard]
+ENTRANCES["n01: flizard-arena -> zero3-capsules"] = Edge("n01/flizard-arena", "n01/zero3-capsules", True_())   # conn -> Zero 3 Capsule Room   the game sends you back to the capsule room after the fight
+LOCATIONS["N-1: Blazin' Flizard"] = Spot("n01/flizard-arena", True_())
+LOCATIONS["Defeated: Blazin' Flizard"] = LOCATIONS["N-1: Blazin' Flizard"].also(
+    True_(options=[OptionFilter(Zero3Bosses, 1)]))   # event
+# region Hellbat Schilt Arena   [ARENA: Hellbat Schilt]
+ENTRANCES["n01: hellbat-arena -> zero3-capsules"] = Edge("n01/hellbat-arena", "n01/zero3-capsules", True_())   # conn -> Zero 3 Capsule Room   the game sends you back to the capsule room after the fight
+LOCATIONS["N-1: Hellbat Schilt"] = Spot("n01/hellbat-arena", True_())
+LOCATIONS["Defeated: Hellbat Schilt"] = LOCATIONS["N-1: Hellbat Schilt"].also(
+    True_(options=[OptionFilter(Zero3Bosses, 1)]))   # event
 # region Hub Entrance
 ENTRANCES["n01: hub-entrance -> main-area"] = Edge("n01/hub-entrance", "n01/main-area", MODEL)   # conn -> Main Area
 ENTRANCES["n01 door (688,368)"] = Edge("n01/hub-entrance", "z01", True_())   # warp -> Hub
 ENTRANCES["n01 corridor to m03"] = Edge("n01/hub-entrance", "m03/hub-entrance", True_())   # path -> M-3/Hub Entrance
 #   <- Hub, M-3
+# region Childre Inarabitta Arena   [ARENA: Childre Inarabitta]
+ENTRANCES["n01: inarabitta-arena -> zero3-capsules"] = Edge("n01/inarabitta-arena", "n01/zero3-capsules", True_())   # conn -> Zero 3 Capsule Room   the game sends you back to the capsule room after the fight
+LOCATIONS["N-1: Childre Inarabitta"] = Spot("n01/inarabitta-arena", True_())
+LOCATIONS["Defeated: Childre Inarabitta"] = LOCATIONS["N-1: Childre Inarabitta"].also(
+    True_(options=[OptionFilter(Zero3Bosses, 1)]))   # event
+# region Fenri Lunaedge Arena   [ARENA: Fenri Lunaedge]
+ENTRANCES["n01: lunaedge-arena -> zero4-capsules"] = Edge("n01/lunaedge-arena", "n01/zero4-capsules", True_())   # conn -> Zero 4 Capsule Room   the game sends you back to the capsule room after the fight
+LOCATIONS["N-1: Fenri Lunaedge"] = Spot("n01/lunaedge-arena", True_())
+LOCATIONS["Defeated: Fenri Lunaedge"] = LOCATIONS["N-1: Fenri Lunaedge"].also(
+    True_(options=[OptionFilter(Zero4Bosses, 1)]))   # event
 # region Main Area
 ENTRANCES["n01: main-area -> hub-entrance"] = Edge("n01/main-area", "n01/hub-entrance", MODEL)   # conn -> Hub Entrance
 ENTRANCES["n01: main-area -> first-platforms"] = Edge("n01/main-area", "n01/first-platforms", MODEL)   # conn -> First Platforms
@@ -2033,12 +2088,48 @@ ENTRANCES["n01 door (688,720)"] = Edge("n01/main-area", "n01", True_())   # inte
 LOCATIONS["N-1: Disk B-2"] = Spot("n01/main-area", MODEL)   # ?   N-1: upper area with vanishing platforms and spikes (the room's coarse White gate also applies: over-strict)
 LOCATIONS["N-1: Energy Capsule L"] = Spot("n01/main-area", True_())
 LOCATIONS["N-1: Weapon Energy L"] = Spot("n01/main-area", True_())
+# region Noble Mandrago Arena   [ARENA: Noble Mandrago]
+ENTRANCES["n01: mandrago-arena -> zero4-capsules"] = Edge("n01/mandrago-arena", "n01/zero4-capsules", True_())   # conn -> Zero 4 Capsule Room   the game sends you back to the capsule room after the fight
+LOCATIONS["N-1: Noble Mandrago"] = Spot("n01/mandrago-arena", True_())
+LOCATIONS["Defeated: Noble Mandrago"] = LOCATIONS["N-1: Noble Mandrago"].also(
+    True_(options=[OptionFilter(Zero4Bosses, 1)]))   # event
+# region Deathtanz Mantisk Arena   [ARENA: Deathtanz Mantisk]
+ENTRANCES["n01: mantisk-arena -> zero3-capsules"] = Edge("n01/mantisk-arena", "n01/zero3-capsules", True_())   # conn -> Zero 3 Capsule Room   the game sends you back to the capsule room after the fight
+LOCATIONS["N-1: Deathtanz Mantisk"] = Spot("n01/mantisk-arena", True_())
+LOCATIONS["Defeated: Deathtanz Mantisk"] = LOCATIONS["N-1: Deathtanz Mantisk"].also(
+    True_(options=[OptionFilter(Zero3Bosses, 1)]))   # event
 # region Omega Zero Arena   [ARENA: Omega Zero]
 ENTRANCES["n01 door (288,1328)"] = Edge("n01/omega-zero-arena", "n01/omega-zero-door", True_())   # internal -> Omega Zero Door
+LOCATIONS["Defeat Omega Zero"] = Spot("n01/omega-zero-arena", True_(options=[OptionFilter(Goal, 1)]))   # the Victory event of the region
 # region Omega Zero Door
 ENTRANCES["n01: omega-zero-door -> first-platforms"] = Edge("n01/omega-zero-door", "n01/first-platforms", PX | HX)   # conn -> First Platforms   expert adds: MODEL
 ENTRANCES["n01 door (3520,512)"] = Edge(
-    "n01/omega-zero-door", "n01/omega-zero-arena", MODEL & BossRequirement("omega_zero"))   # internal -> Omega Zero Arena
+    "n01/omega-zero-door", "n01/omega-zero-arena", MODEL & BossRequirement("omega_zero")
+    & (True_(options=[OptionFilter(Goal, 1, operator="ne")]) | GOAL))   # internal -> Omega Zero Arena
+# region Sol Titanion Arena   [ARENA: Sol Titanion]
+ENTRANCES["n01: titanion-arena -> zero4-capsules"] = Edge("n01/titanion-arena", "n01/zero4-capsules", True_())   # conn -> Zero 4 Capsule Room   the game sends you back to the capsule room after the fight
+LOCATIONS["N-1: Sol Titanion"] = Spot("n01/titanion-arena", True_())
+LOCATIONS["Defeated: Sol Titanion"] = LOCATIONS["N-1: Sol Titanion"].also(True_(options=[OptionFilter(Zero4Bosses, 1)]))   # event
+# region Zero 3 Capsule Room
+ENTRANCES["n01 door (1320,1616)"] = Edge(
+    "n01/zero3-capsules", "n01/mantisk-arena", MODEL & BossRequirement("deathtanz_mantisk"))   # internal -> Deathtanz Mantisk Arena
+ENTRANCES["n01 door (1320,1712)"] = Edge(
+    "n01/zero3-capsules", "n01/inarabitta-arena", MODEL & BossRequirement("childre_inarabitta"))   # internal -> Childre Inarabitta Arena
+ENTRANCES["n01 door (1408,1712)"] = Edge("n01/zero3-capsules", "n01", True_())   # internal -> Main
+ENTRANCES["n01 door (1496,1616)"] = Edge(
+    "n01/zero3-capsules", "n01/hellbat-arena", MODEL & BossRequirement("hellbat_schilt"))   # internal -> Hellbat Schilt Arena
+ENTRANCES["n01 door (1496,1712)"] = Edge(
+    "n01/zero3-capsules", "n01/flizard-arena", MODEL & BossRequirement("blazin_flizard"))   # internal -> Blazin' Flizard Arena
+# region Zero 4 Capsule Room
+ENTRANCES["n01 door (1832,1616)"] = Edge(
+    "n01/zero4-capsules", "n01/eclair-arena", MODEL & BossRequirement("pegasolta_eclair"))   # internal -> Pegasolta Eclair Arena
+ENTRANCES["n01 door (1832,1712)"] = Edge(
+    "n01/zero4-capsules", "n01/lunaedge-arena", MODEL & BossRequirement("fenri_lunaedge"))   # internal -> Fenri Lunaedge Arena
+ENTRANCES["n01 door (1920,1712)"] = Edge("n01/zero4-capsules", "n01", True_())   # internal -> Main
+ENTRANCES["n01 door (2008,1616)"] = Edge(
+    "n01/zero4-capsules", "n01/titanion-arena", MODEL & BossRequirement("sol_titanion"))   # internal -> Sol Titanion Arena
+ENTRANCES["n01 door (2008,1712)"] = Edge(
+    "n01/zero4-capsules", "n01/mandrago-arena", MODEL & BossRequirement("noble_mandrago"))   # internal -> Noble Mandrago Arena
 
 # --- O-1 [o01]
 # region Main

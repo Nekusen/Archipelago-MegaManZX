@@ -19,9 +19,6 @@ if TYPE_CHECKING:
     from . import MMZXClient
     from .goal import GoalRequirement
 
-GATE_OPEN_NOTICE = ("Goal: ", "final area open", "")
-
-
 def received_counts(ctx) -> dict[str, int]:
     """Copies of each item received so far, by name."""
     counts: dict[str, int] = {}
@@ -38,12 +35,13 @@ def model_halves(counts: dict[str, int], model: int) -> int:
 
 
 def wanted_progress_bits(counts: dict[str, int], goal: "GoalRequirement", missions: int,
-                         closed_gates=frozenset()) -> tuple[set[tuple[int, int]], set[tuple[int, int]]]:
-    """(idempotent bits, Card Key bits) the received items and the missions completed call for.
+                         closed_gates=frozenset(), mutos: int = 0) -> tuple[set[tuple[int, int]], set[tuple[int, int]]]:
+    """(idempotent bits, Card Key bits) the received items, the missions completed and the Mega
+    Man Zero bosses beaten call for.
 
     Progressive items set one bit per copy. Some story gates open for everyone,
-    except the `closed_gates` an item opens; the Slither gate (D-2 to D-4) once
-    the goal requirements are met.
+    except the `closed_gates` an item opens; the door of the goal (the Slither gate of
+    D-2, or Omega Zero's) once the goal requirements are met.
     """
     bits: set[tuple[int, int]] = set()
     cardkeys: set[tuple[int, int]] = set()
@@ -61,7 +59,7 @@ def wanted_progress_bits(counts: dict[str, int], goal: "GoalRequirement", missio
         elif kind == "transerver":
             bits.add((grant[1], grant[2]))
     bits |= {tuple(EVENT_GATES[fl]) for fl in EVENT_GATES_OPEN} - closed_gates
-    if goal.met(counts, missions):
+    if goal.met(counts, missions, mutos):
         bits |= goal.gate_bits()
     return bits, cardkeys
 
@@ -191,7 +189,8 @@ async def grant_items(client: "MMZXClient", ctx, tick: Tick) -> None:
                    if net.item in ITEM_BY_ID and ITEM_BY_ID[net.item][1][0] in ("ecrystals", "oneup")]
     goal = client.goal
     missions = len(client.missions_cleared or ())
-    bits, cardkeys = wanted_progress_bits(counts, goal, missions, client.closed_gates)
+    mutos = len(client.mutos_beaten or ())
+    bits, cardkeys = wanted_progress_bits(counts, goal, missions, client.closed_gates, mutos)
 
     writes = await weapon_energy_writes(ctx, counts)
     # idempotent bits go to live (effect now) and canonical (persistence)
@@ -208,7 +207,7 @@ async def grant_items(client: "MMZXClient", ctx, tick: Tick) -> None:
         seal_addr, seal_bit = SEAL_GATE_BIT
         seal_opening = client.seal.gated and not sealed and not live[seal_addr] & (1 << seal_bit)
         # the gate flags were down until now: the requirement was just met
-        gate_opening = goal.met(counts, missions) and any(not live[a] & (1 << b) for a, b in goal.gate_bits())
+        gate_opening = goal.met(counts, missions, mutos) and any(not live[a] & (1 << b) for a, b in goal.gate_bits())
     # Card Keys: exactly the received set, since the game also hands them out
     # as mission rewards; the neighbouring bits are unrelated flags
     want = bits_by_byte(cardkeys)
@@ -232,7 +231,7 @@ async def grant_items(client: "MMZXClient", ctx, tick: Tick) -> None:
         return
     ok = await bizhawk.guarded_write(ctx.bizhawk_ctx, writes, [tick.guard])
     if ok and gate_opening:
-        client.notify_queue.append(notify_bytes(*GATE_OPEN_NOTICE, client.notify_style))
+        client.notify_queue.append(notify_bytes(*goal.open_notice(), client.notify_style))
     if ok and seal_opening:
         client.seal.rearm = True
         client.notify_queue.append(notify_bytes(*SEAL_OPEN_NOTICE, client.notify_style))

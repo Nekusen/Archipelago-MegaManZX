@@ -16,11 +16,14 @@ from .ram import Tick, bits_by_byte, copies_writes, read_copies, story_handler_w
 if TYPE_CHECKING:
     from . import MMZXClient
 
-MODE_OFF, MODE_CHECKS, MODE_ITEMS = "off", "checks", "items"
+MODE_OFF, MODE_CHECKS, MODE_ITEMS = "off", "locations_only", "locations_and_items"
+# the names the playtest seeds used before the values were renamed
+LEGACY_MODES = {"checks": MODE_CHECKS, "items": MODE_ITEMS}
 
 
 def parse_mode(value) -> str:
     """The mission_objectives option as the client sees it; a seed without it has it off."""
+    value = LEGACY_MODES.get(value, value)
     return value if value in (MODE_CHECKS, MODE_ITEMS) else MODE_OFF
 
 

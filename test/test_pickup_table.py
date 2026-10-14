@@ -55,7 +55,7 @@ class TestPickupTableFilled(FilledTestBase):
 
 
 class TestPickupTableWithStoryItems(TestPickupTableFilled):
-    options = {"pickup_checks_energy": True, "mission_objectives": "items"}
+    options = {"pickup_checks_energy": True, "mission_objectives": "locations_and_items"}
 
     def test_story_objects_show_their_item(self) -> None:
         """The chips and the disks the bosses leave are in the table, after every other pickup."""
@@ -75,7 +75,7 @@ class TestPickupTableWithStoryItems(TestPickupTableFilled):
 
 
 class TestPickupTableWithStoryChecks(TestPickupTableWithStoryItems):
-    options = {"pickup_checks_energy": True, "mission_objectives": "checks"}
+    options = {"pickup_checks_energy": True, "mission_objectives": "locations_only"}
 
 
 class TestPickupTableWithoutRefills(FilledTestBase):

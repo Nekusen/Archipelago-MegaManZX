@@ -33,11 +33,11 @@ LOCATIONS = {
     'A-2: Sub Tank': {'id': 13631760, 'category': 'sub_tank', 'detect': ['bit', 34929784, 4], 'room': 'a02', 'pos': [488, 528], 'status': 'verified', 'icon': [2, 2]},
     'E-4: Sub Tank': {'id': 13631761, 'category': 'sub_tank', 'detect': ['bit', 34929784, 5], 'room': 'e04', 'pos': [2644, 840], 'status': 'verified', 'icon': [23, 24]},
     'K-1: Sub Tank': {'id': 13631762, 'category': 'sub_tank', 'detect': ['bit', 34929784, 6], 'room': 'k01', 'pos': [7216, 1314], 'status': 'verified', 'icon': [52, 58]},
+    'Obtain Biometal Z': {'id': 13632000, 'category': 'biometal', 'detect': ['any', [[34620930, 1], [34620897, 1]]], 'room': 'd02', 'pos': [7808, 544], 'status': 'verified'},
     'Obtain Biometal H': {'id': 13632001, 'category': 'biometal', 'detect': ['any', [[34620880, 1], [34620881, 1]]], 'room': 'E-7/I-3', 'pos': None, 'status': 'verified'},
     'Obtain Biometal L': {'id': 13632003, 'category': 'biometal', 'detect': ['any', [[34620880, 3], [34620881, 3]]], 'room': 'F-5/J-5', 'pos': None, 'status': 'verified'},
     'Obtain Biometal F': {'id': 13632005, 'category': 'biometal', 'detect': ['any', [[34620880, 5], [34620881, 5]]], 'room': 'G-5/K-4', 'pos': None, 'status': 'verified'},
     'Obtain Biometal P': {'id': 13632007, 'category': 'biometal', 'detect': ['any', [[34620880, 7], [34620881, 7]]], 'room': 'H-4/L-4', 'pos': None, 'status': 'verified'},
-    'Obtain Biometal Z': {'id': 13632000, 'category': 'biometal', 'detect': ['any', [[34620930, 1], [34620897, 1]]], 'room': 'd02', 'pos': [7808, 544], 'status': 'verified'},
     'Mission - Locate Giro': {'id': 13632258, 'category': 'mission', 'detect': ['all', [[34620894, 7]]], 'room': 'B-1B-2', 'pos': None, 'status': 'verified'},
     'Mission - Pass The Test': {'id': 13632259, 'category': 'mission', 'detect': ['all', [[34620896, 0]]], 'room': 'C-1C-2', 'pos': None, 'status': 'verified'},
     'Mission - Troop Reinforcement': {'id': 13632260, 'category': 'mission', 'detect': ['all', [[34620897, 1]]], 'room': 'D-2', 'pos': None, 'status': 'verified'},
@@ -619,7 +619,7 @@ MISSION_REPEAT_BITS = {
     14: [[34620929, 6]],
     15: [[34620929, 7]],
 }
-# mission_objectives: items. The Report of these missions also asks for the item
+# mission_objectives: locations_and_items. The Report of these missions also asks for the item
 # (mission state -> item); these event gates open with an item instead of with
 # their event (flag -> item); the item that slows the lava of Area K, whose location
 # stands for the SLOW_LAVA atom of the logic in the other modes; the same pair for the
@@ -634,7 +634,7 @@ STORY_SWITCH_LOCATION = 'K-4: Door Switch'
 STORY_SWITCH_ITEM = 'Area K Door Switch'
 STORY_BRIDGE_LOCATION = 'D-1: Bridge Switch'
 STORY_BRIDGE_ITEM = 'Area D Bridge'
-# mission_objectives: items. An event whose effect became an item marks, instead of its
+# mission_objectives: locations_and_items. An event whose effect became an item marks, instead of its
 # flag, a bit of the byte of the pickup table section that the game fills (location -> bit).
 STORY_DONE_BITS = {'E-3: Generator': 5}
 # The game hands these out in order: each location also needs the one before it.

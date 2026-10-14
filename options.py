@@ -125,18 +125,22 @@ class MissionObjectives(Choice):
     people trapped in Area G, the generator of Area E, the lava control and the door switch of
     Area K, and the bridge switch of Area D.
     - off: nothing changes.
-    - checks: each one is a location. The game itself plays as before, except that the bridge of
+    - locations_only: each one is a check. The objects and the events keep working as in the
+      original game, so the pool only grows by filler; the one difference is that the bridge of
       Area D starts raised until you shoot its switch.
-    - items: each one is a location, and the objects and what the events do are items of
-      the pool. A mission is reported only with its object (a Computer Chip for Locate Giro,
+    - locations_and_items: each one is a check, and the objects and what the events do are items
+      of the pool. A mission is reported only with its object (a Computer Chip for Locate Giro,
       the Stuffed Animal for Pass The Test, each Data Disk for its mission), and Rayfly waits
       for that Computer Chip too. The doors the terminal of Area F, the sprinkler key of Area G
       and the switch of Area K open need their items, and so do the bridge of Area D, the slow
       lava of Area K and the power cut of Area E, which is a useful item rather than a required one."""
     display_name = "Mission Objectives"
     option_off = 0
-    option_checks = 1
-    option_items = 2
+    option_locations_only = 1
+    option_locations_and_items = 2
+    # the names the playtest seeds used before the values were renamed
+    alias_checks = 1
+    alias_items = 2
     default = 0
 
 

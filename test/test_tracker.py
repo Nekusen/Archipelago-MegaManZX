@@ -27,7 +27,7 @@ CHANGED = {"character": "aile", "starting_model": "model_hx", "starting_transerv
            "boss_logic": {"Hivolt": "HX & Life Up x2", "Serpent": "ALL6 | " + WITNESS},
            "goal_requirements": ["Secret Disks", "Missions"], "required_secret_disks": 10,
            "total_secret_disks": 15, "required_missions": 5,
-           "mission_objectives": "items", "area_m_access": "passwords", "required_passwords": 3,
+           "mission_objectives": "locations_and_items", "area_m_access": "passwords", "required_passwords": 3,
            "total_passwords": 5, "door_constraints_min": 6, "door_constraints_max": 9}
 # seed options -> the YAML the tracker reads
 CASES = {
@@ -37,8 +37,8 @@ CASES = {
     "default seed, changed yaml": ({}, CHANGED),
     "full models, biometals goal": ({"progressive_models": False, "required_models_count": 3},
                                     {"progressive_models": True, "require_full_models": True}),
-    "objectives as checks, biometals seal": ({"mission_objectives": "checks", "area_m_access": "biometals"},
-                                             {"mission_objectives": "items", "area_m_access": "passwords",
+    "objectives as checks, biometals seal": ({"mission_objectives": "locations_only", "area_m_access": "biometals"},
+                                             {"mission_objectives": "locations_and_items", "area_m_access": "passwords",
                                               "door_constraints_min": 4, "door_constraints_max": 4}),
 }
 # options the slot data sends resolved, as the goal of the seed
@@ -165,7 +165,7 @@ class TestTrackerRegeneration(unittest.TestCase):
                     "area_m_access", "door_constraints"):
             del slot_data[key]
         yaml_options = {"progressive_models": False, "goal_requirements": ["Missions"], "required_missions": 3,
-                        "skip_minibosses": "always", "mission_objectives": "items", "area_m_access": "passwords",
+                        "skip_minibosses": "always", "mission_objectives": "locations_and_items", "area_m_access": "passwords",
                         "door_constraints_min": 5, "door_constraints_max": 5}
         tracker = tracker_multiworld(slot_data, yaml_options).worlds[1]
         self.assertTrue(tracker.options.progressive_models.value)

@@ -20,6 +20,7 @@ from ..locations import STORY_CATEGORY, STORY_GATE
 from ..logic import document as F
 from ..logic import load_document
 from ..logic.document import BRIDGE_EVENT, LAVA_EVENT, SWITCH_EVENT, area_of
+from ..options import MissionObjectives
 
 STORY_LOCATIONS = {n for n, v in LOCATIONS.items() if v["category"] == STORY_CATEGORY}
 GATE_LOCATIONS = {n for n in STORY_LOCATIONS if LOCATIONS[n]["story"] == STORY_GATE}
@@ -173,7 +174,7 @@ class TestOff(LavaByItsControl, DoorByItsSwitch, MMZXTestBase):
 
 
 class TestChecks(LavaByItsControl, DoorByItsSwitch, MMZXTestBase):
-    options = {"mission_objectives": "checks"}
+    options = {"mission_objectives": "locations_only"}
 
     def test_objects_and_events_are_locations(self) -> None:
         """Every story location but the ones that stand for an opened gate; the pool only grows by filler."""
@@ -230,7 +231,7 @@ class TestChecks(LavaByItsControl, DoorByItsSwitch, MMZXTestBase):
 
 
 class TestItems(MMZXTestBase):
-    options = {"mission_objectives": "items"}
+    options = {"mission_objectives": "locations_and_items"}
 
     def test_sprinkler_key_needs_enough_rescues(self) -> None:
         """The key comes with eight people rescued: with fewer within reach it is out of logic."""
@@ -396,5 +397,12 @@ class TestClientState(unittest.TestCase):
 
     def test_mode_from_slot_data(self) -> None:
         self.assertEqual(parse_mode(None), "off")
-        self.assertEqual(parse_mode("checks"), "checks")
-        self.assertEqual(parse_mode("items"), "items")
+        self.assertEqual(parse_mode("locations_only"), "locations_only")
+        self.assertEqual(parse_mode("locations_and_items"), "locations_and_items")
+
+    def test_the_old_value_names_still_parse(self) -> None:
+        """Seeds and YAMLs of the playtests named the modes checks and items."""
+        self.assertEqual(parse_mode("checks"), "locations_only")
+        self.assertEqual(parse_mode("items"), "locations_and_items")
+        self.assertEqual(MissionObjectives.from_any("checks").current_key, "locations_only")
+        self.assertEqual(MissionObjectives.from_any("items").current_key, "locations_and_items")

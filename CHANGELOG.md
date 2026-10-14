@@ -15,16 +15,16 @@ All notable changes to this project are documented in this file. The format is b
   - `passwords`: collect `required_passwords` Passwords out of the `total_passwords` in the pool.
   - With `biometals` or `passwords` the Transerver Access of Area M is not in the pool.
 - Added `mission_objectives`: the objects and events of the story missions can be checks, and items too.
-  - `checks`: the four Computer Chips, the four guardians of Pass The Test and their Stuffed Animal, the three Data Disks, the thirteen people trapped in Area G, the generator of E-3 and the lava control of K-1 are locations. The game plays as before.
-  - `items`: the same locations, plus the terminal of F-3 and the sprinkler key of G-2, and the objects are items of the pool. A mission is reported only with its object, Rayfly shows up only with a Computer Chip, the F-3 and G-2 doors open with their own items, the lava of Area K is slow only with its item and the machines of Area E stop only with theirs.
+  - `locations_only`: the four Computer Chips, the four guardians of Pass The Test and their Stuffed Animal, the three Data Disks, the thirteen people trapped in Area G, the generator of E-3 and the lava control of K-1 are locations. The game plays as before.
+  - `locations_and_items`: the same locations, plus the terminal of F-3 and the sprinkler key of G-2, and the objects are items of the pool. A mission is reported only with its object, Rayfly shows up only with a Computer Chip, the F-3 and G-2 doors open with their own items, the lava of Area K is slow only with its item and the machines of Area E stop only with theirs.
   - The Computer Chips and the Data Disks of J-5 and L-4 show the item they hold, like any other pickup.
 - Missions can be played again: "Replay Missions" in the Transerver consoles lists the missions you have already reported (plus the quests, as before), and picking one brings back its objective and its boss.
   - While a mission picked there is under way, entering an area does not accept that area's mission; report or abort the one you picked to go back to normal.
   - "Abort Mission" is offered only for a mission or quest picked from that list. With the mission of an area under way the consoles show their normal menu instead, and picking a mission there replaces it.
   - Troop Reinforcement replays like any other mission: no briefing, head to Area D and play it through.
 - Troop Reinforcement and Protect HQ show their names in that list instead of "Mission 4" and "Mission D".
-- `mission_objectives` also covers the switch of K-4 that unlocks the door of K-1 on the way to its Sub Tank: stepping on it is a check, and with `items` that door opens with the Area K Door Switch instead.
-- `mission_objectives` also covers the bridge of D-1: with `checks` it starts raised and a shot at its switch lowers it; with `items` the shot is only a check, and the bridge is down while you hold the Area D Bridge.
+- `mission_objectives` also covers the switch of K-4 that unlocks the door of K-1 on the way to its Sub Tank: stepping on it is a check, and with `locations_and_items` that door opens with the Area K Door Switch instead.
+- `mission_objectives` also covers the bridge of D-1: with `locations_only` it starts raised and a shot at its switch lowers it; with `locations_and_items` the shot is only a check, and the bridge is down while you hold the Area D Bridge.
 - Added "door constraints": each seed can lock some of the doors between rooms behind a Card Key, so the map opens in smaller steps instead of most of it at once. A locked door shows the colour of its key.
   - `door_constraints_min` and `door_constraints_max`: how many doors a seed locks (0 to 15, both 0 by default).
 

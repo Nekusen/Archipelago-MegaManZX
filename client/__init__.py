@@ -65,7 +65,7 @@ class MMZXClient(BizHawkClient):
         self.minibosses_requested = False
         self.minibosses_beaten: set[tuple[int, int]] | None = None
         self.mailbox_enabled = False       # some pickup category is a check
-        self.story_mode = STORY_OFF        # mission_objectives: off, checks or items
+        self.story_mode = STORY_OFF        # mission_objectives: off, locations_only or locations_and_items
         self.closed_gates: frozenset = frozenset()   # story gates an item opens, not the client
         self.story_detect: dict = {}       # location id -> detect recipe that replaces the one of data.py
         # settings the player changes from the console; they outlive a reconnect

@@ -23,7 +23,7 @@ COLLECTED_OFF = 0x124       # u8[BITMAP_LEN] by slot: the pickup was taken since
 USABLES_OFF = 0x144         # u8: ITEM A usables held, bit = vanilla flag - 644; the client sets, the menu clears
 USABLES_MARK_OFF = 0x145    # u8: USABLES_MARK once the client has granted the usables held since boot
 USABLES_MARK = 0xA5
-STORY_OFF = 0x146           # u8: story objects held with mission_objectives: items; the client sets
+STORY_OFF = 0x146           # u8: story objects held with mission_objectives: locations_and_items; the client sets
 STORY_GATES_OFF = 0x147     # u8: what the story events unlock, held as items; bits as in the game's flags
 STORY_DONE_OFF = 0x148      # u8: events done since boot whose flag is left to an item, written by the game
 INDEX_OFF = 0x160           # u16[INDEX_SUBAREAS + 1]: first entry of each subarea

@@ -165,7 +165,7 @@ class TestRulesModule(MMZXTestBase):
         self.assertEqual(set(R.COUNTED_ITEMS), F.count_items_used(load_document()))
 
     def test_events_of_other_modes_are_not_created(self):
-        """Without mission_objectives: items the control, the switch and the bridge stand for their item;
+        """Without mission_objectives: locations_and_items the control, the switch and the bridge stand for their item;
         the bridge only with checks, and the biometal events only behind the biometals seal."""
         events = {loc.name for loc in self.multiworld.get_locations(self.player) if loc.address is None}
         self.assertIn(F.LAVA_EVENT, events)
@@ -257,7 +257,7 @@ class TestModelAtoms(unittest.TestCase):
 
 class TestMissionObjectiveAtoms(unittest.TestCase):
     def test_the_story_atoms_follow_the_mode(self):
-        off, checks, items = (world_with(mission_objectives=mode) for mode in ("off", "checks", "items"))
+        off, checks, items = (world_with(mission_objectives=mode) for mode in ("off", "locations_only", "locations_and_items"))
         self.assertEqual(str(rule_of(items, "K_DOOR_SWITCH")), "Has " + STORY_SWITCH_ITEM)
         self.assertEqual(str(rule_of(off, "K_DOOR_SWITCH")), "Has " + F.SWITCH_EVENT)
         self.assertEqual(str(rule_of(checks, "K_DOOR_SWITCH")), "Has " + F.SWITCH_EVENT)
@@ -269,8 +269,8 @@ class TestMissionObjectiveAtoms(unittest.TestCase):
 
     def test_a_report_asks_for_its_object_only_with_items(self):
         spot = R.LOCATIONS["Mission - Locate Giro"]
-        self.assertIn("Computer Chip", str(spot.rule.resolve(world_with(mission_objectives="items"))))
-        self.assertNotIn("Computer Chip", str(spot.rule.resolve(world_with(mission_objectives="checks"))))
+        self.assertIn("Computer Chip", str(spot.rule.resolve(world_with(mission_objectives="locations_and_items"))))
+        self.assertNotIn("Computer Chip", str(spot.rule.resolve(world_with(mission_objectives="locations_only"))))
         self.assertNotIn("Computer Chip", str(spot.rule.resolve(world_with())))
 
     def test_the_lava_is_walked_from_its_control_unless_it_is_an_item(self):
@@ -278,13 +278,13 @@ class TestMissionObjectiveAtoms(unittest.TestCase):
         walked = edge.rule.resolve(world_with())
         self.assertTrue(walked.force_recalculate)
         self.assertIn("Slow lava carried from its control to k04/lava-chase", str(walked))
-        carried = edge.rule.resolve(world_with(mission_objectives="items"))
+        carried = edge.rule.resolve(world_with(mission_objectives="locations_and_items"))
         self.assertFalse(carried.force_recalculate)
         self.assertIn(STORY_LAVA_ITEM, str(carried))
         self.assertNotIn("carried", str(carried))
 
     def test_the_sprinkler_key_counts_the_rescues_in_reach(self):
-        multiworld = setup_multiworld(MMZXWorld, options={"mission_objectives": "items"})
+        multiworld = setup_multiworld(MMZXWorld, options={"mission_objectives": "locations_and_items"})
         rule = multiworld.get_location(SPRINKLER_KEY, 1).access_rule
         count, group = STORY_COUNTS[SPRINKLER_KEY]
         self.assertEqual(set(rule.location_dependencies()), set(group))

@@ -35,6 +35,7 @@ All notable changes to this project are documented in this file. The format is b
 
 - The Transerver consoles show their normal menu during Troop Reinforcement and Protect HQ instead of the reduced one.
 - Logic: the Sub Tank of K-1 asks for Model LX and that door unlocked, instead of four biometals.
+- Logic: the apple of A-3 asks for any model, instead of Model FX, X or ZX.
 
 ### Fixed
 

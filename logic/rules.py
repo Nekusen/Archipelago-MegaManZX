@@ -501,14 +501,14 @@ LOCATIONS["A-2: Sub Tank"] = Spot("a02/upper-area", HX | PX)   # expert adds: LX
 
 # --- A-3 [a03]
 # region Main
-ENTRANCES["a03: main -> h-4-entrance"] = Edge("a03", "a03/h-4-entrance", FX | Has("Model OX"))   # conn -> H-4 Entrance
+ENTRANCES["a03: main -> h-4-entrance"] = Edge("a03", "a03/h-4-entrance", FX | Has("Model OX"))   # conn -> H-4 Entrance   expert adds: HX
 ENTRANCES["a03 door (1632,576)"] = Edge("a03", "h01", DoorKey("a03 door (1632,576)"))   # door -> H-1 door constraint site
 ENTRANCES["a03 door (288,912)"] = Edge("a03", "a01/a-3-entrance", Has("Yellow Card Key"))   # door -> A-1/A-3 Entrance
 #   <- A-1, H-1
-LOCATIONS["A-3: Apple"] = Spot("a03", FX | Has("Model X") | Has("Model ZX"))
+LOCATIONS["A-3: Apple"] = Spot("a03", MODEL)
 LOCATIONS["A-3: Disk E-46"] = Spot("a03", True_())
 # region H-4 Entrance
-ENTRANCES["a03: h-4-entrance -> main"] = Edge("a03/h-4-entrance", "a03", FX | Has("Model OX"))   # conn -> Main
+ENTRANCES["a03: h-4-entrance -> main"] = Edge("a03/h-4-entrance", "a03", FX | Has("Model OX"))   # conn -> Main   expert adds: HX
 ENTRANCES["a03 door (2096,880)"] = Edge("a03/h-4-entrance", "h04/a-3-entrance", Has("Purple Card Key") & FX)   # ?   door -> H-4/A-3 Entrance   Fire thorns (118,55) in the corridor to the Purple door (131,55): burn them. a04->m01: the "seal of the 6 biometals" of M-1 was a myth: a Stop The Dig cutscene opens it and the client sets its flag (395); the ovl104 layers are cosmetic. No ALL6 here (the goal requires it at D-2 -> D-4).
 #   <- H-4
 LOCATIONS["A-3: Weapon Energy L"] = Spot("a03/h-4-entrance", True_())

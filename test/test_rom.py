@@ -288,13 +288,10 @@ class TestPatchTables(unittest.TestCase):
                 flag = (v["detect"][1] - LIVE_BLOCK) * 8 + v["detect"][2]
                 self.assertEqual(bits[item], flag - pickups.USABLE_FLAG_FIRST, name)
 
-    def test_usable_texts(self) -> None:
-        """The eight pickup popups become the multiworld notice; the rest of the file is untouched."""
-        head = ui.USABLE_TEXT_HEAD
-        n = ui.USABLE_TEXT_FIRST + ui.USABLE_TEXT_COUNT + 2
-        texts = [(ui.REPLAY_TEXTS[k][0] if k in ui.REPLAY_TEXTS else
-                  head + bytes([0x21 + k % 26, 0x22]) if ui.USABLE_TEXT_FIRST <= k < n - 2 else
-                  bytes([0x30 + k % 10] * (k % 5 + 1)))
+    def test_talk_texts(self) -> None:
+        """Only the menu texts change; every other message of the file, the pickup popups included, is kept."""
+        n = max(ui.REPLAY_TEXTS) + 2
+        texts = [(ui.REPLAY_TEXTS[k][0] if k in ui.REPLAY_TEXTS else bytes([0x30 + k % 10] * (k % 5 + 1)))
                  + bytes([ui.PAUSE_TEXT_END]) for k in range(n)]
         offs, pos = [], 0
         for t in texts:
@@ -313,13 +310,25 @@ class TestPatchTables(unittest.TestCase):
             text = out[base + new_offs[k]:end]
             if k in ui.REPLAY_TEXTS:
                 self.assertEqual(text, ui.REPLAY_TEXTS[k][1], k)
-            elif ui.USABLE_TEXT_FIRST <= k < n - 2:
-                self.assertEqual(text, ui.USABLE_TEXT_NEW, k)
             else:
                 self.assertEqual(text, texts[k][:-1], k)
         self.assertEqual(out[-2:], b"\x00\x00")
+        first = min(ui.REPLAY_TEXTS)
         with self.assertRaises(ValueError):
-            ui.talk_texts_rebuilt(data.replace(head, b"\x01" * len(head), 1))
+            ui.talk_texts_rebuilt(data.replace(ui.REPLAY_TEXTS[first][0], b"\x01" * len(ui.REPLAY_TEXTS[first][0]), 1))
+
+    def test_usable_popup_cave(self) -> None:
+        """The hook jumps into the cave, which holds the displaced prologue and returns to the routine's body."""
+        entry, cave = pickups.USABLE_POPUP_ENTRY_NEW, pickups.USABLE_POPUP_CAVE
+        self.assertEqual(len(entry), len(pickups.USABLE_POPUP_ENTRY_ORIG))
+        self.assertEqual(entry[:4], bytes.fromhex("004b1847"))                 # ldr r3, [pc]; bx r3
+        self.assertEqual(int.from_bytes(entry[4:], "little"), pickups.USABLE_POPUP_CAVE_RAM + 1)
+        self.assertIn(pickups.USABLE_POPUP_ENTRY_ORIG[:6], cave)             # push, adds, adds, kept
+        first, popup, resume = struct.unpack_from("<3I", cave, len(cave) - 12)
+        self.assertEqual(first, pickups.USABLE_POPUP_FIRST)
+        self.assertEqual(resume, pickups.USABLE_POPUP_ENTRY_RAM + len(entry) + 1)
+        self.assertEqual(popup >> 24, 0x02)
+        self.assertEqual(pickups.USABLE_POPUP_FIRST & 0x3FF, 72)             # message 72 of talk_sys_en.bin
 
     def test_overlay_patches_keep_their_length(self) -> None:
         for ovl, patches in {**pickups.OVERLAY_USABLE_PATCH, **story.STORY_OVERLAY_PATCH}.items():
@@ -513,9 +522,16 @@ class TestMissionSection(unittest.TestCase):
         self.assertEqual(section[missions.MISSION_NEVER_OFF:missions.MISSION_NEVER_OFF + 4], bytes(4))
         states = missions.mission_states()
         self.assertEqual(section[missions.MISSION_STATES_OFF:missions.MISSION_STATES_OFF + len(states)], states)
+        handlers = missions.mission_handler_states()
+        self.assertEqual(section[missions.MISSION_HANDLER_OFF:missions.MISSION_HANDLER_OFF + len(handlers)], handlers)
         index, rows = missions.mission_repeat_table()
         self.assertEqual(section[missions.MISSION_REPEAT_INDEX_OFF:missions.MISSION_REPEAT_INDEX_OFF + len(index)], index)
         self.assertEqual(section[missions.MISSION_REPEAT_OFF:missions.MISSION_REPEAT_OFF + len(rows)], rows)
+        lits = struct.unpack_from("<5I", missions.MISSION_SECTION_CODE, missions.MISSION_SECTION_ENTRIES["pending"] - 20)
+        self.assertEqual(lits, (missions.MISSION_SECTION_RAM + missions.MISSION_REPEAT_INDEX_OFF,
+                                missions.MISSION_SECTION_RAM + missions.MISSION_REPEAT_OFF, LIVE_BLOCK,
+                                missions.MISSION_SECTION_RAM + missions.MISSION_HANDLER_OFF,
+                                missions.MISSION_HANDLER_STATE_RAM))
         for name, off in missions.MISSION_SECTION_ENTRIES.items():
             with self.subTest(entry=name):
                 self.assertEqual(off % 2, 0)
@@ -548,17 +564,33 @@ class TestMissionSection(unittest.TestCase):
         self.assertTrue(all(0 < v < 0x100 for v in states))
 
     def test_repeat_table(self) -> None:
-        """Each mission's row holds its flags in order and ends with the mark; every flag clears the sign test."""
+        """Each mission's row holds the flags to clear, then the extra bits to set, and ends with the mark."""
         index, rows = missions.mission_repeat_table()
         self.assertEqual(len(index), len(missions.MISSION_REPEAT_IDS))
+        extras = {rec["id"]: rec.get("extra", []) for rec in MISSION_ACCEPT.values()}
+        total = 0
         for k, mid in enumerate(missions.MISSION_REPEAT_IDS):
-            flags = [(a - LIVE_BLOCK) * 8 + b for a, b in MISSION_REPEAT_BITS[mid]]
-            row = struct.unpack_from("<%dH" % (len(flags) + 1), rows, index[k])
+            clears = [(a - LIVE_BLOCK) * 8 + b for a, b in MISSION_REPEAT_BITS[mid]]
+            sets = [missions.MISSION_REPEAT_SET | (a - LIVE_BLOCK) * 8 + b for a, b in extras[mid]]
+            row = struct.unpack_from("<%dH" % (len(clears) + len(sets) + 1), rows, index[k])
             with self.subTest(mission=mid):
-                self.assertEqual(list(row[:-1]), flags)
+                self.assertEqual(list(row[:-1]), clears + sets)
                 self.assertEqual(row[-1], missions.MISSION_REPEAT_END)
-                self.assertTrue(all(0 < f < 0x8000 for f in flags))
-        self.assertEqual(len(rows), sum(2 * (len(MISSION_REPEAT_BITS[m]) + 1) for m in missions.MISSION_REPEAT_IDS))
+                self.assertTrue(all(0 < f < missions.MISSION_REPEAT_SET for f in clears))
+                self.assertTrue(all(f != missions.MISSION_REPEAT_END for f in sets))
+            total += 2 * (len(clears) + len(sets) + 1)
+        self.assertEqual(len(rows), total)
+        self.assertEqual(len(extras[4]), 4)      # Troop Reinforcement: its story chain, E1.0 included
+
+    def test_handler_states(self) -> None:
+        """Only Troop Reinforcement moves its story handler after the accept, to the state the client uses."""
+        handlers = missions.mission_handler_states()
+        self.assertEqual(len(handlers), len(missions.MISSION_REPEAT_IDS))
+        by_id = {rec["id"]: rec.get("hstate", 0) for rec in MISSION_ACCEPT.values()}
+        for k, mid in enumerate(missions.MISSION_REPEAT_IDS):
+            self.assertEqual(handlers[k], by_id[mid], mid)
+        self.assertEqual([mid for k, mid in enumerate(missions.MISSION_REPEAT_IDS) if handlers[k]], [4])
+        self.assertEqual(handlers[list(missions.MISSION_REPEAT_IDS).index(4)], 6)
 
     def test_hooks(self) -> None:
         """The redirected calls were the vanilla count, accept and pending-story-mission calls."""
@@ -816,15 +848,26 @@ class TestVanillaBytes(unittest.TestCase):
                 self.assertEqual(patched[site - ram:site - ram + len(as_bytes(new))], as_bytes(new))
             self.assertEqual(len(patched), len(code))
 
-    def test_usable_texts_of_the_rom(self) -> None:
-        """The system text file rebuilds with the eight popups replaced and the menu texts renamed."""
-        data = nds.file_bytes(bytearray(self.rom), ui.USABLE_TEXT_FILE_ID)
+    def test_talk_texts_of_the_rom(self) -> None:
+        """The system text file rebuilds with the menu texts renamed and the eight pickup popups as they were."""
+        data = nds.file_bytes(bytearray(self.rom), ui.TALK_TEXT_FILE_ID)
         out = ui.talk_texts_rebuilt(data)
-        self.assertEqual(out.count(ui.USABLE_TEXT_NEW), ui.USABLE_TEXT_COUNT)
         self.assertGreater(len(out), len(data))
         for orig, new in ui.REPLAY_TEXTS.values():
             self.assertEqual(data.count(orig + bytes([ui.PAUSE_TEXT_END])), 1)
             self.assertEqual(out.count(new + bytes([ui.PAUSE_TEXT_END])), 1)
+        you_got = bytes.fromhex("394f5500474f5400")
+        self.assertEqual(out.count(you_got), data.count(you_got))
+        self.assertGreaterEqual(out.count(you_got), 8)
+
+    def test_usable_popup_prologue_of_the_rom(self) -> None:
+        """The cave repeats the prologue it displaces, literal included, and lands on the routine's body."""
+        entry = pickups.USABLE_POPUP_ENTRY_RAM
+        self.assertEqual(self.read(entry, 8), pickups.USABLE_POPUP_ENTRY_ORIG)
+        self.assertEqual(self.read(entry + 6, 2), bytes.fromhex("1b4c"))       # ldr r4, [pc, #0x6c]
+        literal = int.from_bytes(self.read((entry + 6 + 4) // 4 * 4 + 0x6C, 4), "little")
+        _first, popup, _resume = struct.unpack_from("<3I", pickups.USABLE_POPUP_CAVE, len(pickups.USABLE_POPUP_CAVE) - 12)
+        self.assertEqual(popup, literal)
 
     def test_mission_names_of_the_rom(self) -> None:
         """The Transerver list file rebuilds with the two names in place of the placeholders."""

@@ -88,18 +88,10 @@ PAUSE_TEXT_FILE_ID = 222           # m_sub_en.bin
 PAUSE_TEXT_LINE_BREAK = 0xFC
 PAUSE_TEXT_END = 0xFE
 
-# The popup that announces a usable ("YOU GOT CAKE") is one message per object in the
-# system text file. The object stands for a multiworld item now, so the eight messages
-# say so; the client's notice names what was actually sent.
-USABLE_TEXT_FILE_ID = 415          # talk_sys_en.bin
-USABLE_TEXT_FIRST = 72             # Cake, then E Tank, W Tank, Orange, Candy, Bread, Apple, Smelling Salts
-USABLE_TEXT_COUNT = 8
-USABLE_TEXT_HEAD = bytes.fromhex("394f5500474f5400")   # "You got "
-USABLE_TEXT_NEW = bytes.fromhex(
-    "394f5500474f5400414e00f103215243484950454c41474f004954454df10001")   # "You got an Archipelago item!"
-
 # The Transerver menu says what the list is for now: the console option, the prompt over the
-# list and the entry's "take", as (vanilla text, new text) by message index
+# list and the entry's "take", as (vanilla text, new text) by message index in the system
+# text file
+TALK_TEXT_FILE_ID = 415            # talk_sys_en.bin
 REPLAY_TEXTS = {
     0x00: (bytes.fromhex("fbf302f85500002d495353494f4e003245515545535453fc000024415441002d414e4147454d454e54fc00003452414e53504f5254"),
            bytes.fromhex("fbf302f85500003245504c4159002d495353494f4e53fc000024415441002d414e4147454d454e54fc00003452414e53504f5254")),
@@ -235,24 +227,20 @@ def rebuild_texts(data: bytes, replace) -> bytes:
 
 
 def talk_texts_rebuilt(data: bytes) -> bytes:
-    """talk_sys_en.bin with the usable popups as the multiworld notice and the mission menu renamed."""
+    """talk_sys_en.bin with the mission menu renamed."""
     def replace(k: int, text: bytes) -> bytes:
-        if k in REPLAY_TEXTS:
-            orig, new = REPLAY_TEXTS[k]
-            if text != orig:
-                raise ValueError("MMZX: system text %d is not the mission menu text" % k)
-            return new
-        if not USABLE_TEXT_FIRST <= k < USABLE_TEXT_FIRST + USABLE_TEXT_COUNT:
+        if k not in REPLAY_TEXTS:
             return text
-        if not text.startswith(USABLE_TEXT_HEAD):
-            raise ValueError("MMZX: system text %d is not a pickup popup" % k)
-        return USABLE_TEXT_NEW
+        orig, new = REPLAY_TEXTS[k]
+        if text != orig:
+            raise ValueError("MMZX: system text %d is not the mission menu text" % k)
+        return new
     return rebuild_texts(data, replace)
 
 
 def install_talk_texts(rom: bytearray) -> None:
-    """Rebuild talk_sys_en.bin with the usable notice and the menu texts, relocated to the end padding."""
-    relocate_file(rom, USABLE_TEXT_FILE_ID, talk_texts_rebuilt(file_bytes(rom, USABLE_TEXT_FILE_ID)))
+    """Rebuild talk_sys_en.bin with the menu texts and relocate it to the end padding."""
+    relocate_file(rom, TALK_TEXT_FILE_ID, talk_texts_rebuilt(file_bytes(rom, TALK_TEXT_FILE_ID)))
 
 
 def system_texts_with_mission_names(data: bytes) -> bytes:

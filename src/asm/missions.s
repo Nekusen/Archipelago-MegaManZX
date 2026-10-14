@@ -6,8 +6,13 @@
 @ and routes the consoles' count through `count`, so the list holds the missions
 @ already reported, ready to be played again, plus the quests as in vanilla.
 @ Taking a mission from the list goes through `take`, which accepts it the vanilla
-@ way and then clears the bits that would end it at once: the objective, the boss
-@ already beaten, the phases already played. The consoles' "story mission pending"
+@ way and then leaves the mission as the client's own accept would: the bits that
+@ would end it at once are cleared (the objective, the boss already beaten, the
+@ phases already played), the bits the client gives for done are set (the story
+@ chain of Troop Reinforcement, the hub warning of Protect HQ) and the story
+@ handler, which the accept installs at its first state, moves to the state the
+@ client uses: for Troop Reinforcement the first state is the briefing of X-2,
+@ which only works there. The consoles' "story mission pending"
 @ test, which hides "Abort the mission?" during Troop Reinforcement and Protect HQ,
 @ becomes `pending`: Abort is offered only for what the player took from the list
 @ (a quest, or a mission whose completed bit is set), and with any other mission
@@ -19,14 +24,16 @@
 
 .equ progress_block,        0x021045CC
 .equ take_mission,          0x02094FAC  @ mission start snapshot, story handler and accept, by id
+.equ story_handler_state,   0x0214F6CF  @ the state byte of the story handler the accept installs
 .equ section,               0x02193000  @ MISSION_SECTION_RAM
-.equ list_table,            section + 0xC0   @ u32[39]: the flag that lists ids 2 to 40
-.equ state_table,           section + 0x160  @ u8[14]: the state value of ids 2 to 15
-.equ repeat_index,          section + 0x170  @ u8[14]: where each id's row starts in repeat_table
-.equ repeat_table,          section + 0x180  @ u16 flags `take` clears, 0xFFFF ends each row
+.equ list_table,            section + 0x100  @ u32[39]: the flag that lists ids 2 to 40
+.equ state_table,           section + 0x1A0  @ u8[14]: the state value of ids 2 to 15
+.equ handler_table,         section + 0x1B0  @ u8[14]: the story handler state `take` leaves, 0 = as installed
+.equ repeat_index,          section + 0x1C0  @ u8[14]: where each id's row starts in repeat_table
+.equ repeat_table,          section + 0x1D0  @ u16 flags `take` clears, or sets with bit 15; 0xFFFF ends each row
 .equ count_routine,         section + 0x00   @ MISSION_SECTION_ENTRIES
 .equ take_routine,          section + 0x30
-.equ pending_routine,       section + 0x70
+.equ pending_routine,       section + 0x90
 
         .org    0x02193000
 @ rom: MISSION_SECTION_CODE
@@ -63,7 +70,14 @@ take:                                   @ r0 = r1 = id chosen in the list
         bl      take_mission
         subs    r4, #2
         cmp     r4, #13
-        bhi     take_done               @ a quest: nothing to clear
+        bhi     take_done               @ a quest: nothing to change
+        ldr     r5, lit_handlers
+        ldrb    r0, [r5, r4]
+        cmp     r0, #0
+        beq     take_rows               @ the story handler stays where the accept put it
+        ldr     r1, lit_handler_state
+        strb    r0, [r1]                @ past the scene the accept would start somewhere else
+take_rows:
         ldr     r5, lit_index
         ldrb    r4, [r5, r4]
         ldr     r5, lit_repeat
@@ -71,15 +85,20 @@ take:                                   @ r0 = r1 = id chosen in the list
         ldr     r6, lit_block2
 take_loop:
         ldrh    r3, [r5]
-        lsls    r2, r3, #16
-        bmi     take_done               @ 0xFFFF ends the row
-        lsrs    r2, r3, #3
+        adds    r2, r3, #1
+        lsls    r2, r2, #16
+        beq     take_done               @ 0xFFFF ends the row
+        lsls    r2, r3, #17
+        lsrs    r2, r2, #20             @ the byte of the flag (bits 3 to 14)
         ldrb    r0, [r6, r2]
         movs    r1, #7
-        ands    r3, r1
-        movs    r1, #1
-        lsls    r1, r3
-        bics    r0, r1
+        ands    r1, r3                  @ the bit
+        movs    r4, #1
+        lsls    r4, r1
+        bics    r0, r4                  @ cleared...
+        lsrs    r3, r3, #15
+        lsls    r3, r1
+        orrs    r0, r3                  @ ...or set again when the entry carries bit 15
         strb    r0, [r6, r2]            @ live copy only, like the accept itself
         adds    r5, #2
         b       take_loop
@@ -89,6 +108,8 @@ take_done:
 lit_index:  .word repeat_index
 lit_repeat: .word repeat_table
 lit_block2: .word progress_block
+lit_handlers: .word handler_table
+lit_handler_state: .word story_handler_state
 
 pending:                                @ r0 = 0 when what is under way was taken from the list
         push    {r4, r5}

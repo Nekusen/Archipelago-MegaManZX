@@ -2021,6 +2021,38 @@
                 "item_count": 1
               },
               {
+                "name": "N-1: Hellbat Schilt",
+                "item_count": 1
+              },
+              {
+                "name": "N-1: Blazin' Flizard",
+                "item_count": 1
+              },
+              {
+                "name": "N-1: Fenri Lunaedge",
+                "item_count": 1
+              },
+              {
+                "name": "N-1: Noble Mandrago",
+                "item_count": 1
+              },
+              {
+                "name": "N-1: Deathtanz Mantisk",
+                "item_count": 1
+              },
+              {
+                "name": "N-1: Childre Inarabitta",
+                "item_count": 1
+              },
+              {
+                "name": "N-1: Sol Titanion",
+                "item_count": 1
+              },
+              {
+                "name": "N-1: Pegasolta Eclair",
+                "item_count": 1
+              },
+              {
                 "name": "N-1: Weapon Energy L",
                 "item_count": 1
               },
@@ -8452,6 +8484,174 @@
             "sections": [
               {
                 "name": "N-1: Disk B-2",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "N-1: Hellbat Schilt",
+            "map_locations": [
+              {
+                "map": "area_n",
+                "x": 1841,
+                "y": 605
+              },
+              {
+                "map": "room_n01",
+                "x": 1841,
+                "y": 605
+              }
+            ],
+            "sections": [
+              {
+                "name": "N-1: Hellbat Schilt",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "N-1: Blazin' Flizard",
+            "map_locations": [
+              {
+                "map": "area_n",
+                "x": 1447,
+                "y": 615
+              },
+              {
+                "map": "room_n01",
+                "x": 1447,
+                "y": 615
+              }
+            ],
+            "sections": [
+              {
+                "name": "N-1: Blazin' Flizard",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "N-1: Fenri Lunaedge",
+            "map_locations": [
+              {
+                "map": "area_n",
+                "x": 1290,
+                "y": 950
+              },
+              {
+                "map": "room_n01",
+                "x": 1290,
+                "y": 950
+              }
+            ],
+            "sections": [
+              {
+                "name": "N-1: Fenri Lunaedge",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "N-1: Noble Mandrago",
+            "map_locations": [
+              {
+                "map": "area_n",
+                "x": 1920,
+                "y": 950
+              },
+              {
+                "map": "room_n01",
+                "x": 1920,
+                "y": 950
+              }
+            ],
+            "sections": [
+              {
+                "name": "N-1: Noble Mandrago",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "N-1: Deathtanz Mantisk",
+            "map_locations": [
+              {
+                "map": "area_n",
+                "x": 817,
+                "y": 733
+              },
+              {
+                "map": "room_n01",
+                "x": 817,
+                "y": 733
+              }
+            ],
+            "sections": [
+              {
+                "name": "N-1: Deathtanz Mantisk",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "N-1: Childre Inarabitta",
+            "map_locations": [
+              {
+                "map": "area_n",
+                "x": 1132,
+                "y": 733
+              },
+              {
+                "map": "room_n01",
+                "x": 1132,
+                "y": 733
+              }
+            ],
+            "sections": [
+              {
+                "name": "N-1: Childre Inarabitta",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "N-1: Sol Titanion",
+            "map_locations": [
+              {
+                "map": "area_n",
+                "x": 1605,
+                "y": 969
+              },
+              {
+                "map": "room_n01",
+                "x": 1605,
+                "y": 969
+              }
+            ],
+            "sections": [
+              {
+                "name": "N-1: Sol Titanion",
+                "item_count": 1
+              }
+            ]
+          },
+          {
+            "name": "N-1: Pegasolta Eclair",
+            "map_locations": [
+              {
+                "map": "area_n",
+                "x": 246,
+                "y": 1294
+              },
+              {
+                "map": "room_n01",
+                "x": 246,
+                "y": 1294
+              }
+            ],
+            "sections": [
+              {
+                "name": "N-1: Pegasolta Eclair",
                 "item_count": 1
               }
             ]

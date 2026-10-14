@@ -14,6 +14,8 @@ from ..logic import document as F
 GOAL_BOSSES = set(F.PSEUDOROIDS) | {"model_z", "serpent"}
 BIOMETAL_PAIRS = {"H": ("hivolt", "hurricaune"), "L": ("lurerre", "leganchor"),
                   "F": ("fistleo", "flammole"), "P": ("purprill", "protectos")}
+# the Mega Man Zero arenas exist only with their options on
+ZERO_ON = {"zero3_bosses": True, "zero4_bosses": True}
 
 
 def arenas() -> dict:
@@ -23,6 +25,7 @@ def arenas() -> dict:
 
 def with_requirement(boss_ids, **options):
     """Multiworld where each named boss requires the witness item."""
+    options = {**ZERO_ON, **options}
     options["boss_logic"] = {F.BOSSES[b]["name"]: WITNESS for b in boss_ids}
     return setup_multiworld(MMZXWorld, options=options)
 
@@ -31,12 +34,12 @@ class TestBossLogic(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.arenas = arenas()
-        cls.base = reach(setup_multiworld(MMZXWorld))
+        cls.base = reach(setup_multiworld(MMZXWorld, options=ZERO_ON))
 
     def test_all_bosses_are_anchored(self) -> None:
         """Every boss of the roster has an arena tagged in the document."""
         self.assertEqual(F.bosses_anchored(load_document()), set(F.BOSSES))
-        self.assertEqual(len(self.arenas), 15)
+        self.assertEqual(len(self.arenas), 23)
 
     def test_reference_wins(self) -> None:
         """Without boss_logic the whole pool reaches every arena and the goal."""

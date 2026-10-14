@@ -339,7 +339,7 @@ async def skip_boss_rush(client: "MMZXClient", ctx, tick: Tick) -> None:
 
 async def handle_ending(client: "MMZXClient", ctx, window: ProgressWindow, tick: Tick) -> None:
     """Send the goal, then make sure the credits can start."""
-    await report_goal(ctx, window)
+    await report_goal(client, ctx, window)
     await ending_unstick(client, ctx, tick)
 
 

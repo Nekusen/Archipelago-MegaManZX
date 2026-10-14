@@ -4,8 +4,8 @@ from Options import (Accessibility, Choice, DeathLink, NamedRange, OptionDict, O
                      PerGameCommonOptions, ProgressionBalancing, Range, StartInventoryPool, Toggle)
 
 from .door_constraints import MAX_SITES
-from .goal import (MISSION_COUNT, MODEL_ITEM_BY_KEY, REQ_BIOMETALS, REQ_DISKS, REQ_MISSIONS,
-                   SIX_MODEL_KEYS)
+from .goal import (MISSION_COUNT, MODEL_ITEM_BY_KEY, MUTOS_MAX, REQ_BIOMETALS, REQ_DISKS, REQ_MISSIONS,
+                   REQ_MUTOS, SIX_MODEL_KEYS)
 
 
 class Character(Choice):
@@ -17,20 +17,31 @@ class Character(Choice):
 
 
 class Goal(Choice):
-    """Goal of the seed."""
+    """Goal of the seed.
+
+    defeat_serpent: beat Serpent at the top of Slither Inc. The gate from D-2 into the tower
+    opens with the goal requirements.
+    defeat_omega_zero: beat Omega Zero in N-1. The door of his arena opens with the goal
+    requirements; the rest of Area N is open as usual. Slither Inc. (D-4 and D-5) stays closed
+    and its checks are not in the game."""
     display_name = "Goal"
     option_defeat_serpent = 0
+    option_defeat_omega_zero = 1
     default = 0
 
 
 class GoalRequirements(OptionSet):
-    """What you need before the gate to Slither Inc., the final area, opens.
+    """What you need before the door to the final boss opens: the gate to Slither Inc. with
+    defeat_serpent, the door of Omega Zero's arena with defeat_omega_zero.
 
     Biometals: own the models chosen in required_models.
     Secret Disks: collect an ammount of Secret Disks.
-    Missions: complete a number of story missions."""
+    Missions: complete a number of story missions.
+    Mutos Reploid Hunting: beat a number of the Mega Man Zero 3/4 bosses of N-1. Needs
+    zero3_bosses and/or zero4_bosses, and so your Mega Man Zero 3 and/or Zero 4 ROM when you
+    open the patch."""
     display_name = "Goal Requirements"
-    valid_keys = frozenset({REQ_BIOMETALS, REQ_DISKS, REQ_MISSIONS})
+    valid_keys = frozenset({REQ_BIOMETALS, REQ_DISKS, REQ_MISSIONS, REQ_MUTOS})
     default = frozenset({REQ_BIOMETALS})
 
 
@@ -88,6 +99,17 @@ class RequiredMissions(NamedRange):
     range_end = MISSION_COUNT
     default = 8
     special_range_names = {"all": MISSION_COUNT}
+
+
+class RequiredMutosReploids(Range):
+    """How many of the eight Mega Man Zero 3/4 bosses of N-1 you need to beat for the Mutos Reploid
+    Hunting goal requirement. Up to 4 needs one of zero3_bosses and zero4_bosses on; 5 or more
+    needs both, since each game brings four bosses. Generation fails otherwise.
+    Only used with Mutos Reploid Hunting in goal_requirements."""
+    display_name = "Required Mutos Reploids"
+    range_start = 1
+    range_end = MUTOS_MAX
+    default = 4
 
 
 class StartingModel(Choice):
@@ -151,6 +173,28 @@ class IncludeWarpsInLogic(Toggle):
     can be played again from "Replay Missions". Off: Area X is in logic only with its Transerver
     Access or as your starting point."""
     display_name = "Include Warps In Logic"
+    default = 0
+
+
+class Zero3Bosses(Toggle):
+    """The four Mega Man Zero 3 bosses of N-1 (Hellbat Schilt, Blazin' Flizard, Deathtanz Mantisk
+    and Childre Inarabitta) are in the game from the start, no Game Pak needed, and beating each
+    one is a check. They stay beaten.
+    IMPORTANT: this needs your own Mega Man Zero 3 (GBA) ROM, USA, Europe or Japan. The game
+    keeps their sprites in that cartridge, so the patcher asks for the ROM when you open the
+    .apmmzx and converts them from it. Leave it off and no Zero 3 ROM is ever asked for."""
+    display_name = "Mega Man Zero 3 Bosses"
+    default = 0
+
+
+class Zero4Bosses(Toggle):
+    """The four Mega Man Zero 4 bosses of N-1 (Fenri Lunaedge, Noble Mandrago, Sol Titanion and
+    Pegasolta Eclair) are in the game from the start, no Game Pak needed, and beating each one
+    is a check. They stay beaten.
+    IMPORTANT: this needs your own Mega Man Zero 4 (GBA) ROM, USA, Europe or Japan. The game
+    keeps their sprites in that cartridge, so the patcher asks for the ROM when you open the
+    .apmmzx and converts them from it. Leave it off and no Zero 4 ROM is ever asked for."""
+    display_name = "Mega Man Zero 4 Bosses"
     default = 0
 
 
@@ -345,9 +389,10 @@ class NotifyStyle(Choice):
 OPTION_GROUPS = [
     OptionGroup("Game Options", [ProgressionBalancing, Accessibility]),
     OptionGroup("Goal", [Goal, GoalRequirements, RequiredModels, RequiredModelsCount, RequireFullModels,
-                         RequiredSecretDisks, TotalSecretDisks, RequiredMissions]),
+                         RequiredSecretDisks, TotalSecretDisks, RequiredMissions, RequiredMutosReploids]),
     OptionGroup("Start", [Character, StartingModel, StartingTranserver]),
     OptionGroup("Items and Logic", [ProgressiveModels, HuInPool, MissionObjectives, IncludeWarpsInLogic, BossLogic]),
+    OptionGroup("Mega Man Zero Bosses", [Zero3Bosses, Zero4Bosses]),
     OptionGroup("Area M", [AreaMAccess, RequiredPasswords, TotalPasswords]),
     OptionGroup("Door Constraints", [DoorConstraintsMin, DoorConstraintsMax]),
     OptionGroup("Pickup Checks", [PickupChecks1Up, PickupChecksEnergy, PickupChecksWeapon, PickupChecksCrystals]),
@@ -368,11 +413,14 @@ class MMZXOptions(PerGameCommonOptions):
     required_secret_disks: RequiredSecretDisks
     total_secret_disks: TotalSecretDisks
     required_missions: RequiredMissions
+    required_mutos_reploids: RequiredMutosReploids
     starting_model: StartingModel
     progressive_models: ProgressiveModels
     hu_in_pool: HuInPool
     mission_objectives: MissionObjectives
     include_warps_in_logic: IncludeWarpsInLogic
+    zero3_bosses: Zero3Bosses
+    zero4_bosses: Zero4Bosses
     area_m_access: AreaMAccess
     required_passwords: RequiredPasswords
     total_passwords: TotalPasswords

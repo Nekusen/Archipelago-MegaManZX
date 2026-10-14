@@ -93,14 +93,21 @@ BIOMETAL_PREFIX = "Obtain "
 OBTAINED_PREFIX = "Obtained: "
 FINAL_MISSION = "Mission - Destroy Model W"
 VICTORY_LOCATION = "Defeat Serpent"
+OMEGA_VICTORY_LOCATION = "Defeat Omega Zero"
 VICTORY = "Victory"
+# The Mega Man Zero bosses leave an event the hunt of the goal counts.
+DEFEATED_PREFIX = "Defeated: "
 # The option classes of the world's options.py the rules filter on, and where the serialized
 # rules find them
 PROGRESSIVE_OPTION, HU_OPTION, STORY_OPTION = "ProgressiveModels", "HuInPool", "MissionObjectives"
 RUSH_OPTION, SEAL_OPTION = "SkipBossRush", "AreaMAccess"
 WARPS_OPTION = "IncludeWarpsInLogic"
+GOAL_OPTION = "Goal"
 STORY_OFF, STORY_CHECKS, STORY_ITEMS = 0, 1, 2
 SEAL_BIOMETALS = 1
+GOAL_SERPENT, GOAL_OMEGA = 0, 1
+# The doors of N-1 to the Mega Man Zero rooms: each opens with its game's option.
+ZERO_GATES = {768: "Zero3Bosses", 769: "Zero4Bosses"}
 OPTIONS_MODULE = "worlds.mmzx.options"
 
 _COUNT_RE = re.compile(r"^([A-Z_]+)>=(\d+)$")
@@ -129,7 +136,18 @@ BOSSES = {
     "prometheus_pandora": {"name": "Prometheus & Pandora", "room": "o02", "mission": "Repel The Army"},
     "serpent": {"name": "Serpent", "room": "d05", "mission": "Destroy Model W"},
     "omega_zero": {"name": "Omega Zero", "room": "n01", "mission": None},
+    # The eight bosses of Mega Man Zero 3 and 4, in the capsule rooms of N-1; each game's
+    # option brings its four in.
+    "hellbat_schilt": {"name": "Hellbat Schilt", "room": "n01", "mission": None, "game": 3},
+    "blazin_flizard": {"name": "Blazin' Flizard", "room": "n01", "mission": None, "game": 3},
+    "deathtanz_mantisk": {"name": "Deathtanz Mantisk", "room": "n01", "mission": None, "game": 3},
+    "childre_inarabitta": {"name": "Childre Inarabitta", "room": "n01", "mission": None, "game": 3},
+    "fenri_lunaedge": {"name": "Fenri Lunaedge", "room": "n01", "mission": None, "game": 4},
+    "noble_mandrago": {"name": "Noble Mandrago", "room": "n01", "mission": None, "game": 4},
+    "sol_titanion": {"name": "Sol Titanion", "room": "n01", "mission": None, "game": 4},
+    "pegasolta_eclair": {"name": "Pegasolta Eclair", "room": "n01", "mission": None, "game": 4},
 }
+ZERO_BOSS_OPTION = {3: "Zero3Bosses", 4: "Zero4Bosses"}
 BOSS_ATOMS = {"BOSS_" + b.upper(): b for b in BOSSES}
 PSEUDOROIDS = [b for b, v in sorted(BOSSES.items(), key=lambda kv: kv[1].get("index", 99))
                if "index" in v]
@@ -646,7 +664,7 @@ def build_world(D, sites=None):
     for name, v in D.LOCATIONS.items():
         locs[name] = {"category": v.get("category"), "room": v.get("room"),
                       "pos": list(v["pos"]) if v.get("pos") else None,
-                      "detect": v.get("detect") is not None}
+                      "detect": v.get("detect") is not None, "boss": v.get("boss")}
     starts = list(dict.fromkeys(rec["room"] for rec in getattr(D, "STARTING_TRANSERVERS", {}).values()))
     if len(starts) > 1:
         raise ValueError("the starting points are in several rooms (%s); the logic expects one" % ", ".join(starts))
@@ -660,6 +678,7 @@ def build_world(D, sites=None):
         "transerver_access": dict(D.TRANSERVER_ACCESS),
         "transerver_always": list(D.TRANSERVER_ALWAYS),
         "event_gates_open": list(getattr(D, "EVENT_GATES_OPEN", [])),
+        "event_gates_goal": list(getattr(D, "EVENT_GATES_GOAL", [])),
         "hub_floor_y": dict(getattr(D, "HUB_FLOOR_Y", {})),
         "seal_rooms": list(getattr(D, "SEAL_ROOMS", [])),
         "site_doors": sorted(door for site in (sites or {}).values() for door in site["doors"]),
@@ -1114,10 +1133,10 @@ def label_room_groups(label, rooms) -> list:
 
 def location_events(world) -> dict:
     """{anchor location: [(event location, event item, extra IR)]}: the events placed and ruled
-    like their anchor, each with what it adds. The missions leave a Cleared event; the biometal
-    checks an Obtained event the seal of Area M counts; the lava control, the door switch and the
-    bridge switch stand in for their item while the options give none; the final mission holds
-    the Victory event behind the goal requirements."""
+    like their anchor, each with what it adds. Missions leave a Cleared event, biometal checks an
+    Obtained one the seal counts, story switches stand in for their item while no option gives one,
+    the Mega Man Zero bosses a Defeated one the hunt counts, and the final mission holds the Victory
+    behind the goal requirements while Serpent is the goal."""
     out = {}
     for name, v in world["locations"].items():
         if v.get("category") == "mission":
@@ -1126,6 +1145,9 @@ def location_events(world) -> dict:
         elif v.get("category") == "biometal":
             event = OBTAINED_PREFIX + name[len(BIOMETAL_PREFIX):]
             out.setdefault(name, []).append((event, event, ("option_true", SEAL_OPTION, SEAL_BIOMETALS, "eq")))
+        elif v.get("boss") in BOSSES and BOSSES[v["boss"]].get("game"):
+            event = DEFEATED_PREFIX + BOSSES[v["boss"]]["name"]
+            out.setdefault(name, []).append((event, event, ("option_true", ZERO_BOSS_OPTION[BOSSES[v["boss"]]["game"]], 1, "eq")))
     story = world["story"]
     no_item = ("option_true", STORY_OPTION, STORY_ITEMS, "ne")
     for atom, location, guard in ((SLOW_LAVA, story["lava_location"], no_item),
@@ -1133,12 +1155,31 @@ def location_events(world) -> dict:
                                   (D_BRIDGE, story["bridge_location"], ("option_true", STORY_OPTION, STORY_CHECKS, "eq"))):
         if location in world["locations"]:
             out.setdefault(location, []).append((STORY_EVENT[atom], STORY_EVENT[atom], guard))
-    out.setdefault(FINAL_MISSION, []).append((VICTORY_LOCATION, VICTORY, ("macro", "GOAL")))
+    out.setdefault(FINAL_MISSION, []).append((VICTORY_LOCATION, VICTORY, ir_and([("macro", "GOAL"), ("option_true", GOAL_OPTION, GOAL_SERPENT, "eq")])))
     return out
+
+
+def region_events(doc) -> dict:
+    """{region: [(event location, event item, IR)]}: the events that sit in a region rather than
+    on a location. Omega Zero's arena holds the Victory event while he is the goal."""
+    out = {}
+    for (room, rid), bid in boss_regions(doc).items():
+        if bid == "omega_zero":
+            out.setdefault(region_name(room, rid), []).append(
+                (OMEGA_VICTORY_LOCATION, VICTORY, ("option_true", GOAL_OPTION, GOAL_OMEGA, "eq")))
+    return out
+
+
+def omega_goal_ir() -> tuple:
+    """What entering Omega Zero's arena asks for on top of his boss requirement: the goal
+    requirements while he is the goal."""
+    return ("or", (("option_true", GOAL_OPTION, GOAL_OMEGA, "ne"), ("macro", "GOAL")))
 
 
 def _arena_ir(boss_of, room, rid):
     bid = boss_of.get((room, rid))
+    if bid == "omega_zero":
+        return ir_and([("boss", bid), omega_goal_ir()])
     return ("boss", bid) if bid else IR_TRUE
 
 
@@ -1188,9 +1229,8 @@ def entrance_rules(world, doc, members, tier, faults=None, control=None) -> list
     edges and the mission warps.
 
     An edge ANDs its key, the destination room's entry requirement, its extra cost, the Transerver rule, its
-    event gate and that gate's item, the landing arena's boss and the seal of Area M. What the document makes
-    impossible is left out; a rule that cannot be built reads as never, its error in `faults`. A mission warp
-    asks for the option and the mission's Cleared event.
+    event gate (and that gate's item or option), the landing arena's boss and the seal of Area M. What the
+    document makes impossible is left out; a rule that cannot be built reads as never, its error in `faults`.
     """
     gates = gate_table(doc, tier)
     boss_of = boss_regions(doc)
@@ -1226,6 +1266,9 @@ def entrance_rules(world, doc, members, tier, faults=None, control=None) -> list
                        transerver_ir(world, d),
                        ("gate", gate) if gate in gates else IR_TRUE,
                        _needs_if(story["gate_items"][gate], STORY_OPTION, STORY_ITEMS) if gate in story["gate_items"] else IR_TRUE,
+                       # the gate of the final area opens only while Serpent is the goal
+                       ("option_true", GOAL_OPTION, GOAL_SERPENT, "eq") if gate in world["event_gates_goal"] else IR_TRUE,
+                       ("option_true", ZERO_GATES[gate], 1, "eq") if gate in ZERO_GATES else IR_TRUE,
                        _arena_ir(boss_of, d["dst"], dst_rid),
                        ("macro", "SEAL") if d["dst"] in seal_rooms and d["src"] not in seal_rooms else IR_TRUE,
                        ("option_true", RUSH_OPTION, 0, "eq") if d["name"] in BOSS_RUSH_DOORS else IR_TRUE])
@@ -1601,9 +1644,10 @@ def _rules_index(world, doc, tier, errors) -> dict:
     for (room, rid), bid in boss_regions(doc).items():
         arenas[bid] = region_name(room, rid)
     events = location_events(world)
+    placed_events = {region: held for region, held in region_events(doc).items() if region in present}
     warps = [w for w in mission_warps(world, doc, members) if w[2] in present and w[3] in present]
     return {"members": members, "gates": gates, "entrances": entrances, "needed": needed, "regions": regions,
-            "warps": warps,
+            "warps": warps, "region_events": placed_events,
             "locations": locations, "events": events, "faults": faults, "control": control,
             "arenas": {bid: arenas[bid] for bid in sorted(arenas)}, "counted": sorted(count_items_used(doc)),
             "errors": list(errors) + ["%s: %s" % (name, msg) for name, msg in faults.items()],
@@ -1674,8 +1718,9 @@ def _constants(index, doc) -> list:
     L.append("# The region a new game begins in, and every region the start can lead to")
     L.append("START = %s" % _py_str(index["start"]))
     L.append("REGIONS = [\n    %s,\n]" % ",\n    ".join(_py_str(r) for r in index["regions"]))
-    L.append("# Event location -> the item it holds; each sits where its anchor location does")
+    L.append("# Event location -> the item it holds; each sits where its anchor location does, or in its region")
     items = [(event_name, item) for anchored in index["events"].values() for event_name, item, _extra in anchored]
+    items += [(event_name, item) for held in index["region_events"].values() for event_name, item, _ir in held]
     L.append("EVENTS = {\n    %s,\n}" % ",\n    ".join("%s: %s" % (_py_str(e), _py_str(i)) for e, i in items))
     return L
 
@@ -1755,6 +1800,9 @@ def export_rules_py(world, doc, tier=TIER, errors=()) -> str:
                                    "also in %s: any of them counts" % ", ".join(others) if others else "",
                                    _expert_note(ch.get("req")), ch.get("note"))
                 lines.extend(location(name, comment))
+            for event_name, item, ir in index["region_events"].get(region, []):
+                lines.append(_statement("LOCATIONS[%s] = Spot(" % _py_str(event_name), "%s, " % _py_str(region), ir, ")",
+                                        _comment("the %s event of the region" % item)))
             title = "# region %s" % reg.get("name", rid)
             if reg.get("boss"):
                 title += "   [ARENA: %s]" % BOSSES.get(reg["boss"], {}).get("name", reg["boss"])
@@ -1810,6 +1858,10 @@ def export_rules_json(world, doc, tier=TIER, errors=()) -> dict:
            "rooms": {}, "unplaced": {}}
     for room in world["rooms"]:
         out["rooms"][room] = {"label": world["room_label"][room], "entrances": {}, "locations": {}}
+    for region, held in index["region_events"].items():
+        for event_name, item, ir in held:
+            out["events"][event_name] = item
+            out["rooms"][region.split("/")[0]]["locations"][event_name] = {"region": region, "rule": ir_to_dict(ir, gates), "event": item}
     for name, src, dst, ir in index["entrances"]:
         room = (dst if src == MENU else src).split("/")[0]
         out["rooms"][room]["entrances"][name] = {"from": src, "to": dst, "rule": ir_to_dict(ir, gates)}

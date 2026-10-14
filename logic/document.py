@@ -98,6 +98,7 @@ VICTORY = "Victory"
 # rules find them
 PROGRESSIVE_OPTION, HU_OPTION, STORY_OPTION = "ProgressiveModels", "HuInPool", "MissionObjectives"
 RUSH_OPTION, SEAL_OPTION = "SkipBossRush", "AreaMAccess"
+WARPS_OPTION = "IncludeWarpsInLogic"
 STORY_OFF, STORY_CHECKS, STORY_ITEMS = 0, 1, 2
 SEAL_BIOMETALS = 1
 OPTIONS_MODULE = "worlds.mmzx.options"
@@ -670,6 +671,7 @@ def build_world(D, sites=None):
             "bridge_location": getattr(D, "STORY_BRIDGE_LOCATION", None),
             "chains": [list(chain) for chain in getattr(D, "STORY_CHAINS", [])],
             "counts": {name: (int(count), list(group)) for name, (count, group) in getattr(D, "STORY_COUNTS", {}).items()},
+            "warps": dict(getattr(D, "MISSION_WARPS", {})),
         },
     }
 
@@ -960,6 +962,12 @@ def validate(world, doc, start_room=None, unavailable=()):
     if unplaced:
         warnings.append("%d unplaced locations (they use the area-label rule): %s" % (
             len(unplaced), ", ".join(sorted(unplaced))))
+    for mission, room in sorted(world["story"]["warps"].items()):
+        location = MISSION_PREFIX + mission
+        if location not in world["locations"] or room not in rooms:
+            errors.append("mission warps: unknown mission %r or room %r" % (mission, room))
+        elif check_position(world, doc, location)[0] is None:
+            warnings.append("%s is not placed: its teleport to %s is left out of the logic" % (location, room_label(room)))
     if members:
         for r in world["rooms"]:
             reach = local_reachability(world, doc, r, members, "expert", start_room)
@@ -1145,6 +1153,27 @@ def transerver_ir(world, edge) -> tuple:
     return ("has", item, 1) if item else IR_FALSE
 
 
+def mission_warps(world, doc, members) -> list:
+    """[(entrance name, mission, source region, landing region)] of the teleports to the Guardian
+    Base that end a mission: from the region its check is placed in to the main region of the room
+    it lands in. A mission that is not placed has no warp; the validator says so."""
+    out = []
+    for mission, room in sorted(world["story"]["warps"].items()):
+        location = MISSION_PREFIX + mission
+        placed = check_placements(world, doc, location)
+        if location not in world["locations"] or room not in doc["rooms"] or not placed:
+            continue
+        src_room = placed[0][0]
+        src = region_name(src_room, members[src_room].get(location, "main"))
+        out.append(("%s warp after %s" % (src_room, mission), mission, src, region_name(room, "main")))
+    return out
+
+
+def warp_ir(mission) -> tuple:
+    """IR of a mission's teleport: only with include_warps_in_logic, once the mission can be cleared."""
+    return ir_and([("option_true", WARPS_OPTION, 1, "eq"), ("has", CLEARED_PREFIX + mission, 1)])
+
+
 def lava_control_region(world, doc, members):
     """The region of the lava control of Area K, or None while the data has no such location."""
     placed = check_placements(world, doc, world["story"]["lava_location"])
@@ -1155,11 +1184,13 @@ def lava_control_region(world, doc, members):
 
 
 def entrance_rules(world, doc, members, tier, faults=None, control=None) -> list:
-    """[(name, source region, destination region, IR)] of every entrance: the start, the drawn connections, the edges.
+    """[(name, source region, destination region, IR)] of every entrance: the start, the drawn connections, the
+    edges and the mission warps.
 
     An edge ANDs its key, the destination room's entry requirement, its extra cost, the Transerver rule, its
     event gate and that gate's item, the landing arena's boss and the seal of Area M. What the document makes
-    impossible is left out; a rule that cannot be built reads as never, its error in `faults`.
+    impossible is left out; a rule that cannot be built reads as never, its error in `faults`. A mission warp
+    asks for the option and the mission's Cleared event.
     """
     gates = gate_table(doc, tier)
     boss_of = boss_regions(doc)
@@ -1219,6 +1250,8 @@ def entrance_rules(world, doc, members, tier, faults=None, control=None) -> list
             ir = guarded(d["name"], lambda: door_ir(d, src, dst_rid))
             if ir != IR_FALSE or d["name"] in (faults or {}):
                 out.append((d["name"], src, region_name(d["dst"], dst_rid), ir))
+    for name, mission, src, dst in mission_warps(world, doc, members):
+        out.append((name, src, dst, warp_ir(mission)))
     return out
 
 
@@ -1301,6 +1334,8 @@ def global_reachability(world, doc, members, tier="expert"):
         if any(req is not None and req_is_never(req, tier) for req in reqs):
             continue
         links.setdefault(region_name(d["src"], src_rid), set()).add(region_name(d["dst"], dst_rid))
+    for _name, _mission, src, dst in mission_warps(world, doc, members):
+        links.setdefault(src, set()).add(dst)
     seen, frontier = set(), [region_name(world["start_room"], "main")]
     while frontier:
         name = frontier.pop()
@@ -1566,7 +1601,9 @@ def _rules_index(world, doc, tier, errors) -> dict:
     for (room, rid), bid in boss_regions(doc).items():
         arenas[bid] = region_name(room, rid)
     events = location_events(world)
+    warps = [w for w in mission_warps(world, doc, members) if w[2] in present and w[3] in present]
     return {"members": members, "gates": gates, "entrances": entrances, "needed": needed, "regions": regions,
+            "warps": warps,
             "locations": locations, "events": events, "faults": faults, "control": control,
             "arenas": {bid: arenas[bid] for bid in sorted(arenas)}, "counted": sorted(count_items_used(doc)),
             "errors": list(errors) + ["%s: %s" % (name, msg) for name, msg in faults.items()],
@@ -1658,6 +1695,7 @@ def export_rules_py(world, doc, tier=TIER, errors=()) -> str:
     for name, src, dst, ir in index["entrances"]:
         by_src.setdefault(src, []).append((name, dst, ir))
     edges = {e["name"]: e for e in world["edges"]}
+    warps = {name: (mission, src, dst) for name, mission, src, dst in index["warps"]}
     start_room = world["start_room"]
     placed_rooms = {}
     for name in world["locations"]:
@@ -1695,6 +1733,8 @@ def export_rules_py(world, doc, tier=TIER, errors=()) -> str:
                     dst_rid = members[d["dst"]].get(name + "@in", "main")
                     comment = _comment(_fault_comment(faults, name), "?" if ov.get("unsure") else "",
                                        _edge_comment(world, doc, d, dst_rid), _expert_note(ov.get("req")), ov.get("note"))
+                elif name in warps:
+                    comment = _comment("mission warp -> %s  with include_warps_in_logic" % world["room_label"][dst.split("/")[0]])
                 else:
                     c = next(c for c in rl.get("conns", []) if connection_name(room, c) == name)
                     comment = _comment(_fault_comment(faults, name), "?" if c.get("unsure") else "",
@@ -1703,6 +1743,8 @@ def export_rules_py(world, doc, tier=TIER, errors=()) -> str:
             landings = [world["room_label"].get(e["src"], e["src"]) for e in world["edges"]
                         if e["dst"] == room and e["src"] != room and e["kind"] not in NON_TRANSITION_KINDS
                         and members[room].get(e["name"] + "@in", "main") == rid]
+            landings += [world["room_label"][src.split("/")[0]] + " (mission warp)"
+                         for _mission, src, dst in warps.values() if dst == region]
             if landings:
                 lines.append("#   <- " + ", ".join(dict.fromkeys(landings)))
             here = sorted(n for n, rooms in placed_rooms.items() if rooms[0] == room and members[room].get(n, "main") == rid)

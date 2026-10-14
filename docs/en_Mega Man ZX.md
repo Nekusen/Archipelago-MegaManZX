@@ -108,9 +108,11 @@ Locations:
     - Giro requires beating both mini-bosses in the area to spawn
 - The MISSION tab of the pause menu gains a fast travel function by pressing "Y". It lets you travel to Transerver locations you've unlocked.
 - About Area X:
-  - The only way in logic considered to reach Area X is to have it as your starting point or receive the Transerver Access from the multiworld
+  - By default the only ways in logic to reach Area X are to have it as your starting point or to receive its Transerver Access from the multiworld.
   - Some story points where the teleport to Area X is granted have been patched
-  - The missions "Troop Reinforcement" and "Repel the Army" teleport you to Area X on completion. This teleports are NOT considered in logic.
+  - The missions "Troop Reinforcement" and "Repel the Army" teleport you to Area X on completion. With `include_warps_in_logic` those
+    teleports count as a way into Area X: a check there may expect you to clear one of those missions (both can be played again from
+    "Replay Missions"). Off by default, so they are not considered.
 - Some story gates are open from the start:
   - The F-3 door
     - This means you don't need to beat the mini-boss in this area 

@@ -31,7 +31,7 @@ from . import tracker  # auto-tab / position icon for Universal Tracker
 # Options the slot data carries under their own name: a world rebuilt from it takes these.
 SLOT_DATA_OPTIONS = ("character", "goal", "death_link", "starting_model", "starting_transerver",
                      "progressive_models", "hu_in_pool", "boss_logic", "skip_boss_rush",
-                     "skip_minibosses", "mission_objectives", "pickup_checks_1up",
+                     "skip_minibosses", "mission_objectives", "include_warps_in_logic", "pickup_checks_1up",
                      "pickup_checks_energy", "pickup_checks_weapon", "pickup_checks_crystals",
                      "notify_received", "notify_sent", "notify_style")
 
@@ -321,6 +321,8 @@ class MMZXWorld(World):
             "hu_in_pool": bool(self.options.hu_in_pool.value),
             # checks: the client only detects; items: it also keeps the story items held
             "mission_objectives": story_mode(self.options),
+            # logic only: the tracker rebuilds the graph from it, the client does nothing with it
+            "include_warps_in_logic": bool(self.options.include_warps_in_logic.value),
             "boss_logic": bosses.describe(boss_requirements(self)),
             # the doors locked in this seed, by site: the tracker rebuilds its logic from them
             door_constraints.SLOT_DATA_KEY: dict(self.door_sites),

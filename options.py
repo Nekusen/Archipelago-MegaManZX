@@ -144,6 +144,16 @@ class MissionObjectives(Choice):
     default = 0
 
 
+class IncludeWarpsInLogic(Toggle):
+    """Troop Reinforcement and Repel The Army end with a teleport to the Guardian Base, Area X.
+    On: the logic counts those teleports as a way into Area X, so a check there may expect you to
+    clear one of those missions rather than to hold the Transerver Access of Area X; both missions
+    can be played again from "Replay Missions". Off: Area X is in logic only with its Transerver
+    Access or as your starting point."""
+    display_name = "Include Warps In Logic"
+    default = 0
+
+
 class AreaMAccess(Choice):
     """What opens the seal at the entrance of Area M, the door of M-1 the rest of the area lies behind.
     - open: the seal is open from the start.
@@ -337,7 +347,7 @@ OPTION_GROUPS = [
     OptionGroup("Goal", [Goal, GoalRequirements, RequiredModels, RequiredModelsCount, RequireFullModels,
                          RequiredSecretDisks, TotalSecretDisks, RequiredMissions]),
     OptionGroup("Start", [Character, StartingModel, StartingTranserver]),
-    OptionGroup("Items and Logic", [ProgressiveModels, HuInPool, MissionObjectives, BossLogic]),
+    OptionGroup("Items and Logic", [ProgressiveModels, HuInPool, MissionObjectives, IncludeWarpsInLogic, BossLogic]),
     OptionGroup("Area M", [AreaMAccess, RequiredPasswords, TotalPasswords]),
     OptionGroup("Door Constraints", [DoorConstraintsMin, DoorConstraintsMax]),
     OptionGroup("Pickup Checks", [PickupChecks1Up, PickupChecksEnergy, PickupChecksWeapon, PickupChecksCrystals]),
@@ -362,6 +372,7 @@ class MMZXOptions(PerGameCommonOptions):
     progressive_models: ProgressiveModels
     hu_in_pool: HuInPool
     mission_objectives: MissionObjectives
+    include_warps_in_logic: IncludeWarpsInLogic
     area_m_access: AreaMAccess
     required_passwords: RequiredPasswords
     total_passwords: TotalPasswords

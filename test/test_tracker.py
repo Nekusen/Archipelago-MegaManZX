@@ -22,7 +22,7 @@ ALL_PICKUPS = {"pickup_checks_1up": True, "pickup_checks_energy": True,
 # an option set with nothing left at its default
 CHANGED = {"character": "aile", "starting_model": "model_hx", "starting_transerver": "guardian_base",
            "progressive_models": False, "hu_in_pool": True, "skip_boss_rush": True,
-           "skip_minibosses": "always", **ALL_PICKUPS, "death_link": True,
+           "skip_minibosses": "always", "include_warps_in_logic": True, **ALL_PICKUPS, "death_link": True,
            "notify_received": "all", "notify_sent": "off", "notify_style": "short",
            "boss_logic": {"Hivolt": "HX & Life Up x2", "Serpent": "ALL6 | " + WITNESS},
            "goal_requirements": ["Secret Disks", "Missions"], "required_secret_disks": 10,
@@ -162,14 +162,15 @@ class TestTrackerRegeneration(unittest.TestCase):
         """Slot data that says nothing about an option means its default, not what the YAML rolls."""
         slot_data = setup_multiworld(MMZXWorld).worlds[1].fill_slot_data()
         for key in ("progressive_models", "goal_requirements", "skip_minibosses", "mission_objectives",
-                    "area_m_access", "door_constraints"):
+                    "include_warps_in_logic", "area_m_access", "door_constraints"):
             del slot_data[key]
         yaml_options = {"progressive_models": False, "goal_requirements": ["Missions"], "required_missions": 3,
                         "skip_minibosses": "always", "mission_objectives": "locations_and_items", "area_m_access": "passwords",
-                        "door_constraints_min": 5, "door_constraints_max": 5}
+                        "include_warps_in_logic": True, "door_constraints_min": 5, "door_constraints_max": 5}
         tracker = tracker_multiworld(slot_data, yaml_options).worlds[1]
         self.assertTrue(tracker.options.progressive_models.value)
         self.assertEqual(tracker.options.skip_minibosses.current_key, "off")
+        self.assertFalse(tracker.options.include_warps_in_logic.value)
         self.assertEqual(tracker.options.mission_objectives.current_key, "off")
         self.assertEqual((tracker.seal.mode, tracker.options.area_m_access.current_key), ("open", "open"))
         self.assertEqual(tracker.door_sites, {})

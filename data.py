@@ -641,6 +641,9 @@ STORY_DONE_BITS = {'E-3: Generator': 5}
 STORY_CHAINS = [['C-1: Guardian Oeillet', 'C-1: Guardian Carrelet', 'C-1: Guardian Congre', 'C-2: Guardian Thon', 'C-2: Stuffed Animal']]
 # location -> [how many, of these locations] it needs within reach.
 STORY_COUNTS = {'G-2: Sprinkler Key': [8, ['G-2: Guardian Chene', 'G-2: Guardian Sole', 'G-2: Guardian Platane', 'G-2: Guardian Bonite', 'G-2: Civilian', 'G-2: Civilian (2)', 'G-2: Civilian (3)', 'G-2: Civilian (4)', 'G-2: Civilian (5)', 'G-2: Civilian (6)', 'G-2: Civilian (7)', 'G-2: Civilian (8)', 'G-3: Dog']]}
+# Missions that end with a teleport to the Guardian Base: mission -> the room the player lands
+# in. include_warps_in_logic makes each one an entrance into Area X.
+MISSION_WARPS = {'Troop Reinforcement': 'x02', 'Repel The Army': 'x02'}
 # Mini-bosses skip_minibosses treats as beaten: area letter -> [[addr, bit], ...],
 # the flag each room script sets when the mini-boss dies.
 MINIBOSS_FLAGS = {

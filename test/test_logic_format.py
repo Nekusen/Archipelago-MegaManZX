@@ -173,6 +173,19 @@ class TestDocument(unittest.TestCase):
         self.assertEqual(exported["start"], "z01")
         self.assertIn("K-1: Sub Tank", exported["rooms"]["k01"]["locations"])
 
+    def test_mission_warps_are_entrances(self) -> None:
+        """A mission that ends in the Guardian Base is an entrance from its check's region, behind the option."""
+        members = F.resolve_members(WORLD, DOC)
+        warps = F.mission_warps(WORLD, DOC, members)
+        self.assertEqual({mission for _name, mission, _src, _dst in warps}, set(D.MISSION_WARPS))
+        rules = {name: (src, dst, ir) for name, src, dst, ir in F.entrance_rules(WORLD, DOC, members, F.TIER)}
+        for name, mission, src, dst in warps:
+            self.assertEqual(src.split("/")[0], F.check_position(WORLD, DOC, F.MISSION_PREFIX + mission)[0])
+            self.assertEqual(dst, D.MISSION_WARPS[mission])
+            self.assertEqual(rules[name], (src, dst, ("and", (("option_true", F.WARPS_OPTION, 1, "eq"),
+                                                            ("has", F.CLEARED_PREFIX + mission, 1)))))
+        self.assertIn("x02", F.global_reachability(WORLD, DOC, members))
+
     def test_every_room_is_drawn(self) -> None:
         """Every room of the door table has an entry with a main region."""
         self.assertEqual(set(DOC["rooms"]), set(WORLD["rooms"]))

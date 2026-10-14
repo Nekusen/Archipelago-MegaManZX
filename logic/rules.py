@@ -6,7 +6,7 @@ rewrites it on every save, or run tools/check_logic.py; the tests fail when it f
 from rule_builder.options import OptionFilter
 from rule_builder.rules import CanReachLocation, CanReachRegion, Has, HasAny, HasFromList, True_
 
-from ..options import AreaMAccess, HuInPool, MissionObjectives, ProgressiveModels, SkipBossRush
+from ..options import AreaMAccess, HuInPool, IncludeWarpsInLogic, MissionObjectives, ProgressiveModels, SkipBossRush
 from .builder import BossRequirement, DoorKey, GoalRequirement, LavaCarriedTo, ReachedAtLeast, SealRequirement, Edge, Spot
 
 # The atoms the world answers, the model aliases and the seal
@@ -817,6 +817,8 @@ LOCATIONS["D-1: Life Up"] = Spot("d01/inside-switch-door", MODEL)   # "any trans
 ENTRANCES["d02: boss-room -> middle-area"] = Edge("d02/boss-room", "d02/middle-area", MODEL)   # conn -> Middle Area
 ENTRANCES["d02: boss-room -> hub-entrance"] = Edge("d02/boss-room", "d02/hub-entrance", True_())   # conn -> Hub Entrance
 ENTRANCES["d02 door (7808,544)"] = Edge("d02/boss-room", "d04/d-2-entrance", GATE_225)   # door -> D-4/D-2 Entrance gate 225
+ENTRANCES["d02 warp after Troop Reinforcement"] = Edge(
+    "d02/boss-room", "x02", True_(options=[OptionFilter(IncludeWarpsInLogic, 1)]) & Has("Cleared: Troop Reinforcement"))   # mission warp -> X-2 with include_warps_in_logic
 #   <- D-4
 LOCATIONS["Mission - Troop Reinforcement"] = Spot("d02/boss-room", MODEL)
 LOCATIONS["Cleared: Troop Reinforcement"] = LOCATIONS["Mission - Troop Reinforcement"]   # event
@@ -2056,6 +2058,8 @@ ENTRANCES["o01 door (4320,736)"] = Edge("o01/o-2-entrance", "o02/o-1-entrance", 
 # --- O-2 [o02]
 # region Boss Room   [ARENA: Prometheus & Pandora]
 ENTRANCES["o02: boss-room -> east-segment"] = Edge("o02/boss-room", "o02/east-segment", MODEL)   # conn -> East Segment
+ENTRANCES["o02 warp after Repel The Army"] = Edge(
+    "o02/boss-room", "x02", True_(options=[OptionFilter(IncludeWarpsInLogic, 1)]) & Has("Cleared: Repel The Army"))   # mission warp -> X-2 with include_warps_in_logic
 LOCATIONS["Mission - Repel The Army"] = Spot("o02/boss-room", MODEL)
 LOCATIONS["Cleared: Repel The Army"] = LOCATIONS["Mission - Repel The Army"]   # event
 # region East Segment
@@ -2098,7 +2102,7 @@ LOCATIONS["X-1: Smelling Salts"] = Spot("x01", Has("Cleared: Troop Reinforcement
 # --- X-2 [x02]
 # region Main
 ENTRANCES["x02 door (736,512)"] = Edge("x02", "x01", True_())   # door -> X-1
-#   <- X-1
+#   <- X-1, O-2 (mission warp), D-2 (mission warp)
 LOCATIONS["X-2: Disk O-16"] = Spot("x02", True_())
 LOCATIONS["X-2: Disk O-3"] = Spot("x02", True_())
 LOCATIONS["X-2: W Tank"] = Spot("x02", MODEL)

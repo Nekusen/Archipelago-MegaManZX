@@ -17342,6 +17342,38 @@
       "filtered_resolution": false,
       "args": {}
      }
+    },
+    "d02 warp after Troop Reinforcement": {
+     "from": "d02/boss-room",
+     "to": "x02",
+     "rule": {
+      "rule": "And",
+      "options": [],
+      "filtered_resolution": false,
+      "children": [
+       {
+        "rule": "True_",
+        "options": [
+         {
+          "option": "worlds.mmzx.options.IncludeWarpsInLogic",
+          "value": 1,
+          "operator": "eq"
+         }
+        ],
+        "filtered_resolution": false,
+        "args": {}
+       },
+       {
+        "rule": "Has",
+        "options": [],
+        "filtered_resolution": false,
+        "args": {
+         "item_name": "Cleared: Troop Reinforcement",
+         "count": 1
+        }
+       }
+      ]
+     }
     }
    },
    "locations": {
@@ -75843,6 +75875,38 @@
       "options": [],
       "filtered_resolution": false,
       "args": {}
+     }
+    },
+    "o02 warp after Repel The Army": {
+     "from": "o02/boss-room",
+     "to": "x02",
+     "rule": {
+      "rule": "And",
+      "options": [],
+      "filtered_resolution": false,
+      "children": [
+       {
+        "rule": "True_",
+        "options": [
+         {
+          "option": "worlds.mmzx.options.IncludeWarpsInLogic",
+          "value": 1,
+          "operator": "eq"
+         }
+        ],
+        "filtered_resolution": false,
+        "args": {}
+       },
+       {
+        "rule": "Has",
+        "options": [],
+        "filtered_resolution": false,
+        "args": {
+         "item_name": "Cleared: Repel The Army",
+         "count": 1
+        }
+       }
+      ]
      }
     }
    },

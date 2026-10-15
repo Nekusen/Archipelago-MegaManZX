@@ -8,6 +8,8 @@ All notable changes to this project are documented in this file. The format is b
 
 ### Added
 
+- Added an operator next to the Transerver on the Area A floor and on the Guardian base floor of the hub: talk to her
+  (UP) and, for 200 E-Crystals, she refills every Sub Tank you hold. Nothing to fill, no charge.
 - Added the location `Obtain Biometal Z`, sent when you beat Giro in D-2.
 - Added `area_m_access`: what opens the seal at the entrance of Area M.
   - `open`: the seal is open from the start, as before.

@@ -204,8 +204,13 @@ def install_pause_texts(rom: bytearray) -> None:
     relocate_file(rom, PAUSE_TEXT_FILE_ID, pause_texts_with_goal_line(file_bytes(rom, PAUSE_TEXT_FILE_ID)))
 
 
-def rebuild_texts(data: bytes, replace) -> bytes:
-    """A text file with every message passed through replace(index, text) and its offsets relaid."""
+def text_count(data: bytes) -> int:
+    """How many messages a text file holds."""
+    return struct.unpack_from("<H", data, 2)[0] // 2
+
+
+def rebuild_texts(data: bytes, replace, extra=()) -> bytes:
+    """A text file with every message passed through replace(index, text), `extra` messages appended and its offsets relaid."""
     total, tsize = struct.unpack_from("<HH", data, 0)
     n = tsize // 2
     base = 4 + tsize
@@ -216,18 +221,21 @@ def rebuild_texts(data: bytes, replace) -> bytes:
         end = data.index(bytes([PAUSE_TEXT_END]), base + o)
         tail = max(tail, end + 1)
         texts.append(replace(k, data[base + o:end]) + bytes([PAUSE_TEXT_END]))
+    texts += [bytes(t) + bytes([PAUSE_TEXT_END]) for t in extra]
     body = b"".join(texts)
     new_offs = []
     pos = 0
     for t in texts:
         new_offs.append(pos)
         pos += len(t)
+    n = len(texts)
+    tsize = n * 2
     out = struct.pack("<HH", 4 + tsize + len(body), tsize) + struct.pack("<%dH" % n, *new_offs) + body
     return out + data[tail:]   # whatever trails the last message
 
 
-def talk_texts_rebuilt(data: bytes) -> bytes:
-    """talk_sys_en.bin with the mission menu renamed."""
+def talk_texts_rebuilt(data: bytes, extra=()) -> bytes:
+    """talk_sys_en.bin with the mission menu renamed and `extra` messages appended."""
     def replace(k: int, text: bytes) -> bytes:
         if k not in REPLAY_TEXTS:
             return text
@@ -235,12 +243,18 @@ def talk_texts_rebuilt(data: bytes) -> bytes:
         if text != orig:
             raise ValueError("MMZX: system text %d is not the mission menu text" % k)
         return new
-    return rebuild_texts(data, replace)
+    return rebuild_texts(data, replace, extra)
 
 
-def install_talk_texts(rom: bytearray) -> None:
-    """Rebuild talk_sys_en.bin with the menu texts and relocate it to the end padding."""
-    relocate_file(rom, TALK_TEXT_FILE_ID, talk_texts_rebuilt(file_bytes(rom, TALK_TEXT_FILE_ID)))
+def install_talk_texts(rom: bytearray, extra=(), first: int | None = None) -> None:
+    """Rebuild talk_sys_en.bin with the menu texts and the `extra` messages, relocated to the end padding.
+
+    `first` is the index the first extra message must get: the ids the code opens are fixed.
+    """
+    data = file_bytes(rom, TALK_TEXT_FILE_ID)
+    if first is not None and text_count(data) != first:
+        raise ValueError("MMZX: talk_sys_en.bin has %d messages, not %d. Wrong ROM?" % (text_count(data), first))
+    relocate_file(rom, TALK_TEXT_FILE_ID, talk_texts_rebuilt(data, extra))
 
 
 def system_texts_with_mission_names(data: bytes) -> bytes:

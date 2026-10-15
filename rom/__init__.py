@@ -10,7 +10,7 @@ from settings import get_settings
 from worlds.Files import (APProcedurePatch, APTokenMixin, APTokenTypes,
                           APPatchExtension)
 
-from . import doors, golden, missions, nds, pickups, sprites, story, table, ui
+from . import doors, golden, missions, nds, npc, pickups, sprites, story, table, ui
 from .arm9 import Arm9, replace_arm9
 
 MMZX_US_MD5 = "88b684b1b3eea885a07625da89f1e5b3"
@@ -78,15 +78,17 @@ class MMZXPatchExtension(APPatchExtension):
         ui.patch_goal_line(arm9)
         table.patch_pickup_table(arm9, caller.get_file(table_file))
         doors.patch_door_tables(arm9, locks)
+        npc.patch_npc_tables(arm9)
 
         # Recompress into the original slot; a rebuilt ROM shifts the layout (melonDS: bad_alloc)
         replace_arm9(d, arm9_off, arm9_len, arm9.pack())
         fnt_start = sprites.install_icon_set(d)
         ui.patch_menu_warp_text(d)
         ui.install_pause_texts(d)
-        ui.install_talk_texts(d)
+        ui.install_talk_texts(d, npc.NPC_TEXTS, npc.NPC_TEXT_FIRST)
         ui.install_mission_names(d)
         pickups.patch_usable_rooms(d)
+        npc.patch_npc_room(d)
         story.patch_story_rooms(d, story_items)
         story.patch_bridge(d, story_on, story_items)
         sprites.patch_disk_logo(d, fnt_start)

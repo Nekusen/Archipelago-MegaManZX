@@ -169,11 +169,12 @@ OVERLAY_USABLE_PATCH = {
     113: [(0x02194F54, "00020000", "00ffff00")],  # X-2 doll: hit mask, hit points gone -> any attack
 }
 # While Protect HQ is under way every Guardian but the three operators leaves the base.
-# The two who sell usables stay, so those locations do not depend on the story.
+# The two who sell usables stay, so those locations do not depend on the story, and so
+# does the refill operator of the hub (rom/npc.py).
 GUARDIAN_KEEP_PATCH = [
     # (RAM, vanilla, patched)
     (0x0209C40C, bytes.fromhex("217d042902d1607d002814d0042902d1607d01280fd0042902d1607d02280ad0"),
-     bytes.fromhex("217d607d042901d1032814d3012901d1032810d0052903d104280cd0c046c046")),
+     bytes.fromhex("217d607d042903d1032814d3062812d0012901d103280ed0052901d104280ad0")),
 ]
 
 

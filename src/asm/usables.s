@@ -74,7 +74,8 @@ lit_popup_body:   .word show_pickup_msg_body + 1
         .org    0x0209C40C
 @ rom: GUARDIAN_KEEP_PATCH[0][2]
 @ Guardian init FUN_0209c3fc, with the Protect HQ start flag set (r4 = entity): the
-@ vanilla block keeps only the three operators (role 4, modifiers 0 to 2).
+@ vanilla block keeps only the three operators (role 4, modifiers 0 to 2). The refill
+@ operator of the hub (role 4, modifier 6; subtank_npc.s) stays too.
 @ was: ldrb r1, [r4, #0x14]; cmp r1, #4; bne; ldrb r0, [r4, #0x15]; cmp r0, #0; beq normal (three times, modifiers 0, 1, 2)
         ldrb    r1, [r4, #0x14]         @ role
         ldrb    r0, [r4, #0x15]         @ modifier
@@ -82,6 +83,8 @@ lit_popup_body:   .word show_pickup_msg_body + 1
         bne     not_operator
         cmp     r0, #3
         blo     0x0209C442              @ operators: normal init
+        cmp     r0, #6
+        beq     0x0209C442              @ the refill operator of the hub
 not_operator:
         cmp     r1, #1
         bne     not_cedre
@@ -92,8 +95,6 @@ not_cedre:
         bne     0x0209C42C              @ everyone else leaves
         cmp     r0, #4
         beq     0x0209C442              @ Scombresoce (5, 4) sells the Smelling Salts
-        mov     r8, r8
-        mov     r8, r8
 
 @ Room overlays (rom/pickups.py OVERLAY_USABLE_PATCH; the patch decompresses the
 @ overlay file, edits it and stores it again). Overlay 46 is A-3, overlay 113 is X-2.

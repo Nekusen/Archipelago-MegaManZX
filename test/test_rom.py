@@ -18,9 +18,9 @@ from ..data import (EVENT_GATES, GOAL_LINE_ADDR, ICON_CODES, ITEMS, LIVE_BLOCK, 
                     MISSION_REPEAT_BITS, NOTIFY_ADDR, NOTIFY_BUF_MAX, PICKUP_TABLE_ADDR, STARTING_MODELS,
                     STARTING_TRANSERVERS, STORY_BRIDGE_ITEM, STORY_BRIDGE_LOCATION, STORY_DONE_BITS, STORY_GATE_ITEMS,
                     STORY_LAVA_ITEM, STORY_REPORT_STATES, STORY_SWITCH_ITEM, STORY_SWITCH_LOCATION)
-from ..rom import arm9, blz, golden, icons, missions, nds, pickups, sprites, story, table, ui
+from ..rom import arm9, blz, golden, icons, missions, nds, npc, pickups, sprites, story, table, ui
 
-PATCH_MODULES = (pickups, sprites, ui, missions, story)     # the modules that hold patch tables and caves
+PATCH_MODULES = (pickups, sprites, ui, missions, story, npc)     # the modules that hold patch tables and caves
 ARM9_RAM = (0x02000000, 0x02400000)
 # Zero stretches of the vanilla ARM9 that take the caves.
 FREE_STRETCHES = [(0x020CB434, 0x020CB9D4), (0x020C8150, sprites.GFX_CAVES_END)]
@@ -958,3 +958,66 @@ class TestPauseTexts(unittest.TestCase):
         self.assertIn(int.from_bytes(ui.PAUSE_SIGNATURE, "little"), words)
         self.assertIn(0x2400 | 2 * ui.PAUSE_SIGNATURE_INDEX, halfwords)   # movs r4, #index * 2
         self.assertLessEqual(GOAL_LINE_ADDR + ui.GOAL_LINE_BUF_LEN, NOTIFY_ADDR)
+
+
+class TestRefillOperator(unittest.TestCase):
+    """The operator beside the starting Transerver: her section, the hub's grown tables and her texts."""
+
+    VANILLA_PRELOADS = [bytes.fromhex(h) for h in ("bf01bf0100ff0200", "c001bf0100ff0200", "c101c10100ff0200",
+                                                   "c201c10100ff0200", "d001d00100ff0000")]
+    VANILLA_TEMPLATES = [bytes.fromhex(h) for h in ("010512000000ffffff000000", "01051c000000ffffff000000",
+                                                    "01051c020000ffffff000000", "010513000000ffffff000000",
+                                                    "010513010000ffffff000000", "010513010600ffffff000000",
+                                                    "010512800000ffffff000000")]
+
+    def vanilla_coords(self):
+        xs = [248] * 15 + [384] * 15 + [504] * 6 + [760, 896, 1272, 1408]
+        return [struct.pack("<IHH", 0x80000000, 0x8000, 0)] + [struct.pack("<IHH", x, 344 + i, 1) for i, x in enumerate(xs)]
+
+    def test_section_layout(self) -> None:
+        """The routine and the two role tables fit their slots, and the role pointers name them."""
+        self.assertLessEqual(len(npc.NPC_SECTION_CODE), npc.NPC_INIT_TABLE_OFF)
+        self.assertEqual(len(npc.NPC_INIT_TABLE), 7 * 4)
+        self.assertEqual(len(npc.NPC_UPDATE_TABLE), 7 * 4)
+        self.assertLessEqual(npc.NPC_UPDATE_TABLE_OFF + len(npc.NPC_UPDATE_TABLE), npc.NPC_SECTION_LEN)
+        self.assertEqual(len(npc.section()), npc.NPC_SECTION_LEN)
+        self.assertEqual(npc.NPC_SECTION_LEN % 4, 0)
+        self.assertEqual(struct.unpack("<I", npc.NPC_ROLE_INIT_POINTER_NEW)[0], npc.NPC_SECTION_RAM + npc.NPC_INIT_TABLE_OFF)
+        self.assertEqual(struct.unpack("<I", npc.NPC_ROLE_UPDATE_POINTER_NEW)[0], npc.NPC_SECTION_RAM + npc.NPC_UPDATE_TABLE_OFF)
+        # the seventh update entry is the routine itself, in Thumb
+        self.assertEqual(struct.unpack_from("<I", npc.NPC_UPDATE_TABLE, 24)[0], npc.NPC_SECTION_RAM + 1)
+        self.assertLessEqual(npc.NPC_SECTION_RAM + npc.NPC_SECTION_LEN, ui.ROOM_OVERLAY_SLOT_RAM)
+
+    def test_grown_tables(self) -> None:
+        """The hub's tables keep their header first, take the operator at the end of the x order and point at her template."""
+        tables = {npc.PRELOADS_KIND: self.VANILLA_PRELOADS, npc.COORDS_KIND: self.vanilla_coords(),
+                  npc.TEMPLATES_KIND: self.VANILLA_TEMPLATES}
+        grown = npc.grown_tables(tables)
+        sizes = npc.grown_table_sizes()
+        for kind, blob in grown.items():
+            with self.subTest(kind=kind):
+                self.assertEqual(len(blob), sizes[kind])
+        self.assertEqual(grown[npc.PRELOADS_KIND][-16:-8], npc.NPC_PRELOAD)
+        self.assertEqual(grown[npc.TEMPLATES_KIND][7 * 12:8 * 12], npc.NPC_TEMPLATE)
+        coords = [struct.unpack_from("<IHH", grown[npc.COORDS_KIND], i) for i in range(0, sizes[npc.COORDS_KIND] - 8, 8)]
+        self.assertEqual(coords[0], (0x80000000, 0x8000, 0))
+        xs = [c[0] for c in coords[1:]]
+        self.assertEqual(xs, sorted(xs))
+        ours = [c for c in coords if c[2] == 7]
+        self.assertEqual(ours, [(x, y, 7) for x, y in npc.NPC_COORDS])
+        rams = npc.grown_tables_ram()
+        self.assertEqual(rams[npc.PRELOADS_KIND], ui.ROOM_OVERLAY_SLOT_RAM + npc.HUB_OVERLAY_SIZE)
+        self.assertEqual(rams[npc.COORDS_KIND], rams[npc.PRELOADS_KIND] + sizes[npc.PRELOADS_KIND])
+        self.assertLessEqual(rams[npc.TEMPLATES_KIND] + sizes[npc.TEMPLATES_KIND], ui.ROOM_OVERLAY_SLOT_RAM + nds.OVERLAY_CODE_MAX)
+
+    def test_texts(self) -> None:
+        """Five messages, each in the Transerver's style, the offer ending in a two-line choice."""
+        self.assertEqual(len(npc.NPC_TEXTS), 5)
+        for text in npc.NPC_TEXTS:
+            with self.subTest(text=text.hex()):
+                self.assertTrue(text.startswith(bytes.fromhex("f202")))
+                self.assertNotIn(ui.PAUSE_TEXT_END, text)
+        self.assertIn(bytes.fromhex("f663"), npc.NPC_TEXTS[0])
+        rebuilt = ui.rebuild_texts(struct.pack("<HH", 4 + 2 + 2, 2) + struct.pack("<H", 0) + bytes.fromhex("21feff"),
+                                   lambda k, t: t, npc.NPC_TEXTS)
+        self.assertEqual(ui.text_count(rebuilt), 1 + len(npc.NPC_TEXTS))

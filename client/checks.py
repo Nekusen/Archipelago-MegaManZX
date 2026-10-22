@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 import worlds._bizhawk as bizhawk
 from NetUtils import ClientStatus
 
-from ..data import GOAL_BITS, GOAL_BITS_SERPENT, LOCATIONS
+from ..data import GOAL_BITS, GOAL_BITS_OMEGA, GOAL_BITS_SERPENT, LOCATIONS
 from ..rom.table import BITMAP_LEN
 from .addresses import (
     DISK_TAKEN_BITS, DOM, PICKUP_COLLECTED_ADDR, REFILL_SLOTS, RESEND_SECONDS, SLOT_LOCATIONS)
@@ -93,10 +93,15 @@ async def collected_refills(client: "MMZXClient", ctx) -> set[int]:
     return found
 
 
-async def report_goal(ctx, window: ProgressWindow) -> None:
-    """Send the goal once Serpent is beaten: the epilogue event or both D-5 Serpent bits."""
+async def report_goal(client: "MMZXClient", ctx, window: ProgressWindow) -> None:
+    """Send the goal once its boss is beaten: Omega Zero's N-1 flag, or for Serpent the epilogue
+    event or both D-5 Serpent bits."""
     if ctx.finished_game:
         return
-    if window.all_set(GOAL_BITS) or window.all_set(GOAL_BITS_SERPENT):
+    if client.goal.omega:
+        done = window.all_set(GOAL_BITS_OMEGA)
+    else:
+        done = window.all_set(GOAL_BITS) or window.all_set(GOAL_BITS_SERPENT)
+    if done:
         ctx.finished_game = True
         await ctx.send_msgs([{"cmd": "StatusUpdate", "status": ClientStatus.CLIENT_GOAL}])

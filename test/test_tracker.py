@@ -43,7 +43,7 @@ CASES = {
 }
 # options the slot data sends resolved, as the goal of the seed
 GOAL_OPTIONS = {"goal_requirements", "required_models", "required_models_count", "require_full_models",
-                "required_secret_disks", "total_secret_disks", "required_missions"}
+                "required_secret_disks", "total_secret_disks", "required_missions", "required_mutos_reploids"}
 # options the slot data sends resolved too: the seal of Area M and the doors a seed locked
 SEAL_OPTIONS = {"area_m_access", "required_passwords", "total_passwords"}
 DOOR_OPTIONS = {"door_constraints_min", "door_constraints_max"}

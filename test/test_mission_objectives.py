@@ -359,7 +359,7 @@ class TestClientState(unittest.TestCase):
     def test_story_gates_are_left_to_the_game(self) -> None:
         """With the items the client stops opening the two story gates; the other gates stay open."""
         class Goal:
-            def met(self, counts, missions):
+            def met(self, counts, missions, mutos=0):
                 return False
         gates = {tuple(EVENT_GATES[flag]) for flag in STORY_GATE_ITEMS}
         self.assertEqual(STORY_GATE_BITS, gates)
@@ -371,7 +371,7 @@ class TestClientState(unittest.TestCase):
     def test_switch_gates_are_left_to_the_player(self) -> None:
         """On checks and on items the client stops lowering the bridge: its switch or its item does."""
         class Goal:
-            def met(self, counts, missions):
+            def met(self, counts, missions, mutos=0):
                 return False
         switches = {tuple(EVENT_GATES[flag]) for flag in EVENT_GATES_STORY}
         self.assertEqual(STORY_SWITCH_GATE_BITS, switches)

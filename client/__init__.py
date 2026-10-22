@@ -23,7 +23,7 @@ from .notices import push_notices, sync_pickup_state
 from .startup import apply_start_state, resolve_start_state
 from ..rom.ui import SKIP_COPY_CAVE, SKIP_COPY_CAVE_RAM
 from .checks import detect_checks, sync_taken_disks
-from .goal import GoalRequirement, missions_completed, sync_goal_line
+from .goal import GoalRequirement, missions_completed, mutos_beaten, sync_goal_line
 from .seal import Seal, hold_seal_scene, track_biometals
 from .items import grant_items, received_counts, revert_unowned_models
 from .minibosses import MODE_OFF, parse_mode, skip_minibosses
@@ -124,6 +124,7 @@ class MMZXClient(BizHawkClient):
         self.scout_requested: set[int] = set()
         self.goal_line_written: bytes | None = None
         self.missions_cleared: set[str] | None = None   # counted missions completed, from the game's flags
+        self.mutos_beaten: set[str] | None = None       # Mega Man Zero bosses beaten, from the game's flags
         self.ending_ticks = 0             # ticks with the stuck-ending signature
         # ITEM A usables: the possession bits granted so far, and whether a console is in use
         self.usables_granted = 0
@@ -206,7 +207,7 @@ class MMZXClient(BizHawkClient):
         if self.death_link_enabled:
             await ctx.update_death_link(True)
         self.goal = GoalRequirement(opts)
-        for line in self.goal.report(received_counts(ctx), self.missions_cleared):
+        for line in self.goal.report(received_counts(ctx), self.missions_cleared, self.mutos_beaten):
             logger.info("[mmzx] " + line)
         self.seal = Seal(opts)
         self.skip_boss_rush = bool(opts.get("skip_boss_rush", False))
@@ -289,6 +290,7 @@ class MMZXClient(BizHawkClient):
             await self._stage("position", send_position(self, ctx, tick))
             window = await ProgressWindow.read(ctx)
             self.missions_cleared = missions_completed(window)
+            self.mutos_beaten = mutos_beaten(window)
             if self.seal.gated:
                 await self._stage("seal progress", track_biometals(self, ctx, window))
             await self._stage("checks", detect_checks(self, ctx, window))

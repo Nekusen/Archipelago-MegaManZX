@@ -2313,6 +2313,110 @@
    "req": null,
    "unsure": false
   },
+  "n01 door (1320,1616)": {
+   "dst_pos": null,
+   "note": "",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "n01 door (1320,1712)": {
+   "dst_pos": null,
+   "note": "",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "n01 door (1496,1616)": {
+   "dst_pos": null,
+   "note": "",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "n01 door (1496,1712)": {
+   "dst_pos": null,
+   "note": "",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "n01 door (1832,1616)": {
+   "dst_pos": null,
+   "note": "",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "n01 door (1832,1712)": {
+   "dst_pos": null,
+   "note": "",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "n01 door (2008,1616)": {
+   "dst_pos": null,
+   "note": "",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "n01 door (2008,1712)": {
+   "dst_pos": null,
+   "note": "",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
   "n01 door (3520,512)": {
    "dst_pos": null,
    "note": "",
@@ -15494,11 +15598,123 @@
      },
      "to": "main-area",
      "unsure": false
+    },
+    {
+     "from": "hellbat-arena",
+     "note": "the game sends you back to the capsule room after the fight",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "zero3-capsules",
+     "unsure": false
+    },
+    {
+     "from": "flizard-arena",
+     "note": "the game sends you back to the capsule room after the fight",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "zero3-capsules",
+     "unsure": false
+    },
+    {
+     "from": "mantisk-arena",
+     "note": "the game sends you back to the capsule room after the fight",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "zero3-capsules",
+     "unsure": false
+    },
+    {
+     "from": "inarabitta-arena",
+     "note": "the game sends you back to the capsule room after the fight",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "zero3-capsules",
+     "unsure": false
+    },
+    {
+     "from": "lunaedge-arena",
+     "note": "the game sends you back to the capsule room after the fight",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "zero4-capsules",
+     "unsure": false
+    },
+    {
+     "from": "mandrago-arena",
+     "note": "the game sends you back to the capsule room after the fight",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "zero4-capsules",
+     "unsure": false
+    },
+    {
+     "from": "titanion-arena",
+     "note": "the game sends you back to the capsule room after the fight",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "zero4-capsules",
+     "unsure": false
+    },
+    {
+     "from": "eclair-arena",
+     "note": "the game sends you back to the capsule room after the fight",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "zero4-capsules",
+     "unsure": false
     }
    ],
    "members": {},
    "note": "",
    "regions": {
+    "eclair-arena": {
+     "boss": "pegasolta_eclair",
+     "color": "#d7aefb",
+     "name": "Pegasolta Eclair Arena",
+     "note": "",
+     "poly": [
+      [
+       512,
+       2112
+      ],
+      [
+       1024,
+       2112
+      ],
+      [
+       1024,
+       2304
+      ],
+      [
+       512,
+       2304
+      ]
+     ]
+    },
     "first-platforms": {
      "color": "#81c995",
      "name": "First Platforms",
@@ -15522,6 +15738,54 @@
       ]
      ]
     },
+    "flizard-arena": {
+     "boss": "blazin_flizard",
+     "color": "#d7aefb",
+     "name": "Blazin' Flizard Arena",
+     "note": "",
+     "poly": [
+      [
+       2560,
+       960
+      ],
+      [
+       2816,
+       960
+      ],
+      [
+       2816,
+       1152
+      ],
+      [
+       2560,
+       1152
+      ]
+     ]
+    },
+    "hellbat-arena": {
+     "boss": "hellbat_schilt",
+     "color": "#d7aefb",
+     "name": "Hellbat Schilt Arena",
+     "note": "",
+     "poly": [
+      [
+       3072,
+       960
+      ],
+      [
+       3584,
+       960
+      ],
+      [
+       3584,
+       1152
+      ],
+      [
+       3072,
+       1152
+      ]
+     ]
+    },
     "hub-entrance": {
      "color": "#f28b82",
      "name": "Hub Entrance",
@@ -15542,6 +15806,54 @@
       [
        783,
        288
+      ]
+     ]
+    },
+    "inarabitta-arena": {
+     "boss": "childre_inarabitta",
+     "color": "#d7aefb",
+     "name": "Childre Inarabitta Arena",
+     "note": "",
+     "poly": [
+      [
+       2048,
+       960
+      ],
+      [
+       2304,
+       960
+      ],
+      [
+       2304,
+       1344
+      ],
+      [
+       2048,
+       1344
+      ]
+     ]
+    },
+    "lunaedge-arena": {
+     "boss": "fenri_lunaedge",
+     "color": "#d7aefb",
+     "name": "Fenri Lunaedge Arena",
+     "note": "",
+     "poly": [
+      [
+       2304,
+       1536
+      ],
+      [
+       2560,
+       1536
+      ],
+      [
+       2560,
+       1728
+      ],
+      [
+       2304,
+       1728
       ]
      ]
     },
@@ -15583,6 +15895,54 @@
       [
        286,
        819
+      ]
+     ]
+    },
+    "mandrago-arena": {
+     "boss": "noble_mandrago",
+     "color": "#d7aefb",
+     "name": "Noble Mandrago Arena",
+     "note": "",
+     "poly": [
+      [
+       3328,
+       1536
+      ],
+      [
+       3584,
+       1536
+      ],
+      [
+       3584,
+       1728
+      ],
+      [
+       3328,
+       1728
+      ]
+     ]
+    },
+    "mantisk-arena": {
+     "boss": "deathtanz_mantisk",
+     "color": "#d7aefb",
+     "name": "Deathtanz Mantisk Arena",
+     "note": "",
+     "poly": [
+      [
+       1536,
+       960
+      ],
+      [
+       1792,
+       960
+      ],
+      [
+       1792,
+       1344
+      ],
+      [
+       1536,
+       1344
       ]
      ]
     },
@@ -15630,6 +15990,76 @@
       [
        3675,
        246
+      ]
+     ]
+    },
+    "titanion-arena": {
+     "boss": "sol_titanion",
+     "color": "#d7aefb",
+     "name": "Sol Titanion Arena",
+     "note": "",
+     "poly": [
+      [
+       2816,
+       1536
+      ],
+      [
+       3072,
+       1536
+      ],
+      [
+       3072,
+       1728
+      ],
+      [
+       2816,
+       1728
+      ]
+     ]
+    },
+    "zero3-capsules": {
+     "color": "#ffd180",
+     "name": "Zero 3 Capsule Room",
+     "note": "",
+     "poly": [
+      [
+       1280,
+       1552
+      ],
+      [
+       1544,
+       1552
+      ],
+      [
+       1544,
+       1760
+      ],
+      [
+       1280,
+       1760
+      ]
+     ]
+    },
+    "zero4-capsules": {
+     "color": "#ffab91",
+     "name": "Zero 4 Capsule Room",
+     "note": "",
+     "poly": [
+      [
+       1792,
+       1552
+      ],
+      [
+       2056,
+       1552
+      ],
+      [
+       2056,
+       1760
+      ],
+      [
+       1792,
+       1760
       ]
      ]
     }

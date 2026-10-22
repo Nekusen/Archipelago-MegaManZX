@@ -10,7 +10,7 @@ from settings import get_settings
 from worlds.Files import (APProcedurePatch, APTokenMixin, APTokenTypes,
                           APPatchExtension)
 
-from . import doors, golden, missions, nds, npc, pickups, sprites, story, table, ui
+from . import doors, golden, missions, nds, npc, omega, pickups, sprites, story, table, ui, zero
 from .arm9 import Arm9, replace_arm9
 
 MMZX_US_MD5 = "88b684b1b3eea885a07625da89f1e5b3"
@@ -31,6 +31,22 @@ AP_MARKER_SEED_MAX = 31
 CFG_HU_IN_POOL = 0x01                     # mmzx_cfg.bin byte 0, bit 0
 CFG_STORY_ITEMS = 0x02                    # bit 1: mission_objectives is locations_and_items
 CFG_STORY_ON = 0x04                       # bit 2: mission_objectives is on, in either mode
+CFG_ZERO3 = 0x08                          # bit 3: the Mega Man Zero 3 bosses are checks
+CFG_ZERO4 = 0x10                          # bit 4: the Mega Man Zero 4 bosses are checks
+CFG_OMEGA_GOAL = 0x20                     # bit 5: the goal is Omega Zero
+CFG_ZERO_GAMES = {zero.ZERO3: CFG_ZERO3, zero.ZERO4: CFG_ZERO4}
+# The settings that hold the player's Zero 3 and Zero 4 ROMs, read only when the seed asks for them.
+ZERO_ROM_SETTINGS = {zero.ZERO3: "zero3_rom_file", zero.ZERO4: "zero4_rom_file"}
+
+
+def read_zero_roms(games: set[int]) -> dict[int, bytes]:
+    """The GBA ROMs of the games whose bosses are in, from the settings; a missing one is asked for."""
+    roms = {}
+    for game in sorted(games):
+        with open(getattr(get_settings().mmzx_settings, ZERO_ROM_SETTINGS[game]), "rb") as f:
+            roms[game] = f.read()
+        zero.check_rom(roms[game], game)
+    return roms
 
 
 class MMZXPatchExtension(APPatchExtension):
@@ -46,6 +62,10 @@ class MMZXPatchExtension(APPatchExtension):
         hu_in_pool = bool(cfg[0] & CFG_HU_IN_POOL) if cfg else False
         story_items = bool(cfg[0] & CFG_STORY_ITEMS) if cfg else False
         story_on = story_items or (bool(cfg[0] & CFG_STORY_ON) if cfg else False)
+        zero_games = {game for game, bit in CFG_ZERO_GAMES.items() if cfg and cfg[0] & bit}
+        omega_goal = bool(cfg[0] & CFG_OMEGA_GOAL) if cfg else False
+        # the player's own Zero 3 / Zero 4 ROMs, asked for here and nowhere else
+        zero_sets, zero_entries = zero.build_container(read_zero_roms(zero_games)) if zero_games else (b"", [])
         d = bytearray(rom)
         arm9_off, _entry, arm9_ram, arm9_len = struct.unpack_from("<4I", d, nds.NDS_HDR_ARM9)
         arm9 = Arm9(bytes(d[arm9_off:arm9_off + arm9_len]), arm9_ram)
@@ -79,6 +99,11 @@ class MMZXPatchExtension(APPatchExtension):
         table.patch_pickup_table(arm9, caller.get_file(table_file))
         doors.patch_door_tables(arm9, locks)
         npc.patch_npc_tables(arm9)
+        if zero_games:
+            zero.patch_loader(arm9, zero_entries)
+            zero.patch_capsules(arm9, zero_games)
+        if omega_goal:
+            omega.patch_door_table(arm9)
 
         # Recompress into the original slot; a rebuilt ROM shifts the layout (melonDS: bad_alloc)
         replace_arm9(d, arm9_off, arm9_len, arm9.pack())
@@ -93,6 +118,11 @@ class MMZXPatchExtension(APPatchExtension):
         story.patch_bridge(d, story_on, story_items)
         sprites.patch_disk_logo(d, fnt_start)
         doors.patch_door_overlays(d, locks)
+        if zero_games:
+            zero.patch_rooms(d)
+            zero.install_container(d, zero_sets)
+        if omega_goal:
+            omega.patch_door_overlay(d)
         nds.update_header_crc(d)
         return bytes(d)
 
@@ -140,7 +170,8 @@ def write_patch_tokens(patch: MMZXPatch, slot_name: str, seed_name: str,
                        world_version: tuple[int, int, int], golden_image: bytes,
                        pickup_table: bytes, hu_in_pool: bool = False,
                        story_items: bool = False, story_on: bool = False,
-                       door_sites: dict[str, str] | None = None) -> None:
+                       door_sites: dict[str, str] | None = None, zero_games=(),
+                       omega_goal: bool = False) -> None:
     """Write the AP marker (magic, version, slot, seed), the option blob, the golden image, the pickup table and the door locks.
 
     `world_version` is the world's (major, minor, build), as the core reads it
@@ -164,5 +195,8 @@ def write_patch_tokens(patch: MMZXPatch, slot_name: str, seed_name: str,
     # option flags for patch_arm9, which runs before apply_tokens
     cfg = bytearray(4)
     cfg[0] = ((CFG_HU_IN_POOL if hu_in_pool else 0) | (CFG_STORY_ITEMS if story_items else 0)
-              | (CFG_STORY_ON if story_on or story_items else 0))
+              | (CFG_STORY_ON if story_on or story_items else 0)
+              | (CFG_OMEGA_GOAL if omega_goal else 0))
+    for game in zero_games:
+        cfg[0] |= CFG_ZERO_GAMES[game]
     patch.write_file("mmzx_cfg.bin", bytes(cfg))

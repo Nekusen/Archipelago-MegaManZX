@@ -11,7 +11,7 @@ from rule_builder.rules import (And, CanReachLocation, CanReachRegion, False_, H
 
 from .. import options as O
 from ..door_constraints import KEYS
-from ..goal import COUNTED_MISSIONS, DISK_ITEM, cleared_event
+from ..goal import COUNTED_MISSIONS, DISK_ITEM, MUTOS_EVENTS, cleared_event
 from ..seal import BIOMETAL_EVENTS, MODE_BIOMETALS, MODE_PASSWORDS, PASSWORD_ITEM
 from . import bosses as B
 from . import document as F
@@ -164,8 +164,8 @@ class ModelsOwned(Rule, game=F.GAME):
 
 @dataclasses.dataclass()
 class GoalRequirement(Rule, game=F.GAME):
-    """The goal requirements of the seed, as the world resolved them: the models, the Secret Disks
-    and the story missions; nothing when they ask for nothing."""
+    """The goal requirements of the seed, as the world resolved them: the models, the Secret Disks,
+    the story missions and the Mega Man Zero bosses; nothing when they ask for nothing."""
 
     def _instantiate(self, world) -> Rule.Resolved:
         goal = world.goal
@@ -180,6 +180,8 @@ class GoalRequirement(Rule, game=F.GAME):
             parts.append(Has(DISK_ITEM, goal.disks_required))
         if goal.wants_missions:
             parts.append(HasFromListUnique(*(cleared_event(m) for m in COUNTED_MISSIONS), count=goal.missions_required))
+        if goal.wants_mutos:
+            parts.append(HasFromListUnique(*MUTOS_EVENTS, count=goal.mutos_required))
         if not parts:
             return True_().resolve(world)
         return self.Resolved(And(*parts).resolve(world), **_resolved(world))

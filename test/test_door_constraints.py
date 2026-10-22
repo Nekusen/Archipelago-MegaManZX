@@ -71,7 +71,7 @@ class TestSites(unittest.TestCase):
         every = {name: door_constraints.KEYS[0] for name in SITES}
         for room, edit in doors.room_edits(every).items():
             if edit["templates"]:
-                end = doors.grown_table_ram(room) - ROOM_OVERLAY_SLOT_RAM
+                end = doors.grown_table_ram(ROOMS[room]) - ROOM_OVERLAY_SLOT_RAM
                 end += (ROOMS[room]["slot_count"] + len(edit["templates"])) * doors.TEMPLATE_LEN
                 self.assertLessEqual(end, nds.OVERLAY_CODE_MAX, room)
 

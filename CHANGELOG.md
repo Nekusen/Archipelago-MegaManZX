@@ -10,6 +10,16 @@ All notable changes to this project are documented in this file. The format is b
 
 - Added an operator next to the Transerver on the Area A floor and on the Guardian base floor of the hub: talk to her
   (UP) and, for 200 E-Crystals, she refills every Sub Tank you hold. Nothing to fill, no charge.
+- Added the goal `defeat_omega_zero`: beat Omega Zero in N-1. The door of his arena opens with your `goal_requirements`
+  (the rest of Area N is open as always); Slither Inc. stays closed and its checks are not in the game.
+- Added `zero3_bosses` and `zero4_bosses`: the eight Mega Man Zero 3/4 bosses of N-1 are in the game from the start, no
+  Game Pak needed, and each one beaten is a check. A beaten boss stays beaten, Mysterious Rock or not. They can be named in
+  `boss_logic`; a name whose option is off is simply ignored.
+  - IMPORTANT: each option needs your own Mega Man Zero 3 or Zero 4 (GBA) ROM, USA, Europe or Japan: the game keeps the
+    sprites of those bosses in the cartridge, so the launcher asks for the ROM when you open the `.apmmzx` and converts
+    them from it. With the option off no ROM is ever asked for.
+- Added the goal requirement `Mutos Reploid Hunting`: beat `required_mutos_reploids` of those bosses (1 to 8; 5 or more
+  need both games on). The pause menu, the "Goal" notice and `/mmzx_goal` count them like the other requirements.
 - Added the location `Obtain Biometal Z`, sent when you beat Giro in D-2.
 - Added `area_m_access`: what opens the seal at the entrance of Area M.
   - `open`: the seal is open from the start, as before.

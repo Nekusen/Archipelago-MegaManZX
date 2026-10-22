@@ -397,8 +397,10 @@ ITEMS = {
     'Area K Door Switch': {'id': 13664616, 'classification': 'progression', 'grant': ['story_gate', [7]], 'pooled': False},
     'Area E Power Shutdown': {'id': 13664617, 'classification': 'useful', 'grant': ['story_area', 'E', [[34620876, 5]]], 'pooled': False},
     'Area D Bridge': {'id': 13664618, 'classification': 'progression', 'grant': ['story_gate', [3]], 'pooled': False},
-    'E-Crystals': {'id': 13664768, 'classification': 'filler', 'grant': ['ecrystals'], 'pooled': True},
+    '50 E-Crystals': {'id': 13664768, 'classification': 'filler', 'grant': ['ecrystals', 50], 'pooled': True},
     '1-Up': {'id': 13664769, 'classification': 'filler', 'grant': ['oneup'], 'pooled': True},
+    '100 E-Crystals': {'id': 13664770, 'classification': 'filler', 'grant': ['ecrystals', 100], 'pooled': True},
+    '200 E-Crystals': {'id': 13664771, 'classification': 'filler', 'grant': ['ecrystals', 200], 'pooled': True},
     'Secret Disk': {'id': 13665024, 'classification': 'progression', 'grant': ['secret_disk'], 'pooled': False},
     'Password': {'id': 13665025, 'classification': 'progression', 'grant': ['password'], 'pooled': False},
 }

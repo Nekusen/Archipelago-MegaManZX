@@ -14,6 +14,7 @@ from ..locations import PICKUP_OPTION_BY_CATEGORY, STORY_ITEMS, locations_for_op
 from ..logic import TIER, WORLD, builder, load_document
 from ..logic import document as F
 from ..logic import rules as R
+from ..regions import reachable_regions
 from ..logic.builder import (BossRequirement, DoorKey, Edge, GoalRequirement, LavaCarriedTo, ReachedAtLeast,
                              SealRequirement, Spot)
 from .bases import MMZXTestBase, WITNESS
@@ -148,7 +149,8 @@ class TestRulesModule(MMZXTestBase):
             with self.subTest(location=location.name):
                 self.assertEqual(location.parent_region.name, spot.region)
                 self.assertIs(location.access_rule, spot.rule.resolve(self.world))
-        self.assertEqual({region.name for region in self.multiworld.get_regions(self.player)}, set(R.REGIONS))
+        self.assertEqual({region.name for region in self.multiworld.get_regions(self.player)},
+                         set(R.REGIONS) & reachable_regions(self.world))
 
     def test_every_region_a_rule_names_is_a_region_of_the_module(self):
         regions = set(R.REGIONS)

@@ -4,7 +4,8 @@ Everything the client reads or writes is named here.
 """
 
 from ..data import (
-    CANON_BLOCK, EVENT_GATES, EVENT_GATES_STORY, GOAL_BITS, GOAL_BITS_SERPENT, ITEMS, LIVE_BLOCK, LOCATIONS, PICKUP_TABLE_ADDR,
+    CANON_BLOCK, EVENT_GATES, EVENT_GATES_STORY, GOAL_BITS, GOAL_BITS_OMEGA, GOAL_BITS_SERPENT, ITEMS, LIVE_BLOCK, LOCATIONS,
+    PICKUP_TABLE_ADDR,
     ROOM_SUBAREA, STORY_DONE_BITS, STORY_GATE_ITEMS, WARP_DESTINATIONS)
 from ..goal import DISK_ITEM
 from ..rom.table import (
@@ -60,7 +61,7 @@ LIVE_BLOCK_LEN = 0xE4
 # Detect bits this close to the block share one read per tick; the far ones (the
 # Life Up and Sub Tank capacity bytes) are read one byte at a time.
 DETECT_WINDOW_RADIUS = 0x1000
-_detect_addrs = [a for a, _ in GOAL_BITS] + [a for a, _ in GOAL_BITS_SERPENT]
+_detect_addrs = [a for a, _ in GOAL_BITS] + [a for a, _ in GOAL_BITS_SERPENT] + [a for a, _ in GOAL_BITS_OMEGA]
 for _v in LOCATIONS.values():
     _det = _v.get("detect")
     if _det and _det[0] == "bit":

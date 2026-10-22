@@ -6,6 +6,9 @@
 - [BizHawk](https://tasvideos.org/BizHawk/ReleaseHistory) 2.10 or later, with its NDS core (melonDS).
   The world is tested with BizHawk 2.11.
 - Your own Mega Man ZX (USA) ROM, game code `ARZE`. The Archipelago community cannot provide it.
+- Only if your YAML turns on `zero3_bosses` or `zero4_bosses`: your own Mega Man Zero 3 and/or Mega Man Zero 4 (GBA)
+  ROM, USA, Europe or Japan. The launcher asks for it when you open the patch and converts the sprites of those bosses
+  from it. With both options off no GBA ROM is needed or asked for.
 - Optional: [Universal Tracker](https://github.com/FarisTheAncient/Archipelago/releases) and the
   [Mega Man ZX tracker pack](https://github.com/Nekusen/MegaManZX-Tracker/releases) (`mmzx_tracker.zip`).
   Keep the pack zipped. UT asks for it the first time it opens the map tab.
@@ -27,7 +30,9 @@ Once you have installed BizHawk, open `EmuHawk.exe` and change the following set
    [generating a game](https://archipelago.gg/tutorial/Archipelago/setup/en#on-your-local-installation).
    Your patch file ends in `.apmmzx` and sits inside the output zip.
 4. Open `ArchipelagoLauncher.exe`, select "Open Patch" and pick your `.apmmzx` file.
-5. The first time, the launcher asks for your Mega Man ZX (USA) ROM. It is checked against the known USA hash.
+5. The first time, the launcher asks for your Mega Man ZX (USA) ROM. It is checked against the known USA hash. A seed
+   with `zero3_bosses` or `zero4_bosses` on also asks for your Mega Man Zero 3 or Zero 4 (GBA) ROM the first time,
+   checked against the hashes of the USA, Europe and Japan releases.
 6. A patched `.nds` file is created next to the patch file. It is your copy of the game and must not be shared.
 7. The first time, the BizHawk Client also asks where `EmuHawk.exe` is.
 

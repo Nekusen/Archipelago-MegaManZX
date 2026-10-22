@@ -28,7 +28,7 @@ multiworld framework, the `BizHawkClient` base and `worlds/_bizhawk`, the
 | [MMZX_Adjustments_Lua](https://github.com/GameDJ/MMZX_Adjustments_Lua) | GameDJ / Meta_X | - | Many RAM addresses of the USA version (via the editor's wiki). |
 | Action Replay codes on [gamehacking.org](https://gamehacking.org/game/24982) and Neoseeker | Dybbles, nolberto82, Helder, VisitntX and others | - | Starting addresses and the location of several ARM9 routines (pickups, damage, NPC checks). |
 | [The Cutting Room Floor](https://tcrf.net/Mega_Man_ZX) | TCRF contributors | CC BY 3.0 | Debug room, unused White Card Key, Model O notes. |
-| [Prof9 / MMZX-Slot2-Patch](https://github.com/Prof9/MMZX-Slot2-Patch) | Prof9 | Unlicense | Reference for hooking this game's ARM9. |
+| [Prof9 / MMZX-Slot2-Patch](https://github.com/Prof9/MMZX-Slot2-Patch) | Prof9 | Unlicense | Reference for hooking this game's ARM9, and the proof that the Mega Man Zero 3/4 boss sets can be loaded from a file of the ROM once converted (our loader and converter are our own; his converted sets are Capcom's data and are not used). |
 | [Pokemon Platinum apworld](https://github.com/ljtpetersen/platinum_archipelago) | James Petersen | MIT | The template for a DS BizHawk client and for shipping an NDS library inside an apworld. |
 | [py-desmume](https://github.com/SkyTemple/py-desmume) / DeSmuME, [Ghidra](https://github.com/NationalSecurityAgency/ghidra), [BizHawk](https://github.com/TASEmulators/BizHawk), [melonDS](https://melonds.kuribo64.net) | their authors | GPL / Apache-2.0 / MIT / GPL | Reverse-engineering bench and emulators. |
 | [GBATek](https://problemkaputt.de/gbatek.htm) | Martin Korth | - | DS hardware and ROM format reference (linked, not reproduced). |

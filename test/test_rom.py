@@ -18,9 +18,9 @@ from ..data import (EVENT_GATES, GOAL_LINE_ADDR, ICON_CODES, ITEMS, LIVE_BLOCK, 
                     MISSION_REPEAT_BITS, NOTIFY_ADDR, NOTIFY_BUF_MAX, PICKUP_TABLE_ADDR, STARTING_MODELS,
                     STARTING_TRANSERVERS, STORY_BRIDGE_ITEM, STORY_BRIDGE_LOCATION, STORY_DONE_BITS, STORY_GATE_ITEMS,
                     STORY_LAVA_ITEM, STORY_REPORT_STATES, STORY_SWITCH_ITEM, STORY_SWITCH_LOCATION)
-from ..rom import arm9, blz, golden, icons, missions, nds, npc, pickups, sprites, story, table, ui
+from ..rom import arm9, blz, golden, icons, lives, missions, nds, npc, pickups, sprites, story, table, ui
 
-PATCH_MODULES = (pickups, sprites, ui, missions, story, npc)     # the modules that hold patch tables and caves
+PATCH_MODULES = (pickups, sprites, ui, missions, story, lives, npc)     # the modules that hold patch tables and caves
 ARM9_RAM = (0x02000000, 0x02400000)
 # Zero stretches of the vanilla ARM9 that take the caves.
 FREE_STRETCHES = [(0x020CB434, 0x020CB9D4), (0x020C8150, sprites.GFX_CAVES_END)]
@@ -420,7 +420,7 @@ class TestPatchTables(unittest.TestCase):
         self.assertEqual(table.icon_code("Life Up", True, False, True), ICON_CODES["lifeup"])
         self.assertEqual(table.icon_code("Progressive Model HX", True, True, False), ICON_CODES["model_HX"])
         self.assertEqual(table.icon_code("Red Card Key", True, True, False), ICON_CODES["card_Red"])
-        self.assertEqual(table.icon_code("E-Crystals", True, False, False), ICON_CODES["logo_filler"])
+        self.assertEqual(table.icon_code("50 E-Crystals", True, False, False), ICON_CODES["logo_filler"])
         self.assertEqual(table.icon_code("Life Up", False, False, True), ICON_CODES["logo_useful"])
         self.assertEqual(table.icon_code("Something", False, True, True), ICON_CODES["logo_progression"])
         self.assertEqual(table.icon_code("Something", False, False, False), ICON_CODES["logo_filler"])
@@ -470,18 +470,20 @@ class TestPatchTables(unittest.TestCase):
         pickup_table = table.build_table({"A-2: Disk B-3": ICON_CODES["secret_disk"]})
         patch = rom.MMZXPatch(player=1, player_name="Tester")
         rom.write_patch_tokens(patch, "Tester", "seed-1", (0, 1, 0), image, pickup_table, hu_in_pool=True,
-                               refill_operator="guardian_base")
+                               refill_operator="guardian_base", infinite_lives=True)
         tokens = patch.get_file("token_data.bin")
         self.assertIn(rom.AP_MAGIC, tokens)
         self.assertIn(b"Tester", tokens)
         self.assertIn(b"seed-1", tokens)
         self.assertEqual(patch.get_file("mmzx_cfg.bin")[0] & rom.CFG_HU_IN_POOL, rom.CFG_HU_IN_POOL)
+        self.assertEqual(patch.get_file("mmzx_cfg.bin")[0] & rom.CFG_INFINITE_LIVES, rom.CFG_INFINITE_LIVES)
         self.assertEqual(patch.get_file("mmzx_cfg.bin")[rom.CFG_OPERATOR_BYTE], rom.CFG_OPERATOR_FLOORS["guardian_base"])
         self.assertEqual(patch.get_file("golden_image.bin"), image)
         self.assertEqual(patch.get_file("pickup_table.bin"), pickup_table)
         patch = rom.MMZXPatch(player=1, player_name="Tester")
         rom.write_patch_tokens(patch, "Tester", "seed-1", (0, 1, 0), image, pickup_table)
         self.assertEqual(patch.get_file("mmzx_cfg.bin")[0] & rom.CFG_HU_IN_POOL, 0)
+        self.assertEqual(patch.get_file("mmzx_cfg.bin")[0] & rom.CFG_INFINITE_LIVES, 0)
         self.assertEqual(patch.get_file("mmzx_cfg.bin")[rom.CFG_OPERATOR_BYTE], 0)
         self.assertEqual(set(rom.CFG_OPERATOR_FLOORS), set(STARTING_TRANSERVERS))
         self.assertEqual([name for name, _files in rom.MMZXPatch.procedure],
@@ -791,6 +793,15 @@ class TestVanillaBytes(unittest.TestCase):
 
     def test_rom_is_the_usa_release(self) -> None:
         self.assertEqual(hashlib.md5(self.rom).hexdigest(), rom.MMZX_US_MD5)
+
+    def test_infinite_lives_patch(self) -> None:
+        """The patch makes the Game Over branch unconditional and drops the call that takes a life; twice is fine."""
+        arm9_off, _entry, arm9_ram, arm9_len = struct.unpack_from("<4I", self.rom, nds.NDS_HDR_ARM9)
+        code = arm9.Arm9(self.rom[arm9_off:arm9_off + arm9_len], arm9_ram)
+        for _ in range(2):
+            lives.patch_infinite_lives(code)
+            self.assertEqual(code.read(lives.GAMEOVER_BRANCH_RAM, 2), lives.GAMEOVER_BRANCH_NEW)
+            self.assertEqual(code.read(lives.LIVES_DECREMENT_RAM, 4), lives.LIVES_DECREMENT_NEW)
 
     def test_patch_sites(self) -> None:
         """Every recorded byte string is what the ARM9 holds at its address, or what the cave there holds."""

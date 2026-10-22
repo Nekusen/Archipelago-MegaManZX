@@ -258,6 +258,12 @@ class SkipMinibosses(Choice):
     default = 0
 
 
+class InfiniteLives(Toggle):
+    """Lives never run out: a death costs none and there is no Game Over. The 1-Up item leaves the filler pool
+    (the E-Crystals take its share); the 1-Ups lying in the world stay where they are."""
+    display_name = "Infinite Lives"
+
+
 class SubTankRefillOperator(DefaultOnToggle):
     """An operator stands next to your starting Transerver: talk to her (UP) and, for 200 E-Crystals, she refills
     every Sub Tank you hold. With nothing to fill she charges nothing."""
@@ -356,7 +362,7 @@ class NotifyReceived(Choice):
     """On-screen notifications (the game's small popup) when you receive an
     item: which item classes are shown. off: none; progression: progression
     only; useful: progression and useful; all: also filler (E-Crystals,
-    1-Up). Can be changed in game with /mmzx_notify."""
+    1-Ups). Can be changed in game with /mmzx_notify."""
     display_name = "On-screen Notifications: Received Items"
     option_off = 0
     option_progression = 1
@@ -402,7 +408,7 @@ OPTION_GROUPS = [
     OptionGroup("Area M", [AreaMAccess, RequiredPasswords, TotalPasswords]),
     OptionGroup("Door Constraints", [DoorConstraintsMin, DoorConstraintsMax]),
     OptionGroup("Pickup Checks", [PickupChecks1Up, PickupChecksEnergy, PickupChecksWeapon, PickupChecksCrystals]),
-    OptionGroup("Quality of Life", [SkipBossRush, SkipMinibosses, SubTankRefillOperator]),
+    OptionGroup("Quality of Life", [SkipBossRush, SkipMinibosses, InfiniteLives, SubTankRefillOperator]),
     OptionGroup("Notifications", [NotifyReceived, NotifySent, NotifyStyle]),
     OptionGroup("Death Link", [DeathLink]),
 ]
@@ -436,6 +442,7 @@ class MMZXOptions(PerGameCommonOptions):
     door_constraints_max: DoorConstraintsMax
     skip_boss_rush: SkipBossRush
     skip_minibosses: SkipMinibosses
+    infinite_lives: InfiniteLives
     sub_tank_refill_operator: SubTankRefillOperator
     pickup_checks_1up: PickupChecks1Up
     pickup_checks_energy: PickupChecksEnergy

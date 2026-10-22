@@ -1,6 +1,6 @@
 """The .apmmzx patch for Mega Man ZX (USA): the ARM9 code patches, the AP icon set and the AP marker.
 
-One module per domain applies its patches to the ARM9 (`pickups`, `sprites`, `ui`, `missions`, `story`);
+One module per domain applies its patches to the ARM9 (`pickups`, `sprites`, `ui`, `missions`, `story`, `lives`);
 `arm9`, `blz` and `nds` handle the image, its compression and the ROM container.
 """
 
@@ -10,7 +10,7 @@ from settings import get_settings
 from worlds.Files import (APProcedurePatch, APTokenMixin, APTokenTypes,
                           APPatchExtension)
 
-from . import doors, golden, missions, nds, npc, omega, pickups, sprites, story, table, ui, zero
+from . import doors, golden, lives, missions, nds, npc, omega, pickups, sprites, story, table, ui, zero
 from .arm9 import Arm9, replace_arm9
 
 MMZX_US_MD5 = "88b684b1b3eea885a07625da89f1e5b3"
@@ -34,6 +34,7 @@ CFG_STORY_ON = 0x04                       # bit 2: mission_objectives is on, in 
 CFG_ZERO3 = 0x08                          # bit 3: the Mega Man Zero 3 bosses are checks
 CFG_ZERO4 = 0x10                          # bit 4: the Mega Man Zero 4 bosses are checks
 CFG_OMEGA_GOAL = 0x20                     # bit 5: the goal is Omega Zero
+CFG_INFINITE_LIVES = 0x40                 # bit 6: a death costs no life
 CFG_ZERO_GAMES = {zero.ZERO3: CFG_ZERO3, zero.ZERO4: CFG_ZERO4}
 # mmzx_cfg.bin byte 1: the floor of the Sub Tank refill operator, by starting_transerver key; 0 = none
 CFG_OPERATOR_BYTE = 1
@@ -67,6 +68,7 @@ class MMZXPatchExtension(APPatchExtension):
         story_on = story_items or (bool(cfg[0] & CFG_STORY_ON) if cfg else False)
         zero_games = {game for game, bit in CFG_ZERO_GAMES.items() if cfg and cfg[0] & bit}
         omega_goal = bool(cfg[0] & CFG_OMEGA_GOAL) if cfg else False
+        infinite_lives = bool(cfg[0] & CFG_INFINITE_LIVES) if cfg else False
         operator_floor = next((floor for floor, code in CFG_OPERATOR_FLOORS.items()
                                if len(cfg) > CFG_OPERATOR_BYTE and cfg[CFG_OPERATOR_BYTE] == code), None)
         # the player's own Zero 3 / Zero 4 ROMs, asked for here and nowhere else
@@ -110,6 +112,8 @@ class MMZXPatchExtension(APPatchExtension):
             zero.patch_capsules(arm9, zero_games)
         if omega_goal:
             omega.patch_door_table(arm9)
+        if infinite_lives:
+            lives.patch_infinite_lives(arm9)
 
         # Recompress into the original slot; a rebuilt ROM shifts the layout (melonDS: bad_alloc)
         replace_arm9(d, arm9_off, arm9_len, arm9.pack())
@@ -178,7 +182,8 @@ def write_patch_tokens(patch: MMZXPatch, slot_name: str, seed_name: str,
                        pickup_table: bytes, hu_in_pool: bool = False,
                        story_items: bool = False, story_on: bool = False,
                        door_sites: dict[str, str] | None = None, zero_games=(),
-                       omega_goal: bool = False, refill_operator: str | None = None) -> None:
+                       omega_goal: bool = False, infinite_lives: bool = False,
+                       refill_operator: str | None = None) -> None:
     """Write the AP marker (magic, version, slot, seed), the option blob, the golden image, the pickup table and the door locks.
 
     `world_version` is the world's (major, minor, build), as the core reads it
@@ -203,7 +208,8 @@ def write_patch_tokens(patch: MMZXPatch, slot_name: str, seed_name: str,
     cfg = bytearray(4)
     cfg[0] = ((CFG_HU_IN_POOL if hu_in_pool else 0) | (CFG_STORY_ITEMS if story_items else 0)
               | (CFG_STORY_ON if story_on or story_items else 0)
-              | (CFG_OMEGA_GOAL if omega_goal else 0))
+              | (CFG_OMEGA_GOAL if omega_goal else 0)
+              | (CFG_INFINITE_LIVES if infinite_lives else 0))
     for game in zero_games:
         cfg[0] |= CFG_ZERO_GAMES[game]
     cfg[CFG_OPERATOR_BYTE] = CFG_OPERATOR_FLOORS[refill_operator] if refill_operator else 0

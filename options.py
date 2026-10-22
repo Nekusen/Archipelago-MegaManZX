@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from Options import (Accessibility, Choice, DeathLink, NamedRange, OptionDict, OptionGroup, OptionSet,
-                     PerGameCommonOptions, ProgressionBalancing, Range, StartInventoryPool, Toggle)
+from Options import (Accessibility, Choice, DeathLink, DefaultOnToggle, NamedRange, OptionDict, OptionGroup,
+                     OptionSet, PerGameCommonOptions, ProgressionBalancing, Range, StartInventoryPool, Toggle)
 
 from .door_constraints import MAX_SITES
 from .goal import (MISSION_COUNT, MODEL_ITEM_BY_KEY, MUTOS_MAX, REQ_BIOMETALS, REQ_DISKS, REQ_MISSIONS,
@@ -264,6 +264,12 @@ class InfiniteLives(Toggle):
     display_name = "Infinite Lives"
 
 
+class SubTankRefillOperator(DefaultOnToggle):
+    """An operator stands next to your starting Transerver: talk to her (UP) and, for 200 E-Crystals, she refills
+    every Sub Tank you hold. With nothing to fill she charges nothing."""
+    display_name = "Sub Tank Refill Operator"
+
+
 class PickupChecks1Up(Toggle):
     """The 1-Ups placed in the world (7) count as checks: the first time you
     pick each one up it sends its location; afterwards it keeps respawning
@@ -402,7 +408,7 @@ OPTION_GROUPS = [
     OptionGroup("Area M", [AreaMAccess, RequiredPasswords, TotalPasswords]),
     OptionGroup("Door Constraints", [DoorConstraintsMin, DoorConstraintsMax]),
     OptionGroup("Pickup Checks", [PickupChecks1Up, PickupChecksEnergy, PickupChecksWeapon, PickupChecksCrystals]),
-    OptionGroup("Quality of Life", [SkipBossRush, SkipMinibosses, InfiniteLives]),
+    OptionGroup("Quality of Life", [SkipBossRush, SkipMinibosses, InfiniteLives, SubTankRefillOperator]),
     OptionGroup("Notifications", [NotifyReceived, NotifySent, NotifyStyle]),
     OptionGroup("Death Link", [DeathLink]),
 ]
@@ -437,6 +443,7 @@ class MMZXOptions(PerGameCommonOptions):
     skip_boss_rush: SkipBossRush
     skip_minibosses: SkipMinibosses
     infinite_lives: InfiniteLives
+    sub_tank_refill_operator: SubTankRefillOperator
     pickup_checks_1up: PickupChecks1Up
     pickup_checks_energy: PickupChecksEnergy
     pickup_checks_weapon: PickupChecksWeapon

@@ -130,6 +130,8 @@ Locations:
       With `mission_objectives: locations_and_items` it is the Computer Chip item that spawns it, not the ones lying in Area B.
     - Giro requires beating both mini-bosses in the area to spawn
 - The MISSION tab of the pause menu gains a fast travel function by pressing "Y". It lets you travel to Transerver locations you've unlocked.
+- With `sub_tank_refill_operator` (on by default) an operator stands to the right of your starting Transerver. Talk to her (UP)
+  and she refills every Sub Tank you hold for 200 E-Crystals; with nothing to fill she charges nothing.
 - About Area X:
   - By default the only ways in logic to reach Area X are to have it as your starting point or to receive its Transerver Access from the multiworld.
   - Some story points where the teleport to Area X is granted have been patched

@@ -308,6 +308,8 @@ class MMZXWorld(World):
                            story_on=story_mode(self.options) != STORY_OFF,
                            door_sites=self.door_sites, zero_games=sorted(G.zero_games(self.options)),
                            omega_goal=G.goal_is_omega(self.options),
+                           refill_operator=(self.options.starting_transerver.current_key
+                                            if self.options.sub_tank_refill_operator else None),
                            infinite_lives=bool(self.options.infinite_lives.value))
         out_name = self.multiworld.get_out_file_name_base(self.player)
         patch.write(os.path.join(output_directory, out_name + patch.patch_file_ending))

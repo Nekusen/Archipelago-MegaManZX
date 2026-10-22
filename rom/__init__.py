@@ -10,7 +10,7 @@ from settings import get_settings
 from worlds.Files import (APProcedurePatch, APTokenMixin, APTokenTypes,
                           APPatchExtension)
 
-from . import doors, golden, lives, missions, nds, omega, pickups, sprites, story, table, ui, zero
+from . import doors, golden, lives, missions, nds, npc, omega, pickups, sprites, story, table, ui, zero
 from .arm9 import Arm9, replace_arm9
 
 MMZX_US_MD5 = "88b684b1b3eea885a07625da89f1e5b3"
@@ -36,6 +36,9 @@ CFG_ZERO4 = 0x10                          # bit 4: the Mega Man Zero 4 bosses ar
 CFG_OMEGA_GOAL = 0x20                     # bit 5: the goal is Omega Zero
 CFG_INFINITE_LIVES = 0x40                 # bit 6: a death costs no life
 CFG_ZERO_GAMES = {zero.ZERO3: CFG_ZERO3, zero.ZERO4: CFG_ZERO4}
+# mmzx_cfg.bin byte 1: the floor of the Sub Tank refill operator, by starting_transerver key; 0 = none
+CFG_OPERATOR_BYTE = 1
+CFG_OPERATOR_FLOORS = {"area_a": 1, "guardian_base": 2}
 # The settings that hold the player's Zero 3 and Zero 4 ROMs, read only when the seed asks for them.
 ZERO_ROM_SETTINGS = {zero.ZERO3: "zero3_rom_file", zero.ZERO4: "zero4_rom_file"}
 
@@ -66,6 +69,8 @@ class MMZXPatchExtension(APPatchExtension):
         zero_games = {game for game, bit in CFG_ZERO_GAMES.items() if cfg and cfg[0] & bit}
         omega_goal = bool(cfg[0] & CFG_OMEGA_GOAL) if cfg else False
         infinite_lives = bool(cfg[0] & CFG_INFINITE_LIVES) if cfg else False
+        operator_floor = next((floor for floor, code in CFG_OPERATOR_FLOORS.items()
+                               if len(cfg) > CFG_OPERATOR_BYTE and cfg[CFG_OPERATOR_BYTE] == code), None)
         # the player's own Zero 3 / Zero 4 ROMs, asked for here and nowhere else
         zero_sets, zero_entries = zero.build_container(read_zero_roms(zero_games)) if zero_games else (b"", [])
         d = bytearray(rom)
@@ -100,6 +105,8 @@ class MMZXPatchExtension(APPatchExtension):
         ui.patch_goal_line(arm9)
         table.patch_pickup_table(arm9, caller.get_file(table_file))
         doors.patch_door_tables(arm9, locks)
+        if operator_floor:
+            npc.patch_npc_tables(arm9)
         if zero_games:
             zero.patch_loader(arm9, zero_entries)
             zero.patch_capsules(arm9, zero_games)
@@ -113,9 +120,11 @@ class MMZXPatchExtension(APPatchExtension):
         fnt_start = sprites.install_icon_set(d)
         ui.patch_menu_warp_text(d)
         ui.install_pause_texts(d)
-        ui.install_talk_texts(d)
+        ui.install_talk_texts(d, npc.NPC_TEXTS if operator_floor else (), npc.NPC_TEXT_FIRST if operator_floor else None)
         ui.install_mission_names(d)
         pickups.patch_usable_rooms(d)
+        if operator_floor:
+            npc.patch_npc_room(d, operator_floor)
         story.patch_story_rooms(d, story_items)
         story.patch_bridge(d, story_on, story_items)
         sprites.patch_disk_logo(d, fnt_start)
@@ -173,7 +182,8 @@ def write_patch_tokens(patch: MMZXPatch, slot_name: str, seed_name: str,
                        pickup_table: bytes, hu_in_pool: bool = False,
                        story_items: bool = False, story_on: bool = False,
                        door_sites: dict[str, str] | None = None, zero_games=(),
-                       omega_goal: bool = False, infinite_lives: bool = False) -> None:
+                       omega_goal: bool = False, infinite_lives: bool = False,
+                       refill_operator: str | None = None) -> None:
     """Write the AP marker (magic, version, slot, seed), the option blob, the golden image, the pickup table and the door locks.
 
     `world_version` is the world's (major, minor, build), as the core reads it
@@ -202,4 +212,5 @@ def write_patch_tokens(patch: MMZXPatch, slot_name: str, seed_name: str,
               | (CFG_INFINITE_LIVES if infinite_lives else 0))
     for game in zero_games:
         cfg[0] |= CFG_ZERO_GAMES[game]
+    cfg[CFG_OPERATOR_BYTE] = CFG_OPERATOR_FLOORS[refill_operator] if refill_operator else 0
     patch.write_file("mmzx_cfg.bin", bytes(cfg))

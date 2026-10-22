@@ -48,7 +48,7 @@ GOAL_OPTIONS = {"goal_requirements", "required_models", "required_models_count",
 SEAL_OPTIONS = {"area_m_access", "required_passwords", "total_passwords"}
 DOOR_OPTIONS = {"door_constraints_min", "door_constraints_max"}
 # options that change nothing a rebuilt world shows
-UNSENT_OPTIONS = {"start_inventory_from_pool"}
+UNSENT_OPTIONS = {"start_inventory_from_pool", "sub_tank_refill_operator"}   # the ROM alone reads the operator
 # boss_logic travels as the text of each requirement
 BOSS_LOGIC = {"Hivolt": "Model HX (full) & Life Up x2", "Lurerre": "any model & Sub Tank x1",
               "Fistleo": "(FX | LX) & " + WITNESS, "Flammole": "Yellow Card Key | HX2 & PX",

@@ -469,17 +469,21 @@ class TestPatchTables(unittest.TestCase):
         image = golden.build_image("model_zx", 0, STARTING_MODELS, STARTING_TRANSERVERS["area_a"])
         pickup_table = table.build_table({"A-2: Disk B-3": ICON_CODES["secret_disk"]})
         patch = rom.MMZXPatch(player=1, player_name="Tester")
-        rom.write_patch_tokens(patch, "Tester", "seed-1", (0, 1, 0), image, pickup_table, hu_in_pool=True)
+        rom.write_patch_tokens(patch, "Tester", "seed-1", (0, 1, 0), image, pickup_table, hu_in_pool=True,
+                               refill_operator="guardian_base")
         tokens = patch.get_file("token_data.bin")
         self.assertIn(rom.AP_MAGIC, tokens)
         self.assertIn(b"Tester", tokens)
         self.assertIn(b"seed-1", tokens)
         self.assertEqual(patch.get_file("mmzx_cfg.bin")[0] & rom.CFG_HU_IN_POOL, rom.CFG_HU_IN_POOL)
+        self.assertEqual(patch.get_file("mmzx_cfg.bin")[rom.CFG_OPERATOR_BYTE], rom.CFG_OPERATOR_FLOORS["guardian_base"])
         self.assertEqual(patch.get_file("golden_image.bin"), image)
         self.assertEqual(patch.get_file("pickup_table.bin"), pickup_table)
         patch = rom.MMZXPatch(player=1, player_name="Tester")
         rom.write_patch_tokens(patch, "Tester", "seed-1", (0, 1, 0), image, pickup_table)
         self.assertEqual(patch.get_file("mmzx_cfg.bin")[0] & rom.CFG_HU_IN_POOL, 0)
+        self.assertEqual(patch.get_file("mmzx_cfg.bin")[rom.CFG_OPERATOR_BYTE], 0)
+        self.assertEqual(set(rom.CFG_OPERATOR_FLOORS), set(STARTING_TRANSERVERS))
         self.assertEqual([name for name, _files in rom.MMZXPatch.procedure],
                          ["patch_arm9", "apply_tokens"])
         self.assertIn("golden_image.bin", rom.MMZXPatch.procedure[0][1])
@@ -992,7 +996,7 @@ class TestRefillOperator(unittest.TestCase):
         """The hub's tables keep their header first, take the operator at the end of the x order and point at her template."""
         tables = {npc.PRELOADS_KIND: self.VANILLA_PRELOADS, npc.COORDS_KIND: self.vanilla_coords(),
                   npc.TEMPLATES_KIND: self.VANILLA_TEMPLATES}
-        grown = npc.grown_tables(tables)
+        grown = npc.grown_tables(tables, "area_a")
         sizes = npc.grown_table_sizes()
         for kind, blob in grown.items():
             with self.subTest(kind=kind):
@@ -1004,7 +1008,11 @@ class TestRefillOperator(unittest.TestCase):
         xs = [c[0] for c in coords[1:]]
         self.assertEqual(xs, sorted(xs))
         ours = [c for c in coords if c[2] == 7]
-        self.assertEqual(ours, [(x, y, 7) for x, y in npc.NPC_COORDS])
+        self.assertEqual(ours, [(*npc.NPC_PLACES["area_a"], 7)])
+        grown = npc.grown_tables(tables, "guardian_base")
+        coords = [struct.unpack_from("<IHH", grown[npc.COORDS_KIND], i) for i in range(0, sizes[npc.COORDS_KIND] - 8, 8)]
+        self.assertEqual([c for c in coords if c[2] == 7], [(*npc.NPC_PLACES["guardian_base"], 7)])
+        self.assertEqual(set(npc.NPC_PLACES), set(STARTING_TRANSERVERS))
         rams = npc.grown_tables_ram()
         self.assertEqual(rams[npc.PRELOADS_KIND], ui.ROOM_OVERLAY_SLOT_RAM + npc.HUB_OVERLAY_SIZE)
         self.assertEqual(rams[npc.COORDS_KIND], rams[npc.PRELOADS_KIND] + sizes[npc.PRELOADS_KIND])

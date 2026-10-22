@@ -52,10 +52,10 @@ ENTRY_LEN = {PRELOADS_KIND: 8, COORDS_KIND: 8, TEMPLATES_KIND: 12}
 TABLE_END = {PRELOADS_KIND: bytes.fromhex("ffffffffffff0000"), COORDS_KIND: bytes.fromhex("ffffff7fff7f0000"),
              TEMPLATES_KIND: bytes(12)}      # the templates end where the coordinates begin; the zeros only pad
 # The operator: the sprite set of the operators, a Guardian template of role 4 modifier 6, and
-# a place to the right of the Transerver on the Area A floor and on the Guardian base floor
+# a place to the right of the Transerver of the starting floor, by starting_transerver key
 NPC_PRELOAD = bytes.fromhex("cc00cc0000ff0000")
 NPC_TEMPLATE = bytes.fromhex("410548040600ffff00000000")
-NPC_COORDS = ((472, 344), (472, 5720))
+NPC_PLACES = {"area_a": (472, 344), "guardian_base": (472, 5720)}
 
 # The five messages, appended to talk_sys_en.bin: the offer, which ends in a two-line choice,
 # and the replies to a yes with the tanks filled, to a yes without enough E-Crystals, to a yes
@@ -87,7 +87,7 @@ def table_pointer_ram(kind: int) -> int:
 
 def grown_table_sizes() -> dict[int, int]:
     """Bytes of each hub table once the operator is in: entries plus the end mark."""
-    added = {PRELOADS_KIND: 1, COORDS_KIND: len(NPC_COORDS), TEMPLATES_KIND: 1}
+    added = {PRELOADS_KIND: 1, COORDS_KIND: 1, TEMPLATES_KIND: 1}
     return {kind: (HUB_TABLE_COUNTS[kind] + added[kind] + 1) * ENTRY_LEN[kind] for kind in ENTRY_LEN}
 
 
@@ -117,17 +117,17 @@ def hub_tables(ram: int, code: bytes) -> dict[int, list[bytes]]:
     return out
 
 
-def grown_tables(tables: dict[int, list[bytes]]) -> dict[int, bytes]:
-    """The three tables with the operator in: its sprite set, its template and its places, in x order."""
+def grown_tables(tables: dict[int, list[bytes]], floor: str) -> dict[int, bytes]:
+    """The three tables with the operator in: its sprite set, its template and its place on `floor`, in x order."""
     preloads = tables[PRELOADS_KIND] + [NPC_PRELOAD]
     templates = tables[TEMPLATES_KIND] + [NPC_TEMPLATE]
     slot = len(templates) - 1
     coords = list(tables[COORDS_KIND])
-    for x, y in NPC_COORDS:
-        entry = struct.pack("<IHH", x, y, slot)
-        # the first entry is the table's header and stays first; the rest are in x order
-        at = next((i for i, c in enumerate(coords) if i and struct.unpack_from("<I", c)[0] > x), len(coords))
-        coords.insert(at, entry)
+    x, y = NPC_PLACES[floor]
+    entry = struct.pack("<IHH", x, y, slot)
+    # the first entry is the table's header and stays first; the rest are in x order
+    at = next((i for i, c in enumerate(coords) if i and struct.unpack_from("<I", c)[0] > x), len(coords))
+    coords.insert(at, entry)
     return {PRELOADS_KIND: b"".join(preloads) + TABLE_END[PRELOADS_KIND],
             COORDS_KIND: b"".join(coords) + TABLE_END[COORDS_KIND],
             TEMPLATES_KIND: b"".join(templates) + TABLE_END[TEMPLATES_KIND]}
@@ -146,12 +146,12 @@ def patch_npc_tables(arm9: Arm9) -> None:
         arm9.write(table_pointer_ram(kind), struct.pack("<I", ram), struct.pack("<I", HUB_TABLES_RAM[kind]))
 
 
-def patch_npc_room(rom: bytearray) -> None:
-    """The room side: the hub's overlay with its three entity tables grown by the operator, after its code."""
+def patch_npc_room(rom: bytearray, floor: str) -> None:
+    """The room side: the hub's overlay with its three entity tables grown by the operator of `floor`, after its code."""
     ram, code = nds.overlay_code(rom, HUB_OVERLAY)
     if len(code) != HUB_OVERLAY_SIZE or nds.overlay_bss_size(rom, HUB_OVERLAY) != HUB_OVERLAY_BSS:
         raise ValueError("MMZX: overlay %d is not the one of the original ROM. Wrong ROM?" % HUB_OVERLAY)
-    tables = grown_tables(hub_tables(ram, code))
+    tables = grown_tables(hub_tables(ram, code), floor)
     buf = bytearray(code)
     for kind, table_ram in grown_tables_ram().items():
         buf += bytes(table_ram - ram - len(buf))

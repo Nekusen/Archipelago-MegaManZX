@@ -13,7 +13,7 @@ from . import goal as G
 from . import seal as S
 from .logic import bosses
 from .data import LOCATIONS, ITEMS, STARTING_MODEL_ITEM, STARTING_MODELS
-from .items import MMZXItem, item_name_to_id, get_classification, ITEM_GROUPS, STORY_GRANTS
+from .items import MMZXItem, item_name_to_id, get_classification, filler_items, ITEM_GROUPS, STORY_GRANTS
 from .locations import (active_locations, location_name_to_id, LOCATION_GROUPS, STORY_ITEMS, STORY_OFF,
                         story_mode)
 from .options import MMZXOptions, OPTION_GROUPS
@@ -214,8 +214,8 @@ class MMZXWorld(World):
         return MMZXItem(name, ItemClassification.progression, None, self.player)
 
     def get_filler_item_name(self) -> str:
-        """E-Crystals, the only filler."""
-        return "E-Crystals"
+        """One of the fillers, each as likely as the others."""
+        return self.random.choice(filler_items(self.options))
 
     def fixed_items(self) -> tuple[list[str], list[str]]:
         """(pool items, pre-granted items) before the goal items and the filler.
@@ -307,7 +307,8 @@ class MMZXWorld(World):
                            story_items=story_mode(self.options) == STORY_ITEMS,
                            story_on=story_mode(self.options) != STORY_OFF,
                            door_sites=self.door_sites, zero_games=sorted(G.zero_games(self.options)),
-                           omega_goal=G.goal_is_omega(self.options))
+                           omega_goal=G.goal_is_omega(self.options),
+                           infinite_lives=bool(self.options.infinite_lives.value))
         out_name = self.multiworld.get_out_file_name_base(self.player)
         patch.write(os.path.join(output_directory, out_name + patch.patch_file_ending))
 

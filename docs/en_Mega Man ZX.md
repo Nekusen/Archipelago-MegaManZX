@@ -66,7 +66,8 @@ Items:
   and 3) and what six story events do (Area F Lock Hack, Sprinkler Key, Lava Flow Control, Area K Door Switch,
   Area D Bridge and Area E Power Shutdown).
 - Passwords, with `area_m_access: passwords`.
-- E-Crystals and 1-Ups as filler.
+- E-Crystals (50, 100 or 200 at a time) and 1-Ups as filler, each as likely as the others. With `infinite_lives`
+  there are no 1-Ups among them.
 
 Locations:
 
@@ -154,6 +155,8 @@ Locations:
 - With `skip_boss_rush` the Pseudoroid refights of the D-4 tower are skipped and the elevator climbs straight to D-5.
 - The mini-bosses that guard a stretch of an area (the King Flyers of D-2, the Lava Demon of K-2 and the others) come back every time you re-enter their area. With `skip_minibosses: after_first_defeat` each one stays beaten once you have beaten it; with `always` they all count as beaten from the start.
   - With `always` the Giro cutscene and boss fight at D-2 triggers right as you walk into it, since that fight required beating both mini bosses and this options marks them as defeated from the start.
+- With `infinite_lives` a death never costs a life and there is no Game Over: the lives counter stays where it is,
+  and the 1-Ups you pick up still add to it.
 
 ### Mission objectives
 
@@ -236,8 +239,9 @@ performs the teleports. Keep it connected to the server while you play, also in 
 ## Is DeathLink supported?
 
 Yes, with the `death_link` option. Your deaths are sent, and a received death kills you as soon as you have control,
-like any other death: one life is lost and you return to the last checkpoint. It is recommended to give yourself some 1-Ups
-through the start inventory option in the YAML to avoid hating all your friends.
+like any other death: one life is lost (none with `infinite_lives`) and you return to the last checkpoint. It is
+recommended to give yourself some 1-Ups through the start inventory option in the YAML, or to turn on
+`infinite_lives`, to avoid hating all your friends.
 
 ## Is there a tracker?
 

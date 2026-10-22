@@ -8,12 +8,15 @@ from ..data import (
 from .addresses import (
     BOSS_LEVELS, CANON_OFF, CAPACITY_NIBBLE, CARDKEY_MASKS, COLLECTED_NIBBLE, CONS_KEY,
     CUTSCENE_FLAG, DOM, ECRYSTALS, ECRYSTALS_CAP, ECRYSTALS_HIGH_MASK, ECRYSTALS_MASK,
-    ECRYSTALS_PER_ITEM, FULL_MODEL_ITEMS, HPMAX, HP_BASE, HP_CAP, HP_PER_LIFEUP, HU_POSSESSION,
+    FULL_MODEL_ITEMS, HPMAX, HP_BASE, HP_CAP, HP_PER_LIFEUP, HU_POSSESSION,
     ITEM_BY_ID, LIFEUP_BYTE, LIFEUP_SLOTS, LIVES, LIVES_CAP, MODEL_POSSESSION, MODEL_SECOND_HALF,
     PLAYTIME, SUBTANK_BYTE, SUBTANK_SLOTS, WE_BASE, WE_FULL)
 from .notices import notify_bytes
 from .ram import Tick, bits_by_byte, copies_writes, read_copies
 from .seal import GATE_BIT as SEAL_GATE_BIT, OPEN_NOTICE as SEAL_OPEN_NOTICE
+
+# Grants applied once per game state: E-Crystals carry their amount, a 1-Up is one life
+CONSUMABLE_GRANTS = ("ecrystals", "oneup")
 
 if TYPE_CHECKING:
     from . import MMZXClient
@@ -168,9 +171,9 @@ async def consumable_writes(client: "MMZXClient", ctx, consumables: list[str]) -
         return [], pt, []
     writes: list[tuple[int, bytes, str]] = []
     raw = int.from_bytes((await bizhawk.read(ctx.bizhawk_ctx, [(ECRYSTALS, 4, DOM)]))[0], "little")
-    ec = min(ECRYSTALS_CAP, (raw & ECRYSTALS_MASK) + ECRYSTALS_PER_ITEM * new.count("ecrystals"))
+    ec = min(ECRYSTALS_CAP, (raw & ECRYSTALS_MASK) + sum(g[1] for g in new if g[0] == "ecrystals"))
     writes.append((ECRYSTALS, ((raw & ECRYSTALS_HIGH_MASK) | ec).to_bytes(4, "little"), DOM))
-    n1 = new.count("oneup")
+    n1 = sum(1 for g in new if g[0] == "oneup")
     if n1:
         lives = (await bizhawk.read(ctx.bizhawk_ctx, [(LIVES, 1, DOM)]))[0][0]
         writes.append((LIVES, bytes([min(LIVES_CAP, lives + n1)]), DOM))
@@ -185,8 +188,8 @@ async def grant_items(client: "MMZXClient", ctx, tick: Tick) -> None:
     consumables are applied once per game state and logged in the datastore.
     """
     counts = received_counts(ctx)
-    consumables = [ITEM_BY_ID[net.item][1][0] for net in ctx.items_received
-                   if net.item in ITEM_BY_ID and ITEM_BY_ID[net.item][1][0] in ("ecrystals", "oneup")]
+    consumables = [tuple(ITEM_BY_ID[net.item][1]) for net in ctx.items_received
+                   if net.item in ITEM_BY_ID and ITEM_BY_ID[net.item][1][0] in CONSUMABLE_GRANTS]
     goal = client.goal
     missions = len(client.missions_cleared or ())
     mutos = len(client.mutos_beaten or ())

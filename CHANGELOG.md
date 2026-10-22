@@ -8,6 +8,8 @@ All notable changes to this project are documented in this file. The format is b
 
 ### Added
 
+- Added `infinite_lives`: a death never costs a life and there is no Game Over. With it on, the 1-Up item is not in
+  the filler pool.
 - Added the goal `defeat_omega_zero`: beat Omega Zero in N-1. The door of his arena opens with your `goal_requirements`
   (the rest of Area N is open as always); Slither Inc. stays closed and its checks are not in the game.
 - Added `zero3_bosses` and `zero4_bosses`: the eight Mega Man Zero 3/4 bosses of N-1 are in the game from the start, no
@@ -43,6 +45,8 @@ All notable changes to this project are documented in this file. The format is b
 
 ### Changed
 
+- The filler items are now `50 E-Crystals`, `100 E-Crystals`, `200 E-Crystals` and `1-Up`, each as likely as the
+  others; before, every filler was 50 E-Crystals and the 1-Up never came up.
 - The Transerver consoles show their normal menu during Troop Reinforcement and Protect HQ instead of the reduced one.
 - Logic: the Sub Tank of K-1 asks for Model LX and that door unlocked, instead of four biometals.
 - Logic: the apple of A-3 asks for any model, instead of Model FX, X or ZX.

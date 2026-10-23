@@ -976,7 +976,7 @@ class TestPauseTexts(unittest.TestCase):
 
 
 class TestRefillOperator(unittest.TestCase):
-    """The operator beside the starting Transerver: her section, the hub's grown tables and her texts."""
+    """The operator beside the starting Transerver: his section, the hub's grown tables and his texts."""
 
     VANILLA_PRELOADS = [bytes.fromhex(h) for h in ("bf01bf0100ff0200", "c001bf0100ff0200", "c101c10100ff0200",
                                                    "c201c10100ff0200", "d001d00100ff0000")]
@@ -992,19 +992,19 @@ class TestRefillOperator(unittest.TestCase):
     def test_section_layout(self) -> None:
         """The routine and the two role tables fit their slots, and the role pointers name them."""
         self.assertLessEqual(len(npc.NPC_SECTION_CODE), npc.NPC_INIT_TABLE_OFF)
-        self.assertEqual(len(npc.NPC_INIT_TABLE), 7 * 4)
-        self.assertEqual(len(npc.NPC_UPDATE_TABLE), 7 * 4)
+        self.assertEqual(len(npc.NPC_INIT_TABLE), 8 * 4)
+        self.assertEqual(len(npc.NPC_UPDATE_TABLE), 8 * 4)
         self.assertLessEqual(npc.NPC_UPDATE_TABLE_OFF + len(npc.NPC_UPDATE_TABLE), npc.NPC_SECTION_LEN)
         self.assertEqual(len(npc.section()), npc.NPC_SECTION_LEN)
         self.assertEqual(npc.NPC_SECTION_LEN % 4, 0)
         self.assertEqual(struct.unpack("<I", npc.NPC_ROLE_INIT_POINTER_NEW)[0], npc.NPC_SECTION_RAM + npc.NPC_INIT_TABLE_OFF)
         self.assertEqual(struct.unpack("<I", npc.NPC_ROLE_UPDATE_POINTER_NEW)[0], npc.NPC_SECTION_RAM + npc.NPC_UPDATE_TABLE_OFF)
-        # the seventh update entry is the routine itself, in Thumb
-        self.assertEqual(struct.unpack_from("<I", npc.NPC_UPDATE_TABLE, 24)[0], npc.NPC_SECTION_RAM + 1)
+        # the eighth update entry is the routine itself, in Thumb
+        self.assertEqual(struct.unpack_from("<I", npc.NPC_UPDATE_TABLE, 28)[0], npc.NPC_SECTION_RAM + 1)
         self.assertLessEqual(npc.NPC_SECTION_RAM + npc.NPC_SECTION_LEN, ui.ROOM_OVERLAY_SLOT_RAM)
 
     def test_grown_tables(self) -> None:
-        """The hub's tables keep their header first, take the operator at the end of the x order and point at her template."""
+        """The hub's tables keep their header first, take the operator at the end of the x order and point at his template."""
         tables = {npc.PRELOADS_KIND: self.VANILLA_PRELOADS, npc.COORDS_KIND: self.vanilla_coords(),
                   npc.TEMPLATES_KIND: self.VANILLA_TEMPLATES}
         grown = npc.grown_tables(tables, "area_a")

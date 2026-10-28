@@ -26,6 +26,7 @@ DOOR_KIND = 5
 DOOR_SUBKINDS = (0x12, 0x13)
 ROLE_NO_DOOR = 0x80                 # a way with no door drawn; a locked one is always drawn
 ROLE_NOT_PLAIN = 0x7E               # a key, an event or a mission lock
+ROLE_CAVE = 0x80                    # a transition with no door frame to show a gate in
 LOCKED = 10
 RELEASE_PALETTE_RAM = 0x0200EE4C    # the call the closed-door hook displaces
 
@@ -59,6 +60,7 @@ class TestSites(unittest.TestCase):
                     self.assertEqual(template[ENTITY_KIND_OFF], DOOR_KIND)
                     self.assertIn(template[ENTITY_SUBKIND_OFF], DOOR_SUBKINDS)
                     self.assertEqual(template[doors.TEMPLATE_ROLE] & ROLE_NOT_PLAIN, 0)
+                    self.assertEqual(template[doors.TEMPLATE_ROLE] & ROLE_CAVE, 0)
                     self.assertLess(face["slot"], ROOMS[face["room"]]["slot_count"])
 
     def test_every_site_carries_weight(self) -> None:

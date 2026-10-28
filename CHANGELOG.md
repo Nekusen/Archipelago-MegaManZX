@@ -47,6 +47,8 @@ All notable changes to this project are documented in this file. The format is b
 
 ### Changed
 
+- Door constraints no longer lock the way between G-1 and G-2: that passage has no door frame, so the coloured gate
+  looked out of place.
 - The filler items are now `50 E-Crystals`, `100 E-Crystals`, `200 E-Crystals` and `1-Up`, each as likely as the
   others; before, every filler was 50 E-Crystals and the 1-Up never came up.
 - The Transerver consoles show their normal menu during Troop Reinforcement and Protect HQ instead of the reduced one.
@@ -55,6 +57,12 @@ All notable changes to this project are documented in this file. The format is b
 
 ### Fixed
 
+- Logic: the hidden path of K-4 (the door switch, the 1-Up, Disk B-12 and the E-Crystal beside it) asks for a way
+  into K-4 through its door from K-3, where the lava chase starts; with `mission_objectives: locations_and_items` and
+  that door locked by a door constraint it was in logic from the Transerver of Area K, which never arms the chase.
+- Logic: the thirteen people of Area G and the sprinkler key they hold ask for a way into Area G that keeps clear of
+  Fistleo's room, since they are gone once he is beaten; the Transerver of Area G alone, which lands in that room, no
+  longer puts them in logic.
 - Stop The Dig stopped counting as completed after reporting Repel The Army.
 - Find The Survivors stopped counting as completed after reporting Recover The Disk, and Fight The Mavericks after reporting Attack The Excavators: the Missions goal requirement lost them from its count, and their missions could be accepted again.
 

@@ -68,6 +68,14 @@ K_DOOR_SWITCH = "K_DOOR_SWITCH"
 D_BRIDGE = "D_BRIDGE"
 STORY_ATOMS = {SLOW_LAVA: "Lava Flow Control", K_DOOR_SWITCH: "Area K Door Switch", D_BRIDGE: "Area D Bridge"}
 
+# Routes the game's state hangs on. The lava chase of K-4 only arms when K-4 is entered through its
+# door from K-3, and the people of Area G can only be reached while its boss stands, so their checks
+# ask for a way in that keeps clear of the arena.
+LAVA_CHASE = "LAVA_CHASE"
+AVOID_BOSS_ROOM = "AVOID_BOSS_ROOM"
+LAVA_CHASE_DOOR = "k03 door (1760,1104)"
+ROUTE_ATOMS = (LAVA_CHASE, AVOID_BOSS_ROOM)
+
 # Useful items; progression_items() promotes them when a requirement uses them.
 CHIP_ATOMS = {
     "CHIP_ABSORBER": "Absorber Chip",
@@ -238,6 +246,10 @@ def atom_catalog(exclude=()):
                 "label": "Door of K-1 to its Sub Tank unlocked (the switch of K-4, or its item)"})
     out.append({"id": D_BRIDGE, "group": "story",
                 "label": "Bridge of D-1 lowered (its switch, or its item; always with mission_objectives off)"})
+    out.append({"id": LAVA_CHASE, "group": "route",
+                "label": "Lava chase of K-4 armed (K-4 entered through its door from K-3)"})
+    out.append({"id": AVOID_BOSS_ROOM, "group": "route",
+                "label": "Reached by a way that keeps clear of this area's boss room"})
     for atom, bid in BOSS_ATOMS.items():
         b = BOSSES[bid]
         out.append({"id": atom, "group": "boss",
@@ -249,7 +261,7 @@ def canonical_atom(tok: str):
     """Normalized atom, or None if it does not exist."""
     t = tok.strip().upper().replace(" ", "")
     if (t in ATOM_ITEM or t in MISSION_EVENT or t in MACRO_ATOMS
-            or t in FULL_MODEL_ATOMS or t in BOSS_ATOMS or t in STORY_ATOMS):
+            or t in FULL_MODEL_ATOMS or t in BOSS_ATOMS or t in STORY_ATOMS or t in ROUTE_ATOMS):
         return t
     m = _COUNT_RE.match(t)
     if m and (m.group(1) in COUNT_ATOMS or m.group(1) in LIST_COUNT_ATOMS):
@@ -530,10 +542,21 @@ def ir_or(nodes):
 
 
 def atom_ir(atom, site=None):
-    """IR of one atom; `site` is where the rule is asked ({"at": region, "control": region of
-    the lava control}), which the slow lava depends on."""
-    if atom == SLOW_LAVA and site and site.get("at"):
+    """IR of one atom; `site` is where the rule is asked ({"at": region} plus rule_context), which the
+    slow lava and the route atoms depend on."""
+    site = site or {}
+    if atom == SLOW_LAVA and site.get("at"):
         return ("or", (("macro", "LAVA_ITEM"), ("lava", site["at"], site["control"])))
+    if atom == LAVA_CHASE:
+        return ("reach_entrance", LAVA_CHASE_DOOR, site.get("chase") or "")
+    if atom == AVOID_BOSS_ROOM:
+        at = site.get("at")
+        if not at:
+            raise ValueError("%s needs a place: a connection or a placed check" % AVOID_BOSS_ROOM)
+        arenas = (site.get("arenas") or {}).get(area_of(at))
+        if not arenas:
+            raise ValueError("%s: no boss room drawn in area %s" % (AVOID_BOSS_ROOM, area_of(at).upper()))
+        return ("avoiding", at, tuple(arenas))
     if atom in MACRO_IR:
         return ("macro", atom)
     if atom in BOSS_ATOMS:
@@ -576,6 +599,10 @@ def ir_prune(ir, present):
     nothing leads to."""
     if ir[0] == "reach":
         return ir if ir[1] in present else IR_FALSE
+    if ir[0] == "reach_entrance":
+        return ir if not ir[2] or ir[2] in present else IR_FALSE
+    if ir[0] == "avoiding":
+        return ir if ir[1] in present else IR_FALSE
     if ir[0] == "and":
         return ir_and([ir_prune(c, present) for c in ir[1]])
     if ir[0] == "or":
@@ -587,6 +614,10 @@ def ir_regions(ir) -> set:
     """Regions the IR asks to reach, through its macros."""
     if ir[0] == "reach":
         return {ir[1]}
+    if ir[0] == "reach_entrance":
+        return {ir[2]} if ir[2] else set()
+    if ir[0] == "avoiding":
+        return {ir[1], *ir[2]}
     if ir[0] in ("and", "or"):
         return set().union(*(ir_regions(c) for c in ir[1]))
     if ir[0] == "macro":
@@ -1215,6 +1246,19 @@ def warp_ir(mission) -> tuple:
     return ir_and([("option_true", WARPS_OPTION, 1, "eq"), ("has", CLEARED_PREFIX + mission, 1)])
 
 
+def rule_context(world, doc, members) -> dict:
+    """What the slow lava and the route atoms resolve against: the region of the lava control, the region
+    the K-3 door into K-4 leaves from, and the arena regions of each area."""
+    arenas = {}
+    for (room, rid), _boss in sorted(boss_regions(doc).items()):
+        arenas.setdefault(room[0], []).append(region_name(room, rid))
+    chase = None
+    if any(e["name"] == LAVA_CHASE_DOOR for e in world["edges"]):
+        room = LAVA_CHASE_DOOR.split(" ")[0]
+        chase = region_name(room, members.get(room, {}).get(LAVA_CHASE_DOOR, "main"))
+    return {"control": lava_control_region(world, doc, members), "chase": chase, "arenas": arenas}
+
+
 def lava_control_region(world, doc, members):
     """The region of the lava control of Area K, or None while the data has no such location."""
     placed = check_placements(world, doc, world["story"]["lava_location"])
@@ -1224,7 +1268,7 @@ def lava_control_region(world, doc, members):
     return region_name(room, members[room].get(world["story"]["lava_location"], "main"))
 
 
-def entrance_rules(world, doc, members, tier, faults=None, control=None) -> list:
+def entrance_rules(world, doc, members, tier, faults=None, context=None) -> list:
     """[(name, source region, destination region, IR)] of every entrance: the start, the drawn connections, the
     edges and the mission warps.
 
@@ -1237,6 +1281,7 @@ def entrance_rules(world, doc, members, tier, faults=None, control=None) -> list
     edge_ov, story = doc.get("edges", {}), world["story"]
     seal_rooms, site_doors = set(world["seal_rooms"]), set(world["site_doors"])
     start_room = world["start_room"]
+    context = context if context is not None else rule_context(world, doc, members)
 
     def guarded(name, build):
         try:
@@ -1248,7 +1293,7 @@ def entrance_rules(world, doc, members, tier, faults=None, control=None) -> list
             return IR_FALSE
 
     def site(at):
-        return {"at": at, "control": control}
+        return {"at": at, **context}
 
     def key_ir(d):
         if d["name"] in site_doors:
@@ -1326,14 +1371,15 @@ def location_place(world, doc, members, needed, name) -> tuple:
     return FIELD, base
 
 
-def location_rule(world, doc, members, needed, name, tier, faults=None, control=None) -> tuple:
+def location_rule(world, doc, members, needed, name, tier, faults=None, context=None) -> tuple:
     """(parent region, IR) of a location: its place, the check requirement of the document, the
     object a mission's Report asks for, and the story locations the game hands out in order or
     after some others. A requirement that cannot be built reads as never and its error goes into
     `faults`.
     """
     parent, base = location_place(world, doc, members, needed, name)
-    site = {"at": None if parent == FIELD else parent, "control": control}
+    context = context if context is not None else rule_context(world, doc, members)
+    site = {"at": None if parent == FIELD else parent, **context}
     story = world["story"]
     extras = []
     if name.startswith(MISSION_PREFIX) and story["report_items"].get(name[len(MISSION_PREFIX):]):
@@ -1401,8 +1447,10 @@ JSON_NOTICE = ("Generated from logic/logic.json by the logic editor or tools/che
                "the tests fail when it falls behind the document.")
 EDGE_WORDS = {"door": "door", "internal": "internal", "warp": "warp", "curated": "path", "save": "pad"}
 # The rule classes of the Rule Builder and of logic/builder.py the generated module may import, in import order
-RULE_CLASSES = ("CanReachLocation", "CanReachRegion", "False_", "Has", "HasAny", "HasFromList", "True_")
-BUILDER_CLASSES = ("BossRequirement", "DoorKey", "GoalRequirement", "LavaCarriedTo", "ReachedAtLeast", "SealRequirement")
+RULE_CLASSES = ("CanReachEntrance", "CanReachLocation", "CanReachRegion", "False_", "Has", "HasAny", "HasFromList",
+                "True_")
+BUILDER_CLASSES = ("BossRequirement", "DoorKey", "GoalRequirement", "LavaCarriedTo", "ReachableAvoiding", "ReachedAtLeast",
+                   "SealRequirement")
 MACRO_NOTES = {
     "HU": "the human form: an item with hu_in_pool, always at hand without it",
     "HX": "one half of the biometal, or the whole item without progressive models",
@@ -1462,6 +1510,10 @@ def ir_to_dict(ir, gates=None) -> dict:
     if kind == "reach_location":
         return _rule_dict("CanReachLocation", {"location_name": ir[1], "parent_region_name": ir[2],
                                                "skip_indirect_connection": False})
+    if kind == "reach_entrance":
+        return _rule_dict("CanReachEntrance", {"entrance_name": ir[1], "parent_region_name": ir[2]})
+    if kind == "avoiding":
+        return _rule_dict("ReachableAvoiding", {"region": ir[1], "avoid": list(ir[2])})
     if kind == "reached_at_least":
         return _rule_dict("ReachedAtLeast", {"count": ir[1], "locations": list(ir[2])})
     if kind == "option_true":
@@ -1511,6 +1563,10 @@ def _leaf(ir) -> str:
         return "CanReachRegion(%s)" % _py_str(ir[1])
     if kind == "reach_location":
         return "CanReachLocation(%s, %s)" % (_py_str(ir[1]), _py_str(ir[2]))
+    if kind == "reach_entrance":
+        return "CanReachEntrance(%s, %s)" % (_py_str(ir[1]), _py_str(ir[2]))
+    if kind == "avoiding":
+        return "ReachableAvoiding(%s, (%s,))" % (_py_str(ir[1]), ", ".join(_py_str(r) for r in ir[2]))
     if kind == "option_true":
         return "True_(%s)" % _filter(ir[1], ir[2], ir[3])
     if kind == "goal":
@@ -1619,19 +1675,19 @@ def _rules_index(world, doc, tier, errors) -> dict:
         gates = gate_table(doc, tier)
     except (ValueError, KeyError) as e:
         gates, faults["gates"] = {}, str(e)
-    control = lava_control_region(world, doc, members)
+    context = rule_context(world, doc, members)
     needed = global_reachability(world, doc, members, tier)
     regions = [MENU, FIELD] + [region_name(room, rid) for room, rl in doc["rooms"].items()
                                for rid in ["main"] + sorted(r for r in rl["regions"] if r != "main")
                                if region_name(room, rid) in needed]
     # an entrance out of or into a region the start never leads to would join nothing
     present = set(regions)
-    entrances = [e for e in entrance_rules(world, doc, members, tier, faults, control)
+    entrances = [e for e in entrance_rules(world, doc, members, tier, faults, context)
                  if e[1] in present and e[2] in present]
     locations = {}
     for name in world["locations"]:
         try:
-            locations[name] = location_rule(world, doc, members, needed, name, tier, faults, control)
+            locations[name] = location_rule(world, doc, members, needed, name, tier, faults, context)
         except (ValueError, KeyError, TypeError) as e:
             locations[name], faults[name] = (FIELD, IR_FALSE), str(e)
     arenas = {}
@@ -1648,7 +1704,7 @@ def _rules_index(world, doc, tier, errors) -> dict:
     warps = [w for w in mission_warps(world, doc, members) if w[2] in present and w[3] in present]
     return {"members": members, "gates": gates, "entrances": entrances, "needed": needed, "regions": regions,
             "warps": warps, "region_events": placed_events,
-            "locations": locations, "events": events, "faults": faults, "control": control,
+            "locations": locations, "events": events, "faults": faults, "control": context["control"],
             "arenas": {bid: arenas[bid] for bid in sorted(arenas)}, "counted": sorted(count_items_used(doc)),
             "errors": list(errors) + ["%s: %s" % (name, msg) for name, msg in faults.items()],
             "start": region_name(world["start_room"], "main")}

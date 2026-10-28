@@ -125,6 +125,24 @@ class TestRequirements(unittest.TestCase):
         self.assertEqual(F.atom_ir(F.SLOW_LAVA, site), ("or", (("macro", "LAVA_ITEM"), ("lava", "k04/lava-chase", "k01/region-7"))))
         self.assertEqual(F.atom_ir(F.SLOW_LAVA), ("macro", F.SLOW_LAVA))
 
+    def test_route_atoms_resolve_against_the_place_they_are_asked_at(self) -> None:
+        """The lava chase is the way in through the K-3 door; avoiding the boss room means the arenas of the area."""
+        site = {"at": "g02/3rd-floor", "chase": "k03/k-4-entrance",
+                "arenas": {"g": ["g05/boss-area"], "k": ["k04/boss-room"]}}
+        self.assertEqual(F.atom_ir(F.LAVA_CHASE, site), ("reach_entrance", F.LAVA_CHASE_DOOR, "k03/k-4-entrance"))
+        self.assertEqual(F.atom_ir(F.AVOID_BOSS_ROOM, site), ("avoiding", "g02/3rd-floor", ("g05/boss-area",)))
+        self.assertRaises(ValueError, F.atom_ir, F.AVOID_BOSS_ROOM)
+        self.assertRaises(ValueError, F.atom_ir, F.AVOID_BOSS_ROOM, {"at": "a01", "arenas": {}})
+        self.assertEqual(F.canonical_atom("lava_chase"), F.LAVA_CHASE)
+        context = F.rule_context(WORLD, DOC, F.resolve_members(WORLD, DOC))
+        self.assertEqual(context["chase"], "k03/k-4-entrance")
+        self.assertEqual(context["arenas"]["g"], ["g05/boss-area"])
+        self.assertEqual(F.ir_to_dict(("reach_entrance", F.LAVA_CHASE_DOOR, "k03/k-4-entrance")), {
+            "rule": "CanReachEntrance", "options": [], "filtered_resolution": False,
+            "args": {"entrance_name": F.LAVA_CHASE_DOOR, "parent_region_name": "k03/k-4-entrance"}})
+        self.assertEqual(F.ir_to_dict(("avoiding", "g02/3rd-floor", ("g05/boss-area",)))["args"],
+                         {"region": "g02/3rd-floor", "avoid": ["g05/boss-area"]})
+
     def test_ir_serializes_as_the_rule_builder_does(self) -> None:
         """The dict of a node is Rule.to_dict: rule, options, filtered_resolution and args."""
         self.assertEqual(F.ir_to_dict(("has_if", "Model HX", 1, "ProgressiveModels", 0, "eq")), {

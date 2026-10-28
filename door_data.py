@@ -167,13 +167,6 @@ SITES = {
             {"room": "f05", "coord": 0x021949B8, "slot": 1, "template": "010513010600ffffff000000", "shared": False},
         ),
     },
-    "G-1 / G-2": {
-        "doors": ("g01 door (3808,768)", "g02 door (288,1152)"), "key": None, "border": False, "weight": 10, "weight_pickups": 10,
-        "faces": (
-            {"room": "g01", "coord": 0x02194BB8, "slot": 8, "template": "010513810000ffffff000000", "shared": False},
-            {"room": "g02", "coord": 0x02194890, "slot": 7, "template": "010513810000ffffff000000", "shared": False},
-        ),
-    },
     "G-2 / G-3": {
         "doors": ("g02 door (656,1552)", "g03 door (288,544)"), "key": None, "border": False, "weight": 5, "weight_pickups": 5,
         "faces": (

@@ -37492,110 +37492,72 @@
     "G-2: Guardian Chene": {
      "region": "g02/3rd-floor",
      "rule": {
-      "rule": "ReachableAvoiding",
+      "rule": "True_",
       "options": [],
       "filtered_resolution": false,
-      "args": {
-       "region": "g02/3rd-floor",
-       "avoid": [
-        "g05/boss-area"
-       ]
-      }
+      "args": {}
      }
     },
     "G-2: Guardian Sole": {
      "region": "g02/3rd-floor-room-outside",
      "rule": {
-      "rule": "ReachableAvoiding",
+      "rule": "True_",
       "options": [],
       "filtered_resolution": false,
-      "args": {
-       "region": "g02/3rd-floor-room-outside",
-       "avoid": [
-        "g05/boss-area"
-       ]
-      }
+      "args": {}
      }
     },
     "G-2: Guardian Platane": {
      "region": "g02/5th-floor",
      "rule": {
-      "rule": "ReachableAvoiding",
+      "rule": "True_",
       "options": [],
       "filtered_resolution": false,
-      "args": {
-       "region": "g02/5th-floor",
-       "avoid": [
-        "g05/boss-area"
-       ]
-      }
+      "args": {}
      }
     },
     "G-2: Guardian Bonite": {
      "region": "g02/3rd-floor-room-r-3rd-floor-room",
      "rule": {
-      "rule": "ReachableAvoiding",
+      "rule": "True_",
       "options": [],
       "filtered_resolution": false,
-      "args": {
-       "region": "g02/3rd-floor-room-r-3rd-floor-room",
-       "avoid": [
-        "g05/boss-area"
-       ]
-      }
+      "args": {}
      }
     },
     "G-2: Civilian": {
      "region": "g02/basement",
      "rule": {
-      "rule": "And",
+      "rule": "Or",
       "options": [],
       "filtered_resolution": false,
       "children": [
        {
-        "rule": "Or",
-        "options": [],
-        "filtered_resolution": false,
-        "children": [
+        "rule": "Has",
+        "options": [
          {
-          "rule": "Has",
-          "options": [
-           {
-            "option": "worlds.mmzx.options.HuInPool",
-            "value": 1,
-            "operator": "eq"
-           }
-          ],
-          "filtered_resolution": false,
-          "args": {
-           "item_name": "Model Hu",
-           "count": 1
-          }
-         },
-         {
-          "rule": "True_",
-          "options": [
-           {
-            "option": "worlds.mmzx.options.HuInPool",
-            "value": 0,
-            "operator": "eq"
-           }
-          ],
-          "filtered_resolution": false,
-          "args": {}
+          "option": "worlds.mmzx.options.HuInPool",
+          "value": 1,
+          "operator": "eq"
          }
-        ]
-       },
-       {
-        "rule": "ReachableAvoiding",
-        "options": [],
+        ],
         "filtered_resolution": false,
         "args": {
-         "region": "g02/basement",
-         "avoid": [
-          "g05/boss-area"
-         ]
+         "item_name": "Model Hu",
+         "count": 1
         }
+       },
+       {
+        "rule": "True_",
+        "options": [
+         {
+          "option": "worlds.mmzx.options.HuInPool",
+          "value": 0,
+          "operator": "eq"
+         }
+        ],
+        "filtered_resolution": false,
+        "args": {}
        }
       ]
      }
@@ -37603,54 +37565,36 @@
     "G-2: Civilian (5)": {
      "region": "g02/5th-floor-room-outside",
      "rule": {
-      "rule": "And",
+      "rule": "Or",
       "options": [],
       "filtered_resolution": false,
       "children": [
        {
-        "rule": "Or",
-        "options": [],
-        "filtered_resolution": false,
-        "children": [
+        "rule": "Has",
+        "options": [
          {
-          "rule": "Has",
-          "options": [
-           {
-            "option": "worlds.mmzx.options.HuInPool",
-            "value": 1,
-            "operator": "eq"
-           }
-          ],
-          "filtered_resolution": false,
-          "args": {
-           "item_name": "Model Hu",
-           "count": 1
-          }
-         },
-         {
-          "rule": "True_",
-          "options": [
-           {
-            "option": "worlds.mmzx.options.HuInPool",
-            "value": 0,
-            "operator": "eq"
-           }
-          ],
-          "filtered_resolution": false,
-          "args": {}
+          "option": "worlds.mmzx.options.HuInPool",
+          "value": 1,
+          "operator": "eq"
          }
-        ]
-       },
-       {
-        "rule": "ReachableAvoiding",
-        "options": [],
+        ],
         "filtered_resolution": false,
         "args": {
-         "region": "g02/5th-floor-room-outside",
-         "avoid": [
-          "g05/boss-area"
-         ]
+         "item_name": "Model Hu",
+         "count": 1
         }
+       },
+       {
+        "rule": "True_",
+        "options": [
+         {
+          "option": "worlds.mmzx.options.HuInPool",
+          "value": 0,
+          "operator": "eq"
+         }
+        ],
+        "filtered_resolution": false,
+        "args": {}
        }
       ]
      }
@@ -37658,54 +37602,36 @@
     "G-2: Civilian (2)": {
      "region": "g02/7th-floor-room-r-7th-floor-room",
      "rule": {
-      "rule": "And",
+      "rule": "Or",
       "options": [],
       "filtered_resolution": false,
       "children": [
        {
-        "rule": "Or",
-        "options": [],
-        "filtered_resolution": false,
-        "children": [
+        "rule": "Has",
+        "options": [
          {
-          "rule": "Has",
-          "options": [
-           {
-            "option": "worlds.mmzx.options.HuInPool",
-            "value": 1,
-            "operator": "eq"
-           }
-          ],
-          "filtered_resolution": false,
-          "args": {
-           "item_name": "Model Hu",
-           "count": 1
-          }
-         },
-         {
-          "rule": "True_",
-          "options": [
-           {
-            "option": "worlds.mmzx.options.HuInPool",
-            "value": 0,
-            "operator": "eq"
-           }
-          ],
-          "filtered_resolution": false,
-          "args": {}
+          "option": "worlds.mmzx.options.HuInPool",
+          "value": 1,
+          "operator": "eq"
          }
-        ]
-       },
-       {
-        "rule": "ReachableAvoiding",
-        "options": [],
+        ],
         "filtered_resolution": false,
         "args": {
-         "region": "g02/7th-floor-room-r-7th-floor-room",
-         "avoid": [
-          "g05/boss-area"
-         ]
+         "item_name": "Model Hu",
+         "count": 1
         }
+       },
+       {
+        "rule": "True_",
+        "options": [
+         {
+          "option": "worlds.mmzx.options.HuInPool",
+          "value": 0,
+          "operator": "eq"
+         }
+        ],
+        "filtered_resolution": false,
+        "args": {}
        }
       ]
      }
@@ -37713,54 +37639,36 @@
     "G-2: Civilian (3)": {
      "region": "g02/6th-floor-room-outside",
      "rule": {
-      "rule": "And",
+      "rule": "Or",
       "options": [],
       "filtered_resolution": false,
       "children": [
        {
-        "rule": "Or",
-        "options": [],
-        "filtered_resolution": false,
-        "children": [
+        "rule": "Has",
+        "options": [
          {
-          "rule": "Has",
-          "options": [
-           {
-            "option": "worlds.mmzx.options.HuInPool",
-            "value": 1,
-            "operator": "eq"
-           }
-          ],
-          "filtered_resolution": false,
-          "args": {
-           "item_name": "Model Hu",
-           "count": 1
-          }
-         },
-         {
-          "rule": "True_",
-          "options": [
-           {
-            "option": "worlds.mmzx.options.HuInPool",
-            "value": 0,
-            "operator": "eq"
-           }
-          ],
-          "filtered_resolution": false,
-          "args": {}
+          "option": "worlds.mmzx.options.HuInPool",
+          "value": 1,
+          "operator": "eq"
          }
-        ]
-       },
-       {
-        "rule": "ReachableAvoiding",
-        "options": [],
+        ],
         "filtered_resolution": false,
         "args": {
-         "region": "g02/6th-floor-room-outside",
-         "avoid": [
-          "g05/boss-area"
-         ]
+         "item_name": "Model Hu",
+         "count": 1
         }
+       },
+       {
+        "rule": "True_",
+        "options": [
+         {
+          "option": "worlds.mmzx.options.HuInPool",
+          "value": 0,
+          "operator": "eq"
+         }
+        ],
+        "filtered_resolution": false,
+        "args": {}
        }
       ]
      }
@@ -37768,54 +37676,36 @@
     "G-2: Civilian (6)": {
      "region": "g02/4th-floor-room",
      "rule": {
-      "rule": "And",
+      "rule": "Or",
       "options": [],
       "filtered_resolution": false,
       "children": [
        {
-        "rule": "Or",
-        "options": [],
-        "filtered_resolution": false,
-        "children": [
+        "rule": "Has",
+        "options": [
          {
-          "rule": "Has",
-          "options": [
-           {
-            "option": "worlds.mmzx.options.HuInPool",
-            "value": 1,
-            "operator": "eq"
-           }
-          ],
-          "filtered_resolution": false,
-          "args": {
-           "item_name": "Model Hu",
-           "count": 1
-          }
-         },
-         {
-          "rule": "True_",
-          "options": [
-           {
-            "option": "worlds.mmzx.options.HuInPool",
-            "value": 0,
-            "operator": "eq"
-           }
-          ],
-          "filtered_resolution": false,
-          "args": {}
+          "option": "worlds.mmzx.options.HuInPool",
+          "value": 1,
+          "operator": "eq"
          }
-        ]
-       },
-       {
-        "rule": "ReachableAvoiding",
-        "options": [],
+        ],
         "filtered_resolution": false,
         "args": {
-         "region": "g02/4th-floor-room",
-         "avoid": [
-          "g05/boss-area"
-         ]
+         "item_name": "Model Hu",
+         "count": 1
         }
+       },
+       {
+        "rule": "True_",
+        "options": [
+         {
+          "option": "worlds.mmzx.options.HuInPool",
+          "value": 0,
+          "operator": "eq"
+         }
+        ],
+        "filtered_resolution": false,
+        "args": {}
        }
       ]
      }
@@ -37823,54 +37713,36 @@
     "G-2: Civilian (7)": {
      "region": "g02/2nd-floor-room-outside",
      "rule": {
-      "rule": "And",
+      "rule": "Or",
       "options": [],
       "filtered_resolution": false,
       "children": [
        {
-        "rule": "Or",
-        "options": [],
-        "filtered_resolution": false,
-        "children": [
+        "rule": "Has",
+        "options": [
          {
-          "rule": "Has",
-          "options": [
-           {
-            "option": "worlds.mmzx.options.HuInPool",
-            "value": 1,
-            "operator": "eq"
-           }
-          ],
-          "filtered_resolution": false,
-          "args": {
-           "item_name": "Model Hu",
-           "count": 1
-          }
-         },
-         {
-          "rule": "True_",
-          "options": [
-           {
-            "option": "worlds.mmzx.options.HuInPool",
-            "value": 0,
-            "operator": "eq"
-           }
-          ],
-          "filtered_resolution": false,
-          "args": {}
+          "option": "worlds.mmzx.options.HuInPool",
+          "value": 1,
+          "operator": "eq"
          }
-        ]
-       },
-       {
-        "rule": "ReachableAvoiding",
-        "options": [],
+        ],
         "filtered_resolution": false,
         "args": {
-         "region": "g02/2nd-floor-room-outside",
-         "avoid": [
-          "g05/boss-area"
-         ]
+         "item_name": "Model Hu",
+         "count": 1
         }
+       },
+       {
+        "rule": "True_",
+        "options": [
+         {
+          "option": "worlds.mmzx.options.HuInPool",
+          "value": 0,
+          "operator": "eq"
+         }
+        ],
+        "filtered_resolution": false,
+        "args": {}
        }
       ]
      }
@@ -37878,54 +37750,36 @@
     "G-2: Civilian (4)": {
      "region": "g02/5th-floor-room-r-5th-floor-room",
      "rule": {
-      "rule": "And",
+      "rule": "Or",
       "options": [],
       "filtered_resolution": false,
       "children": [
        {
-        "rule": "Or",
-        "options": [],
-        "filtered_resolution": false,
-        "children": [
+        "rule": "Has",
+        "options": [
          {
-          "rule": "Has",
-          "options": [
-           {
-            "option": "worlds.mmzx.options.HuInPool",
-            "value": 1,
-            "operator": "eq"
-           }
-          ],
-          "filtered_resolution": false,
-          "args": {
-           "item_name": "Model Hu",
-           "count": 1
-          }
-         },
-         {
-          "rule": "True_",
-          "options": [
-           {
-            "option": "worlds.mmzx.options.HuInPool",
-            "value": 0,
-            "operator": "eq"
-           }
-          ],
-          "filtered_resolution": false,
-          "args": {}
+          "option": "worlds.mmzx.options.HuInPool",
+          "value": 1,
+          "operator": "eq"
          }
-        ]
-       },
-       {
-        "rule": "ReachableAvoiding",
-        "options": [],
+        ],
         "filtered_resolution": false,
         "args": {
-         "region": "g02/5th-floor-room-r-5th-floor-room",
-         "avoid": [
-          "g05/boss-area"
-         ]
+         "item_name": "Model Hu",
+         "count": 1
         }
+       },
+       {
+        "rule": "True_",
+        "options": [
+         {
+          "option": "worlds.mmzx.options.HuInPool",
+          "value": 0,
+          "operator": "eq"
+         }
+        ],
+        "filtered_resolution": false,
+        "args": {}
        }
       ]
      }
@@ -37933,54 +37787,36 @@
     "G-2: Civilian (8)": {
      "region": "g02/basement-room",
      "rule": {
-      "rule": "And",
+      "rule": "Or",
       "options": [],
       "filtered_resolution": false,
       "children": [
        {
-        "rule": "Or",
-        "options": [],
-        "filtered_resolution": false,
-        "children": [
+        "rule": "Has",
+        "options": [
          {
-          "rule": "Has",
-          "options": [
-           {
-            "option": "worlds.mmzx.options.HuInPool",
-            "value": 1,
-            "operator": "eq"
-           }
-          ],
-          "filtered_resolution": false,
-          "args": {
-           "item_name": "Model Hu",
-           "count": 1
-          }
-         },
-         {
-          "rule": "True_",
-          "options": [
-           {
-            "option": "worlds.mmzx.options.HuInPool",
-            "value": 0,
-            "operator": "eq"
-           }
-          ],
-          "filtered_resolution": false,
-          "args": {}
+          "option": "worlds.mmzx.options.HuInPool",
+          "value": 1,
+          "operator": "eq"
          }
-        ]
-       },
-       {
-        "rule": "ReachableAvoiding",
-        "options": [],
+        ],
         "filtered_resolution": false,
         "args": {
-         "region": "g02/basement-room",
-         "avoid": [
-          "g05/boss-area"
-         ]
+         "item_name": "Model Hu",
+         "count": 1
         }
+       },
+       {
+        "rule": "True_",
+        "options": [
+         {
+          "option": "worlds.mmzx.options.HuInPool",
+          "value": 0,
+          "operator": "eq"
+         }
+        ],
+        "filtered_resolution": false,
+        "args": {}
        }
       ]
      }
@@ -37988,45 +37824,27 @@
     "G-2: Sprinkler Key": {
      "region": "g02/8th-floor",
      "rule": {
-      "rule": "And",
+      "rule": "ReachedAtLeast",
       "options": [],
       "filtered_resolution": false,
-      "children": [
-       {
-        "rule": "ReachableAvoiding",
-        "options": [],
-        "filtered_resolution": false,
-        "args": {
-         "region": "g02/8th-floor",
-         "avoid": [
-          "g05/boss-area"
-         ]
-        }
-       },
-       {
-        "rule": "ReachedAtLeast",
-        "options": [],
-        "filtered_resolution": false,
-        "args": {
-         "count": 8,
-         "locations": [
-          "G-2: Guardian Chene",
-          "G-2: Guardian Sole",
-          "G-2: Guardian Platane",
-          "G-2: Guardian Bonite",
-          "G-2: Civilian",
-          "G-2: Civilian (2)",
-          "G-2: Civilian (3)",
-          "G-2: Civilian (4)",
-          "G-2: Civilian (5)",
-          "G-2: Civilian (6)",
-          "G-2: Civilian (7)",
-          "G-2: Civilian (8)",
-          "G-3: Dog"
-         ]
-        }
-       }
-      ]
+      "args": {
+       "count": 8,
+       "locations": [
+        "G-2: Guardian Chene",
+        "G-2: Guardian Sole",
+        "G-2: Guardian Platane",
+        "G-2: Guardian Bonite",
+        "G-2: Civilian",
+        "G-2: Civilian (2)",
+        "G-2: Civilian (3)",
+        "G-2: Civilian (4)",
+        "G-2: Civilian (5)",
+        "G-2: Civilian (6)",
+        "G-2: Civilian (7)",
+        "G-2: Civilian (8)",
+        "G-3: Dog"
+       ]
+      }
      }
     },
     "G-2: Disk E-16": {
@@ -38160,54 +37978,36 @@
     "G-3: Dog": {
      "region": "g03",
      "rule": {
-      "rule": "And",
+      "rule": "Or",
       "options": [],
       "filtered_resolution": false,
       "children": [
        {
-        "rule": "Or",
-        "options": [],
-        "filtered_resolution": false,
-        "children": [
+        "rule": "Has",
+        "options": [
          {
-          "rule": "Has",
-          "options": [
-           {
-            "option": "worlds.mmzx.options.HuInPool",
-            "value": 1,
-            "operator": "eq"
-           }
-          ],
-          "filtered_resolution": false,
-          "args": {
-           "item_name": "Model Hu",
-           "count": 1
-          }
-         },
-         {
-          "rule": "True_",
-          "options": [
-           {
-            "option": "worlds.mmzx.options.HuInPool",
-            "value": 0,
-            "operator": "eq"
-           }
-          ],
-          "filtered_resolution": false,
-          "args": {}
+          "option": "worlds.mmzx.options.HuInPool",
+          "value": 1,
+          "operator": "eq"
          }
-        ]
-       },
-       {
-        "rule": "ReachableAvoiding",
-        "options": [],
+        ],
         "filtered_resolution": false,
         "args": {
-         "region": "g03",
-         "avoid": [
-          "g05/boss-area"
-         ]
+         "item_name": "Model Hu",
+         "count": 1
         }
+       },
+       {
+        "rule": "True_",
+        "options": [
+         {
+          "option": "worlds.mmzx.options.HuInPool",
+          "value": 0,
+          "operator": "eq"
+         }
+        ],
+        "filtered_resolution": false,
+        "args": {}
        }
       ]
      }

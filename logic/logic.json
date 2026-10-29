@@ -939,8 +939,7 @@
    "req": {
     "normal": [
      [
-      "HU",
-      "AVOID_BOSS_ROOM"
+      "HU"
      ]
     ]
    },
@@ -951,8 +950,7 @@
    "req": {
     "normal": [
      [
-      "HU",
-      "AVOID_BOSS_ROOM"
+      "HU"
      ]
     ]
    },
@@ -963,8 +961,7 @@
    "req": {
     "normal": [
      [
-      "HU",
-      "AVOID_BOSS_ROOM"
+      "HU"
      ]
     ]
    },
@@ -975,8 +972,7 @@
    "req": {
     "normal": [
      [
-      "HU",
-      "AVOID_BOSS_ROOM"
+      "HU"
      ]
     ]
    },
@@ -987,8 +983,7 @@
    "req": {
     "normal": [
      [
-      "HU",
-      "AVOID_BOSS_ROOM"
+      "HU"
      ]
     ]
    },
@@ -999,8 +994,7 @@
    "req": {
     "normal": [
      [
-      "HU",
-      "AVOID_BOSS_ROOM"
+      "HU"
      ]
     ]
    },
@@ -1011,8 +1005,7 @@
    "req": {
     "normal": [
      [
-      "HU",
-      "AVOID_BOSS_ROOM"
+      "HU"
      ]
     ]
    },
@@ -1023,8 +1016,7 @@
    "req": {
     "normal": [
      [
-      "HU",
-      "AVOID_BOSS_ROOM"
+      "HU"
      ]
     ]
    },
@@ -1045,68 +1037,12 @@
    },
    "unsure": false
   },
-  "G-2: Guardian Bonite": {
-   "note": "",
-   "req": {
-    "normal": [
-     [
-      "AVOID_BOSS_ROOM"
-     ]
-    ]
-   },
-   "unsure": false
-  },
-  "G-2: Guardian Chene": {
-   "note": "",
-   "req": {
-    "normal": [
-     [
-      "AVOID_BOSS_ROOM"
-     ]
-    ]
-   },
-   "unsure": false
-  },
-  "G-2: Guardian Platane": {
-   "note": "",
-   "req": {
-    "normal": [
-     [
-      "AVOID_BOSS_ROOM"
-     ]
-    ]
-   },
-   "unsure": false
-  },
-  "G-2: Guardian Sole": {
-   "note": "",
-   "req": {
-    "normal": [
-     [
-      "AVOID_BOSS_ROOM"
-     ]
-    ]
-   },
-   "unsure": false
-  },
-  "G-2: Sprinkler Key": {
-   "note": "",
-   "req": {
-    "normal": [
-     [
-      "AVOID_BOSS_ROOM"
-     ]
-    ]
-   },
-   "unsure": false
-  },
   "G-3: Dog": {
    "note": "",
    "req": {
     "normal": [
      [
-      "HU",
-      "AVOID_BOSS_ROOM"
+      "HU"
      ]
     ]
    },

@@ -7,7 +7,7 @@ from rule_builder.options import OptionFilter
 from rule_builder.rules import CanReachEntrance, CanReachLocation, CanReachRegion, Has, HasAny, HasFromList, True_
 
 from ..options import AreaMAccess, Goal, HuInPool, IncludeWarpsInLogic, MissionObjectives, ProgressiveModels, SkipBossRush, Zero3Bosses, Zero4Bosses
-from .builder import BossRequirement, DoorKey, GoalRequirement, LavaCarriedTo, ReachableAvoiding, ReachedAtLeast, SealRequirement, Edge, Spot
+from .builder import BossRequirement, DoorKey, GoalRequirement, LavaCarriedTo, ReachedAtLeast, SealRequirement, Edge, Spot
 
 # The atoms the world answers, the model aliases and the seal
 HU = Has("Model Hu", options=[OptionFilter(HuInPool, 1)]) | True_(options=[OptionFilter(HuInPool, 0)])   # the human form: an item with hu_in_pool, always at hand without it
@@ -1237,8 +1237,7 @@ ENTRANCES["g02 door (656,1392)"] = Edge("g02/2nd-floor", "g02/2nd-floor-room-r-2
 ENTRANCES["g02: 2nd-floor-room-outside -> 2nd-floor-room-r-2nd-floor-2"] = Edge(
     "g02/2nd-floor-room-outside", "g02/2nd-floor-room-r-2nd-floor-2", True_())   # conn -> 2nd Floor Room (r-2nd-floor-2)
 ENTRANCES["g02 door (376,5856)"] = Edge("g02/2nd-floor-room-outside", "g02/2nd-floor-room-r-2nd-floor-2", True_())   # internal -> 2nd Floor Room (r-2nd-floor-2)
-LOCATIONS["G-2: Civilian (7)"] = Spot(
-    "g02/2nd-floor-room-outside", HU & ReachableAvoiding("g02/2nd-floor-room-outside", ("g05/boss-area",)))
+LOCATIONS["G-2: Civilian (7)"] = Spot("g02/2nd-floor-room-outside", HU)
 # region 2nd Floor Room (r-2nd-floor-2)
 ENTRANCES["g02: 2nd-floor-room-r-2nd-floor-2 -> 2nd-floor"] = Edge(
     "g02/2nd-floor-room-r-2nd-floor-2", "g02/2nd-floor", True_())   # conn -> 2nd Floor
@@ -1253,13 +1252,12 @@ ENTRANCES["g02: 3rd-floor -> 2nd-floor"] = Edge("g02/3rd-floor", "g02/2nd-floor"
 ENTRANCES["g02: 3rd-floor -> 3rd-floor-room-r-3rd-floor-room"] = Edge(
     "g02/3rd-floor", "g02/3rd-floor-room-r-3rd-floor-room", True_())   # conn -> 3rd Floor Room (r-3rd-floor-room)
 ENTRANCES["g02 door (656,1232)"] = Edge("g02/3rd-floor", "g02/3rd-floor-room-r-3rd-floor-room", True_())   # internal -> 3rd Floor Room (r-3rd-floor-room)
-LOCATIONS["G-2: Guardian Chene"] = Spot("g02/3rd-floor", ReachableAvoiding("g02/3rd-floor", ("g05/boss-area",)))
+LOCATIONS["G-2: Guardian Chene"] = Spot("g02/3rd-floor", True_())
 # region 3rd Floor Room (Outside)
 ENTRANCES["g02: 3rd-floor-room-outside -> 3rd-floor-room-r-3rd-floor-room"] = Edge(
     "g02/3rd-floor-room-outside", "g02/3rd-floor-room-r-3rd-floor-room", True_())   # conn -> 3rd Floor Room (r-3rd-floor-room)
 ENTRANCES["g02 door (376,5088)"] = Edge("g02/3rd-floor-room-outside", "g02/3rd-floor-room-r-3rd-floor-room", True_())   # internal -> 3rd Floor Room (r-3rd-floor-room)
-LOCATIONS["G-2: Guardian Sole"] = Spot(
-    "g02/3rd-floor-room-outside", ReachableAvoiding("g02/3rd-floor-room-outside", ("g05/boss-area",)))
+LOCATIONS["G-2: Guardian Sole"] = Spot("g02/3rd-floor-room-outside", True_())
 # region 3rd Floor Room (r-3rd-floor-room)
 ENTRANCES["g02: 3rd-floor-room-r-3rd-floor-room -> 3rd-floor"] = Edge(
     "g02/3rd-floor-room-r-3rd-floor-room", "g02/3rd-floor", True_())   # conn -> 3rd Floor
@@ -1267,8 +1265,7 @@ ENTRANCES["g02: 3rd-floor-room-r-3rd-floor-room -> 3rd-floor-room-outside"] = Ed
     "g02/3rd-floor-room-r-3rd-floor-room", "g02/3rd-floor-room-outside", True_())   # conn -> 3rd Floor Room (Outside)
 ENTRANCES["g02 door (648,4720)"] = Edge("g02/3rd-floor-room-r-3rd-floor-room", "g02/3rd-floor-room-outside", True_())   # internal -> 3rd Floor Room (Outside)
 ENTRANCES["g02 door (288,4768)"] = Edge("g02/3rd-floor-room-r-3rd-floor-room", "g02/3rd-floor", True_())   # internal -> 3rd Floor
-LOCATIONS["G-2: Guardian Bonite"] = Spot(
-    "g02/3rd-floor-room-r-3rd-floor-room", ReachableAvoiding("g02/3rd-floor-room-r-3rd-floor-room", ("g05/boss-area",)))
+LOCATIONS["G-2: Guardian Bonite"] = Spot("g02/3rd-floor-room-r-3rd-floor-room", True_())
 # region 4th Floor
 ENTRANCES["g02: 4th-floor -> 5th-floor"] = Edge("g02/4th-floor", "g02/5th-floor", True_())   # conn -> 5th Floor
 ENTRANCES["g02: 4th-floor -> 3rd-floor"] = Edge("g02/4th-floor", "g02/3rd-floor", True_())   # conn -> 3rd Floor
@@ -1277,21 +1274,19 @@ ENTRANCES["g02 door (656,1072)"] = Edge("g02/4th-floor", "g02/4th-floor-room", T
 # region 4th Floor Room
 ENTRANCES["g02: 4th-floor-room -> 4th-floor"] = Edge("g02/4th-floor-room", "g02/4th-floor", True_())   # conn -> 4th Floor
 ENTRANCES["g02 door (288,4384)"] = Edge("g02/4th-floor-room", "g02/4th-floor", True_())   # internal -> 4th Floor
-LOCATIONS["G-2: Civilian (6)"] = Spot(
-    "g02/4th-floor-room", HU & ReachableAvoiding("g02/4th-floor-room", ("g05/boss-area",)))
+LOCATIONS["G-2: Civilian (6)"] = Spot("g02/4th-floor-room", HU)
 # region 5th Floor
 ENTRANCES["g02: 5th-floor -> 6th-floor"] = Edge("g02/5th-floor", "g02/6th-floor", True_())   # conn -> 6th Floor
 ENTRANCES["g02: 5th-floor -> 4th-floor"] = Edge("g02/5th-floor", "g02/4th-floor", True_())   # conn -> 4th Floor
 ENTRANCES["g02: 5th-floor -> 5th-floor-room-r-5th-floor-room"] = Edge(
     "g02/5th-floor", "g02/5th-floor-room-r-5th-floor-room", True_())   # conn -> 5th Floor Room (r-5th-floor-room)
 ENTRANCES["g02 door (656,912)"] = Edge("g02/5th-floor", "g02/5th-floor-room-r-5th-floor-room", True_())   # internal -> 5th Floor Room (r-5th-floor-room)
-LOCATIONS["G-2: Guardian Platane"] = Spot("g02/5th-floor", ReachableAvoiding("g02/5th-floor", ("g05/boss-area",)))
+LOCATIONS["G-2: Guardian Platane"] = Spot("g02/5th-floor", True_())
 # region 5th Floor Room (Outside)
 ENTRANCES["g02: 5th-floor-room-outside -> 5th-floor-room-r-5th-floor-room"] = Edge(
     "g02/5th-floor-room-outside", "g02/5th-floor-room-r-5th-floor-room", True_())   # conn -> 5th Floor Room (r-5th-floor-room)
 ENTRANCES["g02 door (376,3936)"] = Edge("g02/5th-floor-room-outside", "g02/5th-floor-room-r-5th-floor-room", True_())   # internal -> 5th Floor Room (r-5th-floor-room)
-LOCATIONS["G-2: Civilian (5)"] = Spot(
-    "g02/5th-floor-room-outside", HU & ReachableAvoiding("g02/5th-floor-room-outside", ("g05/boss-area",)))
+LOCATIONS["G-2: Civilian (5)"] = Spot("g02/5th-floor-room-outside", HU)
 # region 5th Floor Room (r-5th-floor-room)
 ENTRANCES["g02: 5th-floor-room-r-5th-floor-room -> 5th-floor"] = Edge(
     "g02/5th-floor-room-r-5th-floor-room", "g02/5th-floor", True_())   # conn -> 5th Floor
@@ -1299,9 +1294,7 @@ ENTRANCES["g02: 5th-floor-room-r-5th-floor-room -> 5th-floor-room-outside"] = Ed
     "g02/5th-floor-room-r-5th-floor-room", "g02/5th-floor-room-outside", True_())   # conn -> 5th Floor Room (Outside)
 ENTRANCES["g02 door (456,3568)"] = Edge("g02/5th-floor-room-r-5th-floor-room", "g02/5th-floor-room-outside", True_())   # internal -> 5th Floor Room (Outside)
 ENTRANCES["g02 door (288,3616)"] = Edge("g02/5th-floor-room-r-5th-floor-room", "g02/5th-floor", True_())   # internal -> 5th Floor
-LOCATIONS["G-2: Civilian (4)"] = Spot(
-    "g02/5th-floor-room-r-5th-floor-room", HU
-    & ReachableAvoiding("g02/5th-floor-room-r-5th-floor-room", ("g05/boss-area",)))
+LOCATIONS["G-2: Civilian (4)"] = Spot("g02/5th-floor-room-r-5th-floor-room", HU)
 # region 6th Floor
 ENTRANCES["g02: 6th-floor -> 7th-floor"] = Edge("g02/6th-floor", "g02/7th-floor", True_())   # conn -> 7th Floor
 ENTRANCES["g02: 6th-floor -> 5th-floor"] = Edge("g02/6th-floor", "g02/5th-floor", True_())   # conn -> 5th Floor
@@ -1312,8 +1305,7 @@ ENTRANCES["g02 door (656,752)"] = Edge("g02/6th-floor", "g02/6th-floor-room-r-6t
 ENTRANCES["g02: 6th-floor-room-outside -> 6th-floor-room-r-6th-floor-room"] = Edge(
     "g02/6th-floor-room-outside", "g02/6th-floor-room-r-6th-floor-room", True_())   # conn -> 6th Floor Room (r-6th-floor-room)
 ENTRANCES["g02 door (376,3168)"] = Edge("g02/6th-floor-room-outside", "g02/6th-floor-room-r-6th-floor-room", True_())   # internal -> 6th Floor Room (r-6th-floor-room)
-LOCATIONS["G-2: Civilian (3)"] = Spot(
-    "g02/6th-floor-room-outside", HU & ReachableAvoiding("g02/6th-floor-room-outside", ("g05/boss-area",)))
+LOCATIONS["G-2: Civilian (3)"] = Spot("g02/6th-floor-room-outside", HU)
 # region 6th Floor Room (r-6th-floor-room)
 ENTRANCES["g02: 6th-floor-room-r-6th-floor-room -> 6th-floor"] = Edge(
     "g02/6th-floor-room-r-6th-floor-room", "g02/6th-floor", True_())   # conn -> 6th Floor
@@ -1339,9 +1331,7 @@ ENTRANCES["g02: 7th-floor-room-r-7th-floor-room -> 7th-floor"] = Edge(
     "g02/7th-floor-room-r-7th-floor-room", "g02/7th-floor", True_())   # conn -> 7th Floor
 ENTRANCES["g02 door (552,2032)"] = Edge("g02/7th-floor-room-r-7th-floor-room", "g02/7th-floor-room-outside", True_())   # internal -> 7th Floor Room (Outside)
 ENTRANCES["g02 door (288,2080)"] = Edge("g02/7th-floor-room-r-7th-floor-room", "g02/7th-floor", True_())   # internal -> 7th Floor
-LOCATIONS["G-2: Civilian (2)"] = Spot(
-    "g02/7th-floor-room-r-7th-floor-room", HU
-    & ReachableAvoiding("g02/7th-floor-room-r-7th-floor-room", ("g05/boss-area",)))
+LOCATIONS["G-2: Civilian (2)"] = Spot("g02/7th-floor-room-r-7th-floor-room", HU)
 # region 8th Floor
 ENTRANCES["g02: 8th-floor -> 7th-floor"] = Edge("g02/8th-floor", "g02/7th-floor", True_())   # conn -> 7th Floor
 ENTRANCES["g02 door (656,432)"] = Edge(
@@ -1349,20 +1339,18 @@ ENTRANCES["g02 door (656,432)"] = Edge(
 #   <- G-4
 LOCATIONS["G-2: Disk E-16"] = Spot("g02/8th-floor", HX | LX & Has("Cleared: Fight The Mavericks"))
 LOCATIONS["G-2: Sprinkler Key"] = Spot(
-    "g02/8th-floor", ReachableAvoiding("g02/8th-floor", ("g05/boss-area",)) & ReachedAtLeast(8, ["G-2: Guardian Chene",
-        "G-2: Guardian Sole", "G-2: Guardian Platane", "G-2: Guardian Bonite", "G-2: Civilian", "G-2: Civilian (2)",
-        "G-2: Civilian (3)", "G-2: Civilian (4)", "G-2: Civilian (5)", "G-2: Civilian (6)", "G-2: Civilian (7)",
-        "G-2: Civilian (8)", "G-3: Dog"]))
+    "g02/8th-floor", ReachedAtLeast(8, ["G-2: Guardian Chene", "G-2: Guardian Sole", "G-2: Guardian Platane",
+        "G-2: Guardian Bonite", "G-2: Civilian", "G-2: Civilian (2)", "G-2: Civilian (3)", "G-2: Civilian (4)",
+        "G-2: Civilian (5)", "G-2: Civilian (6)", "G-2: Civilian (7)", "G-2: Civilian (8)", "G-3: Dog"]))
 # region Basement
 ENTRANCES["g02: basement -> 1st-floor"] = Edge("g02/basement", "g02/1st-floor", True_())   # conn -> 1st Floor
 ENTRANCES["g02: basement -> basement-room"] = Edge("g02/basement", "g02/basement-room", True_())   # conn -> Basement Room
 ENTRANCES["g02 door (656,1712)"] = Edge("g02/basement", "g02/basement-room", GATE_191)   # internal -> Basement Room gate 191
-LOCATIONS["G-2: Civilian"] = Spot("g02/basement", HU & ReachableAvoiding("g02/basement", ("g05/boss-area",)))
+LOCATIONS["G-2: Civilian"] = Spot("g02/basement", HU)
 # region Basement Room
 ENTRANCES["g02: basement-room -> basement"] = Edge("g02/basement-room", "g02/basement", True_())   # conn -> Basement
 ENTRANCES["g02 door (288,6304)"] = Edge("g02/basement-room", "g02/basement", True_())   # internal -> Basement
-LOCATIONS["G-2: Civilian (8)"] = Spot(
-    "g02/basement-room", HU & ReachableAvoiding("g02/basement-room", ("g05/boss-area",)))
+LOCATIONS["G-2: Civilian (8)"] = Spot("g02/basement-room", HU)
 # region G-1 Entrance
 ENTRANCES["g02: g-1-entrance -> 3rd-floor"] = Edge("g02/g-1-entrance", "g02/3rd-floor", True_())   # conn -> 3rd Floor
 ENTRANCES["g02 door (288,1152)"] = Edge("g02/g-1-entrance", "g01/g-2-entrance", True_())   # door -> G-1/G-2 Entrance
@@ -1373,7 +1361,7 @@ ENTRANCES["g02 door (288,1152)"] = Edge("g02/g-1-entrance", "g01/g-2-entrance", 
 ENTRANCES["g03 door (288,544)"] = Edge("g03", "g02/1st-floor", DoorKey("g03 door (288,544)"))   # door -> G-2/1st Floor door constraint site
 #   <- G-2
 LOCATIONS["G-3: Disk E-9"] = Spot("g03", True_())
-LOCATIONS["G-3: Dog"] = Spot("g03", HU & ReachableAvoiding("g03", ("g05/boss-area",)))
+LOCATIONS["G-3: Dog"] = Spot("g03", HU)
 
 # --- G-4 [g04]
 # region Main

@@ -303,7 +303,7 @@ class TestMissionObjectiveAtoms(unittest.TestCase):
         rule = multiworld.get_location(SPRINKLER_KEY, 1).access_rule
         count, group = STORY_COUNTS[SPRINKLER_KEY]
         self.assertEqual(set(rule.location_dependencies()), set(group))
-        self.assertIn("Reached %d/%d of (" % (len(group), count), rule.explain_str(pool_without(multiworld)))
+        self.assertTrue(rule.explain_str(pool_without(multiworld)).startswith("Reached %d/%d of (" % (len(group), count)))
         carrelet = multiworld.get_location("C-1: Guardian Carrelet", 1).access_rule
         self.assertIn("C-1: Guardian Oeillet", carrelet.location_dependencies())
         self.assertEqual(str(ReachedAtLeast(2, ("a", "b", "c"))), "ReachedAtLeast(2, ['a', 'b', 'c'])")

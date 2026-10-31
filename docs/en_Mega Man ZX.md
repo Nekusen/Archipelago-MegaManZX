@@ -66,7 +66,7 @@ Items:
   and 3) and what six story events do (Area F Lock Hack, Sprinkler Key, Lava Flow Control, Area K Door Switch,
   Area D Bridge and Area E Power Shutdown).
 - Passwords, with `area_m_access: passwords`.
-- E-Crystals (50, 100 or 200 at a time) and 1-Ups as filler, each as likely as the others. With `infinite_lives`
+- E-Crystals (25, 50 or 100 at a time, the smaller amounts more often) and 1-Ups as filler. With `infinite_lives`
   there are no 1-Ups among them.
 
 Locations:

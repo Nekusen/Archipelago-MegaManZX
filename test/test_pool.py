@@ -20,9 +20,8 @@ OPTION_SETS = {
     "boss_logic": {"boss_logic": {"Serpent": "ALL6 & Life Up x2", "Hivolt": WITNESS}},
     "infinite_lives": {"infinite_lives": True},
 }
-# the fillers, each as likely as the others
-FILLERS = {"50 E-Crystals", "100 E-Crystals", "200 E-Crystals", "1-Up"}
-FILLER_DRAWS = 400
+FILLERS = {"25 E-Crystals", "50 E-Crystals", "100 E-Crystals", "1-Up"}
+FILLER_DRAWS = 2000
 # pickup option: locations it adds, as the option docstrings promise
 PICKUP_COUNTS = {"pickup_checks_1up": 7, "pickup_checks_energy": 45,
                  "pickup_checks_weapon": 25, "pickup_checks_crystals": 56}
@@ -75,10 +74,12 @@ class TestPool(MMZXTestBase):
                 self.assertTrue(item.useful and not item.advancement, item.name)
 
     def test_filler(self) -> None:
-        """E-Crystals in three sizes and 1-Ups pad the pool, each as likely as the others."""
+        """E-Crystals in three sizes and 1-Ups pad the pool, the smaller amounts more often."""
         draws = Counter(self.world.get_filler_item_name() for _ in range(FILLER_DRAWS))
         self.assertEqual(set(draws), FILLERS)
-        self.assertGreater(min(draws.values()), FILLER_DRAWS // (2 * len(FILLERS)))
+        self.assertEqual(FILLERS, {n for n, v in ITEMS.items() if v["classification"] == "filler"})
+        self.assertGreater(draws["25 E-Crystals"], draws["50 E-Crystals"])
+        self.assertGreater(draws["50 E-Crystals"], draws["100 E-Crystals"])
         pooled = {item.name for item in self.multiworld.itempool if item.classification.name == "filler"}
         self.assertTrue(pooled <= FILLERS)
 

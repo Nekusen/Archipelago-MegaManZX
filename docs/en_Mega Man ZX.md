@@ -66,8 +66,9 @@ Items:
   and 3) and what six story events do (Area F Lock Hack, Sprinkler Key, Lava Flow Control, Area K Door Switch,
   Area D Bridge and Area E Power Shutdown).
 - Passwords, with `area_m_access: passwords`.
-- E-Crystals (25, 50 or 100 at a time, the smaller amounts more often) and 1-Ups as filler. With `infinite_lives`
-  there are no 1-Ups among them.
+- E-Crystals (25, 50 or 100 at a time, the smaller amounts more often), Energy Refills, Weapon Energy Refills and 1-Ups
+  as filler. A refill takes effect when you receive it: life to the maximum, or a full bar for every biometal you
+  hold; if they are already full, it is lost. With `infinite_lives` there are no 1-Ups among them.
 
 Locations:
 

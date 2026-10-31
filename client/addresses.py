@@ -88,6 +88,7 @@ CONS_KEY = "mmzx_consumables_%s_%s"  # data storage: [[applied, playtime], ...]
 BOSS_LEVELS = 0x02104634
 WE_BASE = 0x0214FC92          # + active model = current WE
 WE_FULL = 16
+WE_PER_LEVEL = 4
 MSG_BANK = 0x02104588         # 0xFFFFFFFF until boot has finished
 
 # Player object (the active model byte is data.ACTIVE_MODEL_ADDR)

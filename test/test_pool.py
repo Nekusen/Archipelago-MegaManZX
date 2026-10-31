@@ -20,7 +20,7 @@ OPTION_SETS = {
     "boss_logic": {"boss_logic": {"Serpent": "ALL6 & Life Up x2", "Hivolt": WITNESS}},
     "infinite_lives": {"infinite_lives": True},
 }
-FILLERS = {"25 E-Crystals", "50 E-Crystals", "100 E-Crystals", "1-Up"}
+FILLERS = {"25 E-Crystals", "50 E-Crystals", "100 E-Crystals", "Energy Refill", "Weapon Energy Refill", "1-Up"}
 FILLER_DRAWS = 2000
 # pickup option: locations it adds, as the option docstrings promise
 PICKUP_COUNTS = {"pickup_checks_1up": 7, "pickup_checks_energy": 45,
@@ -74,7 +74,7 @@ class TestPool(MMZXTestBase):
                 self.assertTrue(item.useful and not item.advancement, item.name)
 
     def test_filler(self) -> None:
-        """E-Crystals in three sizes and 1-Ups pad the pool, the smaller amounts more often."""
+        """E-Crystals in three sizes, refills and 1-Ups pad the pool, the smaller amounts more often."""
         draws = Counter(self.world.get_filler_item_name() for _ in range(FILLER_DRAWS))
         self.assertEqual(set(draws), FILLERS)
         self.assertEqual(FILLERS, {n for n, v in ITEMS.items() if v["classification"] == "filler"})
@@ -92,7 +92,7 @@ class TestPoolWithInfiniteLives(MMZXTestBase):
     options = {"infinite_lives": True}
 
     def test_no_one_ups_among_the_filler(self) -> None:
-        """With infinite lives the E-Crystals take the 1-Up's share of the filler."""
+        """With infinite lives the other fillers take the 1-Up's share."""
         draws = Counter(self.world.get_filler_item_name() for _ in range(FILLER_DRAWS))
         self.assertEqual(set(draws), FILLERS - {"1-Up"})
         self.assertNotIn("1-Up", [item.name for item in self.multiworld.itempool])

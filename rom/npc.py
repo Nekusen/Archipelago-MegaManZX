@@ -6,9 +6,9 @@ from . import nds
 from .arm9 import Arm9
 from .ui import ROOM_OVERLAY_SLOT_RAM
 
-# The operator is a Guardian (class 5.48) of role 4 with a new modifier, 6. The game picks a
-# Guardian's init and update from two tables per role, so role 4's tables live one entry longer
-# in an autoload section with the update routine, and the role's two pointers point there.
+# The operator is a Guardian (class 5.48) of role 5, the plain Guardians, with a new modifier,
+# 7, so he wears their sprite. Init and update come from two tables per role, so role 5's
+# tables live one entry longer in an autoload section, and the role's two pointers point there.
 NPC_SECTION_RAM = 0x02193A00
 NPC_SECTION_LEN = 0x200
 NPC_INIT_TABLE_OFF = 0x1C0
@@ -27,13 +27,13 @@ NPC_SECTION_CODE = bytes.fromhex(
     "10010343a372211c54310a70211c3c318b7d10208343100103438b7501235340"
     "03480380704700bfc4027e02d7027e023a037e02708b1002588b10029c8b1002"
     "69f6140268010000710100008104000082040000830400008404000085040000")
-NPC_INIT_TABLE = bytes.fromhex("05c3090205c3090205c30902e9ab090231aa090279a8090205c30902")
-NPC_UPDATE_TABLE = bytes.fromhex("d5af0902d5af0902d5af0902f5bf0902659b0902f5990902013a1902")
-NPC_ROLE_INIT_POINTER_RAM = 0x020EAD38
-NPC_ROLE_INIT_POINTER_ORIG = bytes.fromhex("e4aa0e02")
+NPC_INIT_TABLE = bytes.fromhex("05c3090279b609023db6090205c3090205c3090299b5090205c3090205c30902")
+NPC_UPDATE_TABLE = bytes.fromhex("c5ae0902adae090295ae09028dae090219ad090201ad0902f5ac0902013a1902")
+NPC_ROLE_INIT_POINTER_RAM = 0x020EAD3C
+NPC_ROLE_INIT_POINTER_ORIG = bytes.fromhex("00ae0e02")
 NPC_ROLE_INIT_POINTER_NEW = bytes.fromhex("c03b1902")
-NPC_ROLE_UPDATE_POINTER_RAM = 0x020EAD50
-NPC_ROLE_UPDATE_POINTER_ORIG = bytes.fromhex("a8aa0e02")
+NPC_ROLE_UPDATE_POINTER_RAM = 0x020EAD54
+NPC_ROLE_UPDATE_POINTER_ORIG = bytes.fromhex("1cae0e02")
 NPC_ROLE_UPDATE_POINTER_NEW = bytes.fromhex("e03b1902")
 
 # The hub room, overlay 115: a room's three entity tables (sprite preloads, coordinates, templates)
@@ -51,10 +51,10 @@ HUB_TABLE_COUNTS = {PRELOADS_KIND: 5, COORDS_KIND: 41, TEMPLATES_KIND: 7}   # th
 ENTRY_LEN = {PRELOADS_KIND: 8, COORDS_KIND: 8, TEMPLATES_KIND: 12}
 TABLE_END = {PRELOADS_KIND: bytes.fromhex("ffffffffffff0000"), COORDS_KIND: bytes.fromhex("ffffff7fff7f0000"),
              TEMPLATES_KIND: bytes(12)}      # the templates end where the coordinates begin; the zeros only pad
-# The operator: the sprite set of the operators, a Guardian template of role 4 modifier 6, and
+# The operator: the sprite set of the plain Guardians, a Guardian template of role 5 modifier 7, and
 # a place to the right of the Transerver of the starting floor, by starting_transerver key
-NPC_PRELOAD = bytes.fromhex("cc00cc0000ff0000")
-NPC_TEMPLATE = bytes.fromhex("410548040600ffff00000000")
+NPC_PRELOAD = bytes.fromhex("cf01cf0100ff0000")
+NPC_TEMPLATE = bytes.fromhex("410548050700ffff00000000")
 NPC_PLACES = {"area_a": (472, 344), "guardian_base": (472, 5720)}
 
 # The five messages, appended to talk_sys_en.bin: the offer, which ends in a two-line choice,
@@ -62,17 +62,17 @@ NPC_PLACES = {"area_a": (472, 344), "guardian_base": (472, 5720)}
 # with nothing to fill and to a no
 NPC_TEXT_FIRST = 129                      # messages the file holds; the offer is message 129, id 0x481
 NPC_TEXTS = [
-    bytes.fromhex("f202f302f855290043414e00524546494c4c00594f5552fc3355420034414e4b5300464f52001210100025230efd"
-                  "f202f663f302f855324546494c4c005448454d00464f52001210100025231ffc0000394553fc00002e4f"),
-    bytes.fromhex("f202f302f8553355420034414e4b5300524546494c4c45440efc234f4d45004241434b00414e5954494d4501"),
-    bytes.fromhex("f202f302f8552e4f5400454e4f55474800250d2352595354414c530efc295400434f535453001210100025230e"),
-    bytes.fromhex("f202f302f8553448455245004953004e4f5448494e4700544ffc524546494c4c005249474854004e4f570e"),
-    bytes.fromhex("f202f302f855234f4d45004241434b00414e5954494d4501"),
+    bytes.fromhex("f202f323f817290043414e00524546494c4c00594f5552fc3355420034414e4b5300464f52001210100025230efd"
+                  "f202f663f323f817324546494c4c005448454d00464f52001210100025231ffc0000394553fc00002e4f"),
+    bytes.fromhex("f202f323f8173355420034414e4b5300524546494c4c45440efc234f4d45004241434b00414e5954494d4501"),
+    bytes.fromhex("f202f323f8172e4f5400454e4f55474800250d2352595354414c530efc295400434f535453001210100025230e"),
+    bytes.fromhex("f202f323f8173448455245004953004e4f5448494e4700544ffc524546494c4c005249474854004e4f570e"),
+    bytes.fromhex("f202f323f817234f4d45004241434b00414e5954494d4501"),
 ]
 
 
 def section() -> bytes:
-    """The autoload section: the update routine, then the two tables of role 4."""
+    """The autoload section: the update routine, then the two tables of role 5."""
     out = bytearray(NPC_SECTION_LEN)
     out[0:len(NPC_SECTION_CODE)] = NPC_SECTION_CODE
     out[NPC_INIT_TABLE_OFF:NPC_INIT_TABLE_OFF + len(NPC_INIT_TABLE)] = NPC_INIT_TABLE

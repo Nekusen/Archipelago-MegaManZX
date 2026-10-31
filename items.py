@@ -26,12 +26,14 @@ def get_classification(name: str) -> ItemClassification:
 
 
 ONE_UP_GRANT = "oneup"
+# Mostly small change: plenty of big fillers would make every price in the game trivial
+FILLER_WEIGHTS = {"25 E-Crystals": 3, "50 E-Crystals": 2, "100 E-Crystals": 1, "1-Up": 2}
 
 
-def filler_items(options) -> list[str]:
-    """The fillers a seed hands out: E-Crystals in three sizes and, unless lives are infinite, 1-Ups."""
-    return [n for n, v in ITEMS.items() if v["classification"] == "filler"
-            and not (options.infinite_lives and v["grant"][0] == ONE_UP_GRANT)]
+def filler_weights(options) -> dict[str, int]:
+    """The fillers a seed hands out and their weights; with infinite lives there are no 1-Ups."""
+    return {n: w for n, w in FILLER_WEIGHTS.items()
+            if not (options.infinite_lives and ITEMS[n]["grant"][0] == ONE_UP_GRANT)}
 
 
 # Groups for hints/plando

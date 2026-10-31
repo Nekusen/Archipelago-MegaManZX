@@ -315,18 +315,22 @@ class TestItems(MMZXTestBase):
         self.assertIn(STORY_LAVA_LOCATION, real_locations(self.multiworld))
 
     def test_slow_lava_needs_its_item(self) -> None:
-        """Reaching the control is not enough here, and the item needs no walk from it."""
+        """Reaching the control is not enough here, and the item needs no walk from it; the chase of K-4
+        still needs the way in from K-3."""
         edges = lava_edges(self.multiworld)
         if not edges:
             self.skipTest("no rule of the document asks for the slow lava")
         full, lacking = state_without(self.multiworld), state_without(self.multiworld, STORY_LAVA_ITEM)
-        self.assertTrue(self.multiworld.get_location(STORY_LAVA_LOCATION, 1).can_reach(lacking))
+        control = self.multiworld.get_location(STORY_LAVA_LOCATION, 1)
+        self.assertTrue(control.can_reach(lacking))
         for edge in edges:
             with self.subTest(edge=edge.name):
                 self.assertTrue(edge.access_rule(full))
                 self.assertFalse(edge.access_rule(lacking))
-                with shut(ways_in_from_its_area(self.multiworld, edge.parent_region)):
+                with shut(control.parent_region.entrances):
                     self.assertTrue(edge.access_rule(state_without(self.multiworld)))
+                with shut(ways_in_from_its_area(self.multiworld, edge.parent_region)):
+                    self.assertFalse(edge.access_rule(state_without(self.multiworld)))
 
     def test_door_needs_its_item(self) -> None:
         """The switch is a check here, and the door it unlocks waits for the item."""

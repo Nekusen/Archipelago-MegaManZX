@@ -100,11 +100,11 @@ class TestGeneratedFiles(unittest.TestCase):
         doc = load_document()
         members = F.resolve_members(WORLD, doc)
         gates = F.gate_table(doc, TIER)
-        control = F.lava_control_region(WORLD, doc, members)
+        context = F.rule_context(WORLD, doc, members)
         exported = F.export_rules_json(WORLD, doc)
         present = set(exported["regions"])
         count = 0
-        for name, src, dst, ir in F.entrance_rules(WORLD, doc, members, TIER, control=control):
+        for name, src, dst, ir in F.entrance_rules(WORLD, doc, members, TIER, context=context):
             if src not in present or dst not in present:
                 continue        # the rooms the start never leads to are left out of the module
             room = (dst if src == F.MENU else src).split("/")[0]
@@ -114,7 +114,7 @@ class TestGeneratedFiles(unittest.TestCase):
             count += 1
         needed = F.global_reachability(WORLD, doc, members, TIER)
         for name in WORLD["locations"]:
-            parent, ir = F.location_rule(WORLD, doc, members, needed, name, TIER, control=control)
+            parent, ir = F.location_rule(WORLD, doc, members, needed, name, TIER, context=context)
             placed = [room for room, _ in F.check_placements(WORLD, doc, name)]
             entry = (exported["rooms"][placed[0]]["locations"] if placed else exported["unplaced"])[name]
             with self.subTest(location=name):
@@ -212,6 +212,19 @@ class TestIndirectConditions(MMZXTestBase):
         for name in regions:
             region = self.multiworld.get_region(name, self.player)
             self.assertIn(entrance, self.multiworld.indirect_connections[region])
+
+    def test_the_hidden_path_of_k4_needs_the_way_in_from_k3(self):
+        """The lava chase only arms through the K-3 door: a lock on that door keeps the hidden path out of logic."""
+        edge = self.multiworld.get_entrance(LAVA_EDGE, self.player)
+        self.assertIn("Can reach entrance %s" % F.LAVA_CHASE_DOOR, str(edge.access_rule))
+        self.assertIn(F.LAVA_CHASE_DOOR, edge.access_rule.entrance_dependencies())
+        self.assertTrue(edge.access_rule(pool_without(self.multiworld)))
+        self.world.door_keys = {door: "Red Card Key" for door in (F.LAVA_CHASE_DOOR, "k04 door (640,528)")}
+        try:
+            self.assertFalse(edge.access_rule(pool_without(self.multiworld, "Red Card Key")))
+            self.assertTrue(edge.access_rule(pool_without(self.multiworld)))
+        finally:
+            self.world.door_keys = {}
 
     def test_every_region_dependency_is_registered(self):
         registered = {(region.name, entrance.name) for region, entrances in self.multiworld.indirect_connections.items()

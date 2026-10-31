@@ -36618,12 +36618,10 @@
      "from": "g01/g-2-entrance",
      "to": "g02/g-1-entrance",
      "rule": {
-      "rule": "DoorKey",
+      "rule": "True_",
       "options": [],
       "filtered_resolution": false,
-      "args": {
-       "door": "g01 door (3808,768)"
-      }
+      "args": {}
      }
     }
    },
@@ -37209,12 +37207,10 @@
      "from": "g02/g-1-entrance",
      "to": "g01/g-2-entrance",
      "rule": {
-      "rule": "DoorKey",
+      "rule": "True_",
       "options": [],
       "filtered_resolution": false,
-      "args": {
-       "door": "g02 door (288,1152)"
-      }
+      "args": {}
      }
     },
     "g02 door (376,2400)": {
@@ -63138,6 +63134,15 @@
           }
          }
         ]
+       },
+       {
+        "rule": "CanReachEntrance",
+        "options": [],
+        "filtered_resolution": false,
+        "args": {
+         "entrance_name": "k03 door (1760,1104)",
+         "parent_region_name": "k03/k-4-entrance"
+        }
        }
       ]
      }

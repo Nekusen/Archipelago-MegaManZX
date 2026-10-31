@@ -6,8 +6,8 @@ import dataclasses
 from typing import ClassVar, NamedTuple
 
 from rule_builder.options import OptionFilter
-from rule_builder.rules import (And, CanReachLocation, CanReachRegion, False_, Has, HasAll, HasAny, HasFromList,
-                                HasFromListUnique, Or, Rule, True_)
+from rule_builder.rules import (And, CanReachEntrance, CanReachLocation, CanReachRegion, False_, Has, HasAll, HasAny,
+                                HasFromList, HasFromListUnique, Or, Rule, True_)
 
 from .. import options as O
 from ..door_constraints import KEYS
@@ -328,6 +328,61 @@ class LavaCarriedTo(Rule, game=F.GAME):
 
 
 @dataclasses.dataclass()
+class ReachableAvoiding(Rule, game=F.GAME):
+    """`region` reached by a way that never enters the `avoid` regions: the checks a boss fight sweeps
+    away must be in reach while the boss still stands."""
+
+    region: str
+    avoid: tuple
+
+    def _instantiate(self, world) -> Rule.Resolved:
+        return self.Resolved(self.region, tuple(self.avoid), **_resolved(world))
+
+    def __str__(self) -> str:
+        return "ReachableAvoiding(%s, %s)" % (self.region, list(self.avoid))
+
+    class Resolved(Rule.Resolved):
+        region: str
+        avoid: tuple
+        # follows the ways open to the player, not an item alone
+        force_recalculate: ClassVar[bool] = True
+
+        def _evaluate(self, state) -> bool:
+            if not state.can_reach_region(self.region, self.player):
+                return False
+            reachable = state.reachable_regions[self.player]
+            start = state.multiworld.get_region(F.MENU, self.player)
+            seen, todo, avoid = {start}, [start], set(self.avoid)
+            while todo:
+                region = todo.pop()
+                if region.name == self.region:
+                    return True
+                for way in region.exits:
+                    nxt = way.connected_region
+                    if nxt is None or nxt in seen or nxt not in reachable or nxt.name in avoid:
+                        continue
+                    if way.access_rule(state):
+                        seen.add(nxt)
+                        todo.append(nxt)
+            return False
+
+        def region_dependencies(self) -> dict:
+            return {name: {id(self)} for name in (self.region, *self.avoid)}
+
+        def explain_json(self, state=None) -> list:
+            verb = "Reach" if state is None else ("Reached" if self(state) else "Cannot reach")
+            return [{"type": "text", "text": "%s " % verb},
+                    {"type": "color", "color": "yellow", "text": self.region},
+                    {"type": "text", "text": " keeping clear of %s" % ", ".join(self.avoid)}]
+
+        def explain_str(self, state=None) -> str:
+            return "".join(part["text"] for part in self.explain_json(state))
+
+        def __str__(self) -> str:
+            return "Reach %s keeping clear of %s" % (self.region, ", ".join(self.avoid))
+
+
+@dataclasses.dataclass()
 class ReachedAtLeast(Rule, game=F.GAME):
     """`count` of the `locations` reachable: the story objects the game hands out after some others."""
 
@@ -403,6 +458,10 @@ def compile_ir(ir, gates=None) -> Rule:
         return CanReachRegion(ir[1])
     if kind == "reach_location":
         return CanReachLocation(ir[1], ir[2])
+    if kind == "reach_entrance":
+        return CanReachEntrance(ir[1], ir[2])
+    if kind == "avoiding":
+        return ReachableAvoiding(ir[1], tuple(ir[2]))
     if kind == "reached_at_least":
         return ReachedAtLeast(ir[1], tuple(ir[2]))
     if kind == "option_true":

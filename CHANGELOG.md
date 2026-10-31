@@ -53,8 +53,9 @@ All notable changes to this project are documented in this file. The format is b
 - A door constraint on A-1 / A-2 now also locks the shutter next to it in A-1 with the same key.
 - Door constraints no longer lock the way between G-1 and G-2: that passage has no door frame, so the coloured gate
   looked out of place.
-- The filler items are now `25 E-Crystals`, `50 E-Crystals`, `100 E-Crystals` and `1-Up`, the smaller amounts more
-  often; before, every filler was 50 E-Crystals and the 1-Up never came up.
+- The filler items are now `25 E-Crystals`, `50 E-Crystals`, `100 E-Crystals`, `Energy Refill`, `Weapon Energy Refill`
+  and `1-Up`, the smaller amounts more often; before, every filler was 50 E-Crystals and the 1-Up never came up. A
+  refill fills your life, or the weapon energy of every biometal you hold, and is lost if they are already full.
 - The Transerver consoles show their normal menu during Troop Reinforcement and Protect HQ instead of the reduced one.
 - Logic: the Sub Tank of K-1 asks for Model LX and that door unlocked, instead of four biometals.
 - Logic: the apple of A-3 asks for any model, instead of Model FX, X or ZX.

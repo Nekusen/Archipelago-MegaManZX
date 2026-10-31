@@ -27,7 +27,8 @@ def get_classification(name: str) -> ItemClassification:
 
 ONE_UP_GRANT = "oneup"
 # Mostly small change: plenty of big fillers would make every price in the game trivial
-FILLER_WEIGHTS = {"25 E-Crystals": 3, "50 E-Crystals": 2, "100 E-Crystals": 1, "1-Up": 2}
+FILLER_WEIGHTS = {"25 E-Crystals": 3, "50 E-Crystals": 2, "100 E-Crystals": 1,
+                  "Energy Refill": 3, "Weapon Energy Refill": 2, "1-Up": 2}
 
 
 def filler_weights(options) -> dict[str, int]:

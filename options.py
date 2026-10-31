@@ -260,7 +260,7 @@ class SkipMinibosses(Choice):
 
 class InfiniteLives(Toggle):
     """Lives never run out: a death costs none and there is no Game Over. The 1-Up item leaves the filler pool
-    (the E-Crystals take its share); the 1-Ups lying in the world stay where they are."""
+    (the other fillers take its share); the 1-Ups lying in the world stay where they are."""
     display_name = "Infinite Lives"
 
 
@@ -362,7 +362,7 @@ class NotifyReceived(Choice):
     """On-screen notifications (the game's small popup) when you receive an
     item: which item classes are shown. off: none; progression: progression
     only; useful: progression and useful; all: also filler (E-Crystals,
-    1-Ups). Can be changed in game with /mmzx_notify."""
+    1-Ups, refills). Can be changed in game with /mmzx_notify."""
     display_name = "On-screen Notifications: Received Items"
     option_off = 0
     option_progression = 1

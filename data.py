@@ -401,6 +401,8 @@ ITEMS = {
     '1-Up': {'id': 13664769, 'classification': 'filler', 'grant': ['oneup'], 'pooled': True},
     '100 E-Crystals': {'id': 13664770, 'classification': 'filler', 'grant': ['ecrystals', 100], 'pooled': True},
     '25 E-Crystals': {'id': 13664771, 'classification': 'filler', 'grant': ['ecrystals', 25], 'pooled': True},
+    'Energy Refill': {'id': 13664772, 'classification': 'filler', 'grant': ['energy_refill'], 'pooled': True},
+    'Weapon Energy Refill': {'id': 13664773, 'classification': 'filler', 'grant': ['weapon_refill'], 'pooled': True},
     'Secret Disk': {'id': 13665024, 'classification': 'progression', 'grant': ['secret_disk'], 'pooled': False},
     'Password': {'id': 13665025, 'classification': 'progression', 'grant': ['password'], 'pooled': False},
 }

@@ -25532,12 +25532,10 @@
      "from": "e04/after-mini-boss-room",
      "to": "e05/e-4-entrance",
      "rule": {
-      "rule": "DoorKey",
+      "rule": "True_",
       "options": [],
       "filtered_resolution": false,
-      "args": {
-       "door": "e04 door (2736,928)"
-      }
+      "args": {}
      }
     },
     "e04 door (2864,352)": {
@@ -27052,12 +27050,10 @@
      "from": "e05/e-4-entrance",
      "to": "e04/after-mini-boss-room",
      "rule": {
-      "rule": "DoorKey",
+      "rule": "True_",
       "options": [],
       "filtered_resolution": false,
-      "args": {
-       "door": "e05 door (288,928)"
-      }
+      "args": {}
      }
     }
    },
@@ -31505,16 +31501,20 @@
      "from": "f02/f-3-entrance",
      "to": "f03/f-2-entrance",
      "rule": {
-      "rule": "And",
+      "rule": "Or",
       "options": [],
       "filtered_resolution": false,
       "children": [
        {
-        "rule": "DoorKey",
+        "rule": "HasAny",
         "options": [],
         "filtered_resolution": false,
         "args": {
-         "door": "f02 door (2528,544)"
+         "item_names": [
+          "Model OX",
+          "Model X",
+          "Model ZX"
+         ]
         }
        },
        {
@@ -31523,164 +31523,145 @@
         "filtered_resolution": false,
         "children": [
          {
-          "rule": "HasAny",
-          "options": [],
+          "rule": "Has",
+          "options": [
+           {
+            "option": "worlds.mmzx.options.ProgressiveModels",
+            "value": 1,
+            "operator": "eq"
+           }
+          ],
           "filtered_resolution": false,
           "args": {
-           "item_names": [
-            "Model OX",
-            "Model X",
-            "Model ZX"
-           ]
+           "item_name": "Progressive Model HX",
+           "count": 1
           }
          },
          {
-          "rule": "Or",
-          "options": [],
-          "filtered_resolution": false,
-          "children": [
+          "rule": "Has",
+          "options": [
            {
-            "rule": "Has",
-            "options": [
-             {
-              "option": "worlds.mmzx.options.ProgressiveModels",
-              "value": 1,
-              "operator": "eq"
-             }
-            ],
-            "filtered_resolution": false,
-            "args": {
-             "item_name": "Progressive Model HX",
-             "count": 1
-            }
-           },
-           {
-            "rule": "Has",
-            "options": [
-             {
-              "option": "worlds.mmzx.options.ProgressiveModels",
-              "value": 0,
-              "operator": "eq"
-             }
-            ],
-            "filtered_resolution": false,
-            "args": {
-             "item_name": "Model HX",
-             "count": 1
-            }
+            "option": "worlds.mmzx.options.ProgressiveModels",
+            "value": 0,
+            "operator": "eq"
            }
-          ]
+          ],
+          "filtered_resolution": false,
+          "args": {
+           "item_name": "Model HX",
+           "count": 1
+          }
+         }
+        ]
+       },
+       {
+        "rule": "Or",
+        "options": [],
+        "filtered_resolution": false,
+        "children": [
+         {
+          "rule": "Has",
+          "options": [
+           {
+            "option": "worlds.mmzx.options.ProgressiveModels",
+            "value": 1,
+            "operator": "eq"
+           }
+          ],
+          "filtered_resolution": false,
+          "args": {
+           "item_name": "Progressive Model FX",
+           "count": 1
+          }
          },
          {
-          "rule": "Or",
-          "options": [],
-          "filtered_resolution": false,
-          "children": [
+          "rule": "Has",
+          "options": [
            {
-            "rule": "Has",
-            "options": [
-             {
-              "option": "worlds.mmzx.options.ProgressiveModels",
-              "value": 1,
-              "operator": "eq"
-             }
-            ],
-            "filtered_resolution": false,
-            "args": {
-             "item_name": "Progressive Model FX",
-             "count": 1
-            }
-           },
-           {
-            "rule": "Has",
-            "options": [
-             {
-              "option": "worlds.mmzx.options.ProgressiveModels",
-              "value": 0,
-              "operator": "eq"
-             }
-            ],
-            "filtered_resolution": false,
-            "args": {
-             "item_name": "Model FX",
-             "count": 1
-            }
+            "option": "worlds.mmzx.options.ProgressiveModels",
+            "value": 0,
+            "operator": "eq"
            }
-          ]
+          ],
+          "filtered_resolution": false,
+          "args": {
+           "item_name": "Model FX",
+           "count": 1
+          }
+         }
+        ]
+       },
+       {
+        "rule": "Or",
+        "options": [],
+        "filtered_resolution": false,
+        "children": [
+         {
+          "rule": "Has",
+          "options": [
+           {
+            "option": "worlds.mmzx.options.ProgressiveModels",
+            "value": 1,
+            "operator": "eq"
+           }
+          ],
+          "filtered_resolution": false,
+          "args": {
+           "item_name": "Progressive Model LX",
+           "count": 1
+          }
          },
          {
-          "rule": "Or",
-          "options": [],
-          "filtered_resolution": false,
-          "children": [
+          "rule": "Has",
+          "options": [
            {
-            "rule": "Has",
-            "options": [
-             {
-              "option": "worlds.mmzx.options.ProgressiveModels",
-              "value": 1,
-              "operator": "eq"
-             }
-            ],
-            "filtered_resolution": false,
-            "args": {
-             "item_name": "Progressive Model LX",
-             "count": 1
-            }
-           },
-           {
-            "rule": "Has",
-            "options": [
-             {
-              "option": "worlds.mmzx.options.ProgressiveModels",
-              "value": 0,
-              "operator": "eq"
-             }
-            ],
-            "filtered_resolution": false,
-            "args": {
-             "item_name": "Model LX",
-             "count": 1
-            }
+            "option": "worlds.mmzx.options.ProgressiveModels",
+            "value": 0,
+            "operator": "eq"
            }
-          ]
+          ],
+          "filtered_resolution": false,
+          "args": {
+           "item_name": "Model LX",
+           "count": 1
+          }
+         }
+        ]
+       },
+       {
+        "rule": "Or",
+        "options": [],
+        "filtered_resolution": false,
+        "children": [
+         {
+          "rule": "Has",
+          "options": [
+           {
+            "option": "worlds.mmzx.options.ProgressiveModels",
+            "value": 1,
+            "operator": "eq"
+           }
+          ],
+          "filtered_resolution": false,
+          "args": {
+           "item_name": "Progressive Model PX",
+           "count": 1
+          }
          },
          {
-          "rule": "Or",
-          "options": [],
-          "filtered_resolution": false,
-          "children": [
+          "rule": "Has",
+          "options": [
            {
-            "rule": "Has",
-            "options": [
-             {
-              "option": "worlds.mmzx.options.ProgressiveModels",
-              "value": 1,
-              "operator": "eq"
-             }
-            ],
-            "filtered_resolution": false,
-            "args": {
-             "item_name": "Progressive Model PX",
-             "count": 1
-            }
-           },
-           {
-            "rule": "Has",
-            "options": [
-             {
-              "option": "worlds.mmzx.options.ProgressiveModels",
-              "value": 0,
-              "operator": "eq"
-             }
-            ],
-            "filtered_resolution": false,
-            "args": {
-             "item_name": "Model PX",
-             "count": 1
-            }
+            "option": "worlds.mmzx.options.ProgressiveModels",
+            "value": 0,
+            "operator": "eq"
            }
-          ]
+          ],
+          "filtered_resolution": false,
+          "args": {
+           "item_name": "Model PX",
+           "count": 1
+          }
          }
         ]
        }
@@ -32622,12 +32603,10 @@
      "from": "f03/f-2-entrance",
      "to": "f02/f-3-entrance",
      "rule": {
-      "rule": "DoorKey",
+      "rule": "True_",
       "options": [],
       "filtered_resolution": false,
-      "args": {
-       "door": "f03 door (288,1696)"
-      }
+      "args": {}
      }
     },
     "f03 door (384,1600)": {
@@ -34142,12 +34121,10 @@
      "from": "f04/f-5-entrance",
      "to": "f05/f-4-entrance",
      "rule": {
-      "rule": "DoorKey",
+      "rule": "True_",
       "options": [],
       "filtered_resolution": false,
-      "args": {
-       "door": "f04 door (1760,528)"
-      }
+      "args": {}
      }
     },
     "f04 door (288,288)": {
@@ -35095,12 +35072,10 @@
      "from": "f05/f-4-entrance",
      "to": "f04/f-5-entrance",
      "rule": {
-      "rule": "DoorKey",
+      "rule": "True_",
       "options": [],
       "filtered_resolution": false,
-      "args": {
-       "door": "f05 door (288,736)"
-      }
+      "args": {}
      }
     },
     "f05 door (1232,736)": {
@@ -37396,12 +37371,10 @@
      "from": "g02/1st-floor",
      "to": "g03",
      "rule": {
-      "rule": "DoorKey",
+      "rule": "True_",
       "options": [],
       "filtered_resolution": false,
-      "args": {
-       "door": "g02 door (656,1552)"
-      }
+      "args": {}
      }
     },
     "g02 door (656,1712)": {
@@ -37965,12 +37938,10 @@
      "from": "g03",
      "to": "g02/1st-floor",
      "rule": {
-      "rule": "DoorKey",
+      "rule": "True_",
       "options": [],
       "filtered_resolution": false,
-      "args": {
-       "door": "g03 door (288,544)"
-      }
+      "args": {}
      }
     }
    },
@@ -43915,12 +43886,10 @@
      "from": "h03/h-4-entrance",
      "to": "h04/h-3-entrance",
      "rule": {
-      "rule": "DoorKey",
+      "rule": "True_",
       "options": [],
       "filtered_resolution": false,
-      "args": {
-       "door": "h03 door (3808,368)"
-      }
+      "args": {}
      }
     }
    },
@@ -45435,12 +45404,10 @@
      "from": "h04/h-3-entrance",
      "to": "h03/h-4-entrance",
      "rule": {
-      "rule": "DoorKey",
+      "rule": "True_",
       "options": [],
       "filtered_resolution": false,
-      "args": {
-       "door": "h04 door (288,944)"
-      }
+      "args": {}
      }
     },
     "h04 door (800,1808)": {
@@ -55437,16 +55404,20 @@
      "from": "j02/j-3-entrance",
      "to": "j03/j-2-entrance",
      "rule": {
-      "rule": "And",
+      "rule": "Or",
       "options": [],
       "filtered_resolution": false,
       "children": [
        {
-        "rule": "DoorKey",
+        "rule": "HasAny",
         "options": [],
         "filtered_resolution": false,
         "args": {
-         "door": "j02 door (3296,752)"
+         "item_names": [
+          "Model OX",
+          "Model X",
+          "Model ZX"
+         ]
         }
        },
        {
@@ -55455,164 +55426,145 @@
         "filtered_resolution": false,
         "children": [
          {
-          "rule": "HasAny",
-          "options": [],
+          "rule": "Has",
+          "options": [
+           {
+            "option": "worlds.mmzx.options.ProgressiveModels",
+            "value": 1,
+            "operator": "eq"
+           }
+          ],
           "filtered_resolution": false,
           "args": {
-           "item_names": [
-            "Model OX",
-            "Model X",
-            "Model ZX"
-           ]
+           "item_name": "Progressive Model HX",
+           "count": 1
           }
          },
          {
-          "rule": "Or",
-          "options": [],
-          "filtered_resolution": false,
-          "children": [
+          "rule": "Has",
+          "options": [
            {
-            "rule": "Has",
-            "options": [
-             {
-              "option": "worlds.mmzx.options.ProgressiveModels",
-              "value": 1,
-              "operator": "eq"
-             }
-            ],
-            "filtered_resolution": false,
-            "args": {
-             "item_name": "Progressive Model HX",
-             "count": 1
-            }
-           },
-           {
-            "rule": "Has",
-            "options": [
-             {
-              "option": "worlds.mmzx.options.ProgressiveModels",
-              "value": 0,
-              "operator": "eq"
-             }
-            ],
-            "filtered_resolution": false,
-            "args": {
-             "item_name": "Model HX",
-             "count": 1
-            }
+            "option": "worlds.mmzx.options.ProgressiveModels",
+            "value": 0,
+            "operator": "eq"
            }
-          ]
+          ],
+          "filtered_resolution": false,
+          "args": {
+           "item_name": "Model HX",
+           "count": 1
+          }
+         }
+        ]
+       },
+       {
+        "rule": "Or",
+        "options": [],
+        "filtered_resolution": false,
+        "children": [
+         {
+          "rule": "Has",
+          "options": [
+           {
+            "option": "worlds.mmzx.options.ProgressiveModels",
+            "value": 1,
+            "operator": "eq"
+           }
+          ],
+          "filtered_resolution": false,
+          "args": {
+           "item_name": "Progressive Model FX",
+           "count": 1
+          }
          },
          {
-          "rule": "Or",
-          "options": [],
-          "filtered_resolution": false,
-          "children": [
+          "rule": "Has",
+          "options": [
            {
-            "rule": "Has",
-            "options": [
-             {
-              "option": "worlds.mmzx.options.ProgressiveModels",
-              "value": 1,
-              "operator": "eq"
-             }
-            ],
-            "filtered_resolution": false,
-            "args": {
-             "item_name": "Progressive Model FX",
-             "count": 1
-            }
-           },
-           {
-            "rule": "Has",
-            "options": [
-             {
-              "option": "worlds.mmzx.options.ProgressiveModels",
-              "value": 0,
-              "operator": "eq"
-             }
-            ],
-            "filtered_resolution": false,
-            "args": {
-             "item_name": "Model FX",
-             "count": 1
-            }
+            "option": "worlds.mmzx.options.ProgressiveModels",
+            "value": 0,
+            "operator": "eq"
            }
-          ]
+          ],
+          "filtered_resolution": false,
+          "args": {
+           "item_name": "Model FX",
+           "count": 1
+          }
+         }
+        ]
+       },
+       {
+        "rule": "Or",
+        "options": [],
+        "filtered_resolution": false,
+        "children": [
+         {
+          "rule": "Has",
+          "options": [
+           {
+            "option": "worlds.mmzx.options.ProgressiveModels",
+            "value": 1,
+            "operator": "eq"
+           }
+          ],
+          "filtered_resolution": false,
+          "args": {
+           "item_name": "Progressive Model LX",
+           "count": 1
+          }
          },
          {
-          "rule": "Or",
-          "options": [],
-          "filtered_resolution": false,
-          "children": [
+          "rule": "Has",
+          "options": [
            {
-            "rule": "Has",
-            "options": [
-             {
-              "option": "worlds.mmzx.options.ProgressiveModels",
-              "value": 1,
-              "operator": "eq"
-             }
-            ],
-            "filtered_resolution": false,
-            "args": {
-             "item_name": "Progressive Model LX",
-             "count": 1
-            }
-           },
-           {
-            "rule": "Has",
-            "options": [
-             {
-              "option": "worlds.mmzx.options.ProgressiveModels",
-              "value": 0,
-              "operator": "eq"
-             }
-            ],
-            "filtered_resolution": false,
-            "args": {
-             "item_name": "Model LX",
-             "count": 1
-            }
+            "option": "worlds.mmzx.options.ProgressiveModels",
+            "value": 0,
+            "operator": "eq"
            }
-          ]
+          ],
+          "filtered_resolution": false,
+          "args": {
+           "item_name": "Model LX",
+           "count": 1
+          }
+         }
+        ]
+       },
+       {
+        "rule": "Or",
+        "options": [],
+        "filtered_resolution": false,
+        "children": [
+         {
+          "rule": "Has",
+          "options": [
+           {
+            "option": "worlds.mmzx.options.ProgressiveModels",
+            "value": 1,
+            "operator": "eq"
+           }
+          ],
+          "filtered_resolution": false,
+          "args": {
+           "item_name": "Progressive Model PX",
+           "count": 1
+          }
          },
          {
-          "rule": "Or",
-          "options": [],
-          "filtered_resolution": false,
-          "children": [
+          "rule": "Has",
+          "options": [
            {
-            "rule": "Has",
-            "options": [
-             {
-              "option": "worlds.mmzx.options.ProgressiveModels",
-              "value": 1,
-              "operator": "eq"
-             }
-            ],
-            "filtered_resolution": false,
-            "args": {
-             "item_name": "Progressive Model PX",
-             "count": 1
-            }
-           },
-           {
-            "rule": "Has",
-            "options": [
-             {
-              "option": "worlds.mmzx.options.ProgressiveModels",
-              "value": 0,
-              "operator": "eq"
-             }
-            ],
-            "filtered_resolution": false,
-            "args": {
-             "item_name": "Model PX",
-             "count": 1
-            }
+            "option": "worlds.mmzx.options.ProgressiveModels",
+            "value": 0,
+            "operator": "eq"
            }
-          ]
+          ],
+          "filtered_resolution": false,
+          "args": {
+           "item_name": "Model PX",
+           "count": 1
+          }
          }
         ]
        }
@@ -58139,24 +58091,20 @@
      "from": "j03/j-2-entrance",
      "to": "j02/j-3-entrance",
      "rule": {
-      "rule": "DoorKey",
+      "rule": "True_",
       "options": [],
       "filtered_resolution": false,
-      "args": {
-       "door": "j03 door (288,736)"
-      }
+      "args": {}
      }
     },
     "j03 door (2272,752)": {
      "from": "j03/j-5-entrance",
      "to": "j05/j-3-entrance",
      "rule": {
-      "rule": "DoorKey",
+      "rule": "True_",
       "options": [],
       "filtered_resolution": false,
-      "args": {
-       "door": "j03 door (2272,752)"
-      }
+      "args": {}
      }
     }
    },
@@ -59351,12 +59299,10 @@
      "from": "j05/j-3-entrance",
      "to": "j03/j-5-entrance",
      "rule": {
-      "rule": "DoorKey",
+      "rule": "True_",
       "options": [],
       "filtered_resolution": false,
-      "args": {
-       "door": "j05 door (288,752)"
-      }
+      "args": {}
      }
     },
     "j05 door (2000,608)": {
@@ -62496,12 +62442,10 @@
      "from": "k03/upper-area",
      "to": "k05/k-3-entrance",
      "rule": {
-      "rule": "DoorKey",
+      "rule": "True_",
       "options": [],
       "filtered_resolution": false,
-      "args": {
-       "door": "k03 door (1504,528)"
-      }
+      "args": {}
      }
     },
     "k03 door (1760,1104)": {
@@ -65454,12 +65398,10 @@
      "from": "k05/k-3-entrance",
      "to": "k03/upper-area",
      "rule": {
-      "rule": "DoorKey",
+      "rule": "True_",
       "options": [],
       "filtered_resolution": false,
-      "args": {
-       "door": "k05 door (288,2640)"
-      }
+      "args": {}
      }
     },
     "k05 door (560,272)": {

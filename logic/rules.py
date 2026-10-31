@@ -1006,7 +1006,7 @@ LOCATIONS["E-3: Generator"] = Spot("e03", MODEL)
 # --- E-4 [e04]
 # region After Mini-Boss Room
 ENTRANCES["e04: after-mini-boss-room -> lower-area"] = Edge("e04/after-mini-boss-room", "e04/lower-area", HU)   # conn -> Lower Area
-ENTRANCES["e04 door (2736,928)"] = Edge("e04/after-mini-boss-room", "e05/e-4-entrance", DoorKey("e04 door (2736,928)"))   # door -> E-5/E-4 Entrance door constraint site
+ENTRANCES["e04 door (2736,928)"] = Edge("e04/after-mini-boss-room", "e05/e-4-entrance", True_())   # door -> E-5/E-4 Entrance
 ENTRANCES["e04 door (2880,928)"] = Edge("e04/after-mini-boss-room", "e06/e-4-entrance-after-mini-boss", True_())   # door -> E-6/E-4 Entrance (After Mini-Boss)
 #   <- E-6, E-5
 # region E-2 Entrance
@@ -1033,7 +1033,7 @@ LOCATIONS["E-4: Energy Capsule L"] = Spot("e04/upper-area", MODEL)
 # --- E-5 [e05]
 # region E-4 Entrance
 ENTRANCES["e05: e-4-entrance -> stairs"] = Edge("e05/e-4-entrance", "e05/stairs", MODEL)   # conn -> Stairs
-ENTRANCES["e05 door (288,928)"] = Edge("e05/e-4-entrance", "e04/after-mini-boss-room", DoorKey("e05 door (288,928)"))   # door -> E-4/After Mini-Boss Room door constraint site
+ENTRANCES["e05 door (288,928)"] = Edge("e05/e-4-entrance", "e04/after-mini-boss-room", True_())   # door -> E-4/After Mini-Boss Room
 #   <- E-4
 # region E-7 Entrance
 ENTRANCES["e05: e-7-entrance -> platforms"] = Edge("e05/e-7-entrance", "e05/platforms", HX)   # conn -> Platforms   expert adds: MODEL
@@ -1127,7 +1127,7 @@ ENTRANCES["f02 door (288,544)"] = Edge("f02/f-1-entrance", "f01/f-2-entrance", D
 #   <- F-1
 # region F-3 Entrance
 ENTRANCES["f02: f-3-entrance -> main"] = Edge("f02/f-3-entrance", "f02", MODEL)   # conn -> Main
-ENTRANCES["f02 door (2528,544)"] = Edge("f02/f-3-entrance", "f03/f-2-entrance", DoorKey("f02 door (2528,544)") & MODEL)   # ?   door -> F-3/F-2 Entrance door constraint site   cubes in the upper corridor (109-111,32)
+ENTRANCES["f02 door (2528,544)"] = Edge("f02/f-3-entrance", "f03/f-2-entrance", MODEL)   # ?   door -> F-3/F-2 Entrance   cubes in the upper corridor (109-111,32)
 #   <- F-3
 # region Ice Cube Blocked Area
 ENTRANCES["f02: ice-cube-blocked-area -> main"] = Edge("f02/ice-cube-blocked-area", "f02", FX | Has("Model OX"))   # conn -> Main
@@ -1136,7 +1136,7 @@ LOCATIONS["F-2: Life Up"] = Spot("f02/ice-cube-blocked-area", LX | HX)   # exper
 # --- F-3 [f03]
 # region F-2 Entrance
 ENTRANCES["f03: f-2-entrance -> lower-area"] = Edge("f03/f-2-entrance", "f03/lower-area", True_())   # conn -> Lower Area
-ENTRANCES["f03 door (288,1696)"] = Edge("f03/f-2-entrance", "f02/f-3-entrance", DoorKey("f03 door (288,1696)"))   # door -> F-2/F-3 Entrance door constraint site
+ENTRANCES["f03 door (288,1696)"] = Edge("f03/f-2-entrance", "f02/f-3-entrance", True_())   # door -> F-2/F-3 Entrance
 #   <- F-2
 # region F-4 Entrance
 ENTRANCES["f03: f-4-entrance -> lower-area"] = Edge("f03/f-4-entrance", "f03/lower-area", True_())   # conn -> Lower Area
@@ -1176,7 +1176,7 @@ ENTRANCES["f04 door (288,288)"] = Edge("f04/f-3-entrance", "f03/f-4-entrance", T
 #   <- F-3
 # region F-5 Entrance
 ENTRANCES["f04: f-5-entrance -> water-area"] = Edge("f04/f-5-entrance", "f04/water-area", MODEL)   # conn -> Water Area
-ENTRANCES["f04 door (1760,528)"] = Edge("f04/f-5-entrance", "f05/f-4-entrance", DoorKey("f04 door (1760,528)"))   # ?   door -> F-5/F-4 Entrance door constraint site   rows of cubes/boxes along F-4
+ENTRANCES["f04 door (1760,528)"] = Edge("f04/f-5-entrance", "f05/f-4-entrance", True_())   # ?   door -> F-5/F-4 Entrance   rows of cubes/boxes along F-4
 #   <- F-5
 # region Water Area
 ENTRANCES["f04: water-area -> f-3-entrance"] = Edge("f04/water-area", "f04/f-3-entrance", MODEL)   # conn -> F-3 Entrance
@@ -1197,7 +1197,7 @@ LOCATIONS["Obtained: Biometal L"] = LOCATIONS["Obtain Biometal L"].also(True_(op
 # region F-4 Entrance   # PROVISIONAL POLYGON (migrated bbox): redraw.
 ENTRANCES["f05: f-4-entrance -> boss-arena"] = Edge(
     "f05/f-4-entrance", "f05/boss-arena", MODEL & BossRequirement("lurerre"))   # conn -> Boss Arena
-ENTRANCES["f05 door (288,736)"] = Edge("f05/f-4-entrance", "f04/f-5-entrance", DoorKey("f05 door (288,736)"))   # door -> F-4/F-5 Entrance door constraint site
+ENTRANCES["f05 door (288,736)"] = Edge("f05/f-4-entrance", "f04/f-5-entrance", True_())   # door -> F-4/F-5 Entrance
 #   <- F-4
 # region Hub Entrance
 ENTRANCES["f05: hub-entrance -> boss-arena"] = Edge(
@@ -1225,7 +1225,7 @@ ENTRANCES["g01 door (3808,768)"] = Edge("g01/g-2-entrance", "g02/g-1-entrance", 
 # region 1st Floor
 ENTRANCES["g02: 1st-floor -> 2nd-floor"] = Edge("g02/1st-floor", "g02/2nd-floor", True_())   # conn -> 2nd Floor
 ENTRANCES["g02: 1st-floor -> basement"] = Edge("g02/1st-floor", "g02/basement", True_())   # conn -> Basement
-ENTRANCES["g02 door (656,1552)"] = Edge("g02/1st-floor", "g03", DoorKey("g02 door (656,1552)"))   # door -> G-3 door constraint site
+ENTRANCES["g02 door (656,1552)"] = Edge("g02/1st-floor", "g03", True_())   # door -> G-3
 #   <- G-3
 # region 2nd Floor
 ENTRANCES["g02: 2nd-floor -> 3rd-floor"] = Edge("g02/2nd-floor", "g02/3rd-floor", True_())   # conn -> 3rd Floor
@@ -1358,7 +1358,7 @@ ENTRANCES["g02 door (288,1152)"] = Edge("g02/g-1-entrance", "g01/g-2-entrance", 
 
 # --- G-3 [g03]
 # region Main
-ENTRANCES["g03 door (288,544)"] = Edge("g03", "g02/1st-floor", DoorKey("g03 door (288,544)"))   # door -> G-2/1st Floor door constraint site
+ENTRANCES["g03 door (288,544)"] = Edge("g03", "g02/1st-floor", True_())   # door -> G-2/1st Floor
 #   <- G-2
 LOCATIONS["G-3: Disk E-9"] = Spot("g03", True_())
 LOCATIONS["G-3: Dog"] = Spot("g03", HU)
@@ -1448,7 +1448,7 @@ ENTRANCES["h03 door (288,896)"] = Edge("h03/h-2-entrance", "h02/h-3-entrance", D
 #   <- H-2
 # region H-4 Entrance
 ENTRANCES["h03: h-4-entrance -> blimps"] = Edge("h03/h-4-entrance", "h03/blimps", MODEL)   # conn -> Blimps
-ENTRANCES["h03 door (3808,368)"] = Edge("h03/h-4-entrance", "h04/h-3-entrance", DoorKey("h03 door (3808,368)"))   # door -> H-4/H-3 Entrance door constraint site
+ENTRANCES["h03 door (3808,368)"] = Edge("h03/h-4-entrance", "h04/h-3-entrance", True_())   # door -> H-4/H-3 Entrance
 #   <- H-4
 # region Hidden Room
 ENTRANCES["h03: hidden-room -> left-area"] = Edge("h03/hidden-room", "h03/left-area", FX & HU)   # conn -> Left Area
@@ -1478,7 +1478,7 @@ LOCATIONS["Obtained: Biometal P"] = LOCATIONS["Obtain Biometal P"].also(True_(op
 # region H-3 Entrance
 ENTRANCES["h04: h-3-entrance -> boss-room"] = Edge(
     "h04/h-3-entrance", "h04/boss-room", MODEL & BossRequirement("purprill"))   # conn -> Boss Room
-ENTRANCES["h04 door (288,944)"] = Edge("h04/h-3-entrance", "h03/h-4-entrance", DoorKey("h04 door (288,944)"))   # door -> H-3/H-4 Entrance door constraint site
+ENTRANCES["h04 door (288,944)"] = Edge("h04/h-3-entrance", "h03/h-4-entrance", True_())   # door -> H-3/H-4 Entrance
 #   <- H-3
 # region Right Area
 ENTRANCES["h04: right-area -> a-3-entrance"] = Edge("h04/right-area", "h04/a-3-entrance", MODEL)   # conn -> A-3 Entrance
@@ -1670,7 +1670,7 @@ ENTRANCES["j02 door (288,752)"] = Edge("j02/j-1-entrance", "j01/j-2-entrance", D
 #   <- J-1
 # region J-3 Entrance
 ENTRANCES["j02: j-3-entrance -> water-area"] = Edge("j02/j-3-entrance", "j02/water-area", MODEL)   # conn -> Water Area
-ENTRANCES["j02 door (3296,752)"] = Edge("j02/j-3-entrance", "j03/j-2-entrance", DoorKey("j02 door (3296,752)") & MODEL)   # ?   door -> J-3/J-2 Entrance door constraint site   Tentalamia (miniboss) right after entering J-3
+ENTRANCES["j02 door (3296,752)"] = Edge("j02/j-3-entrance", "j03/j-2-entrance", MODEL)   # ?   door -> J-3/J-2 Entrance   Tentalamia (miniboss) right after entering J-3
 #   <- J-3
 # region J-4 Entrance
 ENTRANCES["j02: j-4-entrance -> area-below"] = Edge("j02/j-4-entrance", "j02/area-below", True_())   # conn -> Area Below
@@ -1703,11 +1703,11 @@ LOCATIONS["J-3: Energy Capsule L"] = Spot("j03/3rd-water-segment", True_())
 LOCATIONS["J-3: Weapon Energy L"] = Spot("j03/3rd-water-segment", True_())
 # region J-2 Entrance
 ENTRANCES["j03: j-2-entrance -> mini-boss-room"] = Edge("j03/j-2-entrance", "j03/mini-boss-room", MODEL)   # conn -> Mini-Boss Room
-ENTRANCES["j03 door (288,736)"] = Edge("j03/j-2-entrance", "j02/j-3-entrance", DoorKey("j03 door (288,736)"))   # door -> J-2/J-3 Entrance door constraint site
+ENTRANCES["j03 door (288,736)"] = Edge("j03/j-2-entrance", "j02/j-3-entrance", True_())   # door -> J-2/J-3 Entrance
 #   <- J-2
 # region J-5 Entrance
 ENTRANCES["j03: j-5-entrance -> 3rd-water-segment"] = Edge("j03/j-5-entrance", "j03/3rd-water-segment", MODEL)   # conn -> 3rd Water Segment
-ENTRANCES["j03 door (2272,752)"] = Edge("j03/j-5-entrance", "j05/j-3-entrance", DoorKey("j03 door (2272,752)"))   # door -> J-5/J-3 Entrance door constraint site
+ENTRANCES["j03 door (2272,752)"] = Edge("j03/j-5-entrance", "j05/j-3-entrance", True_())   # door -> J-5/J-3 Entrance
 #   <- J-5
 # region Mini-Boss Room
 ENTRANCES["j03: mini-boss-room -> j-2-entrance"] = Edge("j03/mini-boss-room", "j03/j-2-entrance", MODEL)   # conn -> J-2 Entrance
@@ -1742,7 +1742,7 @@ LOCATIONS["Cleared: Recover The Disk"] = LOCATIONS["Mission - Recover The Disk"]
 # region J-3 Entrance
 ENTRANCES["j05: j-3-entrance -> boss-room"] = Edge(
     "j05/j-3-entrance", "j05/boss-room", MODEL & BossRequirement("leganchor"))   # conn -> Boss Room
-ENTRANCES["j05 door (288,752)"] = Edge("j05/j-3-entrance", "j03/j-5-entrance", DoorKey("j05 door (288,752)"))   # door -> J-3/J-5 Entrance door constraint site
+ENTRANCES["j05 door (288,752)"] = Edge("j05/j-3-entrance", "j03/j-5-entrance", True_())   # door -> J-3/J-5 Entrance
 #   <- J-3
 # region J-4 Entrance
 ENTRANCES["j05: j-4-entrance -> after-boss-room"] = Edge("j05/j-4-entrance", "j05/after-boss-room", MODEL)   # conn -> After Boss Room
@@ -1804,7 +1804,7 @@ ENTRANCES["k03: lower-area -> upper-area"] = Edge("k03/lower-area", "k03/upper-a
 LOCATIONS["K-3: Disk M-9"] = Spot("k03/lower-area", True_())
 # region Upper Area
 ENTRANCES["k03: upper-area -> lower-area"] = Edge("k03/upper-area", "k03/lower-area", True_())   # conn -> Lower Area
-ENTRANCES["k03 door (1504,528)"] = Edge("k03/upper-area", "k05/k-3-entrance", DoorKey("k03 door (1504,528)"))   # door -> K-5/K-3 Entrance door constraint site   climb the K-3 shaft up to the high exit
+ENTRANCES["k03 door (1504,528)"] = Edge("k03/upper-area", "k05/k-3-entrance", True_())   # door -> K-5/K-3 Entrance   climb the K-3 shaft up to the high exit
 #   <- K-5
 LOCATIONS["K-3: Disk E-35"] = Spot("k03/upper-area", MODEL)   # ?   K-3: ledge halfway down the shaft
 
@@ -1874,7 +1874,7 @@ ENTRANCES["k05 door (560,272)"] = Edge("k05/k-1-entrance", "k01/k-5-entrance", D
 #   <- K-1
 # region K-3 Entrance
 ENTRANCES["k05: k-3-entrance -> lava-rising-area"] = Edge("k05/k-3-entrance", "k05/lava-rising-area", MODEL)   # conn -> Lava Rising Area
-ENTRANCES["k05 door (288,2640)"] = Edge("k05/k-3-entrance", "k03/upper-area", DoorKey("k05 door (288,2640)"))   # door -> K-3/Upper Area door constraint site
+ENTRANCES["k05 door (288,2640)"] = Edge("k05/k-3-entrance", "k03/upper-area", True_())   # door -> K-3/Upper Area
 #   <- K-3
 # region Lava Rising Area
 ENTRANCES["k05: lava-rising-area -> k-1-entrance"] = Edge("k05/lava-rising-area", "k05/k-1-entrance", MODEL)   # conn -> K-1 Entrance

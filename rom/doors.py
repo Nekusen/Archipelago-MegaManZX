@@ -58,6 +58,14 @@ def locked_template(template: bytes, key: str) -> bytes:
     return bytes(out)
 
 
+def locked_shutter_template(template: bytes, key: str) -> bytes:
+    """The template of a shutter that locks with a door: same key and colour, so both show one picture."""
+    out = bytearray(template)
+    out[TEMPLATE_ROLE] = KEY_TYPES[key] << ROLE_KEY_SHIFT
+    out[TEMPLATE_MODIFIER] = KEY_TYPES[key]
+    return bytes(out)
+
+
 def room_edits(locks: dict[str, str]) -> dict[str, dict]:
     """Per room: templates rewritten in place, templates to add and the coordinates that move to them.
 
@@ -77,6 +85,11 @@ def room_edits(locks: dict[str, str]) -> dict[str, dict]:
                 edit["moves"].append((face["coord"] + COORD_SLOT_OFF, face["slot"], index))
             else:
                 edit["writes"].append((ROOMS[room]["slots"] + face["slot"] * TEMPLATE_LEN, old, new))
+        for shutter in SITES[name].get("shutters", ()):
+            room = shutter["room"]
+            old = bytes.fromhex(shutter["template"])
+            rooms.setdefault(room, {"writes": [], "templates": [], "moves": []})["writes"].append(
+                (ROOMS[room]["slots"] + shutter["slot"] * TEMPLATE_LEN, old, locked_shutter_template(old, locks[name])))
     return rooms
 
 

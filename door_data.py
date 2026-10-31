@@ -4,7 +4,8 @@ Generated; do not edit. A site is the two faces of one way between two rooms. Ea
 names its room, the RAM address of its entry in the room's coordinates table, the
 index of its 12-byte entity template, the template itself, and whether other entities
 use that template too. `weight` and `weight_pickups` rank the sites for the draw, without
-and with the pickup checks."""
+and with the pickup checks. `shutters` are the neighbours that lock with the site: only a
+dead end lies between each one and its door, so the logic needs nothing else."""
 
 # room -> overlay, RAM address of the ARM9 pointer to its template table, the table, its
 # length in templates, and the overlay's code and bss sizes
@@ -25,25 +26,18 @@ ROOMS = {
     "e08": {"overlay": 70, "slots_pointer": 0x020CA048, "slots": 0x02194490, "slot_count": 13, "size": 2496, "bss": 0},
     "f01": {"overlay": 71, "slots_pointer": 0x020CA04C, "slots": 0x02194458, "slot_count": 18, "size": 2496, "bss": 0},
     "f02": {"overlay": 72, "slots_pointer": 0x020CA050, "slots": 0x021949A8, "slot_count": 18, "size": 4736, "bss": 0},
-    "f03": {"overlay": 73, "slots_pointer": 0x020CA054, "slots": 0x02194A98, "slot_count": 19, "size": 6176, "bss": 0},
-    "f04": {"overlay": 74, "slots_pointer": 0x020CA058, "slots": 0x021941F0, "slot_count": 14, "size": 1952, "bss": 0},
-    "f05": {"overlay": 75, "slots_pointer": 0x020CA05C, "slots": 0x021949E0, "slot_count": 8, "size": 4672, "bss": 0},
     "g01": {"overlay": 76, "slots_pointer": 0x020CA060, "slots": 0x02194908, "slot_count": 20, "size": 4704, "bss": 0},
-    "g02": {"overlay": 77, "slots_pointer": 0x020CA064, "slots": 0x021946D8, "slot_count": 36, "size": 4832, "bss": 0},
-    "g03": {"overlay": 78, "slots_pointer": 0x020CA068, "slots": 0x021945D8, "slot_count": 16, "size": 2624, "bss": 0},
     "g04": {"overlay": 79, "slots_pointer": 0x020CA06C, "slots": 0x02194310, "slot_count": 15, "size": 2080, "bss": 0},
     "g05": {"overlay": 80, "slots_pointer": 0x020CA070, "slots": 0x02194D30, "slot_count": 28, "size": 6880, "bss": 0},
     "h01": {"overlay": 81, "slots_pointer": 0x020CA074, "slots": 0x0219843C, "slot_count": 27, "size": 19328, "bss": 32},
     "h02": {"overlay": 82, "slots_pointer": 0x020CA078, "slots": 0x02194924, "slot_count": 7, "size": 3200, "bss": 0},
     "h03": {"overlay": 83, "slots_pointer": 0x020CA07C, "slots": 0x02196A38, "slot_count": 22, "size": 12160, "bss": 32},
-    "h04": {"overlay": 84, "slots_pointer": 0x020CA080, "slots": 0x02194E0C, "slot_count": 25, "size": 5152, "bss": 32},
     "i01": {"overlay": 85, "slots_pointer": 0x020CA084, "slots": 0x02194FD8, "slot_count": 35, "size": 6304, "bss": 32},
     "i02": {"overlay": 86, "slots_pointer": 0x020CA088, "slots": 0x02194AC0, "slot_count": 23, "size": 4736, "bss": 0},
     "i03": {"overlay": 87, "slots_pointer": 0x020CA08C, "slots": 0x02195A70, "slot_count": 16, "size": 10624, "bss": 32},
     "i05": {"overlay": 89, "slots_pointer": 0x020CA094, "slots": 0x021945B0, "slot_count": 28, "size": 3424, "bss": 0},
     "j01": {"overlay": 90, "slots_pointer": 0x020CA098, "slots": 0x02194360, "slot_count": 17, "size": 1920, "bss": 0},
     "j02": {"overlay": 91, "slots_pointer": 0x020CA09C, "slots": 0x02194A88, "slot_count": 18, "size": 4768, "bss": 0},
-    "j03": {"overlay": 92, "slots_pointer": 0x020CA0A0, "slots": 0x02194B60, "slot_count": 19, "size": 4928, "bss": 0},
     "j04": {"overlay": 93, "slots_pointer": 0x020CA0A4, "slots": 0x02194550, "slot_count": 16, "size": 2336, "bss": 0},
     "j05": {"overlay": 94, "slots_pointer": 0x020CA0A8, "slots": 0x02194C70, "slot_count": 18, "size": 6272, "bss": 0},
     "k01": {"overlay": 95, "slots_pointer": 0x020CA0AC, "slots": 0x021962C8, "slot_count": 29, "size": 13280, "bss": 32},
@@ -68,6 +62,7 @@ SITES = {
             {"room": "a01", "coord": 0x021949B8, "slot": 5, "template": "010513010000ffffff000000", "shared": False},
             {"room": "a02", "coord": 0x021952F0, "slot": 0, "template": "010513010000ffffff000000", "shared": False},
         ),
+        "shutters": ({"room": "a01", "slot": 3, "template": "010512020000ffff00000000"},),
     },
     "A-3 / H-1": {
         "doors": ("a03 door (1632,576)", "h01 door (288,928)"), "key": None, "border": True, "weight": 15, "weight_pickups": 30,
@@ -125,13 +120,6 @@ SITES = {
             {"room": "e04", "coord": 0x02195940, "slot": 1, "template": "010513010000ffffff000000", "shared": False},
         ),
     },
-    "E-4 / E-5": {
-        "doors": ("e04 door (2736,928)", "e05 door (288,928)"), "key": None, "border": False, "weight": 20, "weight_pickups": 20,
-        "faces": (
-            {"room": "e04", "coord": 0x02195A00, "slot": 0, "template": "010513000a00ffffff000000", "shared": True},
-            {"room": "e05", "coord": 0x02194DD0, "slot": 0, "template": "010513010000ffffff000000", "shared": False},
-        ),
-    },
     "E-5 / E-7": {
         "doors": ("e05 door (3040,528)", "e07 door (288,720)"), "key": None, "border": False, "weight": 20, "weight_pickups": 20,
         "faces": (
@@ -153,27 +141,6 @@ SITES = {
             {"room": "f02", "coord": 0x02194A88, "slot": 0, "template": "010513010000ffffff000000", "shared": True},
         ),
     },
-    "F-2 / F-3": {
-        "doors": ("f02 door (2528,544)", "f03 door (288,1696)"), "key": None, "border": False, "weight": 20, "weight_pickups": 20,
-        "faces": (
-            {"room": "f02", "coord": 0x02194BA8, "slot": 0, "template": "010513010000ffffff000000", "shared": True},
-            {"room": "f03", "coord": 0x02194B84, "slot": 2, "template": "010513010000ffffff000000", "shared": True},
-        ),
-    },
-    "F-4 / F-5": {
-        "doors": ("f04 door (1760,528)", "f05 door (288,736)"), "key": None, "border": False, "weight": 10, "weight_pickups": 5,
-        "faces": (
-            {"room": "f04", "coord": 0x021943A0, "slot": 1, "template": "010513010600ffffff000000", "shared": False},
-            {"room": "f05", "coord": 0x021949B8, "slot": 1, "template": "010513010600ffffff000000", "shared": False},
-        ),
-    },
-    "G-2 / G-3": {
-        "doors": ("g02 door (656,1552)", "g03 door (288,544)"), "key": None, "border": False, "weight": 5, "weight_pickups": 5,
-        "faces": (
-            {"room": "g02", "coord": 0x02194B68, "slot": 8, "template": "010513000c00ffffff000000", "shared": True},
-            {"room": "g03", "coord": 0x021946A0, "slot": 1, "template": "010513010000ffffff000000", "shared": True},
-        ),
-    },
     "G-4 / G-5": {
         "doors": ("g04 door (1504,352)", "g05 door (288,544)"), "key": None, "border": False, "weight": 10, "weight_pickups": 10,
         "faces": (
@@ -193,13 +160,6 @@ SITES = {
         "faces": (
             {"room": "h02", "coord": 0x02194914, "slot": 0, "template": "010513010000ffffff000000", "shared": True},
             {"room": "h03", "coord": 0x02196B48, "slot": 0, "template": "010513010000ffffff000000", "shared": False},
-        ),
-    },
-    "H-3 / H-4": {
-        "doors": ("h03 door (3808,368)", "h04 door (288,944)"), "key": None, "border": False, "weight": 5, "weight_pickups": 5,
-        "faces": (
-            {"room": "h03", "coord": 0x02196CE0, "slot": 1, "template": "010513010600ffffff000000", "shared": False},
-            {"room": "h04", "coord": 0x02194D4C, "slot": 4, "template": "010513010600ffffff000000", "shared": False},
         ),
     },
     "I-1 / I-3": {
@@ -230,25 +190,11 @@ SITES = {
             {"room": "j02", "coord": 0x02194B68, "slot": 1, "template": "010513010000ffffff000000", "shared": True},
         ),
     },
-    "J-2 / J-3": {
-        "doors": ("j02 door (3296,752)", "j03 door (288,736)"), "key": None, "border": False, "weight": 20, "weight_pickups": 20,
-        "faces": (
-            {"room": "j02", "coord": 0x02194CA8, "slot": 1, "template": "010513010000ffffff000000", "shared": True},
-            {"room": "j03", "coord": 0x02194AA8, "slot": 0, "template": "010513010000ffffff000000", "shared": False},
-        ),
-    },
     "J-2 / J-4": {
         "doors": ("j02 door (3008,1056)", "j04 door (288,656)"), "key": None, "border": False, "weight": 5, "weight_pickups": 5,
         "faces": (
             {"room": "j02", "coord": 0x02194C90, "slot": 0, "template": "010513000b00ffffff000000", "shared": False},
             {"room": "j04", "coord": 0x02194508, "slot": 0, "template": "010513010000ffffff000000", "shared": True},
-        ),
-    },
-    "J-3 / J-5": {
-        "doors": ("j03 door (2272,752)", "j05 door (288,752)"), "key": None, "border": False, "weight": 10, "weight_pickups": 10,
-        "faces": (
-            {"room": "j03", "coord": 0x02194B50, "slot": 1, "template": "010513010600ffffff000000", "shared": False},
-            {"room": "j05", "coord": 0x02194BF0, "slot": 1, "template": "010513010600ffffff000000", "shared": False},
         ),
     },
     "J-4 / J-5": {
@@ -270,13 +216,6 @@ SITES = {
         "faces": (
             {"room": "k04", "coord": 0x02195AA4, "slot": 5, "template": "010513001000ffffff000000", "shared": True},
             {"room": "k03", "coord": 0x021946A8, "slot": 1, "template": "010513010000ffffff000000", "shared": True},
-        ),
-    },
-    "K-3 / K-5": {
-        "doors": ("k03 door (1504,528)", "k05 door (288,2640)"), "key": None, "border": False, "weight": 10, "weight_pickups": 20,
-        "faces": (
-            {"room": "k03", "coord": 0x02194680, "slot": 1, "template": "010513010000ffffff000000", "shared": True},
-            {"room": "k05", "coord": 0x02194A20, "slot": 1, "template": "010513010000ffffff000000", "shared": False},
         ),
     },
     "L-1 / L-2": {

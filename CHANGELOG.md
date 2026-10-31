@@ -47,6 +47,10 @@ All notable changes to this project are documented in this file. The format is b
 
 ### Changed
 
+- Door constraints no longer use the sites where a nearby door or shutter garbled the coloured door: E-4 / E-5,
+  F-2 / F-3, F-4 / F-5, G-2 / G-3, H-3 / H-4, J-2 / J-3, J-3 / J-5 and K-3 / K-5. A seed generated before this
+  change needs the version it was generated with.
+- A door constraint on A-1 / A-2 now also locks the shutter next to it in A-1 with the same key.
 - Door constraints no longer lock the way between G-1 and G-2: that passage has no door frame, so the coloured gate
   looked out of place.
 - The filler items are now `50 E-Crystals`, `100 E-Crystals`, `200 E-Crystals` and `1-Up`, each as likely as the

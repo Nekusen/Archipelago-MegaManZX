@@ -123,11 +123,23 @@ class TestTemplates(unittest.TestCase):
         edits = doors.room_edits(every)
         shared = sum(1 for site in SITES.values() for face in site["faces"] if face["shared"])
         self.assertEqual(sum(len(e["templates"]) for e in edits.values()), shared)
-        self.assertEqual(sum(len(e["writes"]) for e in edits.values()), 2 * len(SITES) - shared)
+        shutters = sum(len(site.get("shutters", ())) for site in SITES.values())
+        self.assertEqual(sum(len(e["writes"]) for e in edits.values()), 2 * len(SITES) - shared + shutters)
         for room, edit in edits.items():
             indexes = [new for _addr, _old, new in edit["moves"]]
             first = ROOMS[room]["slot_count"]
             self.assertEqual(indexes, list(range(first, first + len(indexes))), room)
+
+    def test_a_shutter_locks_with_its_site(self) -> None:
+        for name, site in SITES.items():
+            for shutter in site.get("shutters", ()):
+                with self.subTest(site=name):
+                    old = bytes.fromhex(shutter["template"])
+                    new = doors.locked_shutter_template(old, "Blue Card Key")
+                    write = (ROOMS[shutter["room"]]["slots"] + shutter["slot"] * doors.TEMPLATE_LEN, old, new)
+                    self.assertIn(write, doors.room_edits({name: "Blue Card Key"})[shutter["room"]]["writes"])
+                    self.assertEqual(new[doors.TEMPLATE_MODIFIER], doors.KEY_TYPES["Blue Card Key"])
+                    self.assertEqual(new[doors.TEMPLATE_ROLE] >> doors.ROLE_KEY_SHIFT, doors.KEY_TYPES["Blue Card Key"])
 
     def test_locks_file_round_trip(self) -> None:
         chosen = door_constraints.draw(random.Random(3), 6, pickups=False)
@@ -238,6 +250,12 @@ class TestDoorsOfTheRom(unittest.TestCase):
                     self.assertEqual(code[template:template + doors.TEMPLATE_LEN].hex(), face["template"])
                     slot = face["coord"] + doors.COORD_SLOT_OFF - ram
                     self.assertEqual(struct.unpack_from("<H", code, slot)[0], face["slot"])
+            for shutter in site.get("shutters", ()):
+                with self.subTest(site=name, shutter=shutter["room"]):
+                    info = ROOMS[shutter["room"]]
+                    ram, code = nds.overlay_code(rom, info["overlay"])
+                    template = info["slots"] - ram + shutter["slot"] * doors.TEMPLATE_LEN
+                    self.assertEqual(code[template:template + doors.TEMPLATE_LEN].hex(), shutter["template"])
 
     def test_hook_sites(self) -> None:
         self.assertEqual(self.code.read(doors.DOOR_CLOSED_HOOK_RAM, 4), doors.DOOR_CLOSED_HOOK_ORIG)

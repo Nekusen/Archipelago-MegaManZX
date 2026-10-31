@@ -1,10 +1,11 @@
 @ Sub Tank refill: an operator beside the starting Transerver.
-@ The hub room gets a new Guardian entity (class 5.48, role 4 = operator, modifier 6)
-@ to the right of the Transerver of the Area A floor and of the Guardian base floor.
-@ The game picks a Guardian's init and update from two tables indexed by role and
-@ modifier, and role 4 has six modifiers, so the section carries both tables of
-@ role 4 one entry longer and the two role pointers of the ARM9 point here. The init
-@ is the game's own shared Guardian init; the update is the routine below, a state
+@ The hub room gets a new Guardian entity (class 5.48, role 5 = the plain Guardians,
+@ modifier 7) to the right of the Transerver of the Area A floor and of the Guardian
+@ base floor. The game picks a Guardian's init and update from two tables indexed by
+@ role and modifier, and role 5 has seven modifiers, so the section carries both
+@ tables of role 5 one entry longer and the two role pointers of the ARM9 point here.
+@ The init is the game's own shared Guardian init, which also gives the role's sprite;
+@ the update is the routine below, a state
 @ machine shaped like the two Guardians who sell usables (Cedre, Scombresoce): UP in
 @ front of the operator opens the offer, a YES fills every Sub Tank held through the
 @ game's own routine and charges the price, and the three other answers (not enough
@@ -252,32 +253,34 @@ lit_msg_no:           .word msg_no
 
         .org    0x02193BC0
 @ rom: NPC_INIT_TABLE
-@ The init table of role 4, one entry longer: the six of the game (0x020EAAE4), then ours.
+@ The init table of role 5, one entry longer: the seven of the game (0x020EAE00), then ours.
+        .word   guardian_init + 1
+        .word   0x0209B679
+        .word   0x0209B63D
         .word   guardian_init + 1
         .word   guardian_init + 1
+        .word   0x0209B599
         .word   guardian_init + 1
-        .word   0x0209ABE9
-        .word   0x0209AA31
-        .word   0x0209A879
-        .word   guardian_init + 1       @ modifier 6: the refill operator
+        .word   guardian_init + 1       @ modifier 7: the refill operator
 
         .org    0x02193BE0
 @ rom: NPC_UPDATE_TABLE
-@ The update table of role 4, one entry longer: the six of the game (0x020EAAA8), then ours.
-        .word   0x0209AFD5
-        .word   0x0209AFD5
-        .word   0x0209AFD5
-        .word   0x0209BFF5
-        .word   0x02099B65
-        .word   0x020999F5
-        .word   section + 1             @ modifier 6: npc_update
+@ The update table of role 5, one entry longer: the seven of the game (0x020EAE1C), then ours.
+        .word   0x0209AEC5
+        .word   0x0209AEAD
+        .word   0x0209AE95
+        .word   0x0209AE8D
+        .word   0x0209AD19
+        .word   0x0209AD01
+        .word   0x0209ACF5
+        .word   section + 1             @ modifier 7: npc_update
 
-        .org    0x020EAD38
+        .org    0x020EAD3C
 @ rom: NPC_ROLE_INIT_POINTER_NEW
-@ was: .word 0x020EAAE4   (NPC_ROLE_INIT_POINTER_ORIG): the init table of role 4
+@ was: .word 0x020EAE00   (NPC_ROLE_INIT_POINTER_ORIG): the init table of role 5
         .word   section + 0x1C0
 
-        .org    0x020EAD50
+        .org    0x020EAD54
 @ rom: NPC_ROLE_UPDATE_POINTER_NEW
-@ was: .word 0x020EAAA8   (NPC_ROLE_UPDATE_POINTER_ORIG): the update table of role 4
+@ was: .word 0x020EAE1C   (NPC_ROLE_UPDATE_POINTER_ORIG): the update table of role 5
         .word   section + 0x1E0

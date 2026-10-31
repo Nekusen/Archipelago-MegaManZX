@@ -265,8 +265,8 @@ class InfiniteLives(Toggle):
 
 
 class SubTankRefillOperator(DefaultOnToggle):
-    """An operator stands next to your starting Transerver: talk to her (UP) and, for 200 E-Crystals, she refills
-    every Sub Tank you hold. With nothing to fill she charges nothing."""
+    """A Guardian stands next to your starting Transerver: talk to him (UP) and, for 200 E-Crystals, he refills
+    every Sub Tank you hold. With nothing to fill he charges nothing."""
     display_name = "Sub Tank Refill Operator"
 
 

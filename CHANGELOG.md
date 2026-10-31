@@ -8,8 +8,8 @@ All notable changes to this project are documented in this file. The format is b
 
 ### Added
 
-- Added `sub_tank_refill_operator` (on by default): an operator next to your starting Transerver who, for 200 E-Crystals,
-  refills every Sub Tank you hold. Talk to her with UP; with nothing to fill she charges nothing.
+- Added `sub_tank_refill_operator` (on by default): a Guardian next to your starting Transerver who, for 200 E-Crystals,
+  refills every Sub Tank you hold. Talk to him with UP; with nothing to fill he charges nothing.
 - Added `infinite_lives`: a death never costs a life and there is no Game Over. With it on, the 1-Up item is not in
   the filler pool.
 - Added the goal `defeat_omega_zero`: beat Omega Zero in N-1. The door of his arena opens with your `goal_requirements`

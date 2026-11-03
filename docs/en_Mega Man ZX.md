@@ -120,10 +120,10 @@ Locations:
 
 - The mission of an area is accepted automatically when you enter it (no need to select it from a transerver), so you can play the
   areas in any order without going back to the hub. You DO have to report missions on a transerver.
-- "Replay Missions" in the transerver consoles lists the missions you have already reported (and the quests, as usual), so you can
+- "Replay Missions" in the transerver consoles lists the missions you have already reported, so you can
   play any of them again: its objective and its boss come back. While a mission you picked there is under way, entering an area does
   not accept that area's mission; report or abort it to go back to normal.
-  - "Abort Mission" only appears for a mission or quest you picked from that list. With the mission of an area under way the console
+  - "Abort Mission" only appears for a mission you picked from that list. With the mission of an area under way the console
     shows its normal menu, and picking a mission from "Replay Missions" replaces the one you had.
 - All bosses are spawned from the beginning, and you can start the fight with them from both sides.
   - The exception for this rule are Rayfly (B-2) and Giro (D-2).
@@ -187,7 +187,7 @@ With `mission_objectives` the objects and events of the story missions become ch
 - The guardians of Pass The Test answer in order, and Congre only in human form. The sprinkler key comes with eight
   people rescued, and the civilians of Area G only talk to you in human form.
 - The Computer Chips, the guardians and the people of Area G are in the world only while their mission is under way.
-  If you reported it first, take the mission again from the "Mission Requests" list to bring them back. The same goes for
+  If you reported it first, take the mission again from the "Replay Missions" list to bring them back. The same goes for
   the terminal of F-3.
 - The generator of E-3 and the lava control of K-1 go back to normal when you leave their area, as in the original game.
   With `items` the generator stays broken until the game is reset.

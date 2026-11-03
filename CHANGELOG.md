@@ -32,9 +32,9 @@ All notable changes to this project are documented in this file. The format is b
   - `locations_only`: the four Computer Chips, the four guardians of Pass The Test and their Stuffed Animal, the three Data Disks, the thirteen people trapped in Area G, the generator of E-3 and the lava control of K-1 are locations. The game plays as before.
   - `locations_and_items`: the same locations, plus the terminal of F-3 and the sprinkler key of G-2, and the objects are items of the pool. A mission is reported only with its object, Rayfly shows up only with a Computer Chip, the F-3 and G-2 doors open with their own items, the lava of Area K is slow only with its item and the machines of Area E stop only with theirs.
   - The Computer Chips and the Data Disks of J-5 and L-4 show the item they hold, like any other pickup.
-- Missions can be played again: "Replay Missions" in the Transerver consoles lists the missions you have already reported (plus the quests, as before), and picking one brings back its objective and its boss.
+- Missions can be played again: "Replay Missions" in the Transerver consoles lists the missions you have already reported, and picking one brings back its objective and its boss.
   - While a mission picked there is under way, entering an area does not accept that area's mission; report or abort the one you picked to go back to normal.
-  - "Abort Mission" is offered only for a mission or quest picked from that list. With the mission of an area under way the consoles show their normal menu instead, and picking a mission there replaces it.
+  - "Abort Mission" is offered only for a mission picked from that list. With the mission of an area under way the consoles show their normal menu instead, and picking a mission there replaces it.
   - Troop Reinforcement replays like any other mission: no briefing, head to Area D and play it through.
 - Troop Reinforcement and Protect HQ show their names in that list instead of "Mission 4" and "Mission D".
 - `mission_objectives` also covers the switch of K-4 that unlocks the door of K-1 on the way to its Sub Tank: stepping on it is a check, and with `locations_and_items` that door opens with the Area K Door Switch instead.
@@ -57,6 +57,7 @@ All notable changes to this project are documented in this file. The format is b
   and `1-Up`, the smaller amounts more often; before, every filler was 50 E-Crystals and the 1-Up never came up. A
   refill fills your life, or the weapon energy of every biometal you hold, and is lost if they are already full.
 - The Transerver consoles show their normal menu during Troop Reinforcement and Protect HQ instead of the reduced one.
+- The Transerver consoles no longer offer the quests of the townspeople: they are not part of the randomizer yet.
 - Logic: the Sub Tank of K-1 asks for Model LX and that door unlocked, instead of four biometals.
 - Logic: the apple of A-3 asks for any model, instead of Model FX, X or ZX.
 

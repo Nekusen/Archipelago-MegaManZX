@@ -5,10 +5,13 @@ multiworld is built. TestVanillaBytes reads the player's ROM when MMZX_ROM point
 at it (or roms/mmzx_us.nds lies three folders up) and is skipped otherwise.
 """
 import hashlib
+import io
+import json
 import os
 import random
 import struct
 import unittest
+import zipfile
 from pathlib import Path
 
 from .. import rom
@@ -463,6 +466,18 @@ class TestPatchTables(unittest.TestCase):
                 self.assertEqual(rom.plays_rom(rom.pack_version(patched_by), client), expected)
         for client, older in rom.PLAYABLE_ROM_VERSIONS.items():
             self.assertTrue(all(version < client for version in older))
+
+    def test_packed_manifest_gives_the_world_version(self) -> None:
+        """The core takes world_version from a packed .apworld only if its manifest is a valid container manifest."""
+        from Utils import tuplize_version
+        from worlds.Files import APWorldContainer
+        manifest = (Path(__file__).resolve().parents[1] / "archipelago.json").read_text(encoding="utf-8")
+        packed = io.BytesIO()
+        with zipfile.ZipFile(packed, "w") as z:
+            z.writestr("mmzx/archipelago.json", manifest)
+        container = APWorldContainer(None)
+        container.read(packed)
+        self.assertEqual(container.world_version, tuplize_version(json.loads(manifest)["world_version"]))
 
     def test_patch_tokens(self) -> None:
         """write_patch_tokens stores the marker with the slot name, the option blob, the golden image and the pickup table."""

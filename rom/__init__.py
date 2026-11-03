@@ -104,6 +104,7 @@ class MMZXPatchExtension(APPatchExtension):
         story.patch_story_items(arm9, story_items)
         ui.patch_goal_line(arm9)
         table.patch_pickup_table(arm9, caller.get_file(table_file))
+        story.patch_bridge_down(arm9, story_on and not story_items)
         doors.patch_door_tables(arm9, locks)
         if operator_floor:
             npc.patch_npc_tables(arm9)
@@ -126,7 +127,7 @@ class MMZXPatchExtension(APPatchExtension):
         if operator_floor:
             npc.patch_npc_room(d, operator_floor)
         story.patch_story_rooms(d, story_items)
-        story.patch_bridge(d, story_on, story_items)
+        story.patch_bridge(d, story_on)
         sprites.patch_disk_logo(d, fnt_start)
         doors.patch_door_overlays(d, locks)
         if zero_games:

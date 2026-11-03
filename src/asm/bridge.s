@@ -1,16 +1,17 @@
-@ The bridge of D-1 (mission_objectives: checks or items).
+@ The bridge of D-1 (mission_objectives: locations_only or locations_and_items).
 @ In the original game the bridge is down for good after the first visit, and the
-@ client lowers it from the start while the option is off. With the option on it
-@ stays up until the player lowers it: with a shot at its switch (checks) or with
-@ the Area D Bridge item (items), where the shot only marks the switch as pressed,
-@ which is its location.
+@ client lowers it from the start while the option is off. With the option on the
+@ game's flag is the location of the switch, so the room and the lift read bit 3
+@ of the gates byte instead: the Area D Bridge item sets it (locations_and_items),
+@ or the ROM does from boot (locations_only, rom/story.py patch_bridge_down), and
+@ the shot only marks the switch as pressed.
 @ The raised bridge is no wall: every frame the room tells the player how far it
 @ reaches, and whoever stands outside is put back inside. The original room had
 @ one reach for the raised bridge, its left side, so walking in from D-2 landed
 @ the player beside the switch. Here the reach is the side the player is on.
 @ The switch answers in any mission, not only during Troop Reinforcement.
-@ Room overlay 58 (rom/story.py BRIDGE_*); the literals that tie the bridge to its
-@ item are in story.s.
+@ Room overlay 58 (rom/story.py BRIDGE_*); the literals that tie the bridge to the
+@ gates byte are in story.s.
 
         .thumb
 
@@ -54,29 +55,12 @@ reach_set:
 lit_holder: .word player_holder
 
         .org    0x021948D6
-@ rom: BRIDGE_SWITCH_LOWERS
+@ rom: BRIDGE_SWITCH_MARKS
 @ Switch think, state 1, once a shot has hit it (r1 = 1, r4 = switch).
 @ was: movs r0, #0xa2 ; bl mission_active ; cmp r0, #0 ; beq skip ; the same test on bit 0
-@      of progress block + 0x15 ; then the three instructions kept below
-        mov     r8, r8
-        mov     r8, r8
-        mov     r8, r8
-        mov     r8, r8
-        mov     r8, r8
-        mov     r8, r8
-        mov     r8, r8
-        mov     r8, r8
-        mov     r8, r8
-        mov     r8, r8
-        mov     r8, r8
-        adds    r0, r4, #0
-        adds    r0, #0xc0
-        strb    r1, [r0]                @ tell the lift to come down
-
-        .org    0x021948D6
-@ rom: BRIDGE_SWITCH_MARKS
-@ The same spot with the bridge tied to its item: the shot sets the flag the lift
-@ would have set once down, and the lift is told nothing.
+@      of progress block + 0x15 ; then adds r0, r4, #0 ; adds r0, #0xc0 ; strb r1, [r0],
+@      which tells the lift to come down
+@ The shot sets the flag the lift would have set once down, and the lift is told nothing.
         ldr     r0, [pc, #0x9c]         @ switch_flags_literal
         ldrb    r1, [r0, #0xf]
         movs    r2, #8

@@ -118,8 +118,8 @@ class TestRequirements(unittest.TestCase):
         self.assertEqual(F.MACRO_IR["HU"][1][1], ("option_true", "HuInPool", 0, "eq"))
         self.assertEqual(F.MACRO_IR["GOAL"], ("goal",))
         self.assertEqual(F.MACRO_IR["SEAL"], ("seal",))
-        self.assertIn(("has_if", F.BRIDGE_EVENT, 1, "MissionObjectives", 1, "eq"), F.MACRO_IR[F.D_BRIDGE][1])
-        self.assertIn(("option_true", "MissionObjectives", 0, "eq"), F.MACRO_IR[F.D_BRIDGE][1])
+        self.assertEqual(F.MACRO_IR[F.D_BRIDGE][1], (("has_if", "Area D Bridge", 1, "MissionObjectives", 2, "eq"),
+                                                     ("option_true", "MissionObjectives", 2, "ne")))
         # the slow lava depends on the place it is asked at; nowhere in particular, on its event
         site = {"at": "k04/lava-chase", "control": "k01/region-7"}
         self.assertEqual(F.atom_ir(F.SLOW_LAVA, site), ("or", (("macro", "LAVA_ITEM"), ("lava", "k04/lava-chase", "k01/region-7"))))

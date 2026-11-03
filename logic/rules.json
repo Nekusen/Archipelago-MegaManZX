@@ -358,7 +358,6 @@
   "Defeated: Pegasolta Eclair": "Defeated: Pegasolta Eclair",
   "Lava Flow Slowed": "Lava Flow Slowed",
   "K-1 Door Unlocked": "K-1 Door Unlocked",
-  "D-1 Bridge Lowered": "D-1 Bridge Lowered",
   "Defeat Omega Zero": "Victory"
  },
  "boss_arenas": {
@@ -14743,27 +14742,12 @@
           }
          },
          {
-          "rule": "Has",
-          "options": [
-           {
-            "option": "worlds.mmzx.options.MissionObjectives",
-            "value": 1,
-            "operator": "eq"
-           }
-          ],
-          "filtered_resolution": false,
-          "args": {
-           "item_name": "D-1 Bridge Lowered",
-           "count": 1
-          }
-         },
-         {
           "rule": "True_",
           "options": [
            {
             "option": "worlds.mmzx.options.MissionObjectives",
-            "value": 0,
-            "operator": "eq"
+            "value": 2,
+            "operator": "ne"
            }
           ],
           "filtered_resolution": false,
@@ -15312,27 +15296,12 @@
           }
          },
          {
-          "rule": "Has",
-          "options": [
-           {
-            "option": "worlds.mmzx.options.MissionObjectives",
-            "value": 1,
-            "operator": "eq"
-           }
-          ],
-          "filtered_resolution": false,
-          "args": {
-           "item_name": "D-1 Bridge Lowered",
-           "count": 1
-          }
-         },
-         {
           "rule": "True_",
           "options": [
            {
             "option": "worlds.mmzx.options.MissionObjectives",
-            "value": 0,
-            "operator": "eq"
+            "value": 2,
+            "operator": "ne"
            }
           ],
           "filtered_resolution": false,
@@ -15729,27 +15698,12 @@
         }
        },
        {
-        "rule": "Has",
-        "options": [
-         {
-          "option": "worlds.mmzx.options.MissionObjectives",
-          "value": 1,
-          "operator": "eq"
-         }
-        ],
-        "filtered_resolution": false,
-        "args": {
-         "item_name": "D-1 Bridge Lowered",
-         "count": 1
-        }
-       },
-       {
         "rule": "True_",
         "options": [
          {
           "option": "worlds.mmzx.options.MissionObjectives",
-          "value": 0,
-          "operator": "eq"
+          "value": 2,
+          "operator": "ne"
          }
         ],
         "filtered_resolution": false,
@@ -16315,196 +16269,6 @@
        }
       ]
      }
-    },
-    "D-1 Bridge Lowered": {
-     "region": "d01/bridge-left-side",
-     "rule": {
-      "rule": "And",
-      "options": [],
-      "filtered_resolution": false,
-      "children": [
-       {
-        "rule": "Or",
-        "options": [],
-        "filtered_resolution": false,
-        "children": [
-         {
-          "rule": "HasAny",
-          "options": [],
-          "filtered_resolution": false,
-          "args": {
-           "item_names": [
-            "Model OX",
-            "Model X",
-            "Model ZX"
-           ]
-          }
-         },
-         {
-          "rule": "Or",
-          "options": [],
-          "filtered_resolution": false,
-          "children": [
-           {
-            "rule": "Has",
-            "options": [
-             {
-              "option": "worlds.mmzx.options.ProgressiveModels",
-              "value": 1,
-              "operator": "eq"
-             }
-            ],
-            "filtered_resolution": false,
-            "args": {
-             "item_name": "Progressive Model HX",
-             "count": 1
-            }
-           },
-           {
-            "rule": "Has",
-            "options": [
-             {
-              "option": "worlds.mmzx.options.ProgressiveModels",
-              "value": 0,
-              "operator": "eq"
-             }
-            ],
-            "filtered_resolution": false,
-            "args": {
-             "item_name": "Model HX",
-             "count": 1
-            }
-           }
-          ]
-         },
-         {
-          "rule": "Or",
-          "options": [],
-          "filtered_resolution": false,
-          "children": [
-           {
-            "rule": "Has",
-            "options": [
-             {
-              "option": "worlds.mmzx.options.ProgressiveModels",
-              "value": 1,
-              "operator": "eq"
-             }
-            ],
-            "filtered_resolution": false,
-            "args": {
-             "item_name": "Progressive Model FX",
-             "count": 1
-            }
-           },
-           {
-            "rule": "Has",
-            "options": [
-             {
-              "option": "worlds.mmzx.options.ProgressiveModels",
-              "value": 0,
-              "operator": "eq"
-             }
-            ],
-            "filtered_resolution": false,
-            "args": {
-             "item_name": "Model FX",
-             "count": 1
-            }
-           }
-          ]
-         },
-         {
-          "rule": "Or",
-          "options": [],
-          "filtered_resolution": false,
-          "children": [
-           {
-            "rule": "Has",
-            "options": [
-             {
-              "option": "worlds.mmzx.options.ProgressiveModels",
-              "value": 1,
-              "operator": "eq"
-             }
-            ],
-            "filtered_resolution": false,
-            "args": {
-             "item_name": "Progressive Model LX",
-             "count": 1
-            }
-           },
-           {
-            "rule": "Has",
-            "options": [
-             {
-              "option": "worlds.mmzx.options.ProgressiveModels",
-              "value": 0,
-              "operator": "eq"
-             }
-            ],
-            "filtered_resolution": false,
-            "args": {
-             "item_name": "Model LX",
-             "count": 1
-            }
-           }
-          ]
-         },
-         {
-          "rule": "Or",
-          "options": [],
-          "filtered_resolution": false,
-          "children": [
-           {
-            "rule": "Has",
-            "options": [
-             {
-              "option": "worlds.mmzx.options.ProgressiveModels",
-              "value": 1,
-              "operator": "eq"
-             }
-            ],
-            "filtered_resolution": false,
-            "args": {
-             "item_name": "Progressive Model PX",
-             "count": 1
-            }
-           },
-           {
-            "rule": "Has",
-            "options": [
-             {
-              "option": "worlds.mmzx.options.ProgressiveModels",
-              "value": 0,
-              "operator": "eq"
-             }
-            ],
-            "filtered_resolution": false,
-            "args": {
-             "item_name": "Model PX",
-             "count": 1
-            }
-           }
-          ]
-         }
-        ]
-       },
-       {
-        "rule": "True_",
-        "options": [
-         {
-          "option": "worlds.mmzx.options.MissionObjectives",
-          "value": 1,
-          "operator": "eq"
-         }
-        ],
-        "filtered_resolution": false,
-        "args": {}
-       }
-      ]
-     },
-     "event": "D-1 Bridge Lowered"
     },
     "D-1: Disk E-12": {
      "region": "d01/bottom-switch-door-area",

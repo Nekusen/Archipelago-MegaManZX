@@ -13,7 +13,8 @@
 @ scene of B-2 where Giro waits for a chip, through the literal their code loads; and the ITEM C list of the pause menu. The generator
 @ of E-3 goes the other way round: what it does to the area is an item, so it marks
 @ its own destruction in a third byte of that section. Nothing here is applied in
-@ the other two modes of the option.
+@ the other two modes of the option, but the two literals of the bridge: with
+@ locations_only the ROM sets their bit from boot.
 
         .thumb
 

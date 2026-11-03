@@ -61,8 +61,8 @@ CONST_TRUE = ("TRUE", "ANY", "FREE")
 CONST_FALSE = ("FALSE", "NEVER", "IMPOSSIBLE")
 
 # The lava of Area K set to slow, the door of K-1 unlocked and the bridge of D-1 lowered: an
-# item with mission_objectives: locations_and_items, else the event of the Lava Flow Control of K-1, of the
-# switch of K-4 and of the switch of D-1; the bridge is down from the start with the option off.
+# item with mission_objectives: locations_and_items, else the event of the Lava Flow Control of K-1 and of the
+# switch of K-4; the bridge is down from the start in the other modes.
 SLOW_LAVA = "SLOW_LAVA"
 K_DOOR_SWITCH = "K_DOOR_SWITCH"
 D_BRIDGE = "D_BRIDGE"
@@ -93,8 +93,7 @@ ATOM_ITEM.update(CHIP_ATOMS)
 # biometal checks and the goal leave behind.
 LAVA_EVENT = "Lava Flow Slowed"
 SWITCH_EVENT = "K-1 Door Unlocked"
-BRIDGE_EVENT = "D-1 Bridge Lowered"
-STORY_EVENT = {SLOW_LAVA: LAVA_EVENT, K_DOOR_SWITCH: SWITCH_EVENT, D_BRIDGE: BRIDGE_EVENT}
+STORY_EVENT = {SLOW_LAVA: LAVA_EVENT, K_DOOR_SWITCH: SWITCH_EVENT}
 MISSION_PREFIX = "Mission - "
 CLEARED_PREFIX = "Cleared: "
 BIOMETAL_PREFIX = "Obtain "
@@ -245,7 +244,7 @@ def atom_catalog(exclude=()):
     out.append({"id": K_DOOR_SWITCH, "group": "story",
                 "label": "Door of K-1 to its Sub Tank unlocked (the switch of K-4, or its item)"})
     out.append({"id": D_BRIDGE, "group": "story",
-                "label": "Bridge of D-1 lowered (its switch, or its item; always with mission_objectives off)"})
+                "label": "Bridge of D-1 lowered (its item with mission_objectives: locations_and_items, else always)"})
     out.append({"id": LAVA_CHASE, "group": "route",
                 "label": "Lava chase of K-4 armed (K-4 entered through its door from K-3)"})
     out.append({"id": AVOID_BOSS_ROOM, "group": "route",
@@ -508,8 +507,7 @@ MACRO_IR[SLOW_LAVA] = ("or", (("macro", "LAVA_ITEM"), _has_if(LAVA_EVENT, STORY_
 MACRO_IR[K_DOOR_SWITCH] = ("or", (_has_if(STORY_ATOMS[K_DOOR_SWITCH], STORY_OPTION, STORY_ITEMS),
                                   _has_if(SWITCH_EVENT, STORY_OPTION, STORY_ITEMS, op="ne")))
 MACRO_IR[D_BRIDGE] = ("or", (_has_if(STORY_ATOMS[D_BRIDGE], STORY_OPTION, STORY_ITEMS),
-                             _has_if(BRIDGE_EVENT, STORY_OPTION, STORY_CHECKS),
-                             ("option_true", STORY_OPTION, STORY_OFF, "eq")))
+                             ("option_true", STORY_OPTION, STORY_ITEMS, "ne")))
 MACRO_IR["SEAL"] = ("seal",)
 
 
@@ -718,7 +716,6 @@ def build_world(D, sites=None):
             "gate_items": {int(flag): item for flag, item in getattr(D, "STORY_GATE_ITEMS", {}).items()},
             "lava_location": getattr(D, "STORY_LAVA_LOCATION", None),
             "switch_location": getattr(D, "STORY_SWITCH_LOCATION", None),
-            "bridge_location": getattr(D, "STORY_BRIDGE_LOCATION", None),
             "chains": [list(chain) for chain in getattr(D, "STORY_CHAINS", [])],
             "counts": {name: (int(count), list(group)) for name, (count, group) in getattr(D, "STORY_COUNTS", {}).items()},
             "warps": dict(getattr(D, "MISSION_WARPS", {})),
@@ -1181,11 +1178,9 @@ def location_events(world) -> dict:
             out.setdefault(name, []).append((event, event, ("option_true", ZERO_BOSS_OPTION[BOSSES[v["boss"]]["game"]], 1, "eq")))
     story = world["story"]
     no_item = ("option_true", STORY_OPTION, STORY_ITEMS, "ne")
-    for atom, location, guard in ((SLOW_LAVA, story["lava_location"], no_item),
-                                  (K_DOOR_SWITCH, story["switch_location"], no_item),
-                                  (D_BRIDGE, story["bridge_location"], ("option_true", STORY_OPTION, STORY_CHECKS, "eq"))):
+    for atom, location in ((SLOW_LAVA, story["lava_location"]), (K_DOOR_SWITCH, story["switch_location"])):
         if location in world["locations"]:
-            out.setdefault(location, []).append((STORY_EVENT[atom], STORY_EVENT[atom], guard))
+            out.setdefault(location, []).append((STORY_EVENT[atom], STORY_EVENT[atom], no_item))
     out.setdefault(FINAL_MISSION, []).append((VICTORY_LOCATION, VICTORY, ir_and([("macro", "GOAL"), ("option_true", GOAL_OPTION, GOAL_SERPENT, "eq")])))
     return out
 
@@ -1467,7 +1462,7 @@ MACRO_NOTES = {
     "LAVA_ITEM": "the item that slows the lava of Area K, with mission_objectives: locations_and_items",
     SLOW_LAVA: "the slow lava asked at no place in particular: its item, or the event of its control",
     K_DOOR_SWITCH: "the door of K-1 to its Sub Tank: its item, or the event of the switch of K-4",
-    D_BRIDGE: "the bridge of D-1: its item, the event of its switch with checks, down from the start when off",
+    D_BRIDGE: "the bridge of D-1: its item with locations_and_items, down from the start in the other modes",
     "SEAL": "the seal of Area M: what area_m_access asks for, resolved per player",
 }
 WIDTH = 120

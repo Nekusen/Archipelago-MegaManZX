@@ -40,6 +40,7 @@ STORY_MENU_ITEMS = (STORY_CHIP_ITEM, "Stuffed Animal", "Data Disk 1", "Data Disk
 STORY_MENU_FLAGS_ORIG = bytes.fromhex("9702000098020000990200009a0200009b020000b5020000b6020000b7020000")
 STORY_MENU_FLAGS_NEW = bytes.fromhex("d0b34600d1b34600d2b34600d3b34600d4b34600d5b34600d6b34600d7b34600")
 # Room code that reads the story flags by address: a new literal lands each read on an item's byte.
+# The room of the bridge goes with the rest of the bridge, in both modes.
 STORY_OVERLAY_PATCH = {
     # overlay: [(RAM, vanilla, patched)]
     49: [(0x02194B40, "0c461002", "331c1902"),   # B-2, Giro's scene: any chip held, three bits of the story byte
@@ -54,9 +55,9 @@ STORY_OVERLAY_PATCH = {
     98: [(0x02195584, "cc451002", "461c1902"),   # K-4, the two lava walls: bit 0 of the byte after the literal
          (0x021956BC, "cc451002", "461c1902")],
 }
-# D-1, the bridge, with mission_objectives on, in either mode: each side of the raised bridge
-# keeps whoever walks in on that side, and the switch answers a shot in any mission. On checks
-# the shot lowers the bridge; on items it only marks the switch, and the bridge is the item's.
+# D-1, the bridge, with mission_objectives on: it follows bit 3 of the gates byte, the item with
+# locations_and_items and set from boot with locations_only, so the shot at the switch is only a
+# check, in any mission. Each side of the raised bridge keeps whoever walks in on that side.
 BRIDGE_OVERLAY = 58
 BRIDGE_REACH_AT = 0x02194614              # how far the room reaches for the player, set every frame
 BRIDGE_REACH_WAS = ("00b581b00b498968002809d00a480090081c00210a1c094bb0f6d2fd01b0"
@@ -65,7 +66,6 @@ BRIDGE_REACH_NEW = ("00b581b00c49896801239b050022002807d0c86da1221203904202da002
                     "09231b04032000050090081c111c0022b0f6c7fd01b000bdc046d0f31402")
 BRIDGE_SWITCH_AT = 0x021948D6             # what the switch does with a shot
 BRIDGE_SWITCH_WAS = "a22074f654fc002808d02748407d01210840002802d0201cc0300170"
-BRIDGE_SWITCH_LOWERS = "c046c046c046c046c046c046c046c046c046c046c046201cc0300170"
 BRIDGE_SWITCH_MARKS = "2748c17b08221143c173c046c046c046c046c046c046c046c046c046"
 STORY_CHIPS_OFF, STORY_CHIPS_BITS = 0x13, [0, 1, 2]
 STORY_GENERATOR = "E-3: Generator"
@@ -142,22 +142,30 @@ def patch_story_rooms(rom: bytearray, enabled: bool) -> None:
     assert item_bits(STORY_GATE_ITEMS[STORY_DOOR_FLAGS[0]]) == [STORY_F3_DOOR_BIT]
     assert item_bits(STORY_LAVA_ITEM) == [STORY_LAVA_BIT]
     assert item_bits(STORY_SWITCH_ITEM) == [STORY_K1_DOOR_BIT]
-    assert item_bits(STORY_BRIDGE_ITEM) == [STORY_BRIDGE_BIT]
-    assert all(p[2] == gate_literal(STORY_BRIDGE_OFF) for p in STORY_OVERLAY_PATCH[BRIDGE_OVERLAY])
     assert STORY_OVERLAY_PATCH[73][0][2] == gate_literal(STORY_F3_DOOR_OFF)
     assert STORY_OVERLAY_PATCH[95][0][2] == gate_literal(STORY_K1_DOOR_OFF)
     assert all(p[2] == gate_literal(STORY_LAVA_OFF) for p in STORY_OVERLAY_PATCH[98])
     for ovl, patches in STORY_OVERLAY_PATCH.items():
-        patch_overlay(rom, ovl, patches)
+        if ovl != BRIDGE_OVERLAY:
+            patch_overlay(rom, ovl, patches)
 
 
-def bridge_patches(by_item: bool) -> list[tuple[int, str, str]]:
-    """The two replacements in the room of the bridge: how far it reaches, and what its switch does."""
-    return [(BRIDGE_REACH_AT, BRIDGE_REACH_WAS, BRIDGE_REACH_NEW),
-            (BRIDGE_SWITCH_AT, BRIDGE_SWITCH_WAS, BRIDGE_SWITCH_MARKS if by_item else BRIDGE_SWITCH_LOWERS)]
+def bridge_patches() -> list[tuple[int, str, str]]:
+    """The replacements in the room of the bridge: what it reads, how far it reaches and what its switch does."""
+    return STORY_OVERLAY_PATCH[BRIDGE_OVERLAY] + [(BRIDGE_REACH_AT, BRIDGE_REACH_WAS, BRIDGE_REACH_NEW),
+                                                  (BRIDGE_SWITCH_AT, BRIDGE_SWITCH_WAS, BRIDGE_SWITCH_MARKS)]
 
 
-def patch_bridge(rom: bytearray, enabled: bool, by_item: bool) -> None:
-    """With mission_objectives on, leave the bridge of D-1 to its switch (locations_only) or to its item (locations_and_items)."""
+def patch_bridge(rom: bytearray, enabled: bool) -> None:
+    """With mission_objectives on, tie the bridge of D-1 to the gates byte and leave its switch a check."""
+    if not enabled:
+        return
+    assert item_bits(STORY_BRIDGE_ITEM) == [STORY_BRIDGE_BIT]
+    assert all(p[2] == gate_literal(STORY_BRIDGE_OFF) for p in STORY_OVERLAY_PATCH[BRIDGE_OVERLAY])
+    patch_overlay(rom, BRIDGE_OVERLAY, bridge_patches())
+
+
+def patch_bridge_down(arm9: Arm9, enabled: bool) -> None:
+    """With mission_objectives: locations_only, the bridge of D-1 is down from boot, as with the option off."""
     if enabled:
-        patch_overlay(rom, BRIDGE_OVERLAY, bridge_patches(by_item))
+        arm9.write(story_gates_addr(), bytes([1 << STORY_BRIDGE_BIT]), bytes(1))

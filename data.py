@@ -640,7 +640,7 @@ MISSION_REPEAT_BITS = {
 # their event (flag -> item); the item that slows the lava of Area K, whose location
 # stands for the SLOW_LAVA atom of the logic in the other modes; the same pair for the
 # K_DOOR_SWITCH atom, the door of K-1 that the switch of K-4 unlocks; and for the
-# D_BRIDGE atom, the bridge of D-1, which is down from the start with the option off.
+# D_BRIDGE atom, the bridge of D-1, which is down from the start in the other modes.
 STORY_REPORT_STATES = {0x95: 'Computer Chip', 0x99: 'Stuffed Animal', 0xAE: 'Data Disk 1', 0xC9: 'Data Disk 2', 0xD0: 'Data Disk 3'}
 STORY_REPORT_ITEMS = {'Locate Giro': 'Computer Chip', 'Pass The Test': 'Stuffed Animal', 'Find The Survivors': 'Data Disk 1', 'Recover The Disk': 'Data Disk 2', 'Protect The Lab': 'Data Disk 3'}
 STORY_GATE_ITEMS = {381: 'Area F Lock Hack', 382: 'Sprinkler Key'}

@@ -468,16 +468,17 @@ class TestPatchTables(unittest.TestCase):
             self.assertTrue(all(version < client for version in older))
 
     def test_packed_manifest_gives_the_world_version(self) -> None:
-        """The core takes world_version from a packed .apworld only if its manifest is a valid container manifest."""
+        """The core takes world_version from the manifest that tools/build_apworld.py packs."""
         from Utils import tuplize_version
         from worlds.Files import APWorldContainer
-        manifest = (Path(__file__).resolve().parents[1] / "archipelago.json").read_text(encoding="utf-8")
+        from ..tools import build_apworld
         packed = io.BytesIO()
         with zipfile.ZipFile(packed, "w") as z:
-            z.writestr("mmzx/archipelago.json", manifest)
+            z.writestr("mmzx/archipelago.json", build_apworld.packed_manifest())
         container = APWorldContainer(None)
         container.read(packed)
-        self.assertEqual(container.world_version, tuplize_version(json.loads(manifest)["world_version"]))
+        source = json.loads((Path(__file__).resolve().parents[1] / "archipelago.json").read_text(encoding="utf-8"))
+        self.assertEqual(container.world_version, tuplize_version(source["world_version"]))
 
     def test_patch_tokens(self) -> None:
         """write_patch_tokens stores the marker with the slot name, the option blob, the golden image and the pickup table."""

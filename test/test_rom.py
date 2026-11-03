@@ -563,7 +563,7 @@ class TestMissionSection(unittest.TestCase):
         self.assertLessEqual(missions.MISSION_SECTION_RAM + missions.MISSION_SECTION_LEN, ui.ROOM_OVERLAY_SLOT_RAM)
 
     def test_list_table(self) -> None:
-        """Each mission lists on its completed bit, the final mission never, the quests as in vanilla."""
+        """Each mission lists on its completed bit; the final mission and the quests never do."""
         words = struct.unpack("<%dI" % len(missions.MISSION_LIST_IDS), missions.mission_list_table())
         by_id = dict(zip(missions.MISSION_LIST_IDS, words))
         for mid, (addr, bit) in MISSION_COMPLETED_BIT.items():
@@ -571,9 +571,9 @@ class TestMissionSection(unittest.TestCase):
                 self.assertEqual(by_id[mid], (addr - LIVE_BLOCK) * 8 + bit)
         never = by_id[missions.MISSION_LAST_STORY]
         self.assertEqual(LIVE_BLOCK + (never >> 3), missions.MISSION_SECTION_RAM + missions.MISSION_NEVER_OFF)
-        quests = struct.unpack("<%dI" % (len(missions.MISSION_QUEST_FLAGS_ORIG) // 4), missions.MISSION_QUEST_FLAGS_ORIG)
-        self.assertEqual(words[-len(quests):], quests)
-        self.assertEqual(missions.MISSION_QUEST_FLAGS_RAM, 0x020DAE7C + 4 * (missions.MISSION_LAST_STORY + 1 - 2))
+        quests = [by_id[mid] for mid in missions.MISSION_LIST_IDS if mid > missions.MISSION_LAST_STORY]
+        self.assertEqual(len(quests), 24)
+        self.assertEqual(set(quests), {never})
 
     def test_states(self) -> None:
         """One state byte per listed mission, the value its accept record carries, and no two alike."""
@@ -907,8 +907,6 @@ class TestVanillaBytes(unittest.TestCase):
         for orig, name in ui.MISSION_NAME_TEXTS.values():
             self.assertEqual(data.count(orig + bytes([ui.PAUSE_TEXT_END])), 1)
             self.assertEqual(out.count(name + bytes([ui.PAUSE_TEXT_END])), 1)
-        self.assertEqual(self.read(missions.MISSION_QUEST_FLAGS_RAM, len(missions.MISSION_QUEST_FLAGS_ORIG)),
-                         missions.MISSION_QUEST_FLAGS_ORIG)
 
     def test_pause_texts_of_the_rom(self) -> None:
         """The pause menu file rebuilds: one-line BIOMETAL texts and the signature message where the cave reads it."""

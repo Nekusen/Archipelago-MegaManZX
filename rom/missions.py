@@ -25,7 +25,7 @@ MISSION_SECTION_CODE = bytes.fromhex(
     "0140ca400120904300e0002030bc7047cc451002a031190200311902")
 MISSION_LIST_OFF = 0x100           # u32[39]: the flag that lists each id 2 to 40
 MISSION_LIST_IDS = range(2, 41)
-MISSION_LAST_STORY = 16            # ids above it are quests, listed as in vanilla
+MISSION_LAST_STORY = 16            # ids above it are quests: not randomized, so never listed
 MISSION_NEVER_OFF = 0x19C          # a zero word: the "flag" of a story mission the list never shows
 MISSION_STATES_OFF = 0x1A0         # u8[14]: the state value of ids 2 to 15
 MISSION_REPEAT_IDS = range(2, 16)
@@ -36,12 +36,6 @@ MISSION_REPEAT_OFF = 0x1D0         # u16 flags to clear, or to set with MISSION_
 MISSION_REPEAT_SET = 0x8000
 MISSION_REPEAT_END = 0xFFFF
 
-# Entries of the quests (ids 17 to 40) in the vanilla table of offered flags, kept as they are
-MISSION_QUEST_FLAGS_RAM = 0x020DAEB8
-MISSION_QUEST_FLAGS_ORIG = bytes.fromhex(
-    "e3000000e9000000f700000001010000070100000e01000012010000180100001c010000"
-    "2001000024010000280100002c01000030010000350100003b010000410100004701000"
-    "04e010000540100005c010000600100006501000069010000")
 # The list builder reads its table through this literal
 MISSION_LIST_LITERAL_PATCH = [
     (0x02027FEC, bytes.fromhex("7cae0d02"), bytes.fromhex("00311902")),    # .word table
@@ -68,14 +62,11 @@ def flag_index(addr: int, bit: int) -> int:
 
 
 def mission_list_table() -> bytes:
-    """The flag that lists each id: the 'completed' bit of a mission, the vanilla flag of a quest."""
+    """The flag that lists each id: the 'completed' bit of a mission, a flag never set for the rest."""
     never = flag_index(MISSION_SECTION_RAM + MISSION_NEVER_OFF, 0)
-    flags = [flag_index(*MISSION_COMPLETED_BIT[mid]) if mid in MISSION_COMPLETED_BIT else never
-             for mid in MISSION_LIST_IDS if mid <= MISSION_LAST_STORY]
-    quests = struct.unpack("<%dI" % (len(MISSION_QUEST_FLAGS_ORIG) // 4), MISSION_QUEST_FLAGS_ORIG)
-    if len(flags) + len(quests) != len(MISSION_LIST_IDS):
-        raise ValueError("MMZX: the mission list table needs one flag per id")
-    return struct.pack("<%dI" % len(MISSION_LIST_IDS), *flags, *quests)
+    flags = [flag_index(*MISSION_COMPLETED_BIT[mid]) if mid in MISSION_COMPLETED_BIT and mid <= MISSION_LAST_STORY
+             else never for mid in MISSION_LIST_IDS]
+    return struct.pack("<%dI" % len(MISSION_LIST_IDS), *flags)
 
 
 def mission_states() -> bytes:
@@ -124,10 +115,6 @@ def patch_mission_list(arm9: Arm9) -> None:
     """Bake the section, point the list builder at it and route the consoles through it."""
     assert PICKUP_TABLE_ADDR + ENTRIES_OFF + MAX_SLOTS * ENTRY_LEN <= MISSION_SECTION_RAM
     assert MISSION_SECTION_RAM + MISSION_SECTION_LEN <= ROOM_OVERLAY_SLOT_RAM
-    quests = arm9.read(MISSION_QUEST_FLAGS_RAM, len(MISSION_QUEST_FLAGS_ORIG))
-    if quests != MISSION_QUEST_FLAGS_ORIG:
-        raise ValueError("MMZX: unexpected quest flags at 0x%08X (%s). Wrong ROM?"
-                         % (MISSION_QUEST_FLAGS_RAM, quests.hex()))
     arm9.add_section(MISSION_SECTION_RAM, build_section())
     for ram, orig, new in MISSION_LIST_LITERAL_PATCH + MISSION_MENU_PATCH:
         arm9.write(ram, new, orig)

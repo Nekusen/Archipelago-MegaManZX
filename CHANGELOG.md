@@ -63,6 +63,9 @@ All notable changes to this project are documented in this file. The format is b
 
 ### Fixed
 
+- Archipelago warned that the apworld's manifest was incomplete and that 0.7.0 would stop loading it. It now reads the
+  version of the apworld, so the client refuses a ROM patched by another version: open the `.apmmzx` with the apworld
+  that generated the seed.
 - Logic: the hidden path of K-4 (the door switch, the 1-Up, Disk B-12 and the E-Crystal beside it) asks for a way
   into K-4 through its door from K-3, where the lava chase starts; with `mission_objectives: locations_and_items` and
   that door locked by a door constraint it was in logic from the Transerver of Area K, which never arms the chase.

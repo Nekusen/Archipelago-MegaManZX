@@ -766,20 +766,30 @@ class TestStorySection(unittest.TestCase):
         self.assertLess(table.STORY_DONE_OFF, table.INDEX_OFF)
 
     def test_bridge_patches(self) -> None:
-        """Both ways of the switch fill the same spot, and the switch marks the flag its location detects."""
-        for by_item in (False, True):
-            for site, orig, new in story.bridge_patches(by_item):
-                with self.subTest(by_item=by_item, site=hex(site)):
-                    self.assertEqual(len(as_bytes(orig)), len(as_bytes(new)))
-                    self.assertEqual(site % 2, 0)
+        """Each replacement keeps its length, and the switch marks the flag its location detects."""
+        for site, orig, new in story.bridge_patches():
+            with self.subTest(site=hex(site)):
+                self.assertEqual(len(as_bytes(orig)), len(as_bytes(new)))
+                self.assertEqual(site % 2, 0)
         addr, bit = LOCATIONS[STORY_BRIDGE_LOCATION]["detect"][1:]
         literal = int.from_bytes(as_bytes(story.STORY_OVERLAY_PATCH[story.BRIDGE_OVERLAY][0][1]), "little")
         self.assertEqual(literal + story.STORY_BRIDGE_OFF, addr)
         marks = as_bytes(story.BRIDGE_SWITCH_MARKS)
         self.assertEqual(marks[2:4], bytes([0xC1, 0x78 | story.STORY_BRIDGE_OFF >> 2]))   # ldrb r1, [r0, #off]
         self.assertEqual(marks[4:6], bytes([1 << bit, 0x22]))                             # movs r2, #mask
-        story.patch_bridge(None, False, False)
-        story.patch_bridge(None, False, True)
+        story.patch_bridge(None, False)
+        story.patch_bridge_down(None, False)
+
+    def test_bridge_down_from_boot(self) -> None:
+        """With locations_only the ROM starts with the bit the Area D Bridge sets, and nothing else of the gates byte."""
+        writes = []
+
+        class Recorder:
+            def write(self, ram, new, orig=None):
+                writes.append((ram, new, orig))
+        story.patch_bridge_down(Recorder(), True)
+        self.assertEqual(writes, [(PICKUP_TABLE_ADDR + table.STORY_GATES_OFF, bytes([1 << story.STORY_BRIDGE_BIT]), bytes(1))])
+        self.assertEqual(ITEMS[STORY_BRIDGE_ITEM]["grant"], ["story_gate", [story.STORY_BRIDGE_BIT]])
 
     def test_only_with_the_items(self) -> None:
         """The other modes leave the ARM9 and the rooms alone."""
@@ -858,25 +868,26 @@ class TestVanillaBytes(unittest.TestCase):
                     self.assertEqual(code[site - ram:site - ram + len(as_bytes(orig))], as_bytes(orig))
         pickups.patch_usable_rooms(rom)
         story.patch_story_rooms(rom, True)
+        story.patch_bridge(rom, True)
         for ovl, patches in tables.items():
             ram, code = nds.overlay_code(rom, ovl)
             for site, _orig, new in patches:
                 self.assertEqual(code[site - ram:site - ram + len(as_bytes(new))], as_bytes(new))
 
     def test_bridge_patch_sites(self) -> None:
-        """The room of the bridge holds the vanilla bytes at both spots and takes either way of the switch."""
+        """The room of the bridge holds the vanilla bytes at every spot, and takes the patch with or without the other rooms."""
         ram, code = nds.overlay_code(bytearray(self.rom), story.BRIDGE_OVERLAY)
-        for by_item in (False, True):
+        for site, orig, _new in story.bridge_patches():
+            with self.subTest(site=hex(site)):
+                self.assertEqual(code[site - ram:site - ram + len(as_bytes(orig))], as_bytes(orig))
+        for with_rooms in (False, True):
             rom = bytearray(self.rom)
-            if by_item:
-                story.patch_story_rooms(rom, True)
-            for site, orig, _new in story.bridge_patches(by_item):
-                with self.subTest(by_item=by_item, site=hex(site)):
-                    self.assertEqual(code[site - ram:site - ram + len(as_bytes(orig))], as_bytes(orig))
-            story.patch_bridge(rom, True, by_item)
+            story.patch_story_rooms(rom, with_rooms)
+            story.patch_bridge(rom, True)
             _ram, patched = nds.overlay_code(rom, story.BRIDGE_OVERLAY)
-            for site, _orig, new in story.bridge_patches(by_item):
-                self.assertEqual(patched[site - ram:site - ram + len(as_bytes(new))], as_bytes(new))
+            for site, _orig, new in story.bridge_patches():
+                with self.subTest(with_rooms=with_rooms, site=hex(site)):
+                    self.assertEqual(patched[site - ram:site - ram + len(as_bytes(new))], as_bytes(new))
             self.assertEqual(len(patched), len(code))
 
     def test_talk_texts_of_the_rom(self) -> None:

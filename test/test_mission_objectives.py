@@ -19,7 +19,7 @@ from ..items import ITEM_GROUPS, STORY_GRANTS
 from ..locations import STORY_CATEGORY, STORY_GATE
 from ..logic import document as F
 from ..logic import load_document
-from ..logic.document import BRIDGE_EVENT, LAVA_EVENT, SWITCH_EVENT, area_of
+from ..logic.document import LAVA_EVENT, SWITCH_EVENT, area_of
 from ..options import MissionObjectives
 
 STORY_LOCATIONS = {n for n, v in LOCATIONS.items() if v["category"] == STORY_CATEGORY}
@@ -165,8 +165,7 @@ class TestOff(LavaByItsControl, DoorByItsSwitch, MMZXTestBase):
         self.assertIn(LAVA_EVENT, event_locations(self.multiworld))
 
     def test_bridge_is_down_from_the_start(self) -> None:
-        """The client lowers the bridge of D-1 itself: neither a location nor an event stands for it."""
-        self.assertNotIn(BRIDGE_EVENT, event_locations(self.multiworld))
+        """The client lowers the bridge of D-1 itself, and its switch is no location."""
         self.assertNotIn(STORY_BRIDGE_LOCATION, real_locations(self.multiworld))
         _left, right, beyond = bridge_sides(self.multiworld)
         with shut(right):
@@ -182,27 +181,15 @@ class TestChecks(LavaByItsControl, DoorByItsSwitch, MMZXTestBase):
         self.assertFalse({item.name for item in self.multiworld.itempool} & set(STORY_ITEM_COUNTS))
         self.assertEqual(len(self.multiworld.itempool), len(real_locations(self.multiworld)))
 
-    def test_bridge_is_the_event_of_its_switch(self) -> None:
-        self.assertIn(BRIDGE_EVENT, event_locations(self.multiworld))
+    def test_bridge_is_down_from_the_start(self) -> None:
+        """The bridge of D-1 is down as with the option off: its switch is a check reached from either side."""
         self.assertIn(STORY_BRIDGE_LOCATION, real_locations(self.multiworld))
-        self.assertEqual(self.multiworld.get_location(BRIDGE_EVENT, 1).parent_region,
-                         self.multiworld.get_location(STORY_BRIDGE_LOCATION, 1).parent_region)
-
-    def test_bridge_is_lowered_from_its_left_side(self) -> None:
-        """The switch stands left of the bridge: from there it opens the way, and from the right nothing does."""
-        if not asks_for(F.D_BRIDGE):
-            self.skipTest("no rule of the document asks for the bridge")
         left, right, beyond = bridge_sides(self.multiworld)
         switch = self.multiworld.get_location(STORY_BRIDGE_LOCATION, 1)
         with shut(right):
-            state = state_without(self.multiworld)
-            self.assertTrue(switch.can_reach(state))
-            self.assertTrue(beyond.can_reach(state))
+            self.assertTrue(beyond.can_reach(state_without(self.multiworld)))
         with shut(left):
-            state = state_without(self.multiworld)
-            self.assertTrue(beyond.can_reach(state))
-            self.assertFalse(switch.can_reach(state))
-            self.assertFalse(state.has(BRIDGE_EVENT, 1))
+            self.assertTrue(switch.can_reach(state_without(self.multiworld)))
 
     def test_everything_stays_open(self) -> None:
         """With the whole pool every location is in logic: nothing asks for an item that does not exist."""
@@ -288,7 +275,6 @@ class TestItems(MMZXTestBase):
                     self.assertFalse(entrance.access_rule(lacking))
 
     def test_bridge_is_an_item(self) -> None:
-        self.assertNotIn(BRIDGE_EVENT, event_locations(self.multiworld))
         self.assertIn(STORY_BRIDGE_ITEM, {item.name for item in self.multiworld.itempool})
         self.assertIn(STORY_BRIDGE_LOCATION, real_locations(self.multiworld))
 

@@ -147,7 +147,7 @@ Locations:
   - With `mission_objectives: locations_and_items` the F-3 and G-2 doors are not open from the start: each opens with its item.
   - The M-1 seal (which normally requires all models), unless `area_m_access` closes it (see below)
   - The D-1 bridge
-    - With `mission_objectives` on `locations_only` or `locations_and_items` it starts raised (see below).
+    - With `mission_objectives: locations_and_items` it starts raised and lowers with its item (see below).
   - The sand fall that hides the pit from K-1 to K-2
   - The D-3 ladder up to the walkway that leads to Area O.
 - Troop Reinforcement can be started from D-1, D-2 or D-3 without the base cutscene.
@@ -168,7 +168,7 @@ With `mission_objectives` the objects and events of the story missions become ch
 - `locations_only`: picking up a Computer Chip, talking to each guardian of Pass The Test, getting the Stuffed Animal, using the
   terminal of F-3, rescuing each person of Area G, destroying the generator of E-3, setting the lava control of K-1,
   stepping on the door switch of K-4, shooting the bridge switch of D-1 and picking up the Data Disks of J-5 and L-4
-  each send a check. Nothing else changes, except that the bridge of D-1 starts raised until you shoot its switch.
+  each send a check. Nothing else changes: the bridge of D-1 is down from the start, as with the option off.
 - `locations_and_items`: the same, and what those things gave is now an item of the pool.
   - The Report of a mission needs its object: a Computer Chip for Locate Giro, the Stuffed Animal for Pass The Test and
     the Data Disk 1, 2 or 3 for Find The Survivors, Recover The Disk and Protect The Lab. The objective of the mission is
@@ -182,8 +182,9 @@ With `mission_objectives` the objects and events of the story missions become ch
   - The machines of Area E stop only while you hold the Area E Power Shutdown, a useful item; destroying the generator
     of E-3 is a check.
   - The ITEM C list of the pause menu shows the objects you hold.
-- While the bridge of D-1 is raised, each side of it is a dead end: coming in from D-2 you stay on its right side,
-  and the switch is on the left one. The switch answers a shot at any time, not only during Troop Reinforcement.
+- With `locations_and_items`, while the bridge of D-1 is raised each side of it is a dead end: coming in from D-2 you
+  stay on its right side, and the switch is on the left one.
+- The switch of D-1 answers a shot at any time, not only during Troop Reinforcement.
 - The guardians of Pass The Test answer in order, and Congre only in human form. The sprinkler key comes with eight
   people rescued, and the civilians of Area G only talk to you in human form.
 - The Computer Chips, the guardians and the people of Area G are in the world only while their mission is under way.

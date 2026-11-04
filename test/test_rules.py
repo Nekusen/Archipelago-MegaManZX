@@ -167,12 +167,11 @@ class TestRulesModule(MMZXTestBase):
         self.assertEqual(set(R.COUNTED_ITEMS), F.count_items_used(load_document()))
 
     def test_events_of_other_modes_are_not_created(self):
-        """Without mission_objectives: locations_and_items the control, the switch and the bridge stand for their item;
-        the bridge only with checks, and the biometal events only behind the biometals seal."""
+        """Without mission_objectives: locations_and_items the events of the control and the switch stand for their
+        item, and the biometal events only behind the biometals seal."""
         events = {loc.name for loc in self.multiworld.get_locations(self.player) if loc.address is None}
         self.assertIn(F.LAVA_EVENT, events)
         self.assertIn(F.SWITCH_EVENT, events)
-        self.assertNotIn(F.BRIDGE_EVENT, events)
         self.assertFalse(events & {F.OBTAINED_PREFIX + "Biometal H"})
         self.assertIn(F.VICTORY_LOCATION, events)
 
@@ -277,7 +276,7 @@ class TestMissionObjectiveAtoms(unittest.TestCase):
         self.assertEqual(str(rule_of(off, "K_DOOR_SWITCH")), "Has " + F.SWITCH_EVENT)
         self.assertEqual(str(rule_of(checks, "K_DOOR_SWITCH")), "Has " + F.SWITCH_EVENT)
         self.assertTrue(rule_of(off, "D_BRIDGE").always_true)
-        self.assertEqual(str(rule_of(checks, "D_BRIDGE")), "Has " + F.BRIDGE_EVENT)
+        self.assertTrue(rule_of(checks, "D_BRIDGE").always_true)
         self.assertEqual(str(rule_of(items, "D_BRIDGE")), "Has Area D Bridge")
         self.assertEqual(str(rule_of(items, "SLOW_LAVA")), "Has " + STORY_LAVA_ITEM)
         self.assertEqual(str(rule_of(off, "SLOW_LAVA")), "Has " + F.LAVA_EVENT)

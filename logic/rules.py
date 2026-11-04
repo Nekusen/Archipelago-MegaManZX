@@ -45,8 +45,7 @@ K_DOOR_SWITCH = (
     | Has("K-1 Door Unlocked", options=[OptionFilter(MissionObjectives, 2, operator="ne")]))   # the door of K-1 to its Sub Tank: its item, or the event of the switch of K-4
 D_BRIDGE = (
     Has("Area D Bridge", options=[OptionFilter(MissionObjectives, 2)])
-    | Has("D-1 Bridge Lowered", options=[OptionFilter(MissionObjectives, 1)])
-    | True_(options=[OptionFilter(MissionObjectives, 0)]))   # the bridge of D-1: its item, the event of its switch with checks, down from the start when off
+    | True_(options=[OptionFilter(MissionObjectives, 2, operator="ne")]))   # the bridge of D-1: its item with locations_and_items, down from the start in the other modes
 SEAL = SealRequirement()   # the seal of Area M: what area_m_access asks for, resolved per player
 
 # Event gates (flag): what the story needs before the game opens them
@@ -440,7 +439,6 @@ EVENTS = {
     "Defeated: Pegasolta Eclair": "Defeated: Pegasolta Eclair",
     "Lava Flow Slowed": "Lava Flow Slowed",
     "K-1 Door Unlocked": "K-1 Door Unlocked",
-    "D-1 Bridge Lowered": "D-1 Bridge Lowered",
     "Defeat Omega Zero": "Victory",
 }
 
@@ -818,8 +816,6 @@ ENTRANCES["d01: bridge-left-side -> hub-entrance"] = Edge("d01/bridge-left-side"
 ENTRANCES["d01: bridge-left-side -> b-2-entrance"] = Edge("d01/bridge-left-side", "d01/b-2-entrance", True_())   # conn -> B-2 Entrance
 ENTRANCES["d01: bridge-left-side -> bridge"] = Edge("d01/bridge-left-side", "d01/bridge", D_BRIDGE)   # conn -> Bridge
 LOCATIONS["D-1: Bridge Switch"] = Spot("d01/bridge-left-side", MODEL)
-LOCATIONS["D-1 Bridge Lowered"] = LOCATIONS["D-1: Bridge Switch"].also(
-    True_(options=[OptionFilter(MissionObjectives, 1)]))   # event
 # region D-2 Entrance
 ENTRANCES["d01: d-2-entrance -> after-bridge"] = Edge("d01/d-2-entrance", "d01/after-bridge", MODEL)   # conn -> After Bridge   expert adds: free
 ENTRANCES["d01: d-2-entrance -> east-hole"] = Edge("d01/d-2-entrance", "d01/east-hole", MODEL)   # conn -> East Hole   expert adds: free

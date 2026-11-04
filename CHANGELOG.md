@@ -38,7 +38,7 @@ All notable changes to this project are documented in this file. The format is b
   - Troop Reinforcement replays like any other mission: no briefing, head to Area D and play it through.
 - Troop Reinforcement and Protect HQ show their names in that list instead of "Mission 4" and "Mission D".
 - `mission_objectives` also covers the switch of K-4 that unlocks the door of K-1 on the way to its Sub Tank: stepping on it is a check, and with `locations_and_items` that door opens with the Area K Door Switch instead.
-- `mission_objectives` also covers the bridge of D-1: with `locations_only` it starts raised and a shot at its switch lowers it; with `locations_and_items` the shot is only a check, and the bridge is down while you hold the Area D Bridge.
+- `mission_objectives` also covers the bridge of D-1: shooting its switch is a check. With `locations_only` the bridge is down from the start, as with the option off; with `locations_and_items` it is down while you hold the Area D Bridge.
 - Added "door constraints": each seed can lock some of the doors between rooms behind a Card Key, so the map opens in smaller steps instead of most of it at once. A locked door shows the colour of its key.
   - `door_constraints_min` and `door_constraints_max`: how many doors a seed locks (0 to 15, both 0 by default).
 - Added `include_warps_in_logic`: the teleports to the Guardian Base at the end of Troop Reinforcement and Repel The Army count as a way into Area X, so a check there may expect you to clear one of those missions instead of holding its Transerver Access. Off by default: Area X stays in logic only with its Transerver Access or as your starting point.

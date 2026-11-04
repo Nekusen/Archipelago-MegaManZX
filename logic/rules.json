@@ -7305,7 +7305,7 @@
      }
     },
     "B-2: Computer Chip (2)": {
-     "region": "b02",
+     "region": "b02/right-area-before-boss",
      "rule": {
       "rule": "True_",
       "options": [],
@@ -20956,41 +20956,16 @@
       "filtered_resolution": false,
       "children": [
        {
-        "rule": "Or",
+        "rule": "HasAny",
         "options": [],
         "filtered_resolution": false,
-        "children": [
-         {
-          "rule": "Has",
-          "options": [
-           {
-            "option": "worlds.mmzx.options.ProgressiveModels",
-            "value": 1,
-            "operator": "eq"
-           }
-          ],
-          "filtered_resolution": false,
-          "args": {
-           "item_name": "Progressive Model PX",
-           "count": 1
-          }
-         },
-         {
-          "rule": "Has",
-          "options": [
-           {
-            "option": "worlds.mmzx.options.ProgressiveModels",
-            "value": 0,
-            "operator": "eq"
-           }
-          ],
-          "filtered_resolution": false,
-          "args": {
-           "item_name": "Model PX",
-           "count": 1
-          }
-         }
-        ]
+        "args": {
+         "item_names": [
+          "Model OX",
+          "Model X",
+          "Model ZX"
+         ]
+        }
        },
        {
         "rule": "Or",
@@ -21024,6 +20999,117 @@
           "filtered_resolution": false,
           "args": {
            "item_name": "Model HX",
+           "count": 1
+          }
+         }
+        ]
+       },
+       {
+        "rule": "Or",
+        "options": [],
+        "filtered_resolution": false,
+        "children": [
+         {
+          "rule": "Has",
+          "options": [
+           {
+            "option": "worlds.mmzx.options.ProgressiveModels",
+            "value": 1,
+            "operator": "eq"
+           }
+          ],
+          "filtered_resolution": false,
+          "args": {
+           "item_name": "Progressive Model FX",
+           "count": 1
+          }
+         },
+         {
+          "rule": "Has",
+          "options": [
+           {
+            "option": "worlds.mmzx.options.ProgressiveModels",
+            "value": 0,
+            "operator": "eq"
+           }
+          ],
+          "filtered_resolution": false,
+          "args": {
+           "item_name": "Model FX",
+           "count": 1
+          }
+         }
+        ]
+       },
+       {
+        "rule": "Or",
+        "options": [],
+        "filtered_resolution": false,
+        "children": [
+         {
+          "rule": "Has",
+          "options": [
+           {
+            "option": "worlds.mmzx.options.ProgressiveModels",
+            "value": 1,
+            "operator": "eq"
+           }
+          ],
+          "filtered_resolution": false,
+          "args": {
+           "item_name": "Progressive Model LX",
+           "count": 1
+          }
+         },
+         {
+          "rule": "Has",
+          "options": [
+           {
+            "option": "worlds.mmzx.options.ProgressiveModels",
+            "value": 0,
+            "operator": "eq"
+           }
+          ],
+          "filtered_resolution": false,
+          "args": {
+           "item_name": "Model LX",
+           "count": 1
+          }
+         }
+        ]
+       },
+       {
+        "rule": "Or",
+        "options": [],
+        "filtered_resolution": false,
+        "children": [
+         {
+          "rule": "Has",
+          "options": [
+           {
+            "option": "worlds.mmzx.options.ProgressiveModels",
+            "value": 1,
+            "operator": "eq"
+           }
+          ],
+          "filtered_resolution": false,
+          "args": {
+           "item_name": "Progressive Model PX",
+           "count": 1
+          }
+         },
+         {
+          "rule": "Has",
+          "options": [
+           {
+            "option": "worlds.mmzx.options.ProgressiveModels",
+            "value": 0,
+            "operator": "eq"
+           }
+          ],
+          "filtered_resolution": false,
+          "args": {
+           "item_name": "Model PX",
            "count": 1
           }
          }
@@ -21041,41 +21127,16 @@
       "filtered_resolution": false,
       "children": [
        {
-        "rule": "Or",
+        "rule": "HasAny",
         "options": [],
         "filtered_resolution": false,
-        "children": [
-         {
-          "rule": "Has",
-          "options": [
-           {
-            "option": "worlds.mmzx.options.ProgressiveModels",
-            "value": 1,
-            "operator": "eq"
-           }
-          ],
-          "filtered_resolution": false,
-          "args": {
-           "item_name": "Progressive Model PX",
-           "count": 1
-          }
-         },
-         {
-          "rule": "Has",
-          "options": [
-           {
-            "option": "worlds.mmzx.options.ProgressiveModels",
-            "value": 0,
-            "operator": "eq"
-           }
-          ],
-          "filtered_resolution": false,
-          "args": {
-           "item_name": "Model PX",
-           "count": 1
-          }
-         }
-        ]
+        "args": {
+         "item_names": [
+          "Model OX",
+          "Model X",
+          "Model ZX"
+         ]
+        }
        },
        {
         "rule": "Or",
@@ -21109,6 +21170,117 @@
           "filtered_resolution": false,
           "args": {
            "item_name": "Model HX",
+           "count": 1
+          }
+         }
+        ]
+       },
+       {
+        "rule": "Or",
+        "options": [],
+        "filtered_resolution": false,
+        "children": [
+         {
+          "rule": "Has",
+          "options": [
+           {
+            "option": "worlds.mmzx.options.ProgressiveModels",
+            "value": 1,
+            "operator": "eq"
+           }
+          ],
+          "filtered_resolution": false,
+          "args": {
+           "item_name": "Progressive Model FX",
+           "count": 1
+          }
+         },
+         {
+          "rule": "Has",
+          "options": [
+           {
+            "option": "worlds.mmzx.options.ProgressiveModels",
+            "value": 0,
+            "operator": "eq"
+           }
+          ],
+          "filtered_resolution": false,
+          "args": {
+           "item_name": "Model FX",
+           "count": 1
+          }
+         }
+        ]
+       },
+       {
+        "rule": "Or",
+        "options": [],
+        "filtered_resolution": false,
+        "children": [
+         {
+          "rule": "Has",
+          "options": [
+           {
+            "option": "worlds.mmzx.options.ProgressiveModels",
+            "value": 1,
+            "operator": "eq"
+           }
+          ],
+          "filtered_resolution": false,
+          "args": {
+           "item_name": "Progressive Model LX",
+           "count": 1
+          }
+         },
+         {
+          "rule": "Has",
+          "options": [
+           {
+            "option": "worlds.mmzx.options.ProgressiveModels",
+            "value": 0,
+            "operator": "eq"
+           }
+          ],
+          "filtered_resolution": false,
+          "args": {
+           "item_name": "Model LX",
+           "count": 1
+          }
+         }
+        ]
+       },
+       {
+        "rule": "Or",
+        "options": [],
+        "filtered_resolution": false,
+        "children": [
+         {
+          "rule": "Has",
+          "options": [
+           {
+            "option": "worlds.mmzx.options.ProgressiveModels",
+            "value": 1,
+            "operator": "eq"
+           }
+          ],
+          "filtered_resolution": false,
+          "args": {
+           "item_name": "Progressive Model PX",
+           "count": 1
+          }
+         },
+         {
+          "rule": "Has",
+          "options": [
+           {
+            "option": "worlds.mmzx.options.ProgressiveModels",
+            "value": 0,
+            "operator": "eq"
+           }
+          ],
+          "filtered_resolution": false,
+          "args": {
+           "item_name": "Model PX",
            "count": 1
           }
          }

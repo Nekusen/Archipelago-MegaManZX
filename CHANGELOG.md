@@ -60,9 +60,16 @@ All notable changes to this project are documented in this file. The format is b
 - The Transerver consoles no longer offer the quests of the townspeople: they are not part of the randomizer yet.
 - Logic: the Sub Tank of K-1 asks for Model LX and that door unlocked, instead of four biometals.
 - Logic: the apple of A-3 asks for any model, instead of Model FX, X or ZX.
+- Logic: in D-5, the way between the D-4 entrance and the middle of the room asks for any model, instead of Model PX
+  or HX.
+- Logic: the second Computer Chip of B-2 belongs to the right side of the room, so it asks for any model, like the
+  first.
 
 ### Fixed
 
+- Starting at the Guardian base, the E Tank a Guardian sells in X-3 for 200 E-Crystals never holds a progression
+  item: nothing in the base earns E-Crystals, so about one seed in a hundred could leave you with no way to pay for
+  the item you needed next.
 - Archipelago warned that the apworld's manifest was incomplete and that 0.7.0 would stop loading it. It now reads the
   version of the apworld, so the client refuses a ROM patched by another version: open the `.apmmzx` with the apworld
   that generated the seed.

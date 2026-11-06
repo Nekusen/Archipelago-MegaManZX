@@ -595,7 +595,6 @@ ENTRANCES["b02 door (1968,928)"] = Edge("b02", "z01", True_())   # warp -> Hub
 ENTRANCES["b02 corridor to c01"] = Edge("b02", "c01", True_())   # path -> C-1
 #   <- B-1, Hub, C-1
 LOCATIONS["B-2: Computer Chip"] = Spot("b02", MODEL)
-LOCATIONS["B-2: Computer Chip (2)"] = Spot("b02", True_())
 LOCATIONS["B-2: Disk E-28"] = Spot("b02", True_())
 LOCATIONS["B-2: E-Crystal L"] = Spot("b02", MODEL)   # expert adds: free
 LOCATIONS["B-2: Energy Capsule L"] = Spot("b02", MODEL)   # expert adds: free
@@ -625,6 +624,7 @@ LOCATIONS["B-2: Energy Capsule L (2)"] = Spot("b02/right-area-after-boss", MODEL
 ENTRANCES["b02: right-area-before-boss -> main"] = Edge("b02/right-area-before-boss", "b02", True_())   # conn -> Main
 ENTRANCES["b02: right-area-before-boss -> boss-arena"] = Edge(
     "b02/right-area-before-boss", "b02/boss-arena", MODEL & BossRequirement("rayfly"))   # conn -> Boss Arena
+LOCATIONS["B-2: Computer Chip (2)"] = Spot("b02/right-area-before-boss", True_())
 LOCATIONS["B-2: Disk E-17"] = Spot("b02/right-area-before-boss", HX)   # expert adds: LX   B-2: on top of a pillar (tile y=29)
 
 # --- B-3 [b03]
@@ -947,12 +947,12 @@ LOCATIONS["Mission - Destroy Model W"] = Spot("d05/boss-room", MODEL)
 LOCATIONS["Cleared: Destroy Model W"] = LOCATIONS["Mission - Destroy Model W"]   # event
 LOCATIONS["Defeat Serpent"] = LOCATIONS["Mission - Destroy Model W"].also(GOAL & True_(options=[OptionFilter(Goal, 0)]))   # the Victory event
 # region D-4 Entrance
-ENTRANCES["d05: d-4-entrance -> middle-area"] = Edge("d05/d-4-entrance", "d05/middle-area", PX | HX)   # conn -> Middle Area
+ENTRANCES["d05: d-4-entrance -> middle-area"] = Edge("d05/d-4-entrance", "d05/middle-area", MODEL)   # conn -> Middle Area
 ENTRANCES["d05 door (288,544)"] = Edge("d05/d-4-entrance", "d04/boss-rush", True_())   # door -> D-4/Boss Rush
 #   <- D-4
 # region Middle Area
 ENTRANCES["d05: middle-area -> right-entrance"] = Edge("d05/middle-area", "d05/right-entrance", MODEL)   # conn -> Right Entrance
-ENTRANCES["d05: middle-area -> d-4-entrance"] = Edge("d05/middle-area", "d05/d-4-entrance", PX | HX)   # conn -> D-4 Entrance
+ENTRANCES["d05: middle-area -> d-4-entrance"] = Edge("d05/middle-area", "d05/d-4-entrance", MODEL)   # conn -> D-4 Entrance
 # region Right Entrance
 ENTRANCES["d05: right-entrance -> middle-area"] = Edge("d05/right-entrance", "d05/middle-area", MODEL)   # conn -> Middle Area
 ENTRANCES["d05 door (3712,560)"] = Edge("d05/right-entrance", "d05/boss-room", BossRequirement("serpent"))   # internal -> Boss Room

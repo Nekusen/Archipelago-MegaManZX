@@ -35,6 +35,9 @@ def zero_flags_from_options(options) -> dict[str, bool]:
             for cat, opt in ZERO_OPTION_BY_CATEGORY.items()}
 
 
+# The E Tank a Guardian sells in X-3 for 200 E-Crystals.
+E_TANK_LOCATION = "X-3: E Tank"
+
 # Categories whose detection is not validated in game yet: they stay out of every seed.
 DEFERRED_CATEGORIES = ("quest", "level4")
 

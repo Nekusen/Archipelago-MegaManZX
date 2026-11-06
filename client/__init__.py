@@ -212,11 +212,11 @@ class MMZXClient(BizHawkClient):
         self.seal = Seal(opts)
         self.skip_boss_rush = bool(opts.get("skip_boss_rush", False))
         if self.skip_boss_rush:
-            logger.info("[mmzx] skip_boss_rush: the D-4 boss rush is skipped (each pair of "
+            self._debug("[mmzx] skip_boss_rush: the D-4 boss rush is skipped (each pair of "
                         "Pseudoroids is marked as beaten when the elevator reaches its stop)")
         self.skip_minibosses = parse_mode(opts.get("skip_minibosses", MODE_OFF))
         if self.skip_minibosses != MODE_OFF:
-            logger.info("[mmzx] skip_minibosses = %s: %s" % (
+            self._debug("[mmzx] skip_minibosses = %s: %s" % (
                 self.skip_minibosses,
                 "the mini-bosses of each area count as beaten; their fights do not start"
                 if self.skip_minibosses == "always" else

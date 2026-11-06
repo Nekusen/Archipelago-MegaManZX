@@ -64,6 +64,8 @@ All notable changes to this project are documented in this file. The format is b
   or HX.
 - Logic: the second Computer Chip of B-2 belongs to the right side of the room, so it asks for any model, like the
   first.
+- The client no longer prints notes about the starting state, the skipped boss rush and mini-bosses or the missions
+  taken from the Transerver list; `/mmzx_debug on` shows them again.
 
 ### Fixed
 

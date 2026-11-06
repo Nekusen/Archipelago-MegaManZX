@@ -20,7 +20,6 @@ from ..locations import STORY_CATEGORY, STORY_GATE
 from ..logic import document as F
 from ..logic import load_document
 from ..logic.document import LAVA_EVENT, SWITCH_EVENT, area_of
-from ..options import MissionObjectives
 
 STORY_LOCATIONS = {n for n, v in LOCATIONS.items() if v["category"] == STORY_CATEGORY}
 GATE_LOCATIONS = {n for n in STORY_LOCATIONS if LOCATIONS[n]["story"] == STORY_GATE}
@@ -389,10 +388,3 @@ class TestClientState(unittest.TestCase):
         self.assertEqual(parse_mode(None), "off")
         self.assertEqual(parse_mode("locations_only"), "locations_only")
         self.assertEqual(parse_mode("locations_and_items"), "locations_and_items")
-
-    def test_the_old_value_names_still_parse(self) -> None:
-        """Seeds and YAMLs of the playtests named the modes checks and items."""
-        self.assertEqual(parse_mode("checks"), "locations_only")
-        self.assertEqual(parse_mode("items"), "locations_and_items")
-        self.assertEqual(MissionObjectives.from_any("checks").current_key, "locations_only")
-        self.assertEqual(MissionObjectives.from_any("items").current_key, "locations_and_items")

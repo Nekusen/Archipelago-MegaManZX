@@ -14,8 +14,8 @@ from . import seal as S
 from .logic import bosses
 from .data import LOCATIONS, ITEMS, STARTING_MODEL_ITEM, STARTING_MODELS
 from .items import MMZXItem, item_name_to_id, get_classification, filler_weights, ITEM_GROUPS, STORY_GRANTS
-from .locations import (active_locations, location_name_to_id, LOCATION_GROUPS, STORY_ITEMS, STORY_OFF,
-                        story_mode)
+from .locations import (active_locations, location_name_to_id, E_TANK_LOCATION, LOCATION_GROUPS, STORY_ITEMS,
+                        STORY_OFF, story_mode)
 from .options import MMZXOptions, OPTION_GROUPS
 from .logic import document as F
 from .logic import rules as R
@@ -188,6 +188,10 @@ class MMZXWorld(World):
     def create_regions(self) -> None:
         """The regions, then the door constraints: their draw checks what a new game reaches."""
         create_regions(self)
+        if self.options.starting_transerver == "guardian_base":
+            # nothing in the Guardian base earns the E-Crystals the E Tank costs: a progression
+            # item there could leave the player with no way to pay for what they need next
+            self.get_location(E_TANK_LOCATION).item_rule = lambda item: not item.advancement
         # Universal Tracker rebuilds the world from the slot data and must see the same doors
         passed = getattr(self.multiworld, "re_gen_passthrough", {}).get(self.game)
         if passed is not None:

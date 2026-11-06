@@ -346,7 +346,7 @@ class MMZXWorld(World):
             "starting_transerver": self.options.starting_transerver.current_key,
             "progressive_models": bool(self.options.progressive_models.value),
             "hu_in_pool": bool(self.options.hu_in_pool.value),
-            # checks: the client only detects; items: it also keeps the story items held
+            # locations_only: the client only detects; locations_and_items: it also keeps the story items held
             "mission_objectives": story_mode(self.options),
             # logic only: the tracker rebuilds the graph from it, the client does nothing with it
             "include_warps_in_logic": bool(self.options.include_warps_in_logic.value),

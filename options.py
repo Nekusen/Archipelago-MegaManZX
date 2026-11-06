@@ -159,9 +159,6 @@ class MissionObjectives(Choice):
     option_off = 0
     option_locations_only = 1
     option_locations_and_items = 2
-    # the names the playtest seeds used before the values were renamed
-    alias_checks = 1
-    alias_items = 2
     default = 0
 
 

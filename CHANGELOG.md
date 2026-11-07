@@ -6,86 +6,58 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-08
+
 ### Added
 
-- Added `sub_tank_refill_operator` (on by default): a Guardian next to your starting Transerver who, for 200 E-Crystals,
-  refills every Sub Tank you hold. Talk to him with UP; with nothing to fill he charges nothing.
-- Added `infinite_lives`: a death never costs a life and there is no Game Over. With it on, the 1-Up item is not in
-  the filler pool.
 - Added the goal `defeat_omega_zero`: beat Omega Zero in N-1. The door of his arena opens with your `goal_requirements`
-  (the rest of Area N is open as always); Slither Inc. stays closed and its checks are not in the game.
-- Added `zero3_bosses` and `zero4_bosses`: the eight Mega Man Zero 3/4 bosses of N-1 are in the game from the start, no
-  Game Pak needed, and each one beaten is a check. A beaten boss stays beaten, Mysterious Rock or not. They can be named in
-  `boss_logic`; a name whose option is off is simply ignored.
-  - IMPORTANT: each option needs your own Mega Man Zero 3 or Zero 4 (GBA) ROM, USA, Europe or Japan: the game keeps the
+  (the rest of Area N is open as always).
+- Added `zero3_bosses` and `zero4_bosses`: the eight Mega Man Zero 3/4 bosses of N-1 are in the game and each one beaten
+  is a check. They can be named in `boss_logic`
+  - IMPORTANT: each option needs your own Mega Man Zero 3 or Zero 4 (GBA) ROM. The game keeps the
     sprites of those bosses in the cartridge, so the launcher asks for the ROM when you open the `.apmmzx` and converts
     them from it. With the option off no ROM is ever asked for.
 - Added the goal requirement `Mutos Reploid Hunting`: beat `required_mutos_reploids` of those bosses (1 to 8; 5 or more
-  need both games on). The pause menu, the "Goal" notice and `/mmzx_goal` count them like the other requirements.
+  need both games on).
 - Added the location `Obtain Biometal Z`, sent when you beat Giro in D-2.
 - Added `area_m_access`: what opens the seal at the entrance of Area M.
   - `open`: the seal is open from the start, as before.
   - `biometals`: get the five `Obtain Biometal` checks of your game (Z, H, F, L and P).
   - `passwords`: collect `required_passwords` Passwords out of the `total_passwords` in the pool.
   - With `biometals` or `passwords` the Transerver Access of Area M is not in the pool.
+- Missions can be played again through the new "Replay Missions" option in the Transerver consoles.
+  - While a mission picked there is under way, entering an area does not accept that area's mission. Report or abort the one you picked to go back to normal.
+  - "Abort Mission" is now offered only for a mission picked from the "Replay Missions" list. 
+  - Troop Reinforcement replays like any other mission. There's no briefing, head to Area D and play it through.
 - Added `mission_objectives`: the objects and events of the story missions can be checks, and items too.
-  - `locations_only`: the four Computer Chips, the four guardians of Pass The Test and their Stuffed Animal, the three Data Disks, the thirteen people trapped in Area G, the generator of E-3 and the lava control of K-1 are locations. The game plays as before.
-  - `locations_and_items`: the same locations, plus the terminal of F-3 and the sprinkler key of G-2, and the objects are items of the pool. A mission is reported only with its object, Rayfly shows up only with a Computer Chip, the F-3 and G-2 doors open with their own items, the lava of Area K is slow only with its item and the machines of Area E stop only with theirs.
-  - The Computer Chips and the Data Disks of J-5 and L-4 show the item they hold, like any other pickup.
-- Missions can be played again: "Replay Missions" in the Transerver consoles lists the missions you have already reported, and picking one brings back its objective and its boss.
-  - While a mission picked there is under way, entering an area does not accept that area's mission; report or abort the one you picked to go back to normal.
-  - "Abort Mission" is offered only for a mission picked from that list. With the mission of an area under way the consoles show their normal menu instead, and picking a mission there replaces it.
-  - Troop Reinforcement replays like any other mission: no briefing, head to Area D and play it through.
-- Troop Reinforcement and Protect HQ show their names in that list instead of "Mission 4" and "Mission D".
-- `mission_objectives` also covers the switch of K-4 that unlocks the door of K-1 on the way to its Sub Tank: stepping on it is a check, and with `locations_and_items` that door opens with the Area K Door Switch instead.
-- `mission_objectives` also covers the bridge of D-1: shooting its switch is a check. With `locations_only` the bridge is down from the start, as with the option off; with `locations_and_items` it is down while you hold the Area D Bridge.
+  - `locations_only`: Multiple events and items from the story become checks, like the four Computer Chips in area B, the guardians of Pass The Test or the people trapped in Area G. The game itself plays as before, nothing is changed in progression or how the open world behaves.
+  - `locations_and_items`: the same location, but the objects are also items of the pool. A mission is reported only with its object, Rayfly shows up only with a Computer Chip, the F-3 and G-2 doors open with their own items, and so on.
 - Added "door constraints": each seed can lock some of the doors between rooms behind a Card Key, so the map opens in smaller steps instead of most of it at once. A locked door shows the colour of its key.
   - `door_constraints_min` and `door_constraints_max`: how many doors a seed locks (0 to 15, both 0 by default).
-- Added `include_warps_in_logic`: the teleports to the Guardian Base at the end of Troop Reinforcement and Repel The Army count as a way into Area X, so a check there may expect you to clear one of those missions instead of holding its Transerver Access. Off by default: Area X stays in logic only with its Transerver Access or as your starting point.
-
-- Universal Tracker explains the logic: `/explain <location>` says which models, Card Keys, Transerver Access, events or boss requirements a check or a door still needs, with your `boss_logic`, goal and door constraints spelled out for your seed.
+- Added `include_warps_in_logic`: the teleports to the Guardian Base at the end of Troop Reinforcement and Repel The Army count as a way into Area X, so a check there may expect you to clear one of those missions instead of holding its Transerver Access. Off by default.
+- The eight "Item A" usables in the game are now items of the pool, and the eight places that hand them out are locations.
+  - Usable items get added to your inventory when you get them as items from the multiworld. Picking them in the game only sends a location.
+  - A usable you have used comes back when you open any Transerver console, so you can use them as much as you want.
+  - The child gives the cake location on any day, even if its not your birthday, once Save The People is completed.
+- Added `sub_tank_refill_operator`: a Guardian next to your starting Transerver who, for 200 E-Crystals,
+  refills every Sub Tank you hold.
+- Added `infinite_lives`: when this option is on you lose no lifes and you can't Game Over. With it on, the 1-Up item is not in
+  the filler pool.
 
 ### Changed
 
-- Door constraints no longer use the sites where a nearby door or shutter garbled the coloured door: E-4 / E-5,
-  F-2 / F-3, F-4 / F-5, G-2 / G-3, H-3 / H-4, J-2 / J-3, J-3 / J-5 and K-3 / K-5. A seed generated before this
-  change needs the version it was generated with.
-- A door constraint on A-1 / A-2 now also locks the shutter next to it in A-1 with the same key.
-- Door constraints no longer lock the way between G-1 and G-2: that passage has no door frame, so the coloured gate
-  looked out of place.
-- The filler items are now `25 E-Crystals`, `50 E-Crystals`, `100 E-Crystals`, `Energy Refill`, `Weapon Energy Refill`
-  and `1-Up`, the smaller amounts more often; before, every filler was 50 E-Crystals and the 1-Up never came up. A
-  refill fills your life, or the weapon energy of every biometal you hold, and is lost if they are already full.
-- The Transerver consoles show their normal menu during Troop Reinforcement and Protect HQ instead of the reduced one.
-- The Transerver consoles no longer offer the quests of the townspeople: they are not part of the randomizer yet.
-- Logic: the Sub Tank of K-1 asks for Model LX and that door unlocked, instead of four biometals.
-- Logic: the apple of A-3 asks for any model, instead of Model FX, X or ZX.
-- Logic: in D-5, the way between the D-4 entrance and the middle of the room asks for any model, instead of Model PX
-  or HX.
-- Logic: the second Computer Chip of B-2 belongs to the right side of the room, so it asks for any model, like the
-  first.
-- The client no longer prints notes about the starting state, the skipped boss rush and mini-bosses or the missions
-  taken from the Transerver list; `/mmzx_debug on` shows them again.
+- The entire logic has been reworked to use AP's Rule Builder. This is mostly internal, but as an upside this means you can now use /get_logical_path or /explain in Universal Tracker.
+- The filler item pool has been reworked: now there's `25 E-Crystals`, `50 E-Crystals`, `100 E-Crystals`, `Energy Refill`, `Weapon Energy Refill`
+  and `1-Up`. The goal is to lower the total ammount of useless E-Crystals, as well as making filler feel at least slightly relevant.
+- Some client messages have been modified so they only show in debug , as they are not relevant for the player usually.
 
 ### Fixed
 
-- Starting at the Guardian base, the E Tank a Guardian sells in X-3 for 200 E-Crystals never holds a progression
-  item: nothing in the base earns E-Crystals, so about one seed in a hundred could leave you with no way to pay for
-  the item you needed next.
-- Archipelago warned that the apworld's manifest was incomplete and that 0.7.0 would stop loading it. It now reads the
-  version of the apworld, so the client refuses a ROM patched by another version: open the `.apmmzx` with the apworld
-  that generated the seed.
-- Logic: the hidden path of K-4 (the door switch, the 1-Up, Disk B-12 and the E-Crystal beside it) asks for a way
-  into K-4 through its door from K-3, where the lava chase starts; with `mission_objectives: locations_and_items` and
-  that door locked by a door constraint it was in logic from the Transerver of Area K, which never arms the chase.
-- Stop The Dig stopped counting as completed after reporting Repel The Army.
-- Find The Survivors stopped counting as completed after reporting Recover The Disk, and Fight The Mavericks after reporting Attack The Excavators: the Missions goal requirement lost them from its count, and their missions could be accepted again.
-
-- The eight usable items of the pause menu (Cake, Orange, Candy, Bread, Apple, E Tank, W Tank and Smelling Salts) are items of the pool, and the eight places that hand them out are locations.
-  - A usable you have used comes back when you open any Transerver console.
-  - Being handed one shows no "You got" popup; the client's notice says what you found.
-  - The child gives the cake on any day, once Save The People has brought him to C-1; Scombrésoce sells the salts once Troop Reinforcement is complete; Cédre and Scombrésoce stay in the base during Protect HQ.
-  - Any attack shakes the tree of A-3 and its first fruit is the apple; any hit on the hanging doll of X-2 frees the W Tank.
+- Small logic fixes and adjustments
+- The following missions had their "cleared mission" flag removed by other events sometimes. This should be fixed now.
+  - Stop The Dig stopped counting as completed after reporting Repel The Army.
+  - Find The Survivors stopped counting as completed after reporting Recover The Disk
+  - Fight The Mavericks after reporting Attack The Excavators
 
 ## [0.2.1] - 2026-10-05
 

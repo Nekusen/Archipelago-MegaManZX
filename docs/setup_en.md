@@ -7,8 +7,7 @@
   The world is tested with BizHawk 2.11.
 - Your own Mega Man ZX (USA) ROM, game code `ARZE`. The Archipelago community cannot provide it.
 - Only if your YAML turns on `zero3_bosses` or `zero4_bosses`: your own Mega Man Zero 3 and/or Mega Man Zero 4 (GBA)
-  ROM, USA, Europe or Japan. The launcher asks for it when you open the patch and converts the sprites of those bosses
-  from it. With both options off no GBA ROM is needed or asked for.
+  ROM, USA, Europe or Japan. The launcher asks for it when you open the patch.
 - Optional: [Universal Tracker](https://github.com/FarisTheAncient/Archipelago/releases) and the
   [Mega Man ZX tracker pack](https://github.com/Nekusen/MegaManZX-Tracker/releases) (`mmzx_tracker.zip`).
   Keep the pack zipped. UT asks for it the first time it opens the map tab.
@@ -59,8 +58,7 @@ server.
 - New Game played the intro instead of starting at your Transerver: check the game you opened is the one generated
   with `.apmmzx`, and make sure you're connected to the client.
 - The game does not save or loads an old save: turn `AutoSaveRAM` off (see above) and restart EmuHawk.
-- You cannot get out of a room or a shutter stays closed: use "Go to Transerver" from the pause menu or
-  `/mmzx_teleport`. If it still doesn't work, try to hit on "Abort Mission" in any Transerver"
+- You cannot get out of a room or a shutter stays closed: use "Go to Transerver" from the pause menu.
 - The tracker's map tab is empty: give Universal Tracker the `mmzx_tracker.zip` pack, still zipped.
 - Items you received do not show up: they are applied only in gameplay, not in menus or cutscenes.
   If the client is disconnected, reconnect.

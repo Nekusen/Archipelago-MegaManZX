@@ -103,7 +103,7 @@ class RequiredMissions(NamedRange):
 
 class RequiredMutosReploids(Range):
     """How many of the eight Mega Man Zero 3/4 bosses of N-1 you need to beat for the Mutos Reploid
-    Hunting goal requirement. Up to 4 needs one of zero3_bosses and zero4_bosses on; 5 or more
+    Hunting goal requirement. Up to 4 needs one of zero3_bosses and zero4_bosses on. 5 or more
     needs both, since each game brings four bosses. Generation fails otherwise.
     Only used with Mutos Reploid Hunting in goal_requirements."""
     display_name = "Required Mutos Reploids"
@@ -142,19 +142,13 @@ class HuInPool(Toggle):
 
 
 class MissionObjectives(Choice):
-    """What the objects and events of the story missions are: the Computer Chips, the guardians of
-    Pass The Test and their Stuffed Animal, the terminal of Area F and the three Data Disks, the
-    people trapped in Area G, the generator of Area E, the lava control and the door switch of
-    Area K, and the bridge switch of Area D.
-    - off: nothing changes.
-    - locations_only: each one is a check. The objects and the events keep working as with the
-      option off, so the pool only grows by filler.
-    - locations_and_items: each one is a check, and the objects and what the events do are items
-      of the pool. A mission is reported only with its object (a Computer Chip for Locate Giro,
-      the Stuffed Animal for Pass The Test, each Data Disk for its mission), and Rayfly waits
-      for that Computer Chip too. The doors the terminal of Area F, the sprinkler key of Area G
-      and the switch of Area K open need their items, and so do the bridge of Area D, the slow
-      lava of Area K and the power cut of Area E, which is a useful item rather than a required one."""
+    """Add the story objects and events to the pool.
+    - off: nothing gets added to the pool, and every door and event requires the vanilla requirement or is open by default.
+    - locations_only: adds story objects and events as checks, but the behaviour of every door 
+      and story progress is the same as 'off': Vanilla or open by default.
+    - locations_and_items: each one is a check, and the objects and events are items in the pool. 
+      A mission requires its object to be reported, and roadblocks like the doors of Area F and Area G
+      or the bridge of Area D need their item from the multiworld to be opened."""
     display_name = "Mission Objectives"
     option_off = 0
     option_locations_only = 1
@@ -165,8 +159,8 @@ class MissionObjectives(Choice):
 class IncludeWarpsInLogic(Toggle):
     """Troop Reinforcement and Repel The Army end with a teleport to the Guardian Base, Area X.
     On: the logic counts those teleports as a way into Area X, so a check there may expect you to
-    clear one of those missions rather than to hold the Transerver Access of Area X; both missions
-    can be played again from "Replay Missions". Off: Area X is in logic only with its Transerver
+    clear one of those missions rather than to hold the Transerver Access of Area X. Both missions
+    can be played again from "Replay Missions" if required. Off: Area X is in logic only with its Transerver
     Access or as your starting point."""
     display_name = "Include Warps In Logic"
     default = 0
@@ -174,34 +168,29 @@ class IncludeWarpsInLogic(Toggle):
 
 class Zero3Bosses(Toggle):
     """The four Mega Man Zero 3 bosses of N-1 (Hellbat Schilt, Blazin' Flizard, Deathtanz Mantisk
-    and Childre Inarabitta) are in the game from the start, no Game Pak needed, and beating each
-    one is a check. They stay beaten.
-    IMPORTANT: this needs your own Mega Man Zero 3 (GBA) ROM, USA, Europe or Japan. The game
-    keeps their sprites in that cartridge, so the patcher asks for the ROM when you open the
-    .apmmzx and converts them from it. Leave it off and no Zero 3 ROM is ever asked for."""
+    and Childre Inarabitta) are in the game and beating each one is a check. 
+    IMPORTANT: this option needs your own Mega Man Zero 3 (GBA) ROM. The game keeps their sprites in that cartridge, 
+    so the patcher asks for the ROM when you open the .apmmzx and converts them from it."""
     display_name = "Mega Man Zero 3 Bosses"
     default = 0
 
 
 class Zero4Bosses(Toggle):
     """The four Mega Man Zero 4 bosses of N-1 (Fenri Lunaedge, Noble Mandrago, Sol Titanion and
-    Pegasolta Eclair) are in the game from the start, no Game Pak needed, and beating each one
-    is a check. They stay beaten.
-    IMPORTANT: this needs your own Mega Man Zero 4 (GBA) ROM, USA, Europe or Japan. The game
-    keeps their sprites in that cartridge, so the patcher asks for the ROM when you open the
-    .apmmzx and converts them from it. Leave it off and no Zero 4 ROM is ever asked for."""
+    Pegasolta Eclair) are in the game and beating each one is a check. 
+    IMPORTANT: this needs your own Mega Man Zero 4 (GBA) ROM. The game keeps their sprites in that cartridge, 
+    so the patcher asks for the ROM when you open the .apmmzx and converts them from it."""
     display_name = "Mega Man Zero 4 Bosses"
     default = 0
 
 
 class AreaMAccess(Choice):
-    """What opens the seal at the entrance of Area M, the door of M-1 the rest of the area lies behind.
+    """What opens the seal at the entrance of Area M.
     - open: the seal is open from the start.
     - biometals: get the five "Obtain Biometal" checks of your own game: Z from Giro, and
       H, F, L and P from either Pseudoroid of each pair.
     - passwords: collect Passwords, items of the pool; required_passwords sets how many.
-    With biometals or passwords the Transerver Access of Area M is not in the pool: that Transerver
-    registers when you reach it on foot, as in the original game."""
+    With biometals or passwords the Transerver Access of Area M is removed from the pool."""
     display_name = "Area M Access"
     option_open = 0
     option_biometals = 1
@@ -255,14 +244,13 @@ class SkipMinibosses(Choice):
 
 
 class InfiniteLives(Toggle):
-    """Lives never run out: a death costs none and there is no Game Over. The 1-Up item leaves the filler pool
-    (the other fillers take its share); the 1-Ups lying in the world stay where they are."""
+    """Infinite Lives. With this on, 1-Ups leaves the filler pool"""
     display_name = "Infinite Lives"
 
 
 class SubTankRefillOperator(DefaultOnToggle):
-    """A Guardian stands next to your starting Transerver: talk to him (UP) and, for 200 E-Crystals, he refills
-    every Sub Tank you hold. With nothing to fill he charges nothing."""
+    """A Guardian stands next to your starting Transerver: talk to him and, for 200 E-Crystals, he refills
+    every Sub Tank you hold."""
     display_name = "Sub Tank Refill Operator"
 
 
@@ -333,10 +321,8 @@ class BossLogic(OptionDict):
 
 class DoorConstraintsMin(Range):
     """Door constraints lock some of the doors between rooms behind a Card Key, a
-    different set in every seed, so the Card Keys and the Transerver Access items open
-    the map in smaller steps instead of most of it at once. A locked door shows the
-    colour of its key; the doors that already had a key and the Guardian Base keep
-    their own. Each seed locks a number of doors between this minimum and
+    different set in every seed, so sphere distribution is more balanced.
+    Each seed locks a number of doors between this minimum and
     door_constraints_max; 0 and 0 leave every door as in the original game."""
     display_name = "Door Constraints: Minimum"
     range_start = 0
@@ -346,8 +332,7 @@ class DoorConstraintsMin(Range):
 
 class DoorConstraintsMax(Range):
     """The most doors a seed locks behind a Card Key (see door_constraints_min). A
-    value below the minimum counts as the minimum. More than 12 adds little: by then
-    the map already opens about as evenly as the Card Keys allow."""
+    value below the minimum counts as the minimum."""
     display_name = "Door Constraints: Maximum"
     range_start = 0
     range_end = MAX_SITES

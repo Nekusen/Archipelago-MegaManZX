@@ -2,13 +2,16 @@
 import io
 import unittest
 
+from Fill import distribute_items_restrictive
+
 from .bases import MMZXTestBase
-from .test_access import ACCESS_X_LOCATIONS
+from .test_access import ACCESS_X_LOCATIONS, USABLE_MISSIONS
 from .test_regions import RegionsReachable
 from ..rom.golden import (BLOCK_MIRROR, BLOCK_OFF, OFF_SCENE_WORD, OFF_SPAWN_X, OFF_SPAWN_Y,
                           PLAYER_MIRROR, TRANSERVER_BITS, build_image)
 from ..data import ITEMS, LIVE_BLOCK, ROOM_SUBAREA, SCENE_WORDS, STARTING_MODELS, STARTING_TRANSERVERS
-from ..logic.rules import ROOM_NAMES
+from ..locations import E_TANK_LOCATION
+from ..logic import ROOM_NAMES
 from ..options import StartingTranserver
 
 
@@ -75,13 +78,30 @@ class TestGuardianBaseStart(RegionsReachable, MMZXTestBase):
         self.assertFalse(self.can_reach_entrance("z01 transerver to a02"))
         reachable = {loc.name for loc in self.multiworld.get_locations(1)
                      if loc.address is not None and loc.can_reach(self.multiworld.state)}
-        self.assertEqual(reachable, {n for n in ACCESS_X_LOCATIONS if n.startswith("X-")})
+        self.assertEqual(reachable, {n for n in ACCESS_X_LOCATIONS if n.startswith("X-")} - set(USABLE_MISSIONS))
 
     def test_area_a_opens_with_its_access(self) -> None:
         self.assertFalse(self.can_reach_location("A-2: Disk B-3"))
         self.collect_by_name("Transerver Access - Area A")
         self.assertTrue(self.can_reach_entrance("z01 transerver to a02"))
         self.assertTrue(self.can_reach_location("A-2: Disk B-3"))
+
+    def test_the_e_tank_never_holds_progression(self) -> None:
+        """Nothing in the base earns the 200 E-Crystals the E Tank costs, so no seed may need it."""
+        location = self.multiworld.get_location(E_TANK_LOCATION, 1)
+        self.assertFalse(location.item_rule(self.get_item_by_name("Transerver Access - Area A")))
+        self.assertTrue(location.item_rule(self.world.create_filler()))
+        distribute_items_restrictive(self.multiworld)
+        self.assertFalse(location.item.advancement)
+
+
+class TestAreaAStart(MMZXTestBase):
+    options = {"starting_transerver": "area_a"}
+
+    def test_the_e_tank_may_hold_progression(self) -> None:
+        """From Area A the enemies of the next areas pay for the E Tank: it is a check like any other."""
+        location = self.multiworld.get_location(E_TANK_LOCATION, 1)
+        self.assertTrue(location.item_rule(self.get_item_by_name("Transerver Access - Area B")))
 
 
 class TestSpoilerHeader(MMZXTestBase):

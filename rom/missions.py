@@ -1,0 +1,124 @@
+"""Missions taken again from the Transerver: the Mission Requests list offers the missions
+already completed, taking one clears what would end it at once, and the consoles offer
+Abort only to what the player chose there."""
+
+import struct
+
+from ..data import LIVE_BLOCK, MISSION_ACCEPT, MISSION_COMPLETED_BIT, MISSION_REPEAT_BITS, PICKUP_TABLE_ADDR
+from .arm9 import Arm9, thumb_bl
+from .table import ENTRIES_OFF, ENTRY_LEN, MAX_SLOTS
+from .ui import ROOM_OVERLAY_SLOT_RAM
+
+# Autoload section after the pickup table: `count` (entries of the list), `take` (accept the chosen
+# id, then leave it as the client's accept would: story handler state, flags cleared and set),
+# `pending` (zero when what is under way came from the list), tables.
+MISSION_SECTION_RAM = 0x02193000
+MISSION_SECTION_LEN = 0x400
+MISSION_SECTION_ENTRIES = {"count": 0x00, "take": 0x30, "pending": 0x90}
+MISSION_SECTION_CODE = bytes.fromhex(
+    "70b4094c0949002027252368da108a5c0726334001269e40324200d001300434"
+    "013df2d170bc704700311902cc45100270b5040001f7baff023c0d2c1cd8124d"
+    "285d002801d0114908700c4d2c5d0c4d2d190c4e2b885a1c12040dd05a04120d"
+    "b05c0721194001248c40a043db0b8b401843b0540235ede770bd00bfc0311902"
+    "d0311902cc451002b0311902cff6140230b40f4b5f21585c400716d4e0215c58"
+    "0c4a0025505da04204d001350e2df9d301200be0084aad005159ca089a5c0720"
+    "0140ca400120904300e0002030bc7047cc451002a031190200311902")
+MISSION_LIST_OFF = 0x100           # u32[39]: the flag that lists each id 2 to 40
+MISSION_LIST_IDS = range(2, 41)
+MISSION_LAST_STORY = 16            # ids above it are quests: not randomized, so never listed
+MISSION_NEVER_OFF = 0x19C          # a zero word: the "flag" of a story mission the list never shows
+MISSION_STATES_OFF = 0x1A0         # u8[14]: the state value of ids 2 to 15
+MISSION_REPEAT_IDS = range(2, 16)
+MISSION_HANDLER_OFF = 0x1B0        # u8[14]: the story handler state `take` leaves, 0 = as the accept installs it
+MISSION_HANDLER_STATE_RAM = 0x0214F6CF
+MISSION_REPEAT_INDEX_OFF = 0x1C0   # u8[14]: where each id's row starts inside the rows
+MISSION_REPEAT_OFF = 0x1D0         # u16 flags to clear, or to set with MISSION_REPEAT_SET; 0xFFFF ends each id's row
+MISSION_REPEAT_SET = 0x8000
+MISSION_REPEAT_END = 0xFFFF
+
+# The list builder reads its table through this literal
+MISSION_LIST_LITERAL_PATCH = [
+    (0x02027FEC, bytes.fromhex("7cae0d02"), bytes.fromhex("00311902")),    # .word table
+]
+# The two consoles count the offered flags before their menu, and accept the id chosen in the list
+MISSION_COUNT_HOOKS = [(0x02093496, bytes.fromhex("75f76df9")), (0x02093C28, bytes.fromhex("74f7a4fd"))]
+MISSION_TAKE_HOOKS = [(0x02093604, bytes.fromhex("01f0d2fc")), (0x02093E0A, bytes.fromhex("01f0cff8"))]
+# "Story mission pending" hid Abort during Troop Reinforcement and Protect HQ; `pending` replaces it
+MISSION_PENDING_HOOKS = [
+    (0x020934EE, bytes.fromhex("75f7a1fa")),
+    (0x02093C8A, bytes.fromhex("74f7d3fe")),
+    (0x0202C522, bytes.fromhex("dcf787fa")),
+]
+# With a mission under way that did not come from the list, the consoles show their normal menu
+MISSION_MENU_PATCH = [
+    (0x020934F6, bytes.fromhex("6348"), bytes.fromhex("cee7")),    # b 0x02093496
+    (0x02093C92, bytes.fromhex("6900"), bytes.fromhex("c9e7")),    # b 0x02093C28
+]
+
+
+def flag_index(addr: int, bit: int) -> int:
+    """Flag number of a bit, counted from the progress block like the game's flag lists do."""
+    return (addr - LIVE_BLOCK) * 8 + bit
+
+
+def mission_list_table() -> bytes:
+    """The flag that lists each id: the 'completed' bit of a mission, a flag never set for the rest."""
+    never = flag_index(MISSION_SECTION_RAM + MISSION_NEVER_OFF, 0)
+    flags = [flag_index(*MISSION_COMPLETED_BIT[mid]) if mid in MISSION_COMPLETED_BIT and mid <= MISSION_LAST_STORY
+             else never for mid in MISSION_LIST_IDS]
+    return struct.pack("<%dI" % len(MISSION_LIST_IDS), *flags)
+
+
+def mission_states() -> bytes:
+    """The state value each mission of the list runs under, in id order."""
+    states = {rec["id"]: rec["state"] for rec in MISSION_ACCEPT.values()}
+    return bytes(states[mid] for mid in MISSION_REPEAT_IDS)
+
+
+def mission_handler_states() -> bytes:
+    """The story handler state `take` leaves for each mission, in id order; zero keeps the accept's."""
+    states = {rec["id"]: rec.get("hstate", 0) for rec in MISSION_ACCEPT.values()}
+    return bytes(states.get(mid, 0) for mid in MISSION_REPEAT_IDS)
+
+
+def mission_repeat_table() -> tuple[bytes, bytes]:
+    """(index, rows): where each mission's row starts, and the rows of flags `take` clears, then sets."""
+    extras = {rec["id"]: rec.get("extra", []) for rec in MISSION_ACCEPT.values()}
+    index, rows = bytearray(), bytearray()
+    for mid in MISSION_REPEAT_IDS:
+        index.append(len(rows))
+        flags = [flag_index(a, b) for a, b in MISSION_REPEAT_BITS.get(mid, [])]
+        flags += [MISSION_REPEAT_SET | flag_index(a, b) for a, b in extras.get(mid, [])]
+        rows += struct.pack("<%dH" % (len(flags) + 1), *flags, MISSION_REPEAT_END)
+    if len(rows) > 0xFF:
+        raise ValueError("MMZX: the repeat rows do not fit a byte index")
+    return bytes(index), bytes(rows)
+
+
+def build_section() -> bytes:
+    """The autoload section: the routines, the list table, the zero word, the three state tables and the rows."""
+    listing, states, handlers = mission_list_table(), mission_states(), mission_handler_states()
+    index, rows = mission_repeat_table()
+    pieces = [(0, MISSION_SECTION_CODE), (MISSION_LIST_OFF, listing), (MISSION_STATES_OFF, states),
+              (MISSION_HANDLER_OFF, handlers), (MISSION_REPEAT_INDEX_OFF, index), (MISSION_REPEAT_OFF, rows)]
+    ends = [off + len(data) for off, data in pieces]
+    assert ends[0] <= MISSION_LIST_OFF and ends[1] <= MISSION_NEVER_OFF < MISSION_NEVER_OFF + 4 <= MISSION_STATES_OFF
+    assert ends[2] <= MISSION_HANDLER_OFF and ends[3] <= MISSION_REPEAT_INDEX_OFF
+    assert ends[4] <= MISSION_REPEAT_OFF and ends[5] <= MISSION_SECTION_LEN
+    out = bytearray(MISSION_SECTION_LEN)
+    for off, data in pieces:
+        out[off:off + len(data)] = data
+    return bytes(out)
+
+
+def patch_mission_list(arm9: Arm9) -> None:
+    """Bake the section, point the list builder at it and route the consoles through it."""
+    assert PICKUP_TABLE_ADDR + ENTRIES_OFF + MAX_SLOTS * ENTRY_LEN <= MISSION_SECTION_RAM
+    assert MISSION_SECTION_RAM + MISSION_SECTION_LEN <= ROOM_OVERLAY_SLOT_RAM
+    arm9.add_section(MISSION_SECTION_RAM, build_section())
+    for ram, orig, new in MISSION_LIST_LITERAL_PATCH + MISSION_MENU_PATCH:
+        arm9.write(ram, new, orig)
+    for hooks, entry in ((MISSION_COUNT_HOOKS, "count"), (MISSION_TAKE_HOOKS, "take"),
+                         (MISSION_PENDING_HOOKS, "pending")):
+        for ram, orig in hooks:
+            arm9.write(ram, thumb_bl(ram, MISSION_SECTION_RAM + MISSION_SECTION_ENTRIES[entry]), orig)

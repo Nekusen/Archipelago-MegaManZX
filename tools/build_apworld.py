@@ -2,19 +2,34 @@
 """Pack this package into mmzx.apworld, a zip with the package under mmzx/.
 
 Everything goes in except what .apignore also leaves out: tools/, test/, src/, build/,
-tracker/images/, README, CHANGELOG and the git metadata. Other files ignored by
-git, such as local renders, are packed when they are on disk.
+tracker/images/, the logic document and its JSON twin, README, CHANGELOG and the git
+metadata. Other files ignored by git, such as local renders, are packed when they are on disk.
+The manifest gets the container keys the core's own packer adds.
 
 Usage: python tools/build_apworld.py [--out build/mmzx.apworld]
 """
 
 import argparse
+import json
 import zipfile
 from pathlib import Path
 
 PKG = Path(__file__).resolve().parents[1]
 EXCLUDE_DIRS = {"tools", "test", "src", "build", ".git", ".github", "__pycache__", "tracker/images"}
 EXCLUDE_FILES = {"README.md", "CHANGELOG.md", ".gitignore", ".apignore", ".gitmodules", ".git"}
+# the logic document and its JSON twin: nothing reads them at run time (the world imports logic/rules.py)
+EXCLUDE_PATHS = {"logic/logic.json", "logic/rules.json"}
+MANIFEST = "archipelago.json"
+# Container scheme of the core's worlds/Files.py: the core reads a packed manifest only with these keys,
+# and the apworld specification keeps them out of the source manifest
+CONTAINER_VERSION = 7
+
+
+def packed_manifest() -> bytes:
+    """The source manifest plus the container keys of a packed .apworld."""
+    manifest = json.loads((PKG / MANIFEST).read_text(encoding="utf-8"))
+    manifest.update(version=CONTAINER_VERSION, compatible_version=CONTAINER_VERSION)
+    return (json.dumps(manifest, indent=4) + "\n").encode("utf-8")
 
 
 def wanted(p: Path) -> bool:
@@ -28,7 +43,7 @@ def wanted(p: Path) -> bool:
         return False
     if len(rel.parts) == 1 and rel.name in EXCLUDE_FILES:
         return False
-    return True
+    return rel.as_posix() not in EXCLUDE_PATHS
 
 
 def main():
@@ -41,7 +56,11 @@ def main():
     files = sorted(p for p in PKG.rglob("*") if wanted(p))
     with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
         for f in files:
-            z.write(f, "mmzx/" + f.relative_to(PKG).as_posix())
+            rel = f.relative_to(PKG).as_posix()
+            if rel == MANIFEST:
+                z.writestr("mmzx/" + rel, packed_manifest())
+            else:
+                z.write(f, "mmzx/" + rel)
     print("[build_apworld] %d files -> %s" % (len(files), out))
     for f in files:
         print("   mmzx/" + f.relative_to(PKG).as_posix())

@@ -8,29 +8,34 @@ from BaseClasses import ItemClassification, Tutorial
 from Options import OptionError
 from worlds.AutoWorld import WebWorld, World
 
+from . import door_constraints
 from . import goal as G
+from . import seal as S
 from .logic import bosses
 from .data import LOCATIONS, ITEMS, STARTING_MODEL_ITEM, STARTING_MODELS
-from .items import MMZXItem, item_name_to_id, get_classification, ITEM_GROUPS
-from .locations import (location_name_to_id, locations_for_options, LOCATION_GROUPS,
-                        pickup_flags_from_options)
+from .items import MMZXItem, item_name_to_id, get_classification, filler_weights, ITEM_GROUPS, STORY_GRANTS
+from .locations import (active_locations, location_name_to_id, E_TANK_LOCATION, LOCATION_GROUPS, STORY_ITEMS,
+                        STORY_OFF, story_mode)
 from .options import MMZXOptions, OPTION_GROUPS
-from .logic import load_document
-from .logic.document import room_label
-from .logic.rules import TIER, starting_point
-from .regions import boss_requirements, create_regions, progression_overrides
+from .logic import document as F
+from .logic import rules as R
+from .logic import starting_point
+from .logic.builder import BossRequirement, boss_requirements
+from .regions import create_regions, progression_overrides
 from .rom import MMZXPatch, write_patch_tokens, MMZX_US_MD5
 from .rom.golden import build_image
 from .rom.table import PICKUP_SLOTS, build_table, icon_code
+from .rom.zero import ROM_MD5S as ZERO_ROM_MD5S, ZERO3, ZERO4
 from . import client  # registers the BizHawkClient  # noqa: F401
 from . import tracker  # auto-tab / position icon for Universal Tracker
 
 # Options the slot data carries under their own name: a world rebuilt from it takes these.
 SLOT_DATA_OPTIONS = ("character", "goal", "death_link", "starting_model", "starting_transerver",
                      "progressive_models", "hu_in_pool", "boss_logic", "skip_boss_rush",
-                     "skip_minibosses", "pickup_checks_1up", "pickup_checks_energy",
-                     "pickup_checks_weapon", "pickup_checks_crystals", "notify_received",
-                     "notify_sent", "notify_style")
+                     "skip_minibosses", "mission_objectives", "include_warps_in_logic", "zero3_bosses",
+                     "zero4_bosses", "pickup_checks_1up",
+                     "pickup_checks_energy", "pickup_checks_weapon", "pickup_checks_crystals",
+                     "notify_received", "notify_sent", "notify_style")
 
 
 class MMZXSettings(settings.Group):
@@ -41,6 +46,26 @@ class MMZXSettings(settings.Group):
         md5s = [MMZX_US_MD5]
 
     rom_file: RomFile = RomFile(RomFile.copy_to)
+
+    # The two GBA ROMs are read only when a seed has zero3_bosses or zero4_bosses on: the
+    # patcher asks for the missing one then, and never otherwise.
+    class Zero3RomFile(settings.UserFilePath):
+        """Path to the Mega Man Zero 3 (GBA) ROM, USA, Europe or Japan. Asked for only when a
+        seed has zero3_bosses on."""
+        description = "Mega Man Zero 3 (GBA) ROM File"
+        copy_to = "mmz3.gba"
+        md5s = ZERO_ROM_MD5S[ZERO3]
+
+    zero3_rom_file: Zero3RomFile = Zero3RomFile(Zero3RomFile.copy_to)
+
+    class Zero4RomFile(settings.UserFilePath):
+        """Path to the Mega Man Zero 4 (GBA) ROM, USA, Europe or Japan. Asked for only when a
+        seed has zero4_bosses on."""
+        description = "Mega Man Zero 4 (GBA) ROM File"
+        copy_to = "mmz4.gba"
+        md5s = ZERO_ROM_MD5S[ZERO4]
+
+    zero4_rom_file: Zero4RomFile = Zero4RomFile(Zero4RomFile.copy_to)
 
     class UTPackPath(settings.FilePath):
         """Path to the Mega Man ZX tracker pack (mmzx_tracker.zip): Universal
@@ -87,7 +112,11 @@ class MMZXWorld(World):
 
     # resolved in generate_early; the defaults serve a world used without it
     goal = G.GoalRequirement((), 0, 0, 0)
+    seal = S.Seal()
     disk_order: list[int] = list(range(G.DISK_ENTRIES))
+    # drawn in create_regions: the sites locked in this seed and the key of each of their doors
+    door_sites: dict[str, str] = {}
+    door_keys: dict[str, str] = {}
 
     # Universal Tracker runs in hybrid mode: the map layout ships here in tracker/, while the
     # images come from the external pack the player points ut_pack_path at, so no game graphics
@@ -130,20 +159,25 @@ class MMZXWorld(World):
         if self.options.starting_model.current_key == "none":
             self.options.hu_in_pool.value = 0
         if slot_data:
-            # the seed resolved its goal already: the goal options are neither sent nor asked again
+            # the seed resolved its goal and its seal already: their options are neither sent
+            # nor asked again
             self.goal, self.disk_order = G.from_slot_data(slot_data.get("goal_requirements"))
+            self.seal = S.from_slot_data(slot_data.get("area_m_access"))
+            # the pool reads the option itself to hold the Transerver Access of Area M back
+            self.options.area_m_access = type(self.options.area_m_access).from_any(self.seal.mode)
         else:
-            active = locations_for_options(pickups=pickup_flags_from_options(self.options))
+            active = active_locations(self.options)
             room = len(active) - len(self.fixed_items()[0])
             reserve = len(set(self.options.exclude_locations.value) & set(active))
-            self.goal = G.resolve(self.options, room, reserve, self.player_name)
+            self.seal = S.resolve(self.options, room, reserve, self.player_name)
+            self.goal = G.resolve(self.options, room - self.seal.passwords_total, reserve, self.player_name)
             # the order the disks received light the database entries in
             self.disk_order = self.random.sample(range(G.DISK_ENTRIES), G.DISK_ENTRIES)
         try:
             reqs = boss_requirements(self)
         except ValueError as e:
             raise OptionError("[%s] boss_logic: %s" % (self.player_name, e)) from None
-        loose = bosses.unanchored(load_document(), reqs)
+        loose = bosses.unanchored(R.BOSS_ARENAS, reqs)
         if loose:
             # failing beats applying the requirement to nothing
             raise OptionError(
@@ -152,7 +186,19 @@ class MMZXWorld(World):
                 "arena in tools/logic_editor/." % (self.player_name, ", ".join(loose)))
 
     def create_regions(self) -> None:
+        """The regions, then the door constraints: their draw checks what a new game reaches."""
         create_regions(self)
+        if self.options.starting_transerver == "guardian_base":
+            # nothing in the Guardian base earns the E-Crystals the E Tank costs: a progression
+            # item there could leave the player with no way to pay for what they need next
+            self.get_location(E_TANK_LOCATION).item_rule = lambda item: not item.advancement
+        # Universal Tracker rebuilds the world from the slot data and must see the same doors
+        passed = getattr(self.multiworld, "re_gen_passthrough", {}).get(self.game)
+        if passed is not None:
+            self.door_sites = dict(passed.get(door_constraints.SLOT_DATA_KEY) or {})
+            self.door_keys = door_constraints.door_keys(self.door_sites)
+        else:
+            door_constraints.choose(self)
 
     def create_item(self, name: str) -> MMZXItem:
         """Creates an item, promoting a useful one to progression when a rule needs it."""
@@ -172,8 +218,9 @@ class MMZXWorld(World):
         return MMZXItem(name, ItemClassification.progression, None, self.player)
 
     def get_filler_item_name(self) -> str:
-        """E-Crystals, the only filler."""
-        return "E-Crystals"
+        """One of the fillers, by weight."""
+        weights = filler_weights(self.options)
+        return self.random.choices(list(weights), list(weights.values()))[0]
 
     def fixed_items(self) -> tuple[list[str], list[str]]:
         """(pool items, pre-granted items) before the goal items and the filler.
@@ -192,6 +239,13 @@ class MMZXWorld(World):
                     fixed += [n] * int(v.get("count", 1))
         if self.options.hu_in_pool.value:
             fixed.append("Model Hu")
+        if story_mode(self.options) == STORY_ITEMS:
+            for n, v in ITEMS.items():
+                if v["grant"][0] in STORY_GRANTS:
+                    fixed += [n] * int(v.get("count", 1))
+        # past a closed seal the Transerver registers on foot, as in the original game
+        if self.options.area_m_access.current_key != S.MODE_OPEN:
+            fixed.remove(S.TRANSERVER_ITEM)
         granted: list[str] = []
         start_item = STARTING_MODEL_ITEM.get(self.options.starting_model.current_key)
         start_item = G.model_item(start_item, progressive) if start_item else None
@@ -205,15 +259,15 @@ class MMZXWorld(World):
         return fixed, granted
 
     def create_items(self) -> None:
-        """Fills the pool: the fixed items, the Secret Disks of the goal, then filler."""
-        active_locs = locations_for_options(pickups=pickup_flags_from_options(self.options))
-        n_locations = len(active_locs)  # not counting the Victory event
+        """Fills the pool: the fixed items, the Secret Disks of the goal, the Passwords of the seal, then filler."""
+        n_locations = len(active_locations(self.options))  # not counting the events
 
         fixed, granted = self.fixed_items()
         for name in granted:
             self.multiworld.push_precollected(self.create_item(name))
         pool: list[MMZXItem] = [self.create_item(name) for name in fixed]
         pool += [self.create_item(G.DISK_ITEM) for _ in range(self.goal.disks_total)]
+        pool += [self.create_item(S.PASSWORD_ITEM) for _ in range(self.seal.passwords_total)]
 
         remaining = n_locations - len(pool)
         if remaining < 0:
@@ -224,11 +278,6 @@ class MMZXWorld(World):
 
         self.multiworld.itempool += pool
 
-    def set_rules(self) -> None:
-        """Only the completion condition; the access rules live on the entrances."""
-        self.multiworld.completion_condition[self.player] = \
-            lambda state: state.has("Victory", self.player)
-
     def pre_fill(self) -> None:
         """Fails early when boss_logic makes the goal unreachable even with the whole pool."""
         reqs = boss_requirements(self)
@@ -237,11 +286,7 @@ class MMZXWorld(World):
         state = self.multiworld.get_all_state()
         if self.multiworld.completion_condition[self.player](state):
             return
-        rules = bosses.compile_rules(reqs, TIER, self.player, bool(self.options.hu_in_pool.value),
-                                     not self.options.progressive_models.value)
-        from .logic import document as F
-        blocked = [F.BOSSES[b]["name"] for b in sorted(reqs)
-                   if not rules.get(F.boss_atom(b), lambda s: True)(state)]
+        blocked = [F.BOSSES[b]["name"] for b in sorted(reqs) if not BossRequirement(b).resolve(self)(state)]
         raise OptionError(
             "[%s] boss_logic: the seed cannot be completed even with every item. "
             "Bosses whose requirement is still unmet: %s. Check that you do not ask for more "
@@ -263,7 +308,14 @@ class MMZXWorld(World):
                             full_models=not self.options.progressive_models.value)
         write_patch_tokens(patch, self.player_name, self.multiworld.seed_name, self.world_version,
                            image, build_table(self.pickup_icons()),
-                           hu_in_pool=bool(self.options.hu_in_pool.value))
+                           hu_in_pool=bool(self.options.hu_in_pool.value),
+                           story_items=story_mode(self.options) == STORY_ITEMS,
+                           story_on=story_mode(self.options) != STORY_OFF,
+                           door_sites=self.door_sites, zero_games=sorted(G.zero_games(self.options)),
+                           omega_goal=G.goal_is_omega(self.options),
+                           refill_operator=(self.options.starting_transerver.current_key
+                                            if self.options.sub_tank_refill_operator else None),
+                           infinite_lives=bool(self.options.infinite_lives.value))
         out_name = self.multiworld.get_out_file_name_base(self.player)
         patch.write(os.path.join(output_directory, out_name + patch.patch_file_ending))
 
@@ -273,13 +325,15 @@ class MMZXWorld(World):
         pre = [name for name in (STARTING_MODEL_ITEM.get(self.options.starting_model.current_key),
                                  start.get("access")) if name]
         spoiler_handle.write("Start: %s (%s), pre-granted: %s\n" % (
-            self.options.starting_transerver.current_key, room_label(start["room"]),
+            self.options.starting_transerver.current_key, F.room_label(start["room"]),
             ", ".join(pre) or "nothing"))
         spoiler_handle.write("Goal: %s; requirements: %s\n" % (
             self.options.goal.current_key, G.describe(self.goal)))
+        spoiler_handle.write("Area M seal: %s\n" % S.describe(self.seal))
         reqs = bosses.describe(boss_requirements(self))
         spoiler_handle.write("Boss logic: %s\n" % (
             "; ".join("%s: %s" % kv for kv in reqs.items()) if reqs else "none"))
+        spoiler_handle.write("Door constraints: %s\n" % door_constraints.describe(self.door_sites))
 
     def fill_slot_data(self) -> dict:
         """Options the client needs, plus the boss requirements as text."""
@@ -289,12 +343,23 @@ class MMZXWorld(World):
             # the client opens the gate to the final area on these, and lights the
             # database entries of the disks received in this order
             "goal_requirements": G.slot_data(self.goal, self.disk_order),
+            # the client keeps the seal of Area M closed until this is met
+            "area_m_access": S.slot_data(self.seal),
             "death_link": bool(self.options.death_link.value),
             "starting_model": self.options.starting_model.current_key,
             "starting_transerver": self.options.starting_transerver.current_key,
             "progressive_models": bool(self.options.progressive_models.value),
             "hu_in_pool": bool(self.options.hu_in_pool.value),
+            # locations_only: the client only detects; locations_and_items: it also keeps the story items held
+            "mission_objectives": story_mode(self.options),
+            # logic only: the tracker rebuilds the graph from it, the client does nothing with it
+            "include_warps_in_logic": bool(self.options.include_warps_in_logic.value),
+            # the Mega Man Zero bosses in the game: their checks and the hunt the client counts
+            "zero3_bosses": bool(self.options.zero3_bosses.value),
+            "zero4_bosses": bool(self.options.zero4_bosses.value),
             "boss_logic": bosses.describe(boss_requirements(self)),
+            # the doors locked in this seed, by site: the tracker rebuilds its logic from them
+            door_constraints.SLOT_DATA_KEY: dict(self.door_sites),
             # the client marks the rush pairs as beaten; the logic stops requiring them
             "skip_boss_rush": bool(self.options.skip_boss_rush.value),
             # the client keeps the mini-boss flags of the current area set

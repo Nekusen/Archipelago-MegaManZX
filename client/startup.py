@@ -65,7 +65,7 @@ async def apply_start_state(client: "MMZXClient", ctx, tick: Tick) -> None:
         if rec and rec.get("revoke_x") and not got_x:
             xa, xb = MODEL_X_POSSESSION
             if (await bizhawk.read(ctx.bizhawk_ctx, [(xa, 1, DOM)]))[0][0] & (1 << xb):
-                logger.info("[mmzx] new save detected (Model X of the starting save): re-applying the starting state")
+                client._debug("[mmzx] new save detected (Model X of the starting save): re-applying the starting state")
                 client.start_state = 2
                 client.start_confirm = 0
                 client.start_retries = 0
@@ -124,6 +124,6 @@ async def write_start_state(client: "MMZXClient", ctx, guard) -> int | None:
     if not await bizhawk.guarded_write(ctx.bizhawk_ctx, writes, [guard]):
         return None
     if client.start_confirm == 0 and client.start_retries == 0:
-        logger.info("[mmzx] starting state applied: model=%s, transerver=%s"
-                    % (key, ctx.slot_data.get("starting_transerver")))
+        client._debug("[mmzx] starting state applied: model=%s, transerver=%s"
+                      % (key, ctx.slot_data.get("starting_transerver")))
     return rec["active"]

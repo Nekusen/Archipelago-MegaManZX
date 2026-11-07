@@ -8,18 +8,22 @@ from ..data import (
 from .addresses import (
     BOSS_LEVELS, CANON_OFF, CAPACITY_NIBBLE, CARDKEY_MASKS, COLLECTED_NIBBLE, CONS_KEY,
     CUTSCENE_FLAG, DOM, ECRYSTALS, ECRYSTALS_CAP, ECRYSTALS_HIGH_MASK, ECRYSTALS_MASK,
-    ECRYSTALS_PER_ITEM, FULL_MODEL_ITEMS, HPMAX, HP_BASE, HP_CAP, HP_PER_LIFEUP, HU_POSSESSION,
+    FULL_MODEL_ITEMS, HPMAX, HP_BASE, HP_CAP, HP_PER_LIFEUP, HU_POSSESSION,
     ITEM_BY_ID, LIFEUP_BYTE, LIFEUP_SLOTS, LIVES, LIVES_CAP, MODEL_POSSESSION, MODEL_SECOND_HALF,
-    PLAYTIME, SUBTANK_BYTE, SUBTANK_SLOTS, WE_BASE, WE_FULL)
+    HP, PLAYTIME, SUBTANK_BYTE, SUBTANK_SLOTS, WE_BASE, WE_FULL, WE_PER_LEVEL)
 from .notices import notify_bytes
 from .ram import Tick, bits_by_byte, copies_writes, read_copies
+from .seal import GATE_BIT as SEAL_GATE_BIT, OPEN_NOTICE as SEAL_OPEN_NOTICE
+
+ENERGY_REFILL_GRANT = "energy_refill"
+WEAPON_REFILL_GRANT = "weapon_refill"
+# Grants applied once per game state: E-Crystals carry their amount, a 1-Up is one life.
+# A refill granted again after a reload does no harm, so refills need no log of their own
+CONSUMABLE_GRANTS = ("ecrystals", "oneup", ENERGY_REFILL_GRANT, WEAPON_REFILL_GRANT)
 
 if TYPE_CHECKING:
     from . import MMZXClient
     from .goal import GoalRequirement
-
-GATE_OPEN_NOTICE = ("Goal: ", "final area open", "")
-
 
 def received_counts(ctx) -> dict[str, int]:
     """Copies of each item received so far, by name."""
@@ -36,12 +40,14 @@ def model_halves(counts: dict[str, int], model: int) -> int:
     return counts.get(MODEL_POSSESSION[model][0], 0) + 2 * counts.get(FULL_MODEL_ITEMS.get(model, ""), 0)
 
 
-def wanted_progress_bits(counts: dict[str, int], goal: "GoalRequirement", missions: int
-                         ) -> tuple[set[tuple[int, int]], set[tuple[int, int]]]:
-    """(idempotent bits, Card Key bits) the received items and the missions completed call for.
+def wanted_progress_bits(counts: dict[str, int], goal: "GoalRequirement", missions: int,
+                         closed_gates=frozenset(), mutos: int = 0) -> tuple[set[tuple[int, int]], set[tuple[int, int]]]:
+    """(idempotent bits, Card Key bits) the received items, the missions completed and the Mega
+    Man Zero bosses beaten call for.
 
-    Progressive items set one bit per copy. Some story gates open for everyone;
-    the Slither gate (D-2 to D-4) once the goal requirements are met.
+    Progressive items set one bit per copy. Some story gates open for everyone,
+    except the `closed_gates` an item opens; the door of the goal (the Slither gate of
+    D-2, or Omega Zero's) once the goal requirements are met.
     """
     bits: set[tuple[int, int]] = set()
     cardkeys: set[tuple[int, int]] = set()
@@ -58,9 +64,8 @@ def wanted_progress_bits(counts: dict[str, int], goal: "GoalRequirement", missio
             bits.update((addr, bit) for addr, bit in grant[1])
         elif kind == "transerver":
             bits.add((grant[1], grant[2]))
-    for fl in EVENT_GATES_OPEN:
-        bits.add(tuple(EVENT_GATES[fl]))
-    if goal.met(counts, missions):
+    bits |= {tuple(EVENT_GATES[fl]) for fl in EVENT_GATES_OPEN} - closed_gates
+    if goal.met(counts, missions, mutos):
         bits |= goal.gate_bits()
     return bits, cardkeys
 
@@ -147,8 +152,21 @@ async def resolve_consumables_log(client: "MMZXClient", ctx) -> None:
     client.cons_log = log
 
 
-async def consumable_writes(client: "MMZXClient", ctx, consumables: list[str]) -> tuple[list, int, list]:
-    """E-Crystals and 1-Ups not yet applied to this game state.
+async def weapon_refill_writes(ctx, counts: dict[str, int]) -> list[tuple[int, bytes, str]]:
+    """A full bar for every model held."""
+    lv = (await bizhawk.read(ctx.bizhawk_ctx, [(BOSS_LEVELS, 8, DOM)]))[0]
+    writes: list[tuple[int, bytes, str]] = []
+    for m, (i0, i1) in MODEL_BOSS_LEVEL_IDX.items():
+        halves = model_halves(counts, m)
+        if halves:
+            # the levels of a model granted this very tick are still unwritten
+            writes.append((WE_BASE + m, bytes([max(WE_PER_LEVEL * (lv[i0] + lv[i1]), WE_FULL * halves)]), DOM))
+    return writes
+
+
+async def consumable_writes(client: "MMZXClient", ctx, consumables: list[str], counts: dict[str, int],
+                            tick: Tick) -> tuple[list, int, list]:
+    """E-Crystals, 1-Ups and refills not yet applied to this game state.
 
     Returns (new consumables, play time, writes). Each batch is stamped with the
     play time, which grows every frame, never goes back on death and returns to
@@ -169,12 +187,17 @@ async def consumable_writes(client: "MMZXClient", ctx, consumables: list[str]) -
         return [], pt, []
     writes: list[tuple[int, bytes, str]] = []
     raw = int.from_bytes((await bizhawk.read(ctx.bizhawk_ctx, [(ECRYSTALS, 4, DOM)]))[0], "little")
-    ec = min(ECRYSTALS_CAP, (raw & ECRYSTALS_MASK) + ECRYSTALS_PER_ITEM * new.count("ecrystals"))
+    ec = min(ECRYSTALS_CAP, (raw & ECRYSTALS_MASK) + sum(g[1] for g in new if g[0] == "ecrystals"))
     writes.append((ECRYSTALS, ((raw & ECRYSTALS_HIGH_MASK) | ec).to_bytes(4, "little"), DOM))
-    n1 = new.count("oneup")
+    n1 = sum(1 for g in new if g[0] == "oneup")
     if n1:
         lives = (await bizhawk.read(ctx.bizhawk_ctx, [(LIVES, 1, DOM)]))[0][0]
         writes.append((LIVES, bytes([min(LIVES_CAP, lives + n1)]), DOM))
+    kinds = {g[0] for g in new}
+    if ENERGY_REFILL_GRANT in kinds and not tick.dead:
+        writes.append((HP, (await bizhawk.read(ctx.bizhawk_ctx, [(HPMAX, 1, DOM)]))[0], DOM))
+    if WEAPON_REFILL_GRANT in kinds:
+        writes += await weapon_refill_writes(ctx, counts)
     return new, pt, writes
 
 
@@ -186,22 +209,29 @@ async def grant_items(client: "MMZXClient", ctx, tick: Tick) -> None:
     consumables are applied once per game state and logged in the datastore.
     """
     counts = received_counts(ctx)
-    consumables = [ITEM_BY_ID[net.item][1][0] for net in ctx.items_received
-                   if net.item in ITEM_BY_ID and ITEM_BY_ID[net.item][1][0] in ("ecrystals", "oneup")]
+    consumables = [tuple(ITEM_BY_ID[net.item][1]) for net in ctx.items_received
+                   if net.item in ITEM_BY_ID and ITEM_BY_ID[net.item][1][0] in CONSUMABLE_GRANTS]
     goal = client.goal
     missions = len(client.missions_cleared or ())
-    bits, cardkeys = wanted_progress_bits(counts, goal, missions)
+    mutos = len(client.mutos_beaten or ())
+    bits, cardkeys = wanted_progress_bits(counts, goal, missions, client.closed_gates, mutos)
 
     writes = await weapon_energy_writes(ctx, counts)
     # idempotent bits go to live (effect now) and canonical (persistence)
     gate_opening = False
-    if bits:
-        masks = bits_by_byte(bits)
-        addrs = sorted(masks)
+    # the seal of Area M holds its bits down until it opens
+    sealed = client.seal.closed_bits(counts)
+    bits -= sealed
+    seal_opening = False
+    if bits or sealed:
+        masks, held = bits_by_byte(bits), bits_by_byte(sealed)
+        addrs = sorted(masks.keys() | held.keys())
         live, canon = await read_copies(ctx, addrs)
-        writes += copies_writes(addrs, live, canon, set_masks=masks)
+        writes += copies_writes(addrs, live, canon, set_masks=masks, clear_masks=held)
+        seal_addr, seal_bit = SEAL_GATE_BIT
+        seal_opening = client.seal.gated and not sealed and not live[seal_addr] & (1 << seal_bit)
         # the gate flags were down until now: the requirement was just met
-        gate_opening = goal.met(counts, missions) and any(not live[a] & (1 << b) for a, b in goal.gate_bits())
+        gate_opening = goal.met(counts, missions, mutos) and any(not live[a] & (1 << b) for a, b in goal.gate_bits())
     # Card Keys: exactly the received set, since the game also hands them out
     # as mission rewards; the neighbouring bits are unrelated flags
     want = bits_by_byte(cardkeys)
@@ -219,13 +249,16 @@ async def grant_items(client: "MMZXClient", ctx, tick: Tick) -> None:
                             set_masks={a: dwant.get(a, 0) for a in daddrs},
                             clear_masks={a: dall[a] & ~dwant.get(a, 0) for a in daddrs})
     writes += await capacity_writes(ctx, counts)
-    new_consumables, pt, cons_writes = await consumable_writes(client, ctx, consumables)
+    new_consumables, pt, cons_writes = await consumable_writes(client, ctx, consumables, counts, tick)
     writes += cons_writes
     if not writes:
         return
     ok = await bizhawk.guarded_write(ctx.bizhawk_ctx, writes, [tick.guard])
     if ok and gate_opening:
-        client.notify_queue.append(notify_bytes(*GATE_OPEN_NOTICE, client.notify_style))
+        client.notify_queue.append(notify_bytes(*goal.open_notice(), client.notify_style))
+    if ok and seal_opening:
+        client.seal.rearm = True
+        client.notify_queue.append(notify_bytes(*SEAL_OPEN_NOTICE, client.notify_style))
     # consumables count as applied only if the write went through
     if ok and new_consumables:
         client.cons_log = [e for e in client.cons_log if e[1] <= pt] + [[len(consumables), pt]]

@@ -33,6 +33,7 @@ LOCATIONS = {
     'A-2: Sub Tank': {'id': 13631760, 'category': 'sub_tank', 'detect': ['bit', 34929784, 4], 'room': 'a02', 'pos': [488, 528], 'status': 'verified', 'icon': [2, 2]},
     'E-4: Sub Tank': {'id': 13631761, 'category': 'sub_tank', 'detect': ['bit', 34929784, 5], 'room': 'e04', 'pos': [2644, 840], 'status': 'verified', 'icon': [23, 24]},
     'K-1: Sub Tank': {'id': 13631762, 'category': 'sub_tank', 'detect': ['bit', 34929784, 6], 'room': 'k01', 'pos': [7216, 1314], 'status': 'verified', 'icon': [52, 58]},
+    'Obtain Biometal Z': {'id': 13632000, 'category': 'biometal', 'detect': ['any', [[34620930, 1], [34620897, 1]]], 'room': 'd02', 'pos': [7808, 544], 'status': 'verified'},
     'Obtain Biometal H': {'id': 13632001, 'category': 'biometal', 'detect': ['any', [[34620880, 1], [34620881, 1]]], 'room': 'E-7/I-3', 'pos': None, 'status': 'verified'},
     'Obtain Biometal L': {'id': 13632003, 'category': 'biometal', 'detect': ['any', [[34620880, 3], [34620881, 3]]], 'room': 'F-5/J-5', 'pos': None, 'status': 'verified'},
     'Obtain Biometal F': {'id': 13632005, 'category': 'biometal', 'detect': ['any', [[34620880, 5], [34620881, 5]]], 'room': 'G-5/K-4', 'pos': None, 'status': 'verified'},
@@ -41,15 +42,15 @@ LOCATIONS = {
     'Mission - Pass The Test': {'id': 13632259, 'category': 'mission', 'detect': ['all', [[34620896, 0]]], 'room': 'C-1C-2', 'pos': None, 'status': 'verified'},
     'Mission - Troop Reinforcement': {'id': 13632260, 'category': 'mission', 'detect': ['all', [[34620897, 1]]], 'room': 'D-2', 'pos': None, 'status': 'verified'},
     'Mission - Search The Plant': {'id': 13632261, 'category': 'mission', 'detect': ['all', [[34620897, 4]]], 'room': 'E-7', 'pos': None, 'status': 'verified'},
-    'Mission - Find The Survivors': {'id': 13632262, 'category': 'mission', 'detect': ['all', [[34620897, 7], [34620901, 0]]], 'room': 'F', 'pos': None, 'status': 'verified'},
-    'Mission - Fight The Mavericks': {'id': 13632263, 'category': 'mission', 'detect': ['all', [[34620899, 7], [34620901, 3]]], 'room': 'G', 'pos': None, 'status': 'verified'},
+    'Mission - Find The Survivors': {'id': 13632262, 'category': 'mission', 'detect': ['all', [[34620897, 7]]], 'room': 'F', 'pos': None, 'status': 'verified'},
+    'Mission - Fight The Mavericks': {'id': 13632263, 'category': 'mission', 'detect': ['all', [[34620899, 7]]], 'room': 'G', 'pos': None, 'status': 'verified'},
     'Mission - Secure The Biometal': {'id': 13632264, 'category': 'mission', 'detect': ['all', [[34620900, 3]]], 'room': 'H-4', 'pos': None, 'status': 'verified'},
     'Mission - Save The People': {'id': 13632265, 'category': 'mission', 'detect': ['all', [[34620900, 7]]], 'room': 'I-3', 'pos': None, 'status': 'verified'},
     'Mission - Recover The Disk': {'id': 13632266, 'category': 'mission', 'detect': ['all', [[34620901, 2]]], 'room': 'J-5', 'pos': None, 'status': 'verified'},
     'Mission - Attack The Excavators': {'id': 13632267, 'category': 'mission', 'detect': ['all', [[34620901, 6]]], 'room': 'K-4', 'pos': None, 'status': 'verified'},
     'Mission - Protect The Lab': {'id': 13632268, 'category': 'mission', 'detect': ['all', [[34620902, 1]]], 'room': 'L-4', 'pos': None, 'status': 'verified'},
     'Mission - Protect Hq': {'id': 13632269, 'category': 'mission', 'detect': ['all', [[34620903, 0]]], 'room': 'X HQ', 'pos': None, 'status': 'verified'},
-    'Mission - Stop The Dig': {'id': 13632270, 'category': 'mission', 'detect': ['all', [[34620903, 3], [34620903, 4]]], 'room': 'M', 'pos': None, 'status': 'verified'},
+    'Mission - Stop The Dig': {'id': 13632270, 'category': 'mission', 'detect': ['all', [[34620903, 3]]], 'room': 'M', 'pos': None, 'status': 'verified'},
     'Mission - Repel The Army': {'id': 13632271, 'category': 'mission', 'detect': ['all', [[34620903, 7], [34620904, 0]]], 'room': 'O', 'pos': None, 'status': 'verified'},
     'Mission - Destroy Model W': {'id': 13632272, 'category': 'mission', 'detect': None, 'room': 'D-4D-5', 'pos': None, 'status': 'detect_pending'},
     'Quest - Find The Flower': {'id': 13632340, 'category': 'quest', 'detect': None, 'room': 'A-1', 'pos': None, 'status': 'detect_pending'},
@@ -82,6 +83,53 @@ LOCATIONS = {
     'J-3: Disk M-7': {'id': 13632494, 'category': 'disk', 'detect': ['bit', 34620947, 0], 'room': 'j03', 'pos': [1704, 1000], 'status': 'verified', 'icon': [49, 15]},
     'H-3: Disk M-8': {'id': 13632495, 'category': 'disk', 'detect': ['bit', 34620947, 1], 'room': 'h03', 'pos': [2248, 936], 'status': 'verified', 'icon': [40, 34]},
     'K-3: Disk M-9': {'id': 13632496, 'category': 'disk', 'detect': ['bit', 34620947, 2], 'room': 'k03', 'pos': [560, 1102], 'status': 'verified', 'icon': [54, 1]},
+    'X-3: E Tank': {'id': 13632768, 'category': 'usable', 'detect': ['bit', 34620956, 4], 'room': 'x03', 'pos': [952, 520], 'status': 'verified'},
+    'X-2: W Tank': {'id': 13632769, 'category': 'usable', 'detect': ['bit', 34620956, 5], 'room': 'x02', 'pos': [1080, 408], 'status': 'verified'},
+    'C-2: Orange': {'id': 13632770, 'category': 'usable', 'detect': ['bit', 34620956, 6], 'room': 'c02', 'pos': [6536, 472], 'status': 'verified'},
+    'H-3: Candy': {'id': 13632771, 'category': 'usable', 'detect': ['bit', 34620956, 7], 'room': 'h03', 'pos': [768, 842], 'status': 'verified'},
+    'C-1: Bread': {'id': 13632772, 'category': 'usable', 'detect': ['bit', 34620957, 0], 'room': 'c01', 'pos': [5426, 712], 'status': 'verified'},
+    'A-3: Apple': {'id': 13632773, 'category': 'usable', 'detect': ['bit', 34620957, 1], 'room': 'a03', 'pos': [2264, 392], 'status': 'verified'},
+    'X-1: Smelling Salts': {'id': 13632774, 'category': 'usable', 'detect': ['bit', 34620957, 2], 'room': 'x01', 'pos': [1296, 1112], 'status': 'verified'},
+    'C-1: Cake': {'id': 13632775, 'category': 'usable', 'detect': ['bit', 34620957, 3], 'room': 'c01', 'pos': [2260, 856], 'status': 'verified'},
+    'B-1: Computer Chip': {'id': 13633024, 'category': 'story', 'detect': ['bit', 34620958, 7], 'room': 'b01', 'pos': [1578, 904], 'status': 'verified', 'story': 'object', 'icon': [5, 7]},
+    'B-1: Computer Chip (2)': {'id': 13633025, 'category': 'story', 'detect': ['bit', 34620959, 0], 'room': 'b01', 'pos': [3705, 839], 'status': 'verified', 'story': 'object', 'icon': [5, 22]},
+    'B-2: Computer Chip': {'id': 13633026, 'category': 'story', 'detect': ['bit', 34620959, 1], 'room': 'b02', 'pos': [1124, 713], 'status': 'verified', 'story': 'object', 'icon': [6, 7]},
+    'B-2: Computer Chip (2)': {'id': 13633027, 'category': 'story', 'detect': ['bit', 34620959, 2], 'room': 'b02', 'pos': [2197, 666], 'status': 'verified', 'story': 'object', 'icon': [6, 14]},
+    'C-2: Stuffed Animal': {'id': 13633028, 'category': 'story', 'detect': ['any', [[34620959, 3], [34620896, 0]]], 'room': 'c02', 'pos': [3976, 920], 'status': 'verified', 'story': 'object'},
+    'C-1: Guardian Oeillet': {'id': 13633029, 'category': 'story', 'detect': ['bit', 34620895, 3], 'room': 'c01', 'pos': [4808, 1288], 'status': 'verified', 'story': 'event'},
+    'C-1: Guardian Carrelet': {'id': 13633030, 'category': 'story', 'detect': ['bit', 34620895, 4], 'room': 'c01', 'pos': [7896, 312], 'status': 'verified', 'story': 'event'},
+    'C-1: Guardian Congre': {'id': 13633031, 'category': 'story', 'detect': ['bit', 34620895, 5], 'room': 'c01', 'pos': [7896, 744], 'status': 'verified', 'story': 'event'},
+    'C-2: Guardian Thon': {'id': 13633032, 'category': 'story', 'detect': ['bit', 34620895, 7], 'room': 'c02', 'pos': [3256, 888], 'status': 'verified', 'story': 'event'},
+    'E-3: Generator': {'id': 13633033, 'category': 'story', 'detect': ['bit', 34620876, 5], 'room': 'e03', 'pos': [2136, 488], 'status': 'verified', 'story': 'event'},
+    'F-3: Data Disk 1': {'id': 13633034, 'category': 'story', 'detect': ['any', [[34620868, 3], [34620962, 5]]], 'room': 'f03', 'pos': [1712, 1120], 'status': 'verified', 'story': 'object'},
+    'F-3: Lock Hack': {'id': 13633035, 'category': 'story', 'detect': ['any', [[34620868, 3], [34620923, 5]]], 'room': 'f03', 'pos': [1744, 1120], 'status': 'verified', 'story': 'gate'},
+    'G-2: Guardian Chene': {'id': 13633036, 'category': 'story', 'detect': ['bit', 34620898, 2], 'room': 'g02', 'pos': [588, 1224], 'status': 'verified', 'story': 'event'},
+    'G-2: Guardian Sole': {'id': 13633037, 'category': 'story', 'detect': ['bit', 34620898, 3], 'room': 'g02', 'pos': [284, 5128], 'status': 'verified', 'story': 'event'},
+    'G-2: Guardian Platane': {'id': 13633038, 'category': 'story', 'detect': ['bit', 34620898, 4], 'room': 'g02', 'pos': [589, 904], 'status': 'verified', 'story': 'event'},
+    'G-2: Guardian Bonite': {'id': 13633039, 'category': 'story', 'detect': ['bit', 34620898, 5], 'room': 'g02', 'pos': [696, 4760], 'status': 'verified', 'story': 'event'},
+    'G-2: Civilian': {'id': 13633040, 'category': 'story', 'detect': ['bit', 34620898, 6], 'room': 'g02', 'pos': [372, 1704], 'status': 'verified', 'story': 'event'},
+    'G-2: Civilian (5)': {'id': 13633041, 'category': 'story', 'detect': ['bit', 34620898, 7], 'room': 'g02', 'pos': [472, 3976], 'status': 'verified', 'story': 'event'},
+    'G-2: Civilian (2)': {'id': 13633042, 'category': 'story', 'detect': ['bit', 34620899, 0], 'room': 'g02', 'pos': [504, 2072], 'status': 'verified', 'story': 'event'},
+    'G-2: Civilian (3)': {'id': 13633043, 'category': 'story', 'detect': ['bit', 34620899, 1], 'room': 'g02', 'pos': [472, 3208], 'status': 'verified', 'story': 'event'},
+    'G-2: Civilian (6)': {'id': 13633044, 'category': 'story', 'detect': ['bit', 34620899, 2], 'room': 'g02', 'pos': [690, 4376], 'status': 'verified', 'story': 'event'},
+    'G-2: Civilian (7)': {'id': 13633045, 'category': 'story', 'detect': ['bit', 34620899, 3], 'room': 'g02', 'pos': [328, 5896], 'status': 'verified', 'story': 'event'},
+    'G-2: Civilian (4)': {'id': 13633046, 'category': 'story', 'detect': ['bit', 34620899, 4], 'room': 'g02', 'pos': [710, 3608], 'status': 'verified', 'story': 'event'},
+    'G-2: Civilian (8)': {'id': 13633047, 'category': 'story', 'detect': ['bit', 34620899, 5], 'room': 'g02', 'pos': [688, 6296], 'status': 'verified', 'story': 'event'},
+    'G-3: Dog': {'id': 13633048, 'category': 'story', 'detect': ['bit', 34620899, 6], 'room': 'g03', 'pos': [1768, 536], 'status': 'verified', 'story': 'event'},
+    'G-2: Sprinkler Key': {'id': 13633049, 'category': 'story', 'detect': ['bit', 34620923, 6], 'room': 'g02', 'pos': [656, 432], 'status': 'verified', 'story': 'gate'},
+    'J-5: Data Disk 2': {'id': 13633050, 'category': 'story', 'detect': ['any', [[34620962, 6], [34620870, 5]]], 'room': 'j05', 'pos': [736, 751], 'status': 'verified', 'story': 'object', 'icon': [51, 154]},
+    'K-1: Lava Flow Control': {'id': 13633051, 'category': 'story', 'detect': ['bit', 34620877, 0], 'room': 'k01', 'pos': [6872, 1304], 'status': 'verified', 'story': 'event'},
+    'L-4: Data Disk 3': {'id': 13633052, 'category': 'story', 'detect': ['any', [[34620962, 7], [34620871, 4]]], 'room': 'l04', 'pos': [2928, 751], 'status': 'verified', 'story': 'object', 'icon': [60, 155]},
+    'K-4: Door Switch': {'id': 13633053, 'category': 'story', 'detect': ['bit', 34620923, 7], 'room': 'k04', 'pos': [288, 1864], 'status': 'verified', 'story': 'event'},
+    'D-1: Bridge Switch': {'id': 13633054, 'category': 'story', 'detect': ['bit', 34620923, 3], 'room': 'd01', 'pos': [2270, 552], 'status': 'verified', 'story': 'event'},
+    'N-1: Hellbat Schilt': {'id': 13633280, 'category': 'zero3_boss', 'detect': ['bit', 34620930, 4], 'room': 'n01', 'pos': [3248, 1120], 'status': 'verified', 'boss': 'hellbat_schilt'},
+    "N-1: Blazin' Flizard": {'id': 13633281, 'category': 'zero3_boss', 'detect': ['bit', 34620930, 5], 'room': 'n01', 'pos': [2608, 1136], 'status': 'verified', 'boss': 'blazin_flizard'},
+    'N-1: Fenri Lunaedge': {'id': 13633282, 'category': 'zero4_boss', 'detect': ['bit', 34620930, 6], 'room': 'n01', 'pos': [2352, 1680], 'status': 'verified', 'boss': 'fenri_lunaedge'},
+    'N-1: Noble Mandrago': {'id': 13633283, 'category': 'zero4_boss', 'detect': ['bit', 34620930, 7], 'room': 'n01', 'pos': [3376, 1680], 'status': 'verified', 'boss': 'noble_mandrago'},
+    'N-1: Deathtanz Mantisk': {'id': 13633284, 'category': 'zero3_boss', 'detect': ['bit', 34620931, 0], 'room': 'n01', 'pos': [1584, 1328], 'status': 'verified', 'boss': 'deathtanz_mantisk'},
+    'N-1: Childre Inarabitta': {'id': 13633285, 'category': 'zero3_boss', 'detect': ['bit', 34620931, 1], 'room': 'n01', 'pos': [2096, 1328], 'status': 'verified', 'boss': 'childre_inarabitta'},
+    'N-1: Sol Titanion': {'id': 13633286, 'category': 'zero4_boss', 'detect': ['bit', 34620931, 2], 'room': 'n01', 'pos': [2864, 1712], 'status': 'verified', 'boss': 'sol_titanion'},
+    'N-1: Pegasolta Eclair': {'id': 13633287, 'category': 'zero4_boss', 'detect': ['bit', 34620931, 3], 'room': 'n01', 'pos': [656, 2240], 'status': 'verified', 'boss': 'pegasolta_eclair'},
     'A-1: Disk E-1': {'id': 13633488, 'category': 'disk', 'detect': ['bit', 34620947, 4], 'room': 'a01', 'pos': [7632, 344], 'status': 'verified', 'icon': [1, 51]},
     'F-3: Disk E-2': {'id': 13633489, 'category': 'disk', 'detect': ['bit', 34620947, 5], 'room': 'f03', 'pos': [1984, 628], 'status': 'verified', 'icon': [30, 85]},
     'I-1: Disk E-3': {'id': 13633490, 'category': 'disk', 'detect': ['bit', 34620947, 6], 'room': 'i01', 'pos': [2592, 632], 'status': 'verified', 'icon': [42, 27]},
@@ -330,15 +378,43 @@ ITEMS = {
     'Wind Boots Chip': {'id': 13664581, 'classification': 'useful', 'grant': ['live_bit', 34620958, 3], 'pooled': True},
     'Frog Chip': {'id': 13664582, 'classification': 'useful', 'grant': ['live_bit', 34620958, 4], 'pooled': True},
     'Eraser Chip': {'id': 13664583, 'classification': 'useful', 'grant': ['live_bit', 34620957, 6], 'pooled': True},
-    'E-Crystals': {'id': 13664768, 'classification': 'filler', 'grant': ['ecrystals'], 'pooled': True},
+    'E Tank': {'id': 13664592, 'classification': 'useful', 'grant': ['usable', 0], 'pooled': True},
+    'W Tank': {'id': 13664593, 'classification': 'useful', 'grant': ['usable', 1], 'pooled': True},
+    'Orange': {'id': 13664594, 'classification': 'useful', 'grant': ['usable', 2], 'pooled': True},
+    'Candy': {'id': 13664595, 'classification': 'useful', 'grant': ['usable', 3], 'pooled': True},
+    'Bread': {'id': 13664596, 'classification': 'useful', 'grant': ['usable', 4], 'pooled': True},
+    'Apple': {'id': 13664597, 'classification': 'useful', 'grant': ['usable', 5], 'pooled': True},
+    'Smelling Salts': {'id': 13664598, 'classification': 'useful', 'grant': ['usable', 6], 'pooled': True},
+    'Cake': {'id': 13664599, 'classification': 'useful', 'grant': ['usable', 7], 'pooled': True},
+    'Computer Chip': {'id': 13664608, 'classification': 'progression', 'grant': ['story', [0, 1, 2, 3]], 'pooled': False, 'count': 4},
+    'Stuffed Animal': {'id': 13664609, 'classification': 'progression', 'grant': ['story', [4]], 'pooled': False},
+    'Data Disk 1': {'id': 13664610, 'classification': 'progression', 'grant': ['story', [5]], 'pooled': False},
+    'Data Disk 2': {'id': 13664611, 'classification': 'progression', 'grant': ['story', [6]], 'pooled': False},
+    'Data Disk 3': {'id': 13664612, 'classification': 'progression', 'grant': ['story', [7]], 'pooled': False},
+    'Lava Flow Control': {'id': 13664613, 'classification': 'progression', 'grant': ['story_gate', [0]], 'pooled': False},
+    'Area F Lock Hack': {'id': 13664614, 'classification': 'progression', 'grant': ['story_gate', [5]], 'pooled': False},
+    'Sprinkler Key': {'id': 13664615, 'classification': 'progression', 'grant': ['story_gate', [6]], 'pooled': False},
+    'Area K Door Switch': {'id': 13664616, 'classification': 'progression', 'grant': ['story_gate', [7]], 'pooled': False},
+    'Area E Power Shutdown': {'id': 13664617, 'classification': 'useful', 'grant': ['story_area', 'E', [[34620876, 5]]], 'pooled': False},
+    'Area D Bridge': {'id': 13664618, 'classification': 'progression', 'grant': ['story_gate', [3]], 'pooled': False},
+    '50 E-Crystals': {'id': 13664768, 'classification': 'filler', 'grant': ['ecrystals', 50], 'pooled': True},
     '1-Up': {'id': 13664769, 'classification': 'filler', 'grant': ['oneup'], 'pooled': True},
+    '100 E-Crystals': {'id': 13664770, 'classification': 'filler', 'grant': ['ecrystals', 100], 'pooled': True},
+    '25 E-Crystals': {'id': 13664771, 'classification': 'filler', 'grant': ['ecrystals', 25], 'pooled': True},
+    'Energy Refill': {'id': 13664772, 'classification': 'filler', 'grant': ['energy_refill'], 'pooled': True},
+    'Weapon Energy Refill': {'id': 13664773, 'classification': 'filler', 'grant': ['weapon_refill'], 'pooled': True},
     'Secret Disk': {'id': 13665024, 'classification': 'progression', 'grant': ['secret_disk'], 'pooled': False},
+    'Password': {'id': 13665025, 'classification': 'progression', 'grant': ['password'], 'pooled': False},
 }
 
 # Goal bits: the epilogue event flag set after Serpent's final explosion,
 # and the D-5 script flags of Serpent's two forms as the alternative.
 GOAL_BITS = [(0x021045CA, 5)]
 GOAL_BITS_SERPENT = [(0x02104602, 2), (0x02104602, 3)]
+# The N-1 script flag of Omega Zero beaten, the goal of defeat_omega_zero, which drops
+# the rooms of the final area and its mission.
+GOAL_BITS_OMEGA = [(0x02104603, 4)]
+FINAL_AREA_ROOMS = ['d04', 'd05']
 
 # The game's own 'disk collected' bits, one per database entry (series B, M, E, O).
 # The ROM patch stops the world's disks from writing them: the client lights one
@@ -445,7 +521,7 @@ SECRET_DISK_ENTRIES = [
 # location carries 'icon': [subarea, coords index], its place in the table.
 PICKUP_TABLE_ADDR = 0x02191B00
 ICON_SET = 261
-ICON_CODES = {'logo_useful': 1, 'logo_progression': 2, 'logo_filler': 3, 'lifeup': 4, 'subtank': 5, 'chip_Absorber': 6, 'chip_Eraser': 7, 'chip_Featherweight': 8, 'chip_Extender': 9, 'chip_QuickCharger': 10, 'chip_IceBoots': 11, 'chip_WindBoots': 12, 'chip_Frog': 13, 'model_Hu': 14, 'model_X': 15, 'model_ZX': 16, 'model_HX': 17, 'model_FX': 18, 'model_LX': 19, 'model_PX': 20, 'model_OX': 21, 'card_Red': 22, 'card_Blue': 23, 'card_Purple': 24, 'card_Green': 25, 'card_Yellow': 26, 'card_White': 27, 'secret_disk': 28}
+ICON_CODES = {'logo_useful': 1, 'logo_progression': 2, 'logo_filler': 3, 'lifeup': 4, 'subtank': 5, 'chip_Absorber': 6, 'chip_Eraser': 7, 'chip_Featherweight': 8, 'chip_Extender': 9, 'chip_QuickCharger': 10, 'chip_IceBoots': 11, 'chip_WindBoots': 12, 'chip_Frog': 13, 'model_Hu': 14, 'model_X': 15, 'model_ZX': 16, 'model_HX': 17, 'model_FX': 18, 'model_LX': 19, 'model_PX': 20, 'model_OX': 21, 'card_Red': 22, 'card_Blue': 23, 'card_Purple': 24, 'card_Green': 25, 'card_Yellow': 26, 'card_White': 27, 'secret_disk': 28, 'chip_Computer': 29, 'stuffed_animal': 30, 'data_disk': 31}
 # On-screen notice buffer (request flag, state, duration, text).
 NOTIFY_ADDR = 0x020CB700
 NOTIFY_BUF_MAX = 0xFC
@@ -523,6 +599,67 @@ MISSION_ACCEPT = {
     68: {'id': 13, 'state': 211, 'flag': [34620902, 3], 'name': 'Protect Hq', 'extra': [[34620902, 4]], 'after_missions': 4},
     69: {'id': 13, 'state': 211, 'flag': [34620902, 3], 'name': 'Protect Hq', 'extra': [[34620902, 4]], 'after_missions': 4},
 }
+# The 'completed' bit of each mission (ids 2 to 15), set by its Report; the
+# Mission Requests list of the patched ROM offers the missions whose bit is set.
+MISSION_COMPLETED_BIT = {
+    2: [34620894, 7],
+    3: [34620896, 0],
+    4: [34620897, 1],
+    5: [34620897, 4],
+    6: [34620897, 7],
+    7: [34620899, 7],
+    8: [34620900, 3],
+    9: [34620900, 7],
+    10: [34620901, 2],
+    11: [34620901, 6],
+    12: [34620902, 1],
+    13: [34620903, 0],
+    14: [34620903, 3],
+    15: [34620903, 7],
+}
+# Bits the ROM clears when a mission is taken again from that list, so that its
+# objective and its boss come back: mission id -> [[addr, bit], ...].
+MISSION_REPEAT_BITS = {
+    2: [[34620930, 0]],
+    3: [[34620895, 2], [34620895, 3], [34620895, 4], [34620895, 5], [34620895, 6], [34620895, 7]],
+    4: [[34620930, 1]],
+    5: [[34620926, 4], [34620925, 4]],
+    6: [[34620926, 5], [34620925, 5]],
+    7: [[34620926, 6], [34620925, 6]],
+    8: [[34620926, 7], [34620925, 7]],
+    9: [[34620900, 6], [34620926, 0], [34620927, 0], [34620923, 4]],
+    10: [[34620926, 1], [34620927, 1]],
+    11: [[34620927, 2], [34620926, 2]],
+    12: [[34620927, 3], [34620926, 3]],
+    13: [],
+    14: [[34620929, 6]],
+    15: [[34620929, 7]],
+}
+# mission_objectives: locations_and_items. The Report of these missions also asks for the item
+# (mission state -> item); these event gates open with an item instead of with
+# their event (flag -> item); the item that slows the lava of Area K, whose location
+# stands for the SLOW_LAVA atom of the logic in the other modes; the same pair for the
+# K_DOOR_SWITCH atom, the door of K-1 that the switch of K-4 unlocks; and for the
+# D_BRIDGE atom, the bridge of D-1, which is down from the start in the other modes.
+STORY_REPORT_STATES = {0x95: 'Computer Chip', 0x99: 'Stuffed Animal', 0xAE: 'Data Disk 1', 0xC9: 'Data Disk 2', 0xD0: 'Data Disk 3'}
+STORY_REPORT_ITEMS = {'Locate Giro': 'Computer Chip', 'Pass The Test': 'Stuffed Animal', 'Find The Survivors': 'Data Disk 1', 'Recover The Disk': 'Data Disk 2', 'Protect The Lab': 'Data Disk 3'}
+STORY_GATE_ITEMS = {381: 'Area F Lock Hack', 382: 'Sprinkler Key'}
+STORY_LAVA_LOCATION = 'K-1: Lava Flow Control'
+STORY_LAVA_ITEM = 'Lava Flow Control'
+STORY_SWITCH_LOCATION = 'K-4: Door Switch'
+STORY_SWITCH_ITEM = 'Area K Door Switch'
+STORY_BRIDGE_LOCATION = 'D-1: Bridge Switch'
+STORY_BRIDGE_ITEM = 'Area D Bridge'
+# mission_objectives: locations_and_items. An event whose effect became an item marks, instead of its
+# flag, a bit of the byte of the pickup table section that the game fills (location -> bit).
+STORY_DONE_BITS = {'E-3: Generator': 5}
+# The game hands these out in order: each location also needs the one before it.
+STORY_CHAINS = [['C-1: Guardian Oeillet', 'C-1: Guardian Carrelet', 'C-1: Guardian Congre', 'C-2: Guardian Thon', 'C-2: Stuffed Animal']]
+# location -> [how many, of these locations] it needs within reach.
+STORY_COUNTS = {'G-2: Sprinkler Key': [8, ['G-2: Guardian Chene', 'G-2: Guardian Sole', 'G-2: Guardian Platane', 'G-2: Guardian Bonite', 'G-2: Civilian', 'G-2: Civilian (2)', 'G-2: Civilian (3)', 'G-2: Civilian (4)', 'G-2: Civilian (5)', 'G-2: Civilian (6)', 'G-2: Civilian (7)', 'G-2: Civilian (8)', 'G-3: Dog']]}
+# Missions that end with a teleport to the Guardian Base: mission -> the room the player lands
+# in. include_warps_in_logic makes each one an entrance into Area X.
+MISSION_WARPS = {'Troop Reinforcement': 'x02', 'Repel The Army': 'x02'}
 # Mini-bosses skip_minibosses treats as beaten: area letter -> [[addr, bit], ...],
 # the flag each room script sets when the mini-boss dies.
 MINIBOSS_FLAGS = {
@@ -751,6 +888,7 @@ TRANSERVER_ACCESS = {
 }
 TRANSERVER_ALWAYS = []
 EVENT_GATES = {
+    63: [0x021045D3, 7],
     191: [0x021045E3, 7],
     205: [0x021045E5, 5],
     221: [0x021045E7, 5],
@@ -763,8 +901,31 @@ EVENT_GATES = {
     768: [0x0210462C, 0],
     769: [0x0210462C, 1],
 }
+# The flag of the arena door of Omega Zero: raised by the client with the goal requirements
+# met under defeat_omega_zero (the patch keys the door to it).
+OMEGA_GATE = 63
 EVENT_GATES_OPEN = [205, 221, 379, 381, 382, 395]
+# With mission_objectives on, these gates of EVENT_GATES_OPEN are the player's to open.
+EVENT_GATES_STORY = [379]
 EVENT_GATES_GOAL = [225, 378]
+# The seal of Area M (area_m_access): its gate flag, the Transerver item held back with
+# it, and the rooms it closes off (the seal stands a few steps inside M-1, with
+# nothing before it).
+SEAL_GATE = 395
+SEAL_TRANSERVER = 'Transerver Access - Area M'
+SEAL_ROOMS = ['m01', 'm02', 'm03', 'n01']
+# The eight Mega Man Zero 3/4 bosses of N-1 (zero3_bosses, zero4_bosses), by boss id:
+# their game, their location, the flag the room script sets when they die and their capsule.
+ZERO_BOSSES = {
+    'hellbat_schilt': {'name': 'Hellbat Schilt', 'game': 3, 'location': 'N-1: Hellbat Schilt', 'flag': [34620930, 4], 'capsule': [1480, 1608]},
+    'blazin_flizard': {'name': "Blazin' Flizard", 'game': 3, 'location': "N-1: Blazin' Flizard", 'flag': [34620930, 5], 'capsule': [1480, 1704]},
+    'fenri_lunaedge': {'name': 'Fenri Lunaedge', 'game': 4, 'location': 'N-1: Fenri Lunaedge', 'flag': [34620930, 6], 'capsule': [1848, 1704]},
+    'noble_mandrago': {'name': 'Noble Mandrago', 'game': 4, 'location': 'N-1: Noble Mandrago', 'flag': [34620930, 7], 'capsule': [1992, 1704]},
+    'deathtanz_mantisk': {'name': 'Deathtanz Mantisk', 'game': 3, 'location': 'N-1: Deathtanz Mantisk', 'flag': [34620931, 0], 'capsule': [1336, 1608]},
+    'childre_inarabitta': {'name': 'Childre Inarabitta', 'game': 3, 'location': 'N-1: Childre Inarabitta', 'flag': [34620931, 1], 'capsule': [1336, 1704]},
+    'sol_titanion': {'name': 'Sol Titanion', 'game': 4, 'location': 'N-1: Sol Titanion', 'flag': [34620931, 2], 'capsule': [1992, 1608]},
+    'pegasolta_eclair': {'name': 'Pegasolta Eclair', 'game': 4, 'location': 'N-1: Pegasolta Eclair', 'flag': [34620931, 3], 'capsule': [1848, 1608]},
+}
 # Warp menu destinations (map badges) and save-only pads (DATA rooms).
 WARP_DESTINATIONS = ['a02', 'b02', 'c02', 'd02', 'e07', 'f05', 'g05', 'i03', 'k04', 'l04', 'm03', 'o02']
 DOORS = [

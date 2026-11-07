@@ -25,8 +25,12 @@ ACCESS_X_LOCATIONS = [
     "X-1: Disk O-13", "X-1: Disk O-14", "X-1: Disk O-15", "X-1: Disk O-19", "X-1: Disk O-2",
     "X-1: Disk O-20", "X-1: Disk O-4", "X-1: Disk O-5", "X-1: Disk O-6", "X-1: Disk O-7",
     "X-1: Disk O-8", "X-2: Disk O-16", "X-2: Disk O-3", "X-3: Disk O-11",
+    "X-1: Smelling Salts", "X-2: W Tank", "X-3: E Tank",
 ]
 TOWER_LOCATIONS = ["D-4: Disk B-5", "D-5: Disk B-6"]
+# Usables whose giver shows up, or starts selling, once a mission is cleared.
+USABLE_MISSIONS = {"C-1: Cake": "Cleared: Save The People",
+                   "X-1: Smelling Salts": "Cleared: Troop Reinforcement"}
 POOL_BIOMETALS = ["Model X", "Progressive Model HX", "Progressive Model FX",
                   "Progressive Model LX", "Progressive Model PX"]
 
@@ -126,13 +130,15 @@ class BiometalTests:
                                     [["Progressive Model FX"], ["Model OX"]], only_check_listed=True)
 
     def test_model_lx(self) -> None:
-        """Model LX (swimming) gates the flooded rooms of F-4 and J."""
-        self.assertAccessDependency(["F-4: Disk B-15", "J-5: Disk B-16", "Mission - Recover The Disk"],
+        """Model LX (swimming) gates the flooded rooms of F-4 and J and the Sub Tank of K-1."""
+        self.assertAccessDependency(["F-4: Disk B-15", "J-5: Disk B-16", "Mission - Recover The Disk",
+                                     "K-1: Sub Tank"],
                                     [["Progressive Model LX"]], only_check_listed=True)
 
     def test_model_px(self) -> None:
-        """Model PX is one of the four biometals K-1's Sub Tank asks for."""
-        self.assertAccessDependency(["K-1: Sub Tank"], [["Progressive Model PX"]], only_check_listed=True)
+        """Model PX gates three disks of Area I."""
+        self.assertAccessDependency(["I-2: Disk E-34", "I-4: Disk E-14", "I-4: Disk M-1"],
+                                    [["Progressive Model PX"]], only_check_listed=True)
 
     def test_six_biometals_open_the_tower(self) -> None:
         """The D-4 tower needs all six biometals: any missing one closes D-4 and D-5."""
@@ -141,11 +147,29 @@ class BiometalTests:
                 self.assertAccessDependency(TOWER_LOCATIONS, [[name]], only_check_listed=True)
 
 
+class UsableTests:
+    def test_usables_wait_for_their_mission(self) -> None:
+        """The cake and the salts are out of reach until their mission is cleared."""
+        for location, event in USABLE_MISSIONS.items():
+            with self.subTest(location=location):
+                state = CollectionState(self.multiworld)
+                for item in self.multiworld.get_items():
+                    if item.name != event:
+                        state.collect(item, prevent_sweep=True)
+                self.assertFalse(state.can_reach(location, "Location", 1))
+                state.collect(self.multiworld.get_location(event, 1).item, prevent_sweep=True)
+                self.assertTrue(state.can_reach(location, "Location", 1))
+
+
 class TestCardKeys(CardKeyTests, MMZXTestBase):
     pass
 
 
 class TestTranserver(TranserverTests, MMZXTestBase):
+    pass
+
+
+class TestUsables(UsableTests, MMZXTestBase):
     pass
 
 

@@ -11,6 +11,7 @@ from .addresses import (
     DISK_ITEM_ID, DOM, LOCATION_SLOTS, NOTIFY_BUF_OFF, NOTIFY_DUR, NOTIFY_DUR_OFF, NOTIFY_GREEN,
     NOTIFY_PAGE, NOTIFY_PUNCT, NOTIFY_QUEUE_MAX, NOTIFY_WHITE, PICKUP_CHECKED_REL, PICKUP_ICONS_OFF,
     PICKUP_STATE_ADDR, PICKUP_STATE_LEN)
+from .seal import PASSWORD_ITEM_ID
 
 if TYPE_CHECKING:
     from . import MMZXClient
@@ -190,6 +191,9 @@ async def push_notices(client: "MMZXClient", ctx) -> None:
         if net.item == DISK_ITEM_ID and client.goal.wants_disks:
             got = sum(1 for it in ctx.items_received[:client.notified_items] if it.item == DISK_ITEM_ID)
             tail = " (%d/%d)" % (got, client.goal.disks_required)
+        elif net.item == PASSWORD_ITEM_ID and client.seal.gated:
+            got = sum(1 for it in ctx.items_received[:client.notified_items] if it.item == PASSWORD_ITEM_ID)
+            tail = " (%d/%d)" % (got, client.seal.passwords_required)
         if net.player != ctx.slot:
             tail += " from " + ctx.player_names.get(net.player, str(net.player))
         client.notify_queue.append(notify_bytes("Got ", item, tail, client.notify_style))

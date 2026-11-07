@@ -22,7 +22,18 @@ UT loads from a zip you download once (`ut_pack_path` in `host.yaml`).
 
 Clone this repository into `worlds/mmzx` (or `custom_worlds/mmzx`) of an Archipelago source checkout, 0.6.7 or later. From
 the checkout root, `python -m unittest discover -s worlds/mmzx/test -t .` runs the tests (or `python worlds/mmzx/tools/run_tests.py` from anywhere). `tools/` holds the visual logic editor, the
-logic validator and probe and the `.apworld` packager; each script documents its usage in its header. The logic is drawn in the editor, which writes `logic/logic.json`. The editor draws rooms on renders
+logic validator and probe and the `.apworld` packager; each script documents its usage in its header.
+
+The access logic is not written in Python: it is drawn room by room in the visual editor of
+`tools/logic_editor/` (see its README), which writes `logic/logic.json` and two generated files:
+`logic/rules.py`, the region graph and every rule in the syntax of the Archipelago Rule Builder,
+which is what `regions.py` imports and builds the world from, and `logic/rules.json`, the same rules
+serialized for trackers. Rules carry their explanation, so Universal Tracker's `/explain` can say what
+a location needs. `tools/check_logic.py` validates the document and regenerates both files;
+`tools/logic_probe.py` shows what an inventory reaches. The generated files are committed and the
+tests fail when they fall behind the document: after a merge conflict in one of them, regenerate it
+(save in the editor or run `tools/check_logic.py`), never resolve it by hand. The `.apworld` ships
+`rules.py` alone; the document and the JSON twin stay in the repository. The editor draws rooms on renders
 of the game's levels, which are not in this repository; without them it works on a blank canvas.
 
 ## Credits

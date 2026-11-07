@@ -131,6 +131,17 @@
    },
    "unsure": false
   },
+  "A-3: Apple": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
   "A-4: Disk E-20": {
    "note": "A-4: top right of the tall structure (ladder + vertical column)",
    "req": {
@@ -156,6 +167,17 @@
    },
    "unsure": false
   },
+  "B-1: Computer Chip (2)": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
   "B-1: Disk E-24": {
    "note": "B-1: raised ledge at the far right",
    "req": {
@@ -168,6 +190,17 @@
    "unsure": false
   },
   "B-1: E-Crystal L": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "B-2: Computer Chip": {
    "note": "",
    "req": {
     "normal": [
@@ -299,6 +332,29 @@
    },
    "unsure": false
   },
+  "C-1: Bread": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "C-1: Cake": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU",
+      "SAVE_THE_PEOPLE"
+     ]
+    ]
+   },
+   "unsure": false
+  },
   "C-1: E-Crystal L": {
    "note": "",
    "req": {
@@ -378,6 +434,28 @@
    "unsure": false
   },
   "C-1: E-Crystal L (9)": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "C-1: Guardian Carrelet": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "C-1: Guardian Congre": {
    "note": "",
    "req": {
     "normal": [
@@ -477,6 +555,39 @@
    },
    "unsure": false
   },
+  "C-2: Guardian Thon": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "C-2: Orange": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "C-2: Stuffed Animal": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU"
+     ]
+    ]
+   },
+   "unsure": false
+  },
   "C-3: Disk E-49": {
    "note": "C-3: high ledge on the left (y=34)",
    "req": {
@@ -494,6 +605,17 @@
     "normal": [
      [
       "HX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "D-1: Bridge Switch": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
      ]
     ]
    },
@@ -588,6 +710,17 @@
    "unsure": false
   },
   "E-2: Weapon Energy L": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "E-3: Generator": {
    "note": "",
    "req": {
     "normal": [
@@ -801,6 +934,94 @@
    },
    "unsure": false
   },
+  "G-2: Civilian": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "G-2: Civilian (2)": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "G-2: Civilian (3)": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "G-2: Civilian (4)": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "G-2: Civilian (5)": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "G-2: Civilian (6)": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "G-2: Civilian (7)": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "G-2: Civilian (8)": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU"
+     ]
+    ]
+   },
+   "unsure": false
+  },
   "G-2: Disk E-16": {
    "note": "",
    "req": {
@@ -811,6 +1032,17 @@
      [
       "LX",
       "FIGHT_THE_MAVERICKS"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "G-3: Dog": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU"
      ]
     ]
    },
@@ -927,6 +1159,17 @@
    "unsure": false
   },
   "H-1: Weapon Energy L": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "H-3: Candy": {
    "note": "",
    "req": {
     "normal": [
@@ -1142,14 +1385,12 @@
    "unsure": false
   },
   "K-1: Sub Tank": {
-   "note": "the longest one (ceilings, blocks, hidden button, swimming)",
+   "note": "the door on the way opens with the switch of K-4; then swimming",
    "req": {
     "normal": [
      [
-      "HX",
-      "FX",
       "LX",
-      "PX"
+      "K_DOOR_SWITCH"
      ]
     ]
    },
@@ -1468,6 +1709,17 @@
    },
    "unsure": false
   },
+  "Obtain Biometal Z": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
   "Quest - Deliver The Aid Kit": {
    "note": "destroy containers in L",
    "req": {
@@ -1512,6 +1764,28 @@
     ]
    },
    "unsure": true
+  },
+  "X-1: Smelling Salts": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "TROOP_REINFORCEMENT"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "X-2: W Tank": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
   }
  },
  "edges": {
@@ -1894,6 +2168,60 @@
    },
    "unsure": true
   },
+  "i01 door (1920,928)": {
+   "dst_pos": null,
+   "note": "",
+   "pos": null,
+   "req": {
+    "expert": [
+     [
+      "MODEL"
+     ]
+    ],
+    "normal": [
+     [
+      "PX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "i01 door (3488,352)": {
+   "dst_pos": null,
+   "note": "",
+   "pos": null,
+   "req": {
+    "expert": [
+     [
+      "MODEL"
+     ]
+    ],
+    "normal": [
+     [
+      "PX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "i01 door (3488,736)": {
+   "dst_pos": null,
+   "note": "",
+   "pos": null,
+   "req": {
+    "expert": [
+     [
+      "MODEL"
+     ]
+    ],
+    "normal": [
+     [
+      "PX"
+     ]
+    ]
+   },
+   "unsure": false
+  },
   "i02 door (2208,1120)": {
    "dst_pos": null,
    "note": "Diadrake (miniboss) right after entering I-4",
@@ -1983,6 +2311,110 @@
    "note": "climb the K-3 shaft up to the high exit",
    "pos": null,
    "req": null,
+   "unsure": false
+  },
+  "n01 door (1320,1616)": {
+   "dst_pos": null,
+   "note": "",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "n01 door (1320,1712)": {
+   "dst_pos": null,
+   "note": "",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "n01 door (1496,1616)": {
+   "dst_pos": null,
+   "note": "",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "n01 door (1496,1712)": {
+   "dst_pos": null,
+   "note": "",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "n01 door (1832,1616)": {
+   "dst_pos": null,
+   "note": "",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "n01 door (1832,1712)": {
+   "dst_pos": null,
+   "note": "",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "n01 door (2008,1616)": {
+   "dst_pos": null,
+   "note": "",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "n01 door (2008,1712)": {
+   "dst_pos": null,
+   "note": "",
+   "pos": null,
+   "req": {
+    "normal": [
+     [
+      "MODEL"
+     ]
+    ]
+   },
    "unsure": false
   },
   "n01 door (3520,512)": {
@@ -2884,6 +3316,11 @@
      "from": "h-4-entrance",
      "note": "",
      "req": {
+      "expert": [
+       [
+        "HX"
+       ]
+      ],
       "normal": [
        [
         "FX"
@@ -2900,6 +3337,11 @@
      "from": "main",
      "note": "",
      "req": {
+      "expert": [
+       [
+        "HX"
+       ]
+      ],
       "normal": [
        [
         "FX"
@@ -3525,12 +3967,12 @@
      "note": "",
      "poly": [
       [
-       2588,
-       420
+       2064,
+       417
       ],
       [
-       2873,
-       765
+       2136,
+       734
       ],
       [
        3516,
@@ -4654,7 +5096,8 @@
      "req": {
       "normal": [
        [
-        "MODEL"
+        "MODEL",
+        "D_BRIDGE"
        ]
       ]
      },
@@ -4696,7 +5139,8 @@
      "req": {
       "normal": [
        [
-        "MODEL"
+        "MODEL",
+        "D_BRIDGE"
        ]
       ]
      },
@@ -4756,7 +5200,9 @@
      "note": "",
      "req": {
       "normal": [
-       []
+       [
+        "D_BRIDGE"
+       ]
       ]
      },
      "to": "bridge",
@@ -4864,12 +5310,12 @@
      "note": "",
      "poly": [
       [
-       2246,
-       193
+       2333,
+       196
       ],
       [
-       2242,
-       685
+       2355,
+       682
       ],
       [
        2707,
@@ -4895,12 +5341,12 @@
        714
       ],
       [
-       2203,
-       574
+       2329,
+       589
       ],
       [
-       2169,
-       394
+       2311,
+       401
       ]
      ]
     },
@@ -5550,10 +5996,7 @@
      "req": {
       "normal": [
        [
-        "PX"
-       ],
-       [
-        "HX"
+        "MODEL"
        ]
       ]
      },
@@ -5566,10 +6009,7 @@
      "req": {
       "normal": [
        [
-        "PX"
-       ],
-       [
-        "HX"
+        "MODEL"
        ]
       ]
      },
@@ -12744,6 +13184,52 @@
       ]
      ]
     },
+    "region-7": {
+     "color": "#78d9ec",
+     "name": "Lava Flow Room",
+     "note": "",
+     "poly": [
+      [
+       6600,
+       1155
+      ],
+      [
+       6617,
+       1404
+      ],
+      [
+       7037,
+       1389
+      ],
+      [
+       7033,
+       1144
+      ]
+     ]
+    },
+    "region-8": {
+     "color": "#fde293",
+     "name": "Sub Tank Room",
+     "note": "",
+     "poly": [
+      [
+       7132,
+       1134
+      ],
+      [
+       7151,
+       1405
+      ],
+      [
+       7835,
+       1410
+      ],
+      [
+       7825,
+       1128
+      ]
+     ]
+    },
     "right-area": {
      "color": "#ff8bcb",
      "name": "Right Area",
@@ -12963,24 +13449,13 @@
      "req": {
       "normal": [
        [
-        "FX"
+        "FX",
+        "SLOW_LAVA",
+        "LAVA_CHASE"
        ]
       ]
      },
      "to": "hidden-path",
-     "unsure": false
-    },
-    {
-     "from": "hidden-path",
-     "note": "",
-     "req": {
-      "normal": [
-       [
-        "FX"
-       ]
-      ]
-     },
-     "to": "lava-chase",
      "unsure": false
     },
     {
@@ -15118,11 +15593,123 @@
      },
      "to": "main-area",
      "unsure": false
+    },
+    {
+     "from": "hellbat-arena",
+     "note": "the game sends you back to the capsule room after the fight",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "zero3-capsules",
+     "unsure": false
+    },
+    {
+     "from": "flizard-arena",
+     "note": "the game sends you back to the capsule room after the fight",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "zero3-capsules",
+     "unsure": false
+    },
+    {
+     "from": "mantisk-arena",
+     "note": "the game sends you back to the capsule room after the fight",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "zero3-capsules",
+     "unsure": false
+    },
+    {
+     "from": "inarabitta-arena",
+     "note": "the game sends you back to the capsule room after the fight",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "zero3-capsules",
+     "unsure": false
+    },
+    {
+     "from": "lunaedge-arena",
+     "note": "the game sends you back to the capsule room after the fight",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "zero4-capsules",
+     "unsure": false
+    },
+    {
+     "from": "mandrago-arena",
+     "note": "the game sends you back to the capsule room after the fight",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "zero4-capsules",
+     "unsure": false
+    },
+    {
+     "from": "titanion-arena",
+     "note": "the game sends you back to the capsule room after the fight",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "zero4-capsules",
+     "unsure": false
+    },
+    {
+     "from": "eclair-arena",
+     "note": "the game sends you back to the capsule room after the fight",
+     "req": {
+      "normal": [
+       []
+      ]
+     },
+     "to": "zero4-capsules",
+     "unsure": false
     }
    ],
    "members": {},
    "note": "",
    "regions": {
+    "eclair-arena": {
+     "boss": "pegasolta_eclair",
+     "color": "#d7aefb",
+     "name": "Pegasolta Eclair Arena",
+     "note": "",
+     "poly": [
+      [
+       512,
+       2112
+      ],
+      [
+       1024,
+       2112
+      ],
+      [
+       1024,
+       2304
+      ],
+      [
+       512,
+       2304
+      ]
+     ]
+    },
     "first-platforms": {
      "color": "#81c995",
      "name": "First Platforms",
@@ -15146,6 +15733,54 @@
       ]
      ]
     },
+    "flizard-arena": {
+     "boss": "blazin_flizard",
+     "color": "#d7aefb",
+     "name": "Blazin' Flizard Arena",
+     "note": "",
+     "poly": [
+      [
+       2560,
+       960
+      ],
+      [
+       2816,
+       960
+      ],
+      [
+       2816,
+       1152
+      ],
+      [
+       2560,
+       1152
+      ]
+     ]
+    },
+    "hellbat-arena": {
+     "boss": "hellbat_schilt",
+     "color": "#d7aefb",
+     "name": "Hellbat Schilt Arena",
+     "note": "",
+     "poly": [
+      [
+       3072,
+       960
+      ],
+      [
+       3584,
+       960
+      ],
+      [
+       3584,
+       1152
+      ],
+      [
+       3072,
+       1152
+      ]
+     ]
+    },
     "hub-entrance": {
      "color": "#f28b82",
      "name": "Hub Entrance",
@@ -15166,6 +15801,54 @@
       [
        783,
        288
+      ]
+     ]
+    },
+    "inarabitta-arena": {
+     "boss": "childre_inarabitta",
+     "color": "#d7aefb",
+     "name": "Childre Inarabitta Arena",
+     "note": "",
+     "poly": [
+      [
+       2048,
+       960
+      ],
+      [
+       2304,
+       960
+      ],
+      [
+       2304,
+       1344
+      ],
+      [
+       2048,
+       1344
+      ]
+     ]
+    },
+    "lunaedge-arena": {
+     "boss": "fenri_lunaedge",
+     "color": "#d7aefb",
+     "name": "Fenri Lunaedge Arena",
+     "note": "",
+     "poly": [
+      [
+       2304,
+       1536
+      ],
+      [
+       2560,
+       1536
+      ],
+      [
+       2560,
+       1728
+      ],
+      [
+       2304,
+       1728
       ]
      ]
     },
@@ -15207,6 +15890,54 @@
       [
        286,
        819
+      ]
+     ]
+    },
+    "mandrago-arena": {
+     "boss": "noble_mandrago",
+     "color": "#d7aefb",
+     "name": "Noble Mandrago Arena",
+     "note": "",
+     "poly": [
+      [
+       3328,
+       1536
+      ],
+      [
+       3584,
+       1536
+      ],
+      [
+       3584,
+       1728
+      ],
+      [
+       3328,
+       1728
+      ]
+     ]
+    },
+    "mantisk-arena": {
+     "boss": "deathtanz_mantisk",
+     "color": "#d7aefb",
+     "name": "Deathtanz Mantisk Arena",
+     "note": "",
+     "poly": [
+      [
+       1536,
+       960
+      ],
+      [
+       1792,
+       960
+      ],
+      [
+       1792,
+       1344
+      ],
+      [
+       1536,
+       1344
       ]
      ]
     },
@@ -15254,6 +15985,76 @@
       [
        3675,
        246
+      ]
+     ]
+    },
+    "titanion-arena": {
+     "boss": "sol_titanion",
+     "color": "#d7aefb",
+     "name": "Sol Titanion Arena",
+     "note": "",
+     "poly": [
+      [
+       2816,
+       1536
+      ],
+      [
+       3072,
+       1536
+      ],
+      [
+       3072,
+       1728
+      ],
+      [
+       2816,
+       1728
+      ]
+     ]
+    },
+    "zero3-capsules": {
+     "color": "#ffd180",
+     "name": "Zero 3 Capsule Room",
+     "note": "",
+     "poly": [
+      [
+       1280,
+       1552
+      ],
+      [
+       1544,
+       1552
+      ],
+      [
+       1544,
+       1760
+      ],
+      [
+       1280,
+       1760
+      ]
+     ]
+    },
+    "zero4-capsules": {
+     "color": "#ffab91",
+     "name": "Zero 4 Capsule Room",
+     "note": "",
+     "poly": [
+      [
+       1792,
+       1552
+      ],
+      [
+       2056,
+       1552
+      ],
+      [
+       2056,
+       1760
+      ],
+      [
+       1792,
+       1760
       ]
      ]
     }

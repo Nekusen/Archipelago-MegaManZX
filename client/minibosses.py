@@ -5,7 +5,7 @@ import worlds._bizhawk as bizhawk
 
 from ..data import MINIBOSS_FLAGS, ROOM_SUBAREA
 from .addresses import (
-    CUTSCENE_FLAG, DOM, MINIBOSSES_KEY, O02_MINIBOSS_FLAG, O02_SCRIPT_MINIBOSS_BEATEN,
+    AREA_OF_SUBAREA, CUTSCENE_FLAG, DOM, MINIBOSSES_KEY, O02_MINIBOSS_FLAG, O02_SCRIPT_MINIBOSS_BEATEN,
     O02_SCRIPT_MINIBOSS_WAIT, ROOM_SCRIPT_STATE)
 from .ram import Tick, bits_by_byte, copies_writes, missing_bits, read_copies
 
@@ -13,7 +13,6 @@ if TYPE_CHECKING:
     from . import MMZXClient
 
 MODE_OFF, MODE_AFTER_FIRST_DEFEAT, MODE_ALWAYS = "off", "after_first_defeat", "always"
-AREA_OF_SUBAREA = {sub: room[0].upper() for room, sub in ROOM_SUBAREA.items()}
 O02_SUBAREA = ROOM_SUBAREA["o02"]
 
 

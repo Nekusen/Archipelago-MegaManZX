@@ -27,16 +27,20 @@ the PATH.
   editor works on a blank canvas of the right size.
 - **Gimmicks**: `data/gimmicks.json` (or `--gimmicks FILE`): names and positions of the enemies and
   gimmicks of every room, drawn as an informational layer. The editor works without it.
-- **World data**: `data.py` and `logic/document.py` of the apworld, served as `/api/world` (rooms,
+- **World data**: `data.py`, `door_data.py` and `logic/document.py` of the apworld, served as `/api/world` (rooms,
   locations, edges, atom catalog, boss roster). The atom catalog is built when the server starts, so a
   new atom needs a restart to appear.
 
 ## Saving
 
 Everything autosaves 600 ms after the last change: the document is POSTed to `/api/logic`, the server
-normalizes and validates it, writes `logic/logic.json`, regenerates `logic/logic.txt` (the readable
-twin) when there are no errors, and answers with the validation report shown in the bottom drawer.
-"Validate" runs the same validation without saving; "logic.txt" opens the twin in a new tab. Undo and
+normalizes and validates it, writes `logic/logic.json`, regenerates `logic/rules.py` (the module the
+world builds its regions from, in the syntax of the Archipelago Rule Builder) and `logic/rules.json`
+(the same rules serialized for trackers), and answers with the validation report shown in the bottom
+drawer. The two files are regenerated even when the document has errors: the rule that fails comes out
+as `False_()` with an `# ERROR` comment, the errors go into `ERRORS` and the world refuses to generate
+until they are fixed, so an old logic never plays in silence. "Validate" runs the same validation
+without saving; "rules.py" opens the generated module in a new tab. Undo and
 redo keep up to 100 steps. Closing the tab with unsaved changes asks for confirmation.
 
 ## Code map

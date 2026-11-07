@@ -63,7 +63,7 @@ def main():
     # raw data to describe the rules
     mm = sys.modules["worlds.mmzx"]
     data = mm.data
-    logic = mm.logic.rules
+    logic = mm.logic
     F = mm.logic.document
     doc = mm.logic.load_document()
     tier = logic.TIER
@@ -88,9 +88,11 @@ def main():
     reach = {r.name for r in state.reachable_regions[player]}
 
     precollected = [i.name for i in mw.precollected_items[player]]
-    print("== options:", {k: getattr(world.options, k).current_key
-                          if hasattr(getattr(world.options, k), "current_key") else getattr(world.options, k).value
-                          for k in opts} or "(default)")
+    def shown(option):
+        """A choice by its key; a range or a toggle by its value."""
+        return getattr(option, "name_lookup", {}).get(option.value, option.value)
+
+    print("== options:", {k: shown(getattr(world.options, k)) for k in opts} or "(default)")
     print("== inventory:", precollected + items)
     events = sorted(i for i in state.prog_items[player] if i.startswith("Cleared: ") or i == "Victory")
     if events:
@@ -113,8 +115,9 @@ def main():
         parts = []
         for d in data.DOORS:
             if d["name"] == name:
-                if d.get("key"):
-                    parts.append("key %s" % d["key"])
+                key = world.door_keys.get(name, d.get("key"))   # a door constraint of this seed, or its own key
+                if key:
+                    parts.append("key %s" % key)
                 rr = doc["rooms"][d["dst"]].get("req")
                 if rr:
                     parts.append("room %s: %s" % (d["dst"], req_txt(rr)))
@@ -186,7 +189,7 @@ def main():
                 F.region_name(room, rid), "reachable" if F.region_name(room, rid) in reach else "NOT reachable"))
         else:
             label = v.get("room")
-            for g in logic.label_room_groups(label):
+            for g in F.label_room_groups(label, logic.ROOM_NAMES):
                 lack = [r for r in g if r not in reach]
                 print("   UNPLACED; label %r -> rooms %s; missing: %s" % (label, g, lack or "none"))
 

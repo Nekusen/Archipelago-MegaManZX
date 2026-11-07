@@ -11,8 +11,8 @@ from .bases import WITNESS
 from .. import MMZXWorld, SLOT_DATA_OPTIONS
 from ..goal import MODEL_ITEM_BY_KEY, SIX_MODEL_KEYS
 from ..logic import bosses
+from ..logic.builder import boss_requirements
 from ..options import MMZXOptions
-from ..regions import boss_requirements
 
 # the stages Universal Tracker runs, of those this Archipelago has
 TRACKER_STEPS = tuple(step for step in ("generate_early", "create_regions", "create_items", "set_rules",
@@ -22,11 +22,13 @@ ALL_PICKUPS = {"pickup_checks_1up": True, "pickup_checks_energy": True,
 # an option set with nothing left at its default
 CHANGED = {"character": "aile", "starting_model": "model_hx", "starting_transerver": "guardian_base",
            "progressive_models": False, "hu_in_pool": True, "skip_boss_rush": True,
-           "skip_minibosses": "always", **ALL_PICKUPS, "death_link": True,
+           "skip_minibosses": "always", "include_warps_in_logic": True, **ALL_PICKUPS, "death_link": True,
            "notify_received": "all", "notify_sent": "off", "notify_style": "short",
            "boss_logic": {"Hivolt": "HX & Life Up x2", "Serpent": "ALL6 | " + WITNESS},
            "goal_requirements": ["Secret Disks", "Missions"], "required_secret_disks": 10,
-           "total_secret_disks": 15, "required_missions": 5}
+           "total_secret_disks": 15, "required_missions": 5,
+           "mission_objectives": "locations_and_items", "area_m_access": "passwords", "required_passwords": 3,
+           "total_passwords": 5, "door_constraints_min": 6, "door_constraints_max": 9}
 # seed options -> the YAML the tracker reads
 CASES = {
     "random start rolled none": ({"starting_model": "model_ox", "hu_in_pool": True, **ALL_PICKUPS},
@@ -35,12 +37,18 @@ CASES = {
     "default seed, changed yaml": ({}, CHANGED),
     "full models, biometals goal": ({"progressive_models": False, "required_models_count": 3},
                                     {"progressive_models": True, "require_full_models": True}),
+    "objectives as checks, biometals seal": ({"mission_objectives": "locations_only", "area_m_access": "biometals"},
+                                             {"mission_objectives": "locations_and_items", "area_m_access": "passwords",
+                                              "door_constraints_min": 4, "door_constraints_max": 4}),
 }
 # options the slot data sends resolved, as the goal of the seed
 GOAL_OPTIONS = {"goal_requirements", "required_models", "required_models_count", "require_full_models",
-                "required_secret_disks", "total_secret_disks", "required_missions"}
+                "required_secret_disks", "total_secret_disks", "required_missions", "required_mutos_reploids"}
+# options the slot data sends resolved too: the seal of Area M and the doors a seed locked
+SEAL_OPTIONS = {"area_m_access", "required_passwords", "total_passwords"}
+DOOR_OPTIONS = {"door_constraints_min", "door_constraints_max"}
 # options that change nothing a rebuilt world shows
-UNSENT_OPTIONS = {"start_inventory_from_pool"}
+UNSENT_OPTIONS = {"start_inventory_from_pool", "infinite_lives", "sub_tank_refill_operator"}   # the ROM alone reads these
 # boss_logic travels as the text of each requirement
 BOSS_LOGIC = {"Hivolt": "Model HX (full) & Life Up x2", "Lurerre": "any model & Sub Tank x1",
               "Fistleo": "(FX | LX) & " + WITNESS, "Flammole": "Yellow Card Key | HX2 & PX",
@@ -113,6 +121,10 @@ class TestTrackerRegeneration(unittest.TestCase):
                     self.assertEqual(getattr(tracker.options, key).value, getattr(seed.options, key).value)
         self.assertEqual(boss_requirements(tracker), boss_requirements(seed))
         self.assertEqual(vars(tracker.goal), vars(seed.goal))
+        self.assertEqual(vars(tracker.seal), vars(seed.seal))
+        self.assertEqual(tracker.options.area_m_access.value, seed.options.area_m_access.value)
+        self.assertTrue(seed.door_sites)
+        self.assertEqual(tracker.door_sites, seed.door_sites)
 
     def test_slot_data_carries_every_restored_option(self) -> None:
         slot_data = setup_multiworld(MMZXWorld).worlds[1].fill_slot_data()
@@ -122,7 +134,7 @@ class TestTrackerRegeneration(unittest.TestCase):
     def test_every_option_is_accounted_for(self) -> None:
         """A new option has to say how a rebuilt world learns its value."""
         own = set(MMZXOptions.type_hints) - set(PerGameCommonOptions.type_hints)
-        self.assertEqual(own, set(SLOT_DATA_OPTIONS) | GOAL_OPTIONS | UNSENT_OPTIONS)
+        self.assertEqual(own, set(SLOT_DATA_OPTIONS) | GOAL_OPTIONS | SEAL_OPTIONS | DOOR_OPTIONS | UNSENT_OPTIONS)
 
     def test_the_yaml_is_not_needed(self) -> None:
         """Universal Tracker builds this world from an empty YAML, which a default one stands for."""
@@ -149,13 +161,19 @@ class TestTrackerRegeneration(unittest.TestCase):
     def test_a_seed_from_before_an_option_plays_as_its_default(self) -> None:
         """Slot data that says nothing about an option means its default, not what the YAML rolls."""
         slot_data = setup_multiworld(MMZXWorld).worlds[1].fill_slot_data()
-        for key in ("progressive_models", "goal_requirements", "skip_minibosses"):
+        for key in ("progressive_models", "goal_requirements", "skip_minibosses", "mission_objectives",
+                    "include_warps_in_logic", "area_m_access", "door_constraints"):
             del slot_data[key]
         yaml_options = {"progressive_models": False, "goal_requirements": ["Missions"], "required_missions": 3,
-                        "skip_minibosses": "always"}
+                        "skip_minibosses": "always", "mission_objectives": "locations_and_items", "area_m_access": "passwords",
+                        "include_warps_in_logic": True, "door_constraints_min": 5, "door_constraints_max": 5}
         tracker = tracker_multiworld(slot_data, yaml_options).worlds[1]
         self.assertTrue(tracker.options.progressive_models.value)
         self.assertEqual(tracker.options.skip_minibosses.current_key, "off")
+        self.assertFalse(tracker.options.include_warps_in_logic.value)
+        self.assertEqual(tracker.options.mission_objectives.current_key, "off")
+        self.assertEqual((tracker.seal.mode, tracker.options.area_m_access.current_key), ("open", "open"))
+        self.assertEqual(tracker.door_sites, {})
         self.assertEqual(tracker.goal.models, tuple(MODEL_ITEM_BY_KEY[key] for key in SIX_MODEL_KEYS))
         self.assertEqual((tracker.goal.models_count, tracker.goal.missions_required), (6, 0))
 

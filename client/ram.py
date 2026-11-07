@@ -4,10 +4,11 @@ and the live-plus-canonical writes of progress bits.
 
 import worlds._bizhawk as bizhawk
 
-from ..data import AREA_MISSION_BITS, LOCATIONS
+from ..data import AREA_MISSION_BITS, LOCATIONS, MISSION_ACCEPT, MISSION_STATE_ADDR
 from .addresses import (
     CANON_OFF, CUTSCENE_NONE, DEATH_STATE, DEATH_SUBSTATE, DETECT_FAR, DETECT_WINDOW, DOM,
-    GAME_STATE, HP, MSG_BANK, PLAYER_OBJ, PLAYER_STATE_OFF, SCRIPT_CUTSCENE_OFF,
+    GAME_STATE, HP, MISSION_ACTIVE_BYTE, MISSION_IN_PROGRESS_MASK, MISSION_QUEST_MASK, MSG_BANK,
+    PLAYER_OBJ, PLAYER_STATE_OFF, SCRIPT_CUTSCENE_OFF,
     SCRIPT_STATE_OFF, STATE_INGAME, STORY_HANDLER_ID, STORY_HANDLER_LEN, STORY_HANDLER_OBJ,
     SUBAREA_STABLE, TITLE_CAROUSEL_STEP, TITLE_STEP_LAUNCHED)
 
@@ -144,6 +145,34 @@ async def mission_completed(ctx, name: str) -> bool:
         return False
     vals = await bizhawk.read(ctx.bizhawk_ctx, [(a, 1, DOM) for a, _ in done])
     return all(vals[i][0] & (1 << b) for i, (_, b) in enumerate(done))
+
+
+async def mission_in_progress(ctx) -> int:
+    """The two 'under way' bits of the mission byte: a mission, a quest, or 0 for none."""
+    return (await bizhawk.read(ctx.bizhawk_ctx, [(MISSION_ACTIVE_BYTE, 1, DOM)]))[0][0] & MISSION_IN_PROGRESS_MASK
+
+
+async def mission_settled(ctx, name: str) -> bool:
+    """Completed and nothing under way: the mission is over rather than being played again."""
+    return await mission_completed(ctx, name) and not await mission_in_progress(ctx)
+
+
+async def manual_mission_active(ctx) -> str | None:
+    """What the player took from the Transerver list, if it is under way: a quest or a mission's name.
+
+    The client never accepts a quest, nor a mission already completed, so either one
+    being active means the player chose it and the auto-accept must leave it alone.
+    """
+    active = await mission_in_progress(ctx)
+    if not active:
+        return None
+    if active & MISSION_QUEST_MASK:
+        return "a quest"
+    state = int.from_bytes((await bizhawk.read(ctx.bizhawk_ctx, [(MISSION_STATE_ADDR, 4, DOM)]))[0], "little")
+    rec = next((v for v in MISSION_ACCEPT.values() if v["state"] == state), None)
+    if rec and await mission_completed(ctx, rec["name"]):
+        return rec["name"]
+    return None
 
 
 async def area_missions_done(ctx) -> int:

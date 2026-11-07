@@ -19,6 +19,8 @@
 .equ ENTRIES,               0x02191D64  @ TABLE + ENTRIES_OFF: [u8 coords index, u8 slot, u8 code, u8 flags]
 .equ INDEX_SUBAREAS,        128
 .equ ENTRY_RESPAWNS,        1           @ flags bit 0: the pickup respawns (a refill)
+.equ ENTRY_OWN_EFFECT,      2           @ flags bit 1: the pickup keeps its own effect, only its look changes
+.equ MADE_INDEX,            0x80        @ rom/table.py MADE_INDEX: coords index of a pickup with no spawn record, plus its role
 
         .org    0x02191B00
 @ rom: PICKUP_TABLE_CODE
@@ -49,20 +51,20 @@ gate:                                   @ +0x30 gate(ent) -> r0 = 1 if the picku
         push    {r4, lr}
         bl      find
         cmp     r0, #0
-        beq     g_no
+        beq     g_ret                   @ no entry: r0 is already 0
         movs    r4, r0
-        ldrb    r0, [r4, #3]            @ flags
-        lsrs    r0, r0, #1
-        bcc     g_yes                   @ never respawns: pending even after a collect
+        ldrb    r1, [r4, #3]            @ flags
+        movs    r0, #0
+        lsrs    r2, r1, #2
+        bcs     g_ret                   @ keeps its own effect: never pending
+        movs    r0, #1
+        lsrs    r1, r1, #1
+        bcc     g_ret                   @ never respawns: pending even after a collect
         ldrb    r0, [r4, #1]            @ slot
         bl      checked
         movs    r1, #1
         eors    r0, r1                  @ pending = not sent
-        pop     {r4, pc}
-g_yes:  movs    r0, #1
-        pop     {r4, pc}
-g_no:   movs    r0, #0
-        pop     {r4, pc}
+g_ret:  pop     {r4, pc}
         mov     r8, r8                  @ pad to a word
 
 collect:                                @ +0x58 collect(ent): set the pickup's bit in `collected`
@@ -90,15 +92,18 @@ find:                                   @ +0x80 find(ent) -> r0 = the entry of t
         ldr     r1, lit_spawn_list
         ldr     r1, [r1]
 f_loop: cmp     r1, #0
-        beq     f_none                  @ entity has no spawn record
+        beq     f_made                  @ entity has no spawn record
         ldr     r2, [r1, #4]
         cmp     r2, r0
         beq     f_found
         ldr     r1, [r1]
         b       f_loop
+f_made: ldrb    r2, [r0, #0x14]         @ made by the game's code: its role stands for the coords index
+        adds    r2, #MADE_INDEX
+        b       f_room
 f_found:
         ldrh    r2, [r1, #8]            @ coords index
-        ldr     r3, lit_subarea
+f_room: ldr     r3, lit_subarea
         ldrb    r3, [r3]
         cmp     r3, #INDEX_SUBAREAS
         bhs     f_none
@@ -121,12 +126,13 @@ f_scan: cmp     r0, r5
         b       f_scan
 f_none: movs    r0, #0
 f_ret:  pop     {r4, r5, pc}
+        mov     r8, r8                  @ pad to a word
 lit_spawn_list: .word SPAWN_LIST_HEAD
 lit_subarea:    .word SUBAREA
 lit_index:      .word INDEX
 lit_entries:    .word ENTRIES
 
-checked:                                @ +0xD4 checked(slot) -> r0 = 1 if the location is marked as sent
+checked:                                @ +0xDC checked(slot) -> r0 = 1 if the location is marked as sent
         ldr     r2, lit_checked
         lsrs    r3, r0, #3
         ldrb    r2, [r2, r3]            @ byte of the slot

@@ -6,6 +6,59 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-08
+
+### Added
+
+- Added the goal `defeat_omega_zero`: beat Omega Zero in N-1. The door of his arena opens with your `goal_requirements`
+  (the rest of Area N is open as always).
+- Added `zero3_bosses` and `zero4_bosses`: the eight Mega Man Zero 3/4 bosses of N-1 are in the game and each one beaten
+  is a check. They can be named in `boss_logic`
+  - IMPORTANT: each option needs your own Mega Man Zero 3 or Zero 4 (GBA) ROM. The game keeps the
+    sprites of those bosses in the cartridge, so the launcher asks for the ROM when you open the `.apmmzx` and converts
+    them from it. With the option off no ROM is ever asked for.
+- Added the goal requirement `Mutos Reploid Hunting`: beat `required_mutos_reploids` of those bosses (1 to 8; 5 or more
+  need both games on).
+- Added the location `Obtain Biometal Z`, sent when you beat Giro in D-2.
+- Added `area_m_access`: what opens the seal at the entrance of Area M.
+  - `open`: the seal is open from the start, as before.
+  - `biometals`: get the five `Obtain Biometal` checks of your game (Z, H, F, L and P).
+  - `passwords`: collect `required_passwords` Passwords out of the `total_passwords` in the pool.
+  - With `biometals` or `passwords` the Transerver Access of Area M is not in the pool.
+- Missions can be played again through the new "Replay Missions" option in the Transerver consoles.
+  - While a mission picked there is under way, entering an area does not accept that area's mission. Report or abort the one you picked to go back to normal.
+  - "Abort Mission" is now offered only for a mission picked from the "Replay Missions" list. 
+  - Troop Reinforcement replays like any other mission. There's no briefing, head to Area D and play it through.
+- Added `mission_objectives`: the objects and events of the story missions can be checks, and items too.
+  - `locations_only`: Multiple events and items from the story become checks, like the four Computer Chips in area B, the guardians of Pass The Test or the people trapped in Area G. The game itself plays as before, nothing is changed in progression or how the open world behaves.
+  - `locations_and_items`: the same location, but the objects are also items of the pool. A mission is reported only with its object, Rayfly shows up only with a Computer Chip, the F-3 and G-2 doors open with their own items, and so on.
+- Added "door constraints": each seed can lock some of the doors between rooms behind a Card Key, so the map opens in smaller steps instead of most of it at once. A locked door shows the colour of its key.
+  - `door_constraints_min` and `door_constraints_max`: how many doors a seed locks (0 to 15, both 0 by default).
+- Added `include_warps_in_logic`: the teleports to the Guardian Base at the end of Troop Reinforcement and Repel The Army count as a way into Area X, so a check there may expect you to clear one of those missions instead of holding its Transerver Access. Off by default.
+- The eight "Item A" usables in the game are now items of the pool, and the eight places that hand them out are locations.
+  - Usable items get added to your inventory when you get them as items from the multiworld. Picking them in the game only sends a location.
+  - A usable you have used comes back when you open any Transerver console, so you can use them as much as you want.
+  - The child gives the cake location on any day, even if its not your birthday, once Save The People is completed.
+- Added `sub_tank_refill_operator`: a Guardian next to your starting Transerver who, for 200 E-Crystals,
+  refills every Sub Tank you hold.
+- Added `infinite_lives`: when this option is on you lose no lifes and you can't Game Over. With it on, the 1-Up item is not in
+  the filler pool.
+
+### Changed
+
+- The entire logic has been reworked to use AP's Rule Builder. This is mostly internal, but as an upside this means you can now use /get_logical_path or /explain in Universal Tracker.
+- The filler item pool has been reworked: now there's `25 E-Crystals`, `50 E-Crystals`, `100 E-Crystals`, `Energy Refill`, `Weapon Energy Refill`
+  and `1-Up`. The goal is to lower the total ammount of useless E-Crystals, as well as making filler feel at least slightly relevant.
+- Some client messages have been modified so they only show in debug , as they are not relevant for the player usually.
+
+### Fixed
+
+- Small logic fixes and adjustments
+- The following missions had their "cleared mission" flag removed by other events sometimes. This should be fixed now.
+  - Stop The Dig stopped counting as completed after reporting Repel The Army.
+  - Find The Survivors stopped counting as completed after reporting Recover The Disk
+  - Fight The Mavericks after reporting Attack The Excavators
+
 ## [0.2.1] - 2026-10-05
 
 ### Fixed

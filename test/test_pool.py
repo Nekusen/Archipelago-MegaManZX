@@ -18,7 +18,10 @@ OPTION_SETS = {
     "all_pickups": {"pickup_checks_1up": True, "pickup_checks_energy": True,
                     "pickup_checks_weapon": True, "pickup_checks_crystals": True},
     "boss_logic": {"boss_logic": {"Serpent": "ALL6 & Life Up x2", "Hivolt": WITNESS}},
+    "infinite_lives": {"infinite_lives": True},
 }
+FILLERS = {"25 E-Crystals", "50 E-Crystals", "100 E-Crystals", "Energy Refill", "Weapon Energy Refill", "1-Up"}
+FILLER_DRAWS = 2000
 # pickup option: locations it adds, as the option docstrings promise
 PICKUP_COUNTS = {"pickup_checks_1up": 7, "pickup_checks_energy": 45,
                  "pickup_checks_weapon": 25, "pickup_checks_crystals": 56}
@@ -55,15 +58,45 @@ class TestPool(MMZXTestBase):
         self.assertNotIn("White Card Key", names)
         self.assertNotIn("Model Hu", names)
 
+    def test_usables_are_useful_items_with_a_location_each(self) -> None:
+        """The eight ITEM A usables are useful items of the pool, one per usable location."""
+        counts = Counter(item.name for item in self.multiworld.itempool)
+        usables = [n for n, v in ITEMS.items() if v["grant"][0] == "usable"]
+        self.assertEqual(len(usables), 8)
+        for name in usables:
+            self.assertEqual(counts[name], 1, name)
+        placed = {loc.name for loc in self.multiworld.get_locations(1) if loc.address is not None}
+        for name in ("C-1: Cake", "C-2: Orange", "H-3: Candy", "C-1: Bread", "A-3: Apple",
+                     "X-3: E Tank", "X-2: W Tank", "X-1: Smelling Salts"):
+            self.assertIn(name, placed)
+        for item in self.multiworld.itempool:
+            if item.name in usables:
+                self.assertTrue(item.useful and not item.advancement, item.name)
+
     def test_filler(self) -> None:
-        """E-Crystals pad the pool and are its only filler item."""
-        self.assertEqual(self.world.get_filler_item_name(), "E-Crystals")
-        fillers = {item.name for item in self.multiworld.itempool if item.classification.name == "filler"}
-        self.assertEqual(fillers, {"E-Crystals"})
+        """E-Crystals in three sizes, refills and 1-Ups pad the pool, the smaller amounts more often."""
+        draws = Counter(self.world.get_filler_item_name() for _ in range(FILLER_DRAWS))
+        self.assertEqual(set(draws), FILLERS)
+        self.assertEqual(FILLERS, {n for n, v in ITEMS.items() if v["classification"] == "filler"})
+        self.assertGreater(draws["25 E-Crystals"], draws["50 E-Crystals"])
+        self.assertGreater(draws["50 E-Crystals"], draws["100 E-Crystals"])
+        pooled = {item.name for item in self.multiworld.itempool if item.classification.name == "filler"}
+        self.assertTrue(pooled <= FILLERS)
 
     def test_witness_is_useful_by_default(self) -> None:
         """A chip no rule asks for stays a useful item."""
         self.assertFalse(self.get_item_by_name(WITNESS).advancement)
+
+
+class TestPoolWithInfiniteLives(MMZXTestBase):
+    options = {"infinite_lives": True}
+
+    def test_no_one_ups_among_the_filler(self) -> None:
+        """With infinite lives the other fillers take the 1-Up's share."""
+        draws = Counter(self.world.get_filler_item_name() for _ in range(FILLER_DRAWS))
+        self.assertEqual(set(draws), FILLERS - {"1-Up"})
+        self.assertNotIn("1-Up", [item.name for item in self.multiworld.itempool])
+        self.assertEqual(len(self.multiworld.itempool), real_locations(self.multiworld))
 
 
 class TestPoolWithBossLogic(MMZXTestBase):

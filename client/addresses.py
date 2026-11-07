@@ -4,10 +4,13 @@ Everything the client reads or writes is named here.
 """
 
 from ..data import (
-    CANON_BLOCK, GOAL_BITS, GOAL_BITS_SERPENT, ITEMS, LIVE_BLOCK, LOCATIONS, PICKUP_TABLE_ADDR,
-    WARP_DESTINATIONS)
+    CANON_BLOCK, EVENT_GATES, EVENT_GATES_STORY, GOAL_BITS, GOAL_BITS_OMEGA, GOAL_BITS_SERPENT, ITEMS, LIVE_BLOCK, LOCATIONS,
+    PICKUP_TABLE_ADDR,
+    ROOM_SUBAREA, STORY_DONE_BITS, STORY_GATE_ITEMS, WARP_DESTINATIONS)
 from ..goal import DISK_ITEM
-from ..rom.table import BITMAP_LEN, CHECKED_OFF, COLLECTED_OFF, FLAGS_OFF, PICKUP_SLOTS
+from ..rom.table import (
+    BITMAP_LEN, CHECKED_OFF, COLLECTED_OFF, FLAGS_OFF, PICKUP_SLOTS, STORY_DONE_OFF, STORY_GATES_OFF, STORY_OFF,
+    USABLES_MARK, USABLES_MARK_OFF, USABLES_OFF)
 
 
 GAME = "Mega Man ZX"
@@ -58,13 +61,18 @@ LIVE_BLOCK_LEN = 0xE4
 # Detect bits this close to the block share one read per tick; the far ones (the
 # Life Up and Sub Tank capacity bytes) are read one byte at a time.
 DETECT_WINDOW_RADIUS = 0x1000
-_detect_addrs = [a for a, _ in GOAL_BITS] + [a for a, _ in GOAL_BITS_SERPENT]
+_detect_addrs = [a for a, _ in GOAL_BITS] + [a for a, _ in GOAL_BITS_SERPENT] + [a for a, _ in GOAL_BITS_OMEGA]
 for _v in LOCATIONS.values():
     _det = _v.get("detect")
     if _det and _det[0] == "bit":
         _detect_addrs.append(_det[1])
     elif _det and _det[0] in ("all", "any"):
         _detect_addrs += [a for a, _ in _det[1]]
+# Events whose effect is an item of the pool: the game marks them in a byte of the pickup
+# table section instead, and with mission_objectives: locations_and_items that bit is their detection.
+STORY_DONE_ADDR = PICKUP_TABLE_ADDR + STORY_DONE_OFF
+STORY_DONE_DETECT = {LOCATIONS[n]["id"]: ["bit", STORY_DONE_ADDR, bit] for n, bit in STORY_DONE_BITS.items()}
+_detect_addrs.append(STORY_DONE_ADDR)
 _near = [a for a in _detect_addrs if abs(a - LIVE_BLOCK) < DETECT_WINDOW_RADIUS]
 DETECT_WINDOW = (min(_near), max(_near) + 1)             # [lo, hi)
 DETECT_FAR = sorted({a for a in _detect_addrs if abs(a - LIVE_BLOCK) >= DETECT_WINDOW_RADIUS})
@@ -80,6 +88,7 @@ CONS_KEY = "mmzx_consumables_%s_%s"  # data storage: [[applied, playtime], ...]
 BOSS_LEVELS = 0x02104634
 WE_BASE = 0x0214FC92          # + active model = current WE
 WE_FULL = 16
+WE_PER_LEVEL = 4
 MSG_BANK = 0x02104588         # 0xFFFFFFFF until boot has finished
 
 # Player object (the active model byte is data.ACTIVE_MODEL_ADDR)
@@ -107,7 +116,6 @@ LIVES_CAP = 99
 ECRYSTALS = 0x0214FC70          # u24; the high byte of the word is kept
 ECRYSTALS_MASK = 0x00FFFFFF
 ECRYSTALS_HIGH_MASK = 0xFF000000
-ECRYSTALS_PER_ITEM = 50
 ECRYSTALS_CAP = 99999
 HPMAX = 0x0214FC76
 HP_BASE = 0x10
@@ -135,8 +143,10 @@ SCENE_DESC = 0x0216047C       # spawn x, y and subarea; layout of PLAYER_PERSIST
 SCENE_DESC_LEN = 0x6C
 
 # Missions and story
-MISSION_ACTIVE_BYTE = 0x0210462B   # .1 mission accepted, .2 story mission
+MISSION_ACTIVE_BYTE = 0x0210462B   # .1 mission accepted, .2 quest accepted
 MISSION_ACCEPTED_MASK = 0x02
+MISSION_QUEST_MASK = 0x04
+MISSION_IN_PROGRESS_MASK = MISSION_ACCEPTED_MASK | MISSION_QUEST_MASK
 # Boss room scripts set these while a fight runs and clear them when the boss
 # dies; doors everywhere check them. Leaving the fight by teleport carries them
 # out of the room, so the client releases them once the player is elsewhere.
@@ -238,6 +248,42 @@ PICKUP_STATE_LEN = CHECKED_OFF - FLAGS_OFF + BITMAP_LEN
 PICKUP_CHECKED_REL = CHECKED_OFF - FLAGS_OFF
 PICKUP_ICONS_OFF = 1            # value of the switch that turns the icons off
 PICKUP_COLLECTED_ADDR = PICKUP_TABLE_ADDR + COLLECTED_OFF
+# ITEM A usables: the possession byte the pause menu reads and clears, and the mark
+# the client leaves once it has filled it since boot
+USABLES_ADDR = PICKUP_TABLE_ADDR + USABLES_OFF
+USABLES_MARK_ADDR = PICKUP_TABLE_ADDR + USABLES_MARK_OFF
+USABLES_MARK_VALUE = USABLES_MARK
+USABLE_BITS = {n: int(v["grant"][1]) for n, v in ITEMS.items() if v["grant"][0] == "usable"}
+# Mission objectives held as items: the story objects byte, then the byte of what the
+# story events unlock; item -> (byte, one bit per copy). The gates those items open are
+# left to the game's own events, which are their locations.
+STORY_ADDR = PICKUP_TABLE_ADDR + STORY_OFF
+STORY_LEN = STORY_GATES_OFF - STORY_OFF + 1
+STORY_ITEM_BITS = {n: (0 if v["grant"][0] == "story" else STORY_GATES_OFF - STORY_OFF,
+                       [int(b) for b in v["grant"][1]])
+                   for n, v in ITEMS.items() if v["grant"][0] in ("story", "story_gate")}
+STORY_GATE_BITS = frozenset(tuple(EVENT_GATES[flag]) for flag in STORY_GATE_ITEMS)
+# ... and the ones a switch of the player opens, with mission_objectives on, in either mode
+STORY_SWITCH_GATE_BITS = frozenset(tuple(EVENT_GATES[flag]) for flag in EVENT_GATES_STORY)
+# Items that do to an area what an event of it did: item -> (area letter, the area flags
+# the client keeps set while the player is there)
+STORY_AREA_FLAGS = {n: (v["grant"][1], [tuple(b) for b in v["grant"][2]])
+                    for n, v in ITEMS.items() if v["grant"][0] == "story_area"}
+AREA_OF_SUBAREA = {sub: room[0].upper() for room, sub in ROOM_SUBAREA.items()}
+# Find The Survivors: the terminal of F-3 answers only once the story handler has seen
+# the entrance scenes of F-1 and F-3; from any other way in the client moves it along.
+SURVIVORS_STATE = 0xAE             # mission state "Find The Survivors accepted"
+SURVIVORS_HANDLER_ID = 6
+SURVIVORS_SUBAREA = ROOM_SUBAREA["f03"]
+SURVIVORS_HANDLER_WAITS = (0, 3)   # waiting for the F-1 entrance, for the F-3 entrance
+SURVIVORS_HANDLER_TERMINAL = 6     # waiting for the terminal
+# Using a console: the player's state while its menu is up, and the hitbox the
+# interaction targets, which belongs to the console entity (NPC talks use the same state)
+PLAYER_STATE_CONSOLE = 14
+INTERACT_HITBOX_PTR = 0x02108B60   # entity + ENTITY_HITBOX_OFF of the target, 0 when none
+ENTITY_HITBOX_OFF = 0x7C
+ENTITY_CLASS_OFF = 0x09
+CONSOLE_CLASS = 0x1C               # Transerver and computer consoles
 # A check the server has not confirmed yet is sent again after this many seconds
 RESEND_SECONDS = 2.0
 # Items are granted once the connection's ReceivedItems arrived, or after this wait

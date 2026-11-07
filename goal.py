@@ -4,19 +4,24 @@ import logging
 
 from Options import OptionError
 
-from .data import LOCATIONS, SECRET_DISK_ENTRIES
+from .data import LOCATIONS, SECRET_DISK_ENTRIES, ZERO_BOSSES
+from .logic.document import CLEARED_PREFIX, DEFEATED_PREFIX, FINAL_MISSION, MISSION_PREFIX
 
 REQ_BIOMETALS = "Biometals"
 REQ_DISKS = "Secret Disks"
 REQ_MISSIONS = "Missions"
+REQ_MUTOS = "Mutos Reploid Hunting"
 DISK_ITEM = "Secret Disk"
-MISSION_PREFIX = "Mission - "
-FINAL_MISSION = "Mission - Destroy Model W"
+GOAL_SERPENT, GOAL_OMEGA = 0, 1
 # The story missions that count: every check of the category, so neither the skipped
 # intro nor the final mission, which is the goal itself.
 COUNTED_MISSIONS = tuple(n for n, v in LOCATIONS.items()
                          if v["category"] == "mission" and n != FINAL_MISSION)
 MISSION_COUNT = len(COUNTED_MISSIONS)
+# The Mega Man Zero 3/4 bosses the hunt counts: four per game, each behind its option.
+ZERO_GAME_OPTIONS = {3: "zero3_bosses", 4: "zero4_bosses"}
+MUTOS_PER_GAME = 4
+MUTOS_MAX = len(ZERO_BOSSES)
 # Option keys to item names, in the order the counter and the spoiler list them.
 MODEL_ITEM_BY_KEY = {
     "Model X": "Model X", "Model ZX": "Model ZX",
@@ -41,21 +46,39 @@ def model_item(name: str, progressive: bool) -> str:
 
 def cleared_event(mission: str) -> str:
     """The event item of a mission location: its Cleared atom in the logic and the count test."""
-    return "Cleared: " + mission[len(MISSION_PREFIX):]
+    return CLEARED_PREFIX + mission[len(MISSION_PREFIX):]
+
+
+def defeated_event(boss_id: str) -> str:
+    """The event item of a Mega Man Zero boss location, what the hunt counts."""
+    return DEFEATED_PREFIX + ZERO_BOSSES[boss_id]["name"]
+
+
+MUTOS_EVENTS = tuple(defeated_event(b) for b in ZERO_BOSSES)
+
+
+def zero_games(options) -> set[int]:
+    """The games whose bosses the options turn on."""
+    return {game for game, option in ZERO_GAME_OPTIONS.items() if getattr(options, option).value}
+
+
+def goal_is_omega(options) -> bool:
+    return int(options.goal.value) == GOAL_OMEGA
 
 
 class GoalRequirement:
-    """The resolved requirement: which model items count, with how many copies each, the disks
-    and the missions."""
+    """The resolved requirement: which model items count, with how many copies each, the disks,
+    the missions and the Mega Man Zero bosses."""
 
     def __init__(self, models: tuple, models_count: int, disks_required: int, disks_total: int,
-                 copies: dict | None = None, missions_required: int = 0):
+                 copies: dict | None = None, missions_required: int = 0, mutos_required: int = 0):
         self.models = models                 # item names; empty = no model requirement
         self.models_count = models_count
         self.copies = copies or {}           # item name -> copies that make it count (1 unless full)
         self.disks_required = disks_required  # 0 = no disk hunt
         self.disks_total = disks_total
         self.missions_required = missions_required   # 0 = no mission count
+        self.mutos_required = mutos_required         # 0 = no boss hunt
 
     @property
     def wants_models(self) -> bool:
@@ -69,6 +92,10 @@ class GoalRequirement:
     def wants_missions(self) -> bool:
         return self.missions_required > 0
 
+    @property
+    def wants_mutos(self) -> bool:
+        return self.mutos_required > 0
+
 
 def resolve(options, room: int, reserve: int, player_name: str) -> GoalRequirement:
     """Read the goal options, with the disk total kept between the required count and the pool.
@@ -78,8 +105,8 @@ def resolve(options, room: int, reserve: int, player_name: str) -> GoalRequireme
     """
     reqs = set(options.goal_requirements.value)
     if not reqs:
-        raise OptionError("[%s] goal_requirements is empty: list at least one of %s, %s, %s"
-                          % (player_name, REQ_BIOMETALS, REQ_DISKS, REQ_MISSIONS))
+        raise OptionError("[%s] goal_requirements is empty: list at least one of %s, %s, %s, %s"
+                          % (player_name, REQ_BIOMETALS, REQ_DISKS, REQ_MISSIONS, REQ_MUTOS))
     progressive = bool(options.progressive_models.value)
     models: tuple = ()
     count = 0
@@ -115,27 +142,18 @@ def resolve(options, room: int, reserve: int, player_name: str) -> GoalRequireme
     missions = 0
     if REQ_MISSIONS in reqs:
         missions = min(int(options.required_missions.value), MISSION_COUNT)
-    return GoalRequirement(models, count, required, total, copies, missions)
-
-
-def rule(goal: GoalRequirement, player: int):
-    """The requirement as a state rule, or None when nothing is required."""
-    parts = []
-    if goal.wants_models:
-        needs = [(m, goal.copies.get(m, 1)) for m in goal.models]
-        parts.append(lambda state, _needs=needs, _n=goal.models_count:
-                     sum(1 for m, c in _needs if state.has(m, player, c)) >= _n)
-    if goal.wants_disks:
-        parts.append(lambda state, _n=goal.disks_required: state.has(DISK_ITEM, player, _n))
-    if goal.wants_missions:
-        events = [cleared_event(m) for m in COUNTED_MISSIONS]
-        parts.append(lambda state, _ev=events, _n=goal.missions_required:
-                     state.has_from_list_unique(_ev, player, _n))
-    if not parts:
-        return None
-    if len(parts) == 1:
-        return parts[0]
-    return lambda state: all(p(state) for p in parts)
+    mutos = 0
+    if REQ_MUTOS in reqs:
+        mutos = int(options.required_mutos_reploids.value)
+        available = MUTOS_PER_GAME * len(zero_games(options))
+        if mutos > available:
+            raise OptionError(
+                "[%s] required_mutos_reploids: %d bosses asked for but %s. Turn on %s (each game "
+                "brings four bosses; both need their GBA ROM when the patch is opened) or lower the number."
+                % (player_name, mutos, "none of the Mega Man Zero bosses is on" if not available
+                   else "only %d are on" % available,
+                   " and ".join(ZERO_GAME_OPTIONS[g] for g in sorted(set(ZERO_GAME_OPTIONS) - zero_games(options)))))
+    return GoalRequirement(models, count, required, total, copies, missions, mutos)
 
 
 def describe(goal: GoalRequirement) -> str:
@@ -148,6 +166,8 @@ def describe(goal: GoalRequirement) -> str:
         parts.append("%d Secret Disks (%d in the pool)" % (goal.disks_required, goal.disks_total))
     if goal.wants_missions:
         parts.append("%d of the %d story missions" % (goal.missions_required, MISSION_COUNT))
+    if goal.wants_mutos:
+        parts.append("%d of the Mega Man Zero bosses" % goal.mutos_required)
     return "; ".join(parts) or "none"
 
 
@@ -161,6 +181,7 @@ def slot_data(goal: GoalRequirement, disk_order: list) -> dict:
         "secret_disks_total": goal.disks_total,
         "secret_disk_order": list(disk_order),
         "missions": goal.missions_required,
+        "mutos": goal.mutos_required,
     }
 
 
@@ -175,5 +196,6 @@ def from_slot_data(data: dict | None) -> tuple[GoalRequirement, list]:
     models = tuple(data.get("models", ()))
     copies = dict(zip(models, data.get("models_copies", ())))
     goal = GoalRequirement(models, int(data.get("models_count", 0)), int(data.get("secret_disks", 0)),
-                           int(data.get("secret_disks_total", 0)), copies, int(data.get("missions", 0)))
+                           int(data.get("secret_disks_total", 0)), copies, int(data.get("missions", 0)),
+                           int(data.get("mutos", 0)))
     return goal, list(data.get("secret_disk_order", range(DISK_ENTRIES)))

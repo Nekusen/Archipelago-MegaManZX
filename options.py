@@ -1,10 +1,11 @@
 from dataclasses import dataclass
 
-from Options import (Accessibility, Choice, DeathLink, NamedRange, OptionDict, OptionGroup, OptionSet,
-                     PerGameCommonOptions, ProgressionBalancing, Range, StartInventoryPool, Toggle)
+from Options import (Accessibility, Choice, DeathLink, DefaultOnToggle, NamedRange, OptionDict, OptionGroup,
+                     OptionSet, PerGameCommonOptions, ProgressionBalancing, Range, StartInventoryPool, Toggle)
 
-from .goal import (MISSION_COUNT, MODEL_ITEM_BY_KEY, REQ_BIOMETALS, REQ_DISKS, REQ_MISSIONS,
-                   SIX_MODEL_KEYS)
+from .door_constraints import MAX_SITES
+from .goal import (MISSION_COUNT, MODEL_ITEM_BY_KEY, MUTOS_MAX, REQ_BIOMETALS, REQ_DISKS, REQ_MISSIONS,
+                   REQ_MUTOS, SIX_MODEL_KEYS)
 
 
 class Character(Choice):
@@ -16,20 +17,31 @@ class Character(Choice):
 
 
 class Goal(Choice):
-    """Goal of the seed."""
+    """Goal of the seed.
+
+    defeat_serpent: beat Serpent at the top of Slither Inc. The gate from D-2 into the tower
+    opens with the goal requirements.
+    defeat_omega_zero: beat Omega Zero in N-1. The door of his arena opens with the goal
+    requirements; the rest of Area N is open as usual. Slither Inc. (D-4 and D-5) stays closed
+    and its checks are not in the game."""
     display_name = "Goal"
     option_defeat_serpent = 0
+    option_defeat_omega_zero = 1
     default = 0
 
 
 class GoalRequirements(OptionSet):
-    """What you need before the gate to Slither Inc., the final area, opens.
+    """What you need before the door to the final boss opens: the gate to Slither Inc. with
+    defeat_serpent, the door of Omega Zero's arena with defeat_omega_zero.
 
     Biometals: own the models chosen in required_models.
     Secret Disks: collect an ammount of Secret Disks.
-    Missions: complete a number of story missions."""
+    Missions: complete a number of story missions.
+    Mutos Reploid Hunting: beat a number of the Mega Man Zero 3/4 bosses of N-1. Needs
+    zero3_bosses and/or zero4_bosses, and so your Mega Man Zero 3 and/or Zero 4 ROM when you
+    open the patch."""
     display_name = "Goal Requirements"
-    valid_keys = frozenset({REQ_BIOMETALS, REQ_DISKS, REQ_MISSIONS})
+    valid_keys = frozenset({REQ_BIOMETALS, REQ_DISKS, REQ_MISSIONS, REQ_MUTOS})
     default = frozenset({REQ_BIOMETALS})
 
 
@@ -89,6 +101,17 @@ class RequiredMissions(NamedRange):
     special_range_names = {"all": MISSION_COUNT}
 
 
+class RequiredMutosReploids(Range):
+    """How many of the eight Mega Man Zero 3/4 bosses of N-1 you need to beat for the Mutos Reploid
+    Hunting goal requirement. Up to 4 needs one of zero3_bosses and zero4_bosses on. 5 or more
+    needs both, since each game brings four bosses. Generation fails otherwise.
+    Only used with Mutos Reploid Hunting in goal_requirements."""
+    display_name = "Required Mutos Reploids"
+    range_start = 1
+    range_end = MUTOS_MAX
+    default = 4
+
+
 class StartingModel(Choice):
     """The model you start with"""
     display_name = "Starting Model"
@@ -118,6 +141,80 @@ class HuInPool(Toggle):
     default = 0
 
 
+class MissionObjectives(Choice):
+    """Add the story objects and events to the pool.
+    - off: nothing gets added to the pool, and every door and event requires the vanilla requirement or is open by default.
+    - locations_only: adds story objects and events as checks, but the behaviour of every door 
+      and story progress is the same as 'off': Vanilla or open by default.
+    - locations_and_items: each one is a check, and the objects and events are items in the pool. 
+      A mission requires its object to be reported, and roadblocks like the doors of Area F and Area G
+      or the bridge of Area D need their item from the multiworld to be opened."""
+    display_name = "Mission Objectives"
+    option_off = 0
+    option_locations_only = 1
+    option_locations_and_items = 2
+    default = 0
+
+
+class IncludeWarpsInLogic(Toggle):
+    """Troop Reinforcement and Repel The Army end with a teleport to the Guardian Base, Area X.
+    On: the logic counts those teleports as a way into Area X, so a check there may expect you to
+    clear one of those missions rather than to hold the Transerver Access of Area X. Both missions
+    can be played again from "Replay Missions" if required. Off: Area X is in logic only with its Transerver
+    Access or as your starting point."""
+    display_name = "Include Warps In Logic"
+    default = 0
+
+
+class Zero3Bosses(Toggle):
+    """The four Mega Man Zero 3 bosses of N-1 (Hellbat Schilt, Blazin' Flizard, Deathtanz Mantisk
+    and Childre Inarabitta) are in the game and beating each one is a check. 
+    IMPORTANT: this option needs your own Mega Man Zero 3 (GBA) ROM. The game keeps their sprites in that cartridge, 
+    so the patcher asks for the ROM when you open the .apmmzx and converts them from it."""
+    display_name = "Mega Man Zero 3 Bosses"
+    default = 0
+
+
+class Zero4Bosses(Toggle):
+    """The four Mega Man Zero 4 bosses of N-1 (Fenri Lunaedge, Noble Mandrago, Sol Titanion and
+    Pegasolta Eclair) are in the game and beating each one is a check. 
+    IMPORTANT: this needs your own Mega Man Zero 4 (GBA) ROM. The game keeps their sprites in that cartridge, 
+    so the patcher asks for the ROM when you open the .apmmzx and converts them from it."""
+    display_name = "Mega Man Zero 4 Bosses"
+    default = 0
+
+
+class AreaMAccess(Choice):
+    """What opens the seal at the entrance of Area M.
+    - open: the seal is open from the start.
+    - biometals: get the five "Obtain Biometal" checks of your own game: Z from Giro, and
+      H, F, L and P from either Pseudoroid of each pair.
+    - passwords: collect Passwords, items of the pool; required_passwords sets how many.
+    With biometals or passwords the Transerver Access of Area M is removed from the pool."""
+    display_name = "Area M Access"
+    option_open = 0
+    option_biometals = 1
+    option_passwords = 2
+    default = 0
+
+
+class RequiredPasswords(Range):
+    """How many Passwords open the seal of Area M. Only used with area_m_access: passwords."""
+    display_name = "Required Passwords"
+    range_start = 1
+    range_end = 6
+    default = 6
+
+
+class TotalPasswords(Range):
+    """How many Passwords go into the pool. Only used with area_m_access: passwords.
+    A total below required_passwords is raised to match it."""
+    display_name = "Total Passwords"
+    range_start = 1
+    range_end = 6
+    default = 6
+
+
 class StartingTranserver(Choice):
     """Transerver floor of the hub where a new game starts. Only that area's
     Transerver Access is yours from the start; every other destination is an item like the rest."""
@@ -144,6 +241,17 @@ class SkipMinibosses(Choice):
     option_after_first_defeat = 1
     option_always = 2
     default = 0
+
+
+class InfiniteLives(Toggle):
+    """Infinite Lives. With this on, 1-Ups leaves the filler pool"""
+    display_name = "Infinite Lives"
+
+
+class SubTankRefillOperator(DefaultOnToggle):
+    """A Guardian stands next to your starting Transerver: talk to him and, for 200 E-Crystals, he refills
+    every Sub Tank you hold."""
+    display_name = "Sub Tank Refill Operator"
 
 
 class PickupChecks1Up(Toggle):
@@ -211,11 +319,31 @@ class BossLogic(OptionDict):
     default = {}
 
 
+class DoorConstraintsMin(Range):
+    """Door constraints lock some of the doors between rooms behind a Card Key, a
+    different set in every seed, so sphere distribution is more balanced.
+    Each seed locks a number of doors between this minimum and
+    door_constraints_max; 0 and 0 leave every door as in the original game."""
+    display_name = "Door Constraints: Minimum"
+    range_start = 0
+    range_end = MAX_SITES
+    default = 0
+
+
+class DoorConstraintsMax(Range):
+    """The most doors a seed locks behind a Card Key (see door_constraints_min). A
+    value below the minimum counts as the minimum."""
+    display_name = "Door Constraints: Maximum"
+    range_start = 0
+    range_end = MAX_SITES
+    default = 0
+
+
 class NotifyReceived(Choice):
     """On-screen notifications (the game's small popup) when you receive an
     item: which item classes are shown. off: none; progression: progression
     only; useful: progression and useful; all: also filler (E-Crystals,
-    1-Up). Can be changed in game with /mmzx_notify."""
+    1-Ups, refills). Can be changed in game with /mmzx_notify."""
     display_name = "On-screen Notifications: Received Items"
     option_off = 0
     option_progression = 1
@@ -254,11 +382,14 @@ class NotifyStyle(Choice):
 OPTION_GROUPS = [
     OptionGroup("Game Options", [ProgressionBalancing, Accessibility]),
     OptionGroup("Goal", [Goal, GoalRequirements, RequiredModels, RequiredModelsCount, RequireFullModels,
-                         RequiredSecretDisks, TotalSecretDisks, RequiredMissions]),
+                         RequiredSecretDisks, TotalSecretDisks, RequiredMissions, RequiredMutosReploids]),
     OptionGroup("Start", [Character, StartingModel, StartingTranserver]),
-    OptionGroup("Items and Logic", [ProgressiveModels, HuInPool, BossLogic]),
+    OptionGroup("Items and Logic", [ProgressiveModels, HuInPool, MissionObjectives, IncludeWarpsInLogic, BossLogic]),
+    OptionGroup("Mega Man Zero Bosses", [Zero3Bosses, Zero4Bosses]),
+    OptionGroup("Area M", [AreaMAccess, RequiredPasswords, TotalPasswords]),
+    OptionGroup("Door Constraints", [DoorConstraintsMin, DoorConstraintsMax]),
     OptionGroup("Pickup Checks", [PickupChecks1Up, PickupChecksEnergy, PickupChecksWeapon, PickupChecksCrystals]),
-    OptionGroup("Quality of Life", [SkipBossRush, SkipMinibosses]),
+    OptionGroup("Quality of Life", [SkipBossRush, SkipMinibosses, InfiniteLives, SubTankRefillOperator]),
     OptionGroup("Notifications", [NotifyReceived, NotifySent, NotifyStyle]),
     OptionGroup("Death Link", [DeathLink]),
 ]
@@ -275,13 +406,25 @@ class MMZXOptions(PerGameCommonOptions):
     required_secret_disks: RequiredSecretDisks
     total_secret_disks: TotalSecretDisks
     required_missions: RequiredMissions
+    required_mutos_reploids: RequiredMutosReploids
     starting_model: StartingModel
     progressive_models: ProgressiveModels
     hu_in_pool: HuInPool
+    mission_objectives: MissionObjectives
+    include_warps_in_logic: IncludeWarpsInLogic
+    zero3_bosses: Zero3Bosses
+    zero4_bosses: Zero4Bosses
+    area_m_access: AreaMAccess
+    required_passwords: RequiredPasswords
+    total_passwords: TotalPasswords
     starting_transerver: StartingTranserver
     boss_logic: BossLogic
+    door_constraints_min: DoorConstraintsMin
+    door_constraints_max: DoorConstraintsMax
     skip_boss_rush: SkipBossRush
     skip_minibosses: SkipMinibosses
+    infinite_lives: InfiniteLives
+    sub_tank_refill_operator: SubTankRefillOperator
     pickup_checks_1up: PickupChecks1Up
     pickup_checks_energy: PickupChecksEnergy
     pickup_checks_weapon: PickupChecksWeapon

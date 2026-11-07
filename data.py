@@ -107,15 +107,15 @@ LOCATIONS = {
     'G-2: Guardian Sole': {'id': 13633037, 'category': 'story', 'detect': ['bit', 34620898, 3], 'room': 'g02', 'pos': [284, 5128], 'status': 'verified', 'story': 'event'},
     'G-2: Guardian Platane': {'id': 13633038, 'category': 'story', 'detect': ['bit', 34620898, 4], 'room': 'g02', 'pos': [589, 904], 'status': 'verified', 'story': 'event'},
     'G-2: Guardian Bonite': {'id': 13633039, 'category': 'story', 'detect': ['bit', 34620898, 5], 'room': 'g02', 'pos': [696, 4760], 'status': 'verified', 'story': 'event'},
-    'G-2: Civilian': {'id': 13633040, 'category': 'story', 'detect': ['bit', 34620898, 6], 'room': 'g02', 'pos': [372, 1704], 'status': 'verified', 'story': 'event'},
-    'G-2: Civilian (5)': {'id': 13633041, 'category': 'story', 'detect': ['bit', 34620898, 7], 'room': 'g02', 'pos': [472, 3976], 'status': 'verified', 'story': 'event'},
-    'G-2: Civilian (2)': {'id': 13633042, 'category': 'story', 'detect': ['bit', 34620899, 0], 'room': 'g02', 'pos': [504, 2072], 'status': 'verified', 'story': 'event'},
-    'G-2: Civilian (3)': {'id': 13633043, 'category': 'story', 'detect': ['bit', 34620899, 1], 'room': 'g02', 'pos': [472, 3208], 'status': 'verified', 'story': 'event'},
-    'G-2: Civilian (6)': {'id': 13633044, 'category': 'story', 'detect': ['bit', 34620899, 2], 'room': 'g02', 'pos': [690, 4376], 'status': 'verified', 'story': 'event'},
-    'G-2: Civilian (7)': {'id': 13633045, 'category': 'story', 'detect': ['bit', 34620899, 3], 'room': 'g02', 'pos': [328, 5896], 'status': 'verified', 'story': 'event'},
-    'G-2: Civilian (4)': {'id': 13633046, 'category': 'story', 'detect': ['bit', 34620899, 4], 'room': 'g02', 'pos': [710, 3608], 'status': 'verified', 'story': 'event'},
-    'G-2: Civilian (8)': {'id': 13633047, 'category': 'story', 'detect': ['bit', 34620899, 5], 'room': 'g02', 'pos': [688, 6296], 'status': 'verified', 'story': 'event'},
-    'G-3: Dog': {'id': 13633048, 'category': 'story', 'detect': ['bit', 34620899, 6], 'room': 'g03', 'pos': [1768, 536], 'status': 'verified', 'story': 'event'},
+    'G-2: Civilian Allen': {'id': 13633040, 'category': 'story', 'detect': ['bit', 34620898, 6], 'room': 'g02', 'pos': [372, 1704], 'status': 'verified', 'story': 'event'},
+    'G-2: Civilian Thalia': {'id': 13633041, 'category': 'story', 'detect': ['bit', 34620898, 7], 'room': 'g02', 'pos': [472, 3976], 'status': 'verified', 'story': 'event'},
+    'G-2: Civilian Luke': {'id': 13633042, 'category': 'story', 'detect': ['bit', 34620899, 0], 'room': 'g02', 'pos': [504, 2072], 'status': 'verified', 'story': 'event'},
+    'G-2: Civilian Halison': {'id': 13633043, 'category': 'story', 'detect': ['bit', 34620899, 1], 'room': 'g02', 'pos': [472, 3208], 'status': 'verified', 'story': 'event'},
+    'G-2: Civilian Sonya': {'id': 13633044, 'category': 'story', 'detect': ['bit', 34620899, 2], 'room': 'g02', 'pos': [690, 4376], 'status': 'verified', 'story': 'event'},
+    'G-2: Civilian Kaspar': {'id': 13633045, 'category': 'story', 'detect': ['bit', 34620899, 3], 'room': 'g02', 'pos': [328, 5896], 'status': 'verified', 'story': 'event'},
+    'G-2: Civilian Silvia': {'id': 13633046, 'category': 'story', 'detect': ['bit', 34620899, 4], 'room': 'g02', 'pos': [710, 3608], 'status': 'verified', 'story': 'event'},
+    'G-2: Dog Bosch': {'id': 13633047, 'category': 'story', 'detect': ['bit', 34620899, 5], 'room': 'g02', 'pos': [688, 6296], 'status': 'verified', 'story': 'event'},
+    'G-3: Civilian Goyork': {'id': 13633048, 'category': 'story', 'detect': ['bit', 34620899, 6], 'room': 'g03', 'pos': [1768, 536], 'status': 'verified', 'story': 'event'},
     'G-2: Sprinkler Key': {'id': 13633049, 'category': 'story', 'detect': ['bit', 34620923, 6], 'room': 'g02', 'pos': [656, 432], 'status': 'verified', 'story': 'gate'},
     'J-5: Data Disk 2': {'id': 13633050, 'category': 'story', 'detect': ['any', [[34620962, 6], [34620870, 5]]], 'room': 'j05', 'pos': [736, 751], 'status': 'verified', 'story': 'object', 'icon': [51, 154]},
     'K-1: Lava Flow Control': {'id': 13633051, 'category': 'story', 'detect': ['bit', 34620877, 0], 'room': 'k01', 'pos': [6872, 1304], 'status': 'verified', 'story': 'event'},
@@ -656,7 +656,7 @@ STORY_DONE_BITS = {'E-3: Generator': 5}
 # The game hands these out in order: each location also needs the one before it.
 STORY_CHAINS = [['C-1: Guardian Oeillet', 'C-1: Guardian Carrelet', 'C-1: Guardian Congre', 'C-2: Guardian Thon', 'C-2: Stuffed Animal']]
 # location -> [how many, of these locations] it needs within reach.
-STORY_COUNTS = {'G-2: Sprinkler Key': [8, ['G-2: Guardian Chene', 'G-2: Guardian Sole', 'G-2: Guardian Platane', 'G-2: Guardian Bonite', 'G-2: Civilian', 'G-2: Civilian (2)', 'G-2: Civilian (3)', 'G-2: Civilian (4)', 'G-2: Civilian (5)', 'G-2: Civilian (6)', 'G-2: Civilian (7)', 'G-2: Civilian (8)', 'G-3: Dog']]}
+STORY_COUNTS = {'G-2: Sprinkler Key': [8, ['G-2: Guardian Chene', 'G-2: Guardian Sole', 'G-2: Guardian Platane', 'G-2: Guardian Bonite', 'G-2: Civilian Allen', 'G-2: Civilian Luke', 'G-2: Civilian Halison', 'G-2: Civilian Silvia', 'G-2: Civilian Thalia', 'G-2: Civilian Sonya', 'G-2: Civilian Kaspar', 'G-2: Dog Bosch', 'G-3: Civilian Goyork']]}
 # Missions that end with a teleport to the Guardian Base: mission -> the room the player lands
 # in. include_warps_in_logic makes each one an entrance into Area X.
 MISSION_WARPS = {'Troop Reinforcement': 'x02', 'Repel The Army': 'x02'}

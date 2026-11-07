@@ -37108,10 +37108,13 @@
      "from": "g02/basement",
      "to": "g02/basement-room",
      "rule": {
-      "rule": "True_",
+      "rule": "Has",
       "options": [],
       "filtered_resolution": false,
-      "args": {}
+      "args": {
+       "item_name": "Cleared: Fight The Mavericks",
+       "count": 1
+      }
      }
     },
     "g02 door (288,1152)": {
@@ -37434,7 +37437,7 @@
       "args": {}
      }
     },
-    "G-2: Civilian": {
+    "G-2: Civilian Allen": {
      "region": "g02/basement",
      "rule": {
       "rule": "Or",
@@ -37471,7 +37474,7 @@
       ]
      }
     },
-    "G-2: Civilian (5)": {
+    "G-2: Civilian Thalia": {
      "region": "g02/5th-floor-room-outside",
      "rule": {
       "rule": "Or",
@@ -37508,7 +37511,7 @@
       ]
      }
     },
-    "G-2: Civilian (2)": {
+    "G-2: Civilian Luke": {
      "region": "g02/7th-floor-room-r-7th-floor-room",
      "rule": {
       "rule": "Or",
@@ -37545,7 +37548,7 @@
       ]
      }
     },
-    "G-2: Civilian (3)": {
+    "G-2: Civilian Halison": {
      "region": "g02/6th-floor-room-outside",
      "rule": {
       "rule": "Or",
@@ -37582,7 +37585,7 @@
       ]
      }
     },
-    "G-2: Civilian (6)": {
+    "G-2: Civilian Sonya": {
      "region": "g02/4th-floor-room",
      "rule": {
       "rule": "Or",
@@ -37619,7 +37622,7 @@
       ]
      }
     },
-    "G-2: Civilian (7)": {
+    "G-2: Civilian Kaspar": {
      "region": "g02/2nd-floor-room-outside",
      "rule": {
       "rule": "Or",
@@ -37656,7 +37659,7 @@
       ]
      }
     },
-    "G-2: Civilian (4)": {
+    "G-2: Civilian Silvia": {
      "region": "g02/5th-floor-room-r-5th-floor-room",
      "rule": {
       "rule": "Or",
@@ -37693,7 +37696,7 @@
       ]
      }
     },
-    "G-2: Civilian (8)": {
+    "G-2: Dog Bosch": {
      "region": "g02/basement-room",
      "rule": {
       "rule": "Or",
@@ -37743,15 +37746,15 @@
         "G-2: Guardian Sole",
         "G-2: Guardian Platane",
         "G-2: Guardian Bonite",
-        "G-2: Civilian",
-        "G-2: Civilian (2)",
-        "G-2: Civilian (3)",
-        "G-2: Civilian (4)",
-        "G-2: Civilian (5)",
-        "G-2: Civilian (6)",
-        "G-2: Civilian (7)",
-        "G-2: Civilian (8)",
-        "G-3: Dog"
+        "G-2: Civilian Allen",
+        "G-2: Civilian Luke",
+        "G-2: Civilian Halison",
+        "G-2: Civilian Silvia",
+        "G-2: Civilian Thalia",
+        "G-2: Civilian Sonya",
+        "G-2: Civilian Kaspar",
+        "G-2: Dog Bosch",
+        "G-3: Civilian Goyork"
        ]
       }
      }
@@ -37882,7 +37885,7 @@
     }
    },
    "locations": {
-    "G-3: Dog": {
+    "G-3: Civilian Goyork": {
      "region": "g03",
      "rule": {
       "rule": "Or",

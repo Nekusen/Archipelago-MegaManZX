@@ -934,7 +934,7 @@
    },
    "unsure": false
   },
-  "G-2: Civilian": {
+  "G-2: Civilian Allen": {
    "note": "",
    "req": {
     "normal": [
@@ -945,7 +945,7 @@
    },
    "unsure": false
   },
-  "G-2: Civilian (2)": {
+  "G-2: Civilian Halison": {
    "note": "",
    "req": {
     "normal": [
@@ -956,7 +956,7 @@
    },
    "unsure": false
   },
-  "G-2: Civilian (3)": {
+  "G-2: Civilian Kaspar": {
    "note": "",
    "req": {
     "normal": [
@@ -967,7 +967,7 @@
    },
    "unsure": false
   },
-  "G-2: Civilian (4)": {
+  "G-2: Civilian Luke": {
    "note": "",
    "req": {
     "normal": [
@@ -978,7 +978,7 @@
    },
    "unsure": false
   },
-  "G-2: Civilian (5)": {
+  "G-2: Civilian Silvia": {
    "note": "",
    "req": {
     "normal": [
@@ -989,7 +989,7 @@
    },
    "unsure": false
   },
-  "G-2: Civilian (6)": {
+  "G-2: Civilian Sonya": {
    "note": "",
    "req": {
     "normal": [
@@ -1000,18 +1000,7 @@
    },
    "unsure": false
   },
-  "G-2: Civilian (7)": {
-   "note": "",
-   "req": {
-    "normal": [
-     [
-      "HU"
-     ]
-    ]
-   },
-   "unsure": false
-  },
-  "G-2: Civilian (8)": {
+  "G-2: Civilian Thalia": {
    "note": "",
    "req": {
     "normal": [
@@ -1037,7 +1026,18 @@
    },
    "unsure": false
   },
-  "G-3: Dog": {
+  "G-2: Dog Bosch": {
+   "note": "",
+   "req": {
+    "normal": [
+     [
+      "HU"
+     ]
+    ]
+   },
+   "unsure": false
+  },
+  "G-3: Civilian Goyork": {
    "note": "",
    "req": {
     "normal": [
@@ -8811,7 +8811,9 @@
      "note": "",
      "req": {
       "normal": [
-       []
+       [
+        "FIGHT_THE_MAVERICKS"
+       ]
       ]
      },
      "to": "basement-room",

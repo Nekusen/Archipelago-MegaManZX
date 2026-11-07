@@ -1106,35 +1106,35 @@
                 "item_count": 1
               },
               {
-                "name": "G-2: Civilian",
+                "name": "G-2: Civilian Allen",
                 "item_count": 1
               },
               {
-                "name": "G-2: Civilian (5)",
+                "name": "G-2: Civilian Thalia",
                 "item_count": 1
               },
               {
-                "name": "G-2: Civilian (2)",
+                "name": "G-2: Civilian Luke",
                 "item_count": 1
               },
               {
-                "name": "G-2: Civilian (3)",
+                "name": "G-2: Civilian Halison",
                 "item_count": 1
               },
               {
-                "name": "G-2: Civilian (6)",
+                "name": "G-2: Civilian Sonya",
                 "item_count": 1
               },
               {
-                "name": "G-2: Civilian (7)",
+                "name": "G-2: Civilian Kaspar",
                 "item_count": 1
               },
               {
-                "name": "G-2: Civilian (4)",
+                "name": "G-2: Civilian Silvia",
                 "item_count": 1
               },
               {
-                "name": "G-2: Civilian (8)",
+                "name": "G-2: Dog Bosch",
                 "item_count": 1
               },
               {
@@ -1162,7 +1162,7 @@
             ],
             "sections": [
               {
-                "name": "G-3: Dog",
+                "name": "G-3: Civilian Goyork",
                 "item_count": 1
               },
               {
@@ -5814,7 +5814,7 @@
             ]
           },
           {
-            "name": "G-2: Civilian",
+            "name": "G-2: Civilian Allen",
             "map_locations": [
               {
                 "map": "area_g",
@@ -5829,13 +5829,13 @@
             ],
             "sections": [
               {
-                "name": "G-2: Civilian",
+                "name": "G-2: Civilian Allen",
                 "item_count": 1
               }
             ]
           },
           {
-            "name": "G-2: Civilian (5)",
+            "name": "G-2: Civilian Thalia",
             "map_locations": [
               {
                 "map": "area_g",
@@ -5850,13 +5850,13 @@
             ],
             "sections": [
               {
-                "name": "G-2: Civilian (5)",
+                "name": "G-2: Civilian Thalia",
                 "item_count": 1
               }
             ]
           },
           {
-            "name": "G-2: Civilian (2)",
+            "name": "G-2: Civilian Luke",
             "map_locations": [
               {
                 "map": "area_g",
@@ -5871,13 +5871,13 @@
             ],
             "sections": [
               {
-                "name": "G-2: Civilian (2)",
+                "name": "G-2: Civilian Luke",
                 "item_count": 1
               }
             ]
           },
           {
-            "name": "G-2: Civilian (3)",
+            "name": "G-2: Civilian Halison",
             "map_locations": [
               {
                 "map": "area_g",
@@ -5892,13 +5892,13 @@
             ],
             "sections": [
               {
-                "name": "G-2: Civilian (3)",
+                "name": "G-2: Civilian Halison",
                 "item_count": 1
               }
             ]
           },
           {
-            "name": "G-2: Civilian (6)",
+            "name": "G-2: Civilian Sonya",
             "map_locations": [
               {
                 "map": "area_g",
@@ -5913,13 +5913,13 @@
             ],
             "sections": [
               {
-                "name": "G-2: Civilian (6)",
+                "name": "G-2: Civilian Sonya",
                 "item_count": 1
               }
             ]
           },
           {
-            "name": "G-2: Civilian (7)",
+            "name": "G-2: Civilian Kaspar",
             "map_locations": [
               {
                 "map": "area_g",
@@ -5934,13 +5934,13 @@
             ],
             "sections": [
               {
-                "name": "G-2: Civilian (7)",
+                "name": "G-2: Civilian Kaspar",
                 "item_count": 1
               }
             ]
           },
           {
-            "name": "G-2: Civilian (4)",
+            "name": "G-2: Civilian Silvia",
             "map_locations": [
               {
                 "map": "area_g",
@@ -5955,13 +5955,13 @@
             ],
             "sections": [
               {
-                "name": "G-2: Civilian (4)",
+                "name": "G-2: Civilian Silvia",
                 "item_count": 1
               }
             ]
           },
           {
-            "name": "G-2: Civilian (8)",
+            "name": "G-2: Dog Bosch",
             "map_locations": [
               {
                 "map": "area_g",
@@ -5976,7 +5976,7 @@
             ],
             "sections": [
               {
-                "name": "G-2: Civilian (8)",
+                "name": "G-2: Dog Bosch",
                 "item_count": 1
               }
             ]
@@ -6050,7 +6050,7 @@
         "name": "G-3",
         "children": [
           {
-            "name": "G-3: Dog",
+            "name": "G-3: Civilian Goyork",
             "map_locations": [
               {
                 "map": "area_g",
@@ -6065,7 +6065,7 @@
             ],
             "sections": [
               {
-                "name": "G-3: Dog",
+                "name": "G-3: Civilian Goyork",
                 "item_count": 1
               }
             ]

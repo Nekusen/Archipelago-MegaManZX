@@ -205,13 +205,13 @@ async def auto_accept_mission(client: "MMZXClient", ctx, tick: Tick) -> None:
     if manual and not client.force_accept:
         if not client.manual_mission:
             client.manual_mission = True
-            logger.info("[mmzx] %s was taken from the Transerver list: no mission is accepted "
-                        "automatically until it is reported or aborted" % manual)
+            client._debug("[mmzx] %s was taken from the Transerver list: no mission is accepted "
+                          "automatically until it is reported or aborted" % manual)
         return
     if client.manual_mission:
         client.manual_mission = False
         client.last_accept_sub = None
-        logger.info("[mmzx] the mission taken from the list is over: missions are accepted automatically again")
+        client._debug("[mmzx] the mission taken from the list is over: missions are accepted automatically again")
     found = await mission_here(client, ctx, tick.subarea)
     if found is None:
         return
